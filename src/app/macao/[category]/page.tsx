@@ -36,6 +36,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+function PriceLabel({ range }: { range: string }) {
+  const map: Record<string, string> = { budget: '$', moderate: '$$', upscale: '$$$', luxury: '$$$$' }
+  return <span>{map[range] || range}</span>
+}
+
 export default async function CategoryPage({ params }: PageProps) {
   const { category: slug } = await params
   const data = await getData(slug)
@@ -44,36 +49,64 @@ export default async function CategoryPage({ params }: PageProps) {
   const { category, merchants } = data
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
-      <nav className="text-sm text-gray-500 mb-6">
-        <a href="/macao" className="hover:text-blue-600">澳門百科</a>
-        <span className="mx-2">/</span>
-        <span className="text-gray-900">{category.name_zh}</span>
-      </nav>
-
-      <h1 className="text-3xl font-bold mb-2">{category.icon} {category.name_zh}</h1>
-      <p className="text-gray-500 mb-8">{category.name_en} · {merchants.length} 家商戶</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {merchants.map((m) => (
-          <a
-            key={m.id}
-            href={`/macao/${slug}/${m.slug}`}
-            className="block border rounded-lg p-5 hover:shadow-lg hover:border-blue-300 transition-all"
-          >
-            <h2 className="text-lg font-semibold">{m.name_zh}</h2>
-            {m.name_en && <p className="text-sm text-gray-500">{m.name_en}</p>}
-            <div className="flex gap-2 mt-3 text-xs text-gray-500">
-              {m.district && <span className="px-2 py-0.5 bg-gray-100 rounded">📍 {m.district}</span>}
-              {m.google_rating && <span className="px-2 py-0.5 bg-gray-100 rounded">⭐ {m.google_rating}</span>}
-            </div>
-          </a>
-        ))}
+    <>
+      {/* Category Hero */}
+      <div className="hero-gradient text-white">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <nav className="text-sm text-blue-200/70 mb-4">
+            <a href="/macao" className="hover:text-white transition-colors">澳門百科</a>
+            <span className="mx-2">/</span>
+            <span className="text-white">{category.name_zh}</span>
+          </nav>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">{category.icon} {category.name_zh}</h1>
+          <p className="text-blue-200">
+            {category.name_en} · {merchants.length} 家商戶
+          </p>
+        </div>
       </div>
 
-      {merchants.length === 0 && (
-        <p className="text-center text-gray-400 py-12">此分類尚無商戶</p>
-      )}
-    </main>
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {merchants.map((m) => (
+            <a
+              key={m.id}
+              href={`/macao/${slug}/${m.slug}`}
+              className="card-hover block bg-white border border-gray-200 rounded-xl p-5"
+            >
+              <h2 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h2>
+              {m.name_en && <p className="text-xs text-gray-400 mb-3">{m.name_en}</p>}
+              <div className="flex flex-wrap gap-1.5 text-xs">
+                {m.google_rating && (
+                  <span className="px-2 py-0.5 rating-badge rounded">
+                    {m.google_rating}
+                  </span>
+                )}
+                {m.price_range && (
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                    <PriceLabel range={m.price_range} />
+                  </span>
+                )}
+                {m.district && (
+                  <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded">
+                    {m.district}
+                  </span>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+
+        {merchants.length === 0 && (
+          <p className="text-center text-gray-400 py-16">此分類尚無商戶</p>
+        )}
+
+        {/* Footer */}
+        <footer className="text-center mt-16 pt-8 border-t border-gray-200">
+          <p className="text-sm text-gray-400">
+            <a href="/macao" className="text-[#0f4c81] hover:underline">← 返回澳門百科</a>
+          </p>
+        </footer>
+      </main>
+    </>
   )
 }

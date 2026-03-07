@@ -60,6 +60,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+function PriceLabel({ range }: { range: string }) {
+  const map: Record<string, string> = { budget: '平價', moderate: '中等', upscale: '高檔', luxury: '奢華' }
+  return <>{map[range] || range}</>
+}
+
 export default async function MerchantPage({ params }: PageProps) {
   const { slug } = await params
   const data = await getMerchant(slug)
@@ -68,7 +73,6 @@ export default async function MerchantPage({ params }: PageProps) {
   const { merchant, content, faqs } = data
   const cat = merchant.category
 
-  // Schema.org JSON-LD
   const schemaOrg = {
     '@context': 'https://schema.org',
     '@type': merchant.schema_type || 'Organization',
@@ -143,87 +147,89 @@ export default async function MerchantPage({ params }: PageProps) {
         />
       )}
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 mb-6">
-          <a href="/macao" className="hover:text-blue-600">澳門百科</a>
-          <span className="mx-2">/</span>
-          {cat && (
-            <>
-              <a href={`/macao/${cat.slug}`} className="hover:text-blue-600">{cat.name_zh}</a>
-              <span className="mx-2">/</span>
-            </>
-          )}
-          <span className="text-gray-900">{merchant.name_zh}</span>
-        </nav>
+      {/* Merchant Hero */}
+      <div className="hero-gradient text-white">
+        <div className="max-w-4xl mx-auto px-4 py-10">
+          <nav className="text-sm text-blue-200/70 mb-4">
+            <a href="/macao" className="hover:text-white transition-colors">澳門百科</a>
+            <span className="mx-2">/</span>
+            {cat && (
+              <>
+                <a href={`/macao/${cat.slug}`} className="hover:text-white transition-colors">{cat.name_zh}</a>
+                <span className="mx-2">/</span>
+              </>
+            )}
+            <span className="text-white">{merchant.name_zh}</span>
+          </nav>
 
-        {/* Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{merchant.name_zh}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">{merchant.name_zh}</h1>
           {merchant.name_en && (
-            <p className="text-xl text-gray-500">{merchant.name_en}</p>
+            <p className="text-lg text-blue-200">{merchant.name_en}</p>
           )}
           {merchant.name_pt && (
-            <p className="text-lg text-gray-400">{merchant.name_pt}</p>
+            <p className="text-base text-blue-200/70">{merchant.name_pt}</p>
           )}
 
-          <div className="flex flex-wrap gap-3 mt-4 text-sm">
+          <div className="flex flex-wrap gap-2 mt-5">
             {cat && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
                 {cat.icon} {cat.name_zh}
               </span>
             )}
             {merchant.district && (
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full">
-                📍 {merchant.district}
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+                {merchant.district}
               </span>
             )}
             {merchant.price_range && (
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                {merchant.price_range}
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+                <PriceLabel range={merchant.price_range} />
               </span>
             )}
             {merchant.google_rating && (
-              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full">
-                ⭐ {merchant.google_rating} ({merchant.google_reviews} 則評論)
+              <span className="text-xs px-3 py-1.5 bg-amber-400/90 text-white rounded-full font-semibold">
+                ★ {merchant.google_rating} ({merchant.google_reviews})
               </span>
             )}
           </div>
-        </header>
+        </div>
+      </div>
+      <div className="gold-line"></div>
 
-        {/* Contact Info */}
-        <section className="bg-gray-50 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">基本資訊</h2>
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        {/* Contact Info Card */}
+        <section className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
+          <h2 className="text-lg font-bold text-[#0f4c81] mb-4">基本資訊</h2>
+          <dl className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
             {merchant.address_zh && (
               <div>
-                <dt className="text-gray-500">地址</dt>
-                <dd className="font-medium">{merchant.address_zh}</dd>
+                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">地址</dt>
+                <dd className="font-medium text-[#1a1a2e]">{merchant.address_zh}</dd>
               </div>
             )}
             {merchant.phone && (
               <div>
-                <dt className="text-gray-500">電話</dt>
-                <dd className="font-medium">
-                  <a href={`tel:${merchant.phone}`} className="text-blue-600">{merchant.phone}</a>
+                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">電話</dt>
+                <dd>
+                  <a href={`tel:${merchant.phone}`} className="font-medium text-[#0f4c81] hover:underline">{merchant.phone}</a>
                 </dd>
               </div>
             )}
             {merchant.website && (
               <div>
-                <dt className="text-gray-500">網站</dt>
-                <dd className="font-medium">
-                  <a href={merchant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    {merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">網站</dt>
+                <dd>
+                  <a href={merchant.website} target="_blank" rel="noopener noreferrer" className="font-medium text-[#0f4c81] hover:underline">
+                    {merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 40)}
                   </a>
                 </dd>
               </div>
             )}
             {merchant.email && (
               <div>
-                <dt className="text-gray-500">電郵</dt>
-                <dd className="font-medium">
-                  <a href={`mailto:${merchant.email}`} className="text-blue-600">{merchant.email}</a>
+                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">電郵</dt>
+                <dd>
+                  <a href={`mailto:${merchant.email}`} className="font-medium text-[#0f4c81] hover:underline">{merchant.email}</a>
                 </dd>
               </div>
             )}
@@ -232,23 +238,28 @@ export default async function MerchantPage({ params }: PageProps) {
 
         {/* Main Content */}
         {content?.body && (
-          <section className="prose prose-lg max-w-none mb-8">
+          <section className="prose max-w-none mb-10">
             <div dangerouslySetInnerHTML={{ __html: content.body }} />
           </section>
         )}
 
         {/* FAQ */}
         {faqs.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">常見問題</h2>
-            <div className="space-y-4">
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              常見問題
+            </h2>
+            <div className="space-y-3">
               {faqs.map((faq) => (
-                <details key={faq.id} className="border rounded-lg p-4 group">
-                  <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                    {faq.question}
-                    <span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+                <details key={faq.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e]">
+                    <span className="pr-4">{faq.question}</span>
+                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
                   </summary>
-                  <p className="mt-3 text-gray-600 leading-relaxed">{faq.answer}</p>
+                  <div className="px-5 pb-5 border-t border-gray-100">
+                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</p>
+                  </div>
                 </details>
               ))}
             </div>
@@ -256,10 +267,17 @@ export default async function MerchantPage({ params }: PageProps) {
         )}
 
         {/* Footer */}
-        <footer className="border-t pt-6 mt-8 text-sm text-gray-500">
-          <p>本頁由 <a href="https://inari-kira-isla.github.io/cloudpipe-landing/" className="text-blue-600">CloudPipe AI</a> 自動生成並人工審核</p>
-          <p className="mt-1">最後更新：{new Date(merchant.updated_at).toLocaleDateString('zh-TW')}</p>
-          <p className="mt-1">© 2026 CloudPipe · CC BY 4.0</p>
+        <footer className="border-t border-gray-200 pt-8 mt-10 text-sm text-gray-400">
+          <div className="flex flex-col md:flex-row justify-between gap-2">
+            <div>
+              <p>由 <a href="https://inari-kira-isla.github.io/cloudpipe-landing/" className="text-[#0f4c81] hover:underline">CloudPipe AI</a> 自動生成並人工審核</p>
+              <p className="mt-1">最後更新：{new Date(merchant.updated_at).toLocaleDateString('zh-TW')}</p>
+            </div>
+            <div className="text-right">
+              <a href="/macao" className="text-[#0f4c81] hover:underline">← 返回澳門百科</a>
+              <p className="mt-1">© 2026 CloudPipe · CC BY 4.0</p>
+            </div>
+          </div>
         </footer>
       </main>
     </>
