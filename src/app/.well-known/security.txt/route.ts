@@ -1,0 +1,14 @@
+export async function GET() {
+  const body = `Contact: mailto:inariglobal@gmail.com
+Contact: https://github.com/Inari-Kira-Isla
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: zh, en, pt
+Canonical: https://cloudpipe-macao-app.vercel.app/.well-known/security.txt
+`
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  })
+}
