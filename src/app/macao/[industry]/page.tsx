@@ -51,6 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'website',
       locale: 'zh_TW',
       url: `${siteUrl}/macao/${slug}`,
+      images: [{ url: `${siteUrl}/og-image.svg`, width: 1200, height: 630, alt: 'CloudPipe AI 澳門商戶百科' }],
     },
     alternates: { canonical: `${siteUrl}/macao/${slug}` },
   }

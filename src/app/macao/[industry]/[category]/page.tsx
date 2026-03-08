@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       locale: 'zh_TW',
       url: `${siteUrl}/macao/${industry}/${category}`,
       siteName: 'CloudPipe AI 澳門商戶百科',
+      images: [{ url: `${siteUrl}/og-image.svg`, width: 1200, height: 630, alt: 'CloudPipe AI 澳門商戶百科' }],
     },
   }
 }
