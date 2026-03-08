@@ -12,17 +12,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+
 export const metadata: Metadata = {
   title: {
-    default: 'CloudPipe AI — 澳門商戶百科',
-    template: '%s | CloudPipe AI',
+    default: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
+    template: '%s | CloudPipe AI 澳門商戶百科',
   },
-  description: '澳門商戶 AI 百科，為 AI 助手提供準確的澳門商戶資訊。結構化數據、FAQ、Schema.org 標記。',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'),
+  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 140+ 家澳門商戶，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 16 個行業。Schema.org 結構化數據、FAQ、llms.txt，讓 AI 助手準確回答澳門商戶問題。',
+  metadataBase: new URL(siteUrl),
   openGraph: {
     type: 'website',
     locale: 'zh_TW',
     siteName: 'CloudPipe AI 澳門商戶百科',
+    url: siteUrl,
   },
   robots: {
     index: true,
@@ -30,6 +33,12 @@ export const metadata: Metadata = {
   },
   verification: {
     google: '9EYAWnIRJ55Ccf3QicIn8s7d4GhYGU1rb9C8etIc200',
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  other: {
+    'llms-txt': `${siteUrl}/macao/llms-txt`,
   },
 };
 
@@ -40,6 +49,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-Hant">
+      <head>
+        <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
