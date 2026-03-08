@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Category, Merchant } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 
 interface PageProps {
   params: Promise<{ industry: string; category: string }>
@@ -39,6 +40,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${data.category.name_zh} — 澳門${data.industry.name_zh} | CloudPipe`,
     description: `澳門${data.category.name_zh}商戶百科，共 ${data.merchants.length} 家。${data.industry.description}`,
     alternates: { canonical: `${siteUrl}/macao/${industry}/${category}` },
+    openGraph: {
+      title: `${data.category.name_zh} — 澳門${data.industry.name_zh} | CloudPipe AI 澳門商戶百科`,
+      description: `澳門${data.category.name_zh}商戶百科，共 ${data.merchants.length} 家。${data.industry.description}`,
+      type: 'website',
+      locale: 'zh_TW',
+      url: `${siteUrl}/macao/${industry}/${category}`,
+      siteName: 'CloudPipe AI 澳門商戶百科',
+    },
   }
 }
 
@@ -62,6 +71,8 @@ export default async function CategoryPage({ params }: PageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
   const icon = CATEGORY_ICONS[catSlug] || category.icon || '📋'
 
+  const content = INDUSTRY_CONTENT[indSlug]
+
   const schemas = [
     {
       '@context': 'https://schema.org',
@@ -74,6 +85,17 @@ export default async function CategoryPage({ params }: PageProps) {
     },
     {
       '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'CloudPipe AI',
+      url: 'https://cloudpipe-landing.vercel.app',
+      description: '澳門商戶 AI 百科平台，讓世界的 AI 看見澳門',
+      sameAs: [
+        'https://github.com/Inari-Kira-Isla',
+        'https://cloudpipe-directory.vercel.app',
+      ],
+    },
+    {
+      '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'CloudPipe AI', item: siteUrl },
@@ -82,6 +104,15 @@ export default async function CategoryPage({ params }: PageProps) {
         { '@type': 'ListItem', position: 4, name: category.name_zh, item: `${siteUrl}/macao/${indSlug}/${catSlug}` },
       ],
     },
+    ...(content?.faqs ? [{
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: content.faqs.slice(0, 5).map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    }] : []),
   ]
 
   return (

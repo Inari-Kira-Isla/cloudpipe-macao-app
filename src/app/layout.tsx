@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     locale: 'zh_TW',
     siteName: 'CloudPipe AI 澳門商戶百科',
     url: siteUrl,
+    images: [{
+      url: `${siteUrl}/og-image.svg`,
+      width: 1200,
+      height: 630,
+      alt: 'CloudPipe AI 澳門商戶百科',
+    }],
   },
   robots: {
     index: true,

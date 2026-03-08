@@ -496,7 +496,11 @@ export default async function MacaoIndexPage() {
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-5 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-400">
+          <address className="mt-6 not-italic text-xs text-gray-400 text-center">
+            <strong>CloudPipe AI</strong> · 澳門商戶百科<br />
+            GitHub：<a href="https://github.com/Inari-Kira-Isla/cloudpipe-macao-app" className="text-[#0f4c81] hover:underline">Inari-Kira-Isla/cloudpipe-macao-app</a>
+          </address>
+          <div className="mt-4 pt-5 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-400">
             <p>由 <a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a> 驅動 · 數據更新：每日</p>
             <p>© 2026 CloudPipe AI · <a href="https://creativecommons.org/licenses/by/4.0/" className="hover:underline" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p>
           </div>

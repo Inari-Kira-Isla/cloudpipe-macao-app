@@ -1,0 +1,14 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f4c81"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#c5a572"/>
+  <text x="600" y="260" text-anchor="middle" font-family="sans-serif" font-size="72" font-weight="bold" fill="white">澳門商戶百科</text>
+  <text x="600" y="330" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#c5a572">CloudPipe AI — 讓世界的 AI 看見澳門</text>
+  <text x="600" y="400" text-anchor="middle" font-family="sans-serif" font-size="22" fill="rgba(255,255,255,0.6)">350+ 商戶 · 20 行業 · Schema.org · CC BY 4.0</text>
+  <rect x="0" y="626" width="1200" height="4" fill="#c5a572"/>
+</svg>
