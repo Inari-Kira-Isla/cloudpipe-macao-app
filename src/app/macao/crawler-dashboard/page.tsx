@@ -7,10 +7,12 @@ interface Summary {
   period: { since: string; days: number }
   total_visits: number
   unique_bots: number
+  unique_sessions: number
   bots: Record<string, BotInfo>
   top_pages: Record<string, number>
   industries: Record<string, number>
   page_types: Record<string, number>
+  sites: Record<string, number>
 }
 interface Session {
   session_id: string; bot: string; owner: string
@@ -21,7 +23,18 @@ interface PageStat {
 }
 interface JourneyStep {
   ts: string; path: string; referer: string | null; page_type: string
-  industry: string | null; category: string | null
+  industry: string | null; category: string | null; site?: string
+}
+interface SpiderFlow {
+  flow: string; count: number; bots: string[]
+}
+interface SpiderSite {
+  site: string; total: number; spider_web: number; bots: string[]
+}
+interface SpiderWebData {
+  cross_site_sessions: number
+  flows: SpiderFlow[]
+  sites: SpiderSite[]
 }
 
 const API = '/api/v1/crawler-stats'
@@ -51,20 +64,23 @@ export default function CrawlerDashboard() {
   const [pages, setPages] = useState<PageStat[]>([])
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
-  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions'>('overview')
+  const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
+  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web'>('overview')
   const [loading, setLoading] = useState(true)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [sumRes, sesRes, pgRes] = await Promise.all([
+      const [sumRes, sesRes, pgRes, swRes] = await Promise.all([
         fetch(`${API}?view=summary&days=${days}`),
         fetch(`${API}?view=sessions&days=${days}&limit=50`),
         fetch(`${API}?view=pages&days=${days}&limit=50`),
+        fetch(`${API}?view=spider-web&days=${days}`),
       ])
       setSummary(await sumRes.json())
       setSessions(await sesRes.json())
       setPages(await pgRes.json())
+      setSpiderWeb(await swRes.json())
     } catch (e) {
       console.error(e)
     }
@@ -120,8 +136,8 @@ export default function CrawlerDashboard() {
             {[
               { label: '總訪問', value: summary.total_visits, color: '#111' },
               { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f' },
-              { label: '頁面類型', value: Object.keys(summary.page_types).length, color: '#4285f4' },
-              { label: '行業覆蓋', value: Object.keys(summary.industries).length, color: '#ff9900' },
+              { label: 'Sessions', value: summary.unique_sessions, color: '#4285f4' },
+              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900' },
             ].map(card => (
               <div key={card.label} style={{
                 background: '#fafafa', borderRadius: 10, padding: '16px 14px',
@@ -135,7 +151,7 @@ export default function CrawlerDashboard() {
 
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee' }}>
-            {(['overview', 'pages', 'sessions'] as const).map(t => (
+            {(['overview', 'pages', 'sessions', 'spider-web'] as const).map(t => (
               <button key={t} onClick={() => { setTab(t); setJourney(null) }}
                 style={{
                   padding: '8px 20px', border: 'none', cursor: 'pointer',
@@ -143,7 +159,7 @@ export default function CrawlerDashboard() {
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑' }[t]}
+                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網' }[t]}
               </button>
             ))}
           </div>
@@ -250,6 +266,98 @@ export default function CrawlerDashboard() {
             </div>
           )}
 
+          {/* Spider Web Tab */}
+          {tab === 'spider-web' && spiderWeb && (
+            <div>
+              {/* Cross-site summary cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+                <div style={{ background: '#f0f7ff', borderRadius: 10, padding: '16px 14px', border: '1px solid #c8ddf5' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#4285f4' }}>{spiderWeb.sites.length}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>追蹤站點</div>
+                </div>
+                <div style={{ background: '#f0fff4', borderRadius: 10, padding: '16px 14px', border: '1px solid #c8f5d5' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#10a37f' }}>{spiderWeb.cross_site_sessions}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>跨站 Sessions</div>
+                </div>
+                <div style={{ background: '#fff8f0', borderRadius: 10, padding: '16px 14px', border: '1px solid #f5dfc8' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#ff9900' }}>{spiderWeb.flows.length}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>跨站流向</div>
+                </div>
+              </div>
+
+              {/* Site breakdown */}
+              <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>各站 AI 爬蟲訪問量</h3>
+                {spiderWeb.sites.map(s => {
+                  const maxSite = Math.max(...spiderWeb.sites.map(x => x.total), 1)
+                  return (
+                    <div key={s.site} style={{ marginBottom: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                        <span>
+                          <strong>{s.site}</strong>
+                          {s.spider_web > 0 && (
+                            <span style={{ fontSize: 10, background: '#e8f5e9', color: '#2e7d32', padding: '1px 5px', borderRadius: 4, marginLeft: 6 }}>
+                              🕸 {s.spider_web} 跨站
+                            </span>
+                          )}
+                        </span>
+                        <span style={{ fontWeight: 600 }}>{s.total}</span>
+                      </div>
+                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
+                        <div style={{
+                          width: `${(s.total / maxSite) * 100}%`, height: '100%', borderRadius: 4,
+                          background: s.site === 'cloudpipe-macao-app' ? '#10a37f' : '#4285f4',
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
+                        {s.bots.map(b => (
+                          <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+                {spiderWeb.sites.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無跨站數據（需等待 Cloudflare Worker 部署）</p>}
+              </div>
+
+              {/* Cross-site flows */}
+              <div style={{ background: '#f0f7ff', borderRadius: 10, padding: 16, border: '1px solid #c8ddf5' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>跨站流量走向</h3>
+                {spiderWeb.flows.length === 0 && (
+                  <p style={{ color: '#999', fontSize: 13 }}>尚無跨站流向記錄。AI 爬蟲從一個站跟隨 llms.txt 連結到另一個站時會記錄在此。</p>
+                )}
+                {spiderWeb.flows.map((f, i) => (
+                  <div key={i} style={{
+                    padding: '10px 0', borderBottom: i < spiderWeb.flows.length - 1 ? '1px solid #dce8f5' : 'none',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 14 }}>
+                        {f.flow.split(' → ').map((site, j) => (
+                          <span key={j}>
+                            {j > 0 && <span style={{ color: '#4285f4', margin: '0 6px', fontWeight: 700 }}> → </span>}
+                            <code style={{
+                              background: j === 0 ? '#e8f5e9' : '#fff3e0',
+                              padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12,
+                            }}>{site}</code>
+                          </span>
+                        ))}
+                      </div>
+                      <span style={{ fontWeight: 700, fontSize: 16, color: '#4285f4' }}>{f.count}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                      {f.bots.map(b => (
+                        <span key={b} style={{
+                          fontSize: 10, background: '#e8e8e8', borderRadius: 4,
+                          padding: '1px 5px', color: '#555',
+                        }}>{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Sessions Tab */}
           {tab === 'sessions' && (
             <div>
@@ -332,8 +440,8 @@ export default function CrawlerDashboard() {
       )}
 
       <div style={{ marginTop: 32, padding: '12px 0', borderTop: '1px solid #eee', fontSize: 11, color: '#bbb', textAlign: 'center' }}>
-        CloudPipe AI 爬蟲追蹤 — 偵測 25+ AI Bot · 即時記錄 · Session 重建
-        <br />API: <code>/api/v1/crawler-stats?view=summary|bots|pages|sessions|journey</code>
+        CloudPipe AI 爬蟲追蹤 — 偵測 25+ AI Bot · 即時記錄 · Session 重建 · 蜘蛛網跨站追蹤
+        <br />API: <code>/api/v1/crawler-stats?view=summary|bots|pages|sessions|journey|spider-web</code>
       </div>
     </div>
   )

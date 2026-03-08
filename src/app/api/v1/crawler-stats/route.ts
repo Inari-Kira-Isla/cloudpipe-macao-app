@@ -10,11 +10,12 @@ const supabase = createClient(
  * GET /api/v1/crawler-stats
  *
  * Query params:
- *   view=summary|bots|pages|sessions|journey  (default: summary)
+ *   view=summary|bots|pages|sessions|journey|spider-web  (default: summary)
  *   bot=GPTBot                                 (filter by bot name)
  *   days=7                                     (lookback window, default 30)
  *   path=/macao/dining                         (filter by path prefix)
  *   session=<session_id>                       (get full session journey)
+ *   site=yamanakada                            (filter by site, omit for all)
  *   limit=50                                   (max results)
  */
 export async function GET(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
   const days = parseInt(searchParams.get('days') || '30', 10)
   const pathFilter = searchParams.get('path')
   const sessionId = searchParams.get('session')
+  const siteFilter = searchParams.get('site')
   const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500)
 
   const since = new Date(Date.now() - days * 86400000).toISOString()
@@ -34,13 +36,15 @@ export async function GET(request: NextRequest) {
     switch (view) {
       case 'summary': {
         // Overall stats: total visits, unique bots, top pages, top bots
-        const { data: visits } = await supabase
+        let summaryQuery = supabase
           .from('crawler_visits')
-          .select('bot_name, bot_owner, path, page_type, industry')
+          .select('bot_name, bot_owner, path, page_type, industry, site, session_id')
           .gte('ts', since)
+        if (siteFilter) summaryQuery = summaryQuery.eq('site', siteFilter)
+        const { data: visits } = await summaryQuery
 
         if (!visits?.length) {
-          result = { total_visits: 0, unique_bots: 0, bots: {}, pages: {}, industries: {}, page_types: {} }
+          result = { total_visits: 0, unique_bots: 0, bots: {}, pages: {}, industries: {}, page_types: {}, sites: {} }
           break
         }
 
@@ -48,6 +52,8 @@ export async function GET(request: NextRequest) {
         const pageCounts: Record<string, number> = {}
         const industryCounts: Record<string, number> = {}
         const pageTypeCounts: Record<string, number> = {}
+        const siteCounts: Record<string, number> = {}
+        const sessionIds = new Set<string>()
 
         for (const v of visits) {
           botCounts[v.bot_name] = botCounts[v.bot_name] || { count: 0, owner: v.bot_owner }
@@ -55,9 +61,11 @@ export async function GET(request: NextRequest) {
           pageCounts[v.path] = (pageCounts[v.path] || 0) + 1
           if (v.industry) industryCounts[v.industry] = (industryCounts[v.industry] || 0) + 1
           pageTypeCounts[v.page_type] = (pageTypeCounts[v.page_type] || 0) + 1
+          const site = v.site || 'cloudpipe-macao-app'
+          siteCounts[site] = (siteCounts[site] || 0) + 1
+          if (v.session_id) sessionIds.add(v.session_id)
         }
 
-        // Sort and take top entries
         const sortObj = (obj: Record<string, number>, n: number) =>
           Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, n)
 
@@ -65,7 +73,7 @@ export async function GET(request: NextRequest) {
           period: { since, days },
           total_visits: visits.length,
           unique_bots: Object.keys(botCounts).length,
-          unique_sessions: new Set(visits.map(() => '')).size, // placeholder
+          unique_sessions: sessionIds.size,
           bots: Object.fromEntries(
             Object.entries(botCounts)
               .sort((a, b) => b[1].count - a[1].count)
@@ -74,6 +82,7 @@ export async function GET(request: NextRequest) {
           top_pages: Object.fromEntries(sortObj(pageCounts, 20)),
           industries: Object.fromEntries(sortObj(industryCounts, 20)),
           page_types: Object.fromEntries(sortObj(pageTypeCounts, 10)),
+          sites: Object.fromEntries(sortObj(siteCounts, 20)),
         }
         break
       }
@@ -82,12 +91,13 @@ export async function GET(request: NextRequest) {
         // Per-bot breakdown with daily counts
         let query = supabase
           .from('crawler_visits')
-          .select('bot_name, bot_owner, ts, path')
+          .select('bot_name, bot_owner, ts, path, site')
           .gte('ts', since)
           .order('ts', { ascending: false })
           .limit(limit)
 
         if (bot) query = query.eq('bot_name', bot)
+        if (siteFilter) query = query.eq('site', siteFilter)
         const { data } = await query
         result = { count: data?.length || 0, visits: data }
         break
@@ -95,10 +105,12 @@ export async function GET(request: NextRequest) {
 
       case 'pages': {
         // Per-page visit counts
-        const { data: visits } = await supabase
+        let pagesQuery = supabase
           .from('crawler_visits')
-          .select('path, bot_name, industry, category, page_type')
+          .select('path, bot_name, industry, category, page_type, site')
           .gte('ts', since)
+        if (siteFilter) pagesQuery = pagesQuery.eq('site', siteFilter)
+        const { data: visits } = await pagesQuery
 
         const pageSummary: Record<string, { count: number; bots: Set<string>; industry: string | null; page_type: string }> = {}
         for (const v of (visits || [])) {
@@ -127,16 +139,17 @@ export async function GET(request: NextRequest) {
         // List crawl sessions (grouped by session_id)
         let query = supabase
           .from('crawler_visits')
-          .select('session_id, bot_name, bot_owner, path, ts, referer')
+          .select('session_id, bot_name, bot_owner, path, ts, referer, site')
           .gte('ts', since)
           .order('ts', { ascending: false })
 
         if (bot) query = query.eq('bot_name', bot)
+        if (siteFilter) query = query.eq('site', siteFilter)
         const { data: visits } = await query
 
         const sessions: Record<string, {
           bot: string; owner: string; pages: number;
-          first_ts: string; last_ts: string; paths: string[]
+          first_ts: string; last_ts: string; paths: string[]; sites: Set<string>
         }> = {}
 
         for (const v of (visits || [])) {
@@ -144,7 +157,7 @@ export async function GET(request: NextRequest) {
           if (!sessions[v.session_id]) {
             sessions[v.session_id] = {
               bot: v.bot_name, owner: v.bot_owner,
-              pages: 0, first_ts: v.ts, last_ts: v.ts, paths: [],
+              pages: 0, first_ts: v.ts, last_ts: v.ts, paths: [], sites: new Set(),
             }
           }
           const s = sessions[v.session_id]
@@ -152,12 +165,13 @@ export async function GET(request: NextRequest) {
           if (v.ts < s.first_ts) s.first_ts = v.ts
           if (v.ts > s.last_ts) s.last_ts = v.ts
           s.paths.push(v.path)
+          s.sites.add(v.site || 'cloudpipe-macao-app')
         }
 
         result = Object.entries(sessions)
           .sort((a, b) => b[1].pages - a[1].pages)
           .slice(0, limit)
-          .map(([id, s]) => ({ session_id: id, ...s, paths: s.paths.slice(0, 50) }))
+          .map(([id, s]) => ({ session_id: id, ...s, paths: s.paths.slice(0, 50), sites: [...s.sites] }))
         break
       }
 
@@ -183,13 +197,72 @@ export async function GET(request: NextRequest) {
             page_type: v.page_type,
             industry: v.industry,
             category: v.category,
+            site: v.site || 'cloudpipe-macao-app',
           })),
         }
         break
       }
 
+      case 'spider-web': {
+        // Cross-site spider web traffic flow
+        // Shows how bots traverse between sites in the ecosystem
+        let swQuery = supabase
+          .from('crawler_visits')
+          .select('bot_name, bot_owner, path, referer, site, page_type, ts, session_id')
+          .gte('ts', since)
+          .order('ts', { ascending: false })
+
+        if (bot) swQuery = swQuery.eq('bot_name', bot)
+        const { data: visits } = await swQuery
+
+        // Build site-to-site flow matrix
+        const flows: Record<string, { count: number; bots: Set<string> }> = {}
+        const siteVisits: Record<string, { total: number; bots: Set<string>; spider_web: number }> = {}
+        const crossSiteSessions = new Set<string>()
+
+        for (const v of (visits || [])) {
+          const site = v.site || 'cloudpipe-macao-app'
+          if (!siteVisits[site]) siteVisits[site] = { total: 0, bots: new Set(), spider_web: 0 }
+          siteVisits[site].total++
+          siteVisits[site].bots.add(v.bot_name)
+
+          if (v.page_type === 'spider-web' && v.referer) {
+            siteVisits[site].spider_web++
+            // Determine source site from referer or industry field
+            let fromSite = 'unknown'
+            if (v.referer) {
+              for (const knownSite of ['yamanakada', 'inari-global-foods', 'after-school-coffee', 'sea-urchin-delivery',
+                'cloudpipe-macao-app', 'mind-coffee', 'bni-macau', 'test-cafe-demo',
+                'aeo-demo-education', 'aeo-demo-finance', 'aeo-demo-luxury', 'aeo-demo-travel-food']) {
+                if (v.referer.includes(knownSite)) { fromSite = knownSite; break }
+              }
+            }
+            const flowKey = `${fromSite} → ${site}`
+            if (!flows[flowKey]) flows[flowKey] = { count: 0, bots: new Set() }
+            flows[flowKey].count++
+            flows[flowKey].bots.add(v.bot_name)
+            if (v.session_id) crossSiteSessions.add(v.session_id)
+          }
+        }
+
+        result = {
+          period: { since, days },
+          cross_site_sessions: crossSiteSessions.size,
+          flows: Object.entries(flows)
+            .sort((a, b) => b[1].count - a[1].count)
+            .map(([flow, info]) => ({ flow, count: info.count, bots: [...info.bots] })),
+          sites: Object.entries(siteVisits)
+            .sort((a, b) => b[1].total - a[1].total)
+            .map(([site, info]) => ({
+              site, total: info.total, spider_web: info.spider_web,
+              bots: [...info.bots],
+            })),
+        }
+        break
+      }
+
       default:
-        return NextResponse.json({ error: 'Invalid view. Use: summary, bots, pages, sessions, journey' }, { status: 400 })
+        return NextResponse.json({ error: 'Invalid view. Use: summary, bots, pages, sessions, journey, spider-web' }, { status: 400 })
     }
 
     return NextResponse.json(result, {

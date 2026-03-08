@@ -100,6 +100,7 @@ export async function middleware(request: NextRequest) {
       ip_hash: ipHash,
       session_id: sessionId,
       ua_raw: ua.slice(0, 500),
+      site: 'cloudpipe-macao-app',
       industry,
       category,
       page_type: pageType,
