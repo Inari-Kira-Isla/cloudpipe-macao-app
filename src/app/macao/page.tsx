@@ -31,7 +31,7 @@ const HOMEPAGE_FAQS = [
   },
   {
     q: '澳門商戶百科收錄了多少家商戶？',
-    a: '目前收錄超過 140 家澳門商戶，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、零售、科技等 16 個行業分類，並持續擴充中。',
+    a: '目前收錄超過 350 家澳門商戶，涵蓋餐飲美食、酒店住宿、景點文化、購物零售等 20 個行業大類、40+ 子分類，並持續擴充中。',
   },
   {
     q: 'CloudPipe 澳門商戶百科是免費的嗎？',
@@ -57,10 +57,10 @@ const HOMEPAGE_FAQS = [
 
 export const metadata: Metadata = {
   title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
-  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 80+ 家澳門商戶，涵蓋 20 個行業大類，120+ 子分類。Schema.org 結構化數據、FAQ、llms.txt，讓 ChatGPT、Perplexity、Gemini 準確回答澳門商戶問題。',
+  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家澳門商戶，涵蓋 20 個行業大類，40+ 子分類。Schema.org 結構化數據、FAQ、llms.txt，讓 ChatGPT、Perplexity、Gemini 準確回答澳門商戶問題。',
   openGraph: {
     title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
-    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 80+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
+    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
     type: 'website',
     locale: 'zh_TW',
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/macao`,
