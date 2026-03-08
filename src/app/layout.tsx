@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: '9EYAWnIRJ55Ccf3QicIn8s7d4GhYGU1rb9C8etIc200',
+  },
 };
 
 export default function RootLayout({
@@ -41,6 +44,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        {/* AI Crawler Tracker - 1x1 pixel */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://client-ai-tracker.inariglobal.workers.dev/cloudpipe-macao-app/pixel.gif"
+          alt=""
+          width={1}
+          height={1}
+          style={{ position: 'absolute', opacity: 0 }}
+        />
       </body>
     </html>
   );
