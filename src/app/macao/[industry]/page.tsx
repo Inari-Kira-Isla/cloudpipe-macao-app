@@ -184,11 +184,23 @@ export default async function IndustryPage({ params }: PageProps) {
           </div>
         </section>
 
+        {/* Section Quick Navigation */}
+        {content?.sections && content.sections.length > 0 && (
+          <nav className="mb-8 flex flex-wrap gap-2">
+            {content.sections.map((sec, i) => (
+              <a key={i} href={`#section-${i}`}
+                className="text-xs px-3 py-1.5 bg-[#e8f0fe] text-[#0f4c81] rounded-full hover:bg-[#0f4c81] hover:text-white transition-colors">
+                {sec.title.length > 15 ? sec.title.slice(0, 15) + '…' : sec.title}
+              </a>
+            ))}
+          </nav>
+        )}
+
         {/* Industry Content Sections */}
         {content?.sections && (
           <section className="mb-10 prose max-w-none">
             {content.sections.map((sec, i) => (
-              <div key={i} className="mb-8">
+              <div key={i} id={`section-${i}`} className="mb-8 scroll-mt-20">
                 <h2>{sec.title}</h2>
                 <p>{sec.content}</p>
               </div>
@@ -246,6 +258,31 @@ export default async function IndustryPage({ params }: PageProps) {
             ))}
           </div>
         </section>
+
+        {/* Related Industries */}
+        {(() => {
+          const related = INDUSTRIES.filter(i => i.slug !== slug && i.wave === industry.wave).slice(0, 4)
+          if (related.length === 0) return null
+          return (
+            <section className="mb-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="gold-line flex-1 max-w-[40px]"></div>
+                <h2 className="text-xl font-bold text-[#1a1a2e]">相關行業</h2>
+                <div className="gold-line flex-1 max-w-[40px]"></div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {related.map(r => (
+                  <a key={r.slug} href={`/macao/${r.slug}`}
+                    className="card-hover block bg-white border border-gray-200 rounded-xl p-5 text-center">
+                    <div className="text-2xl mb-2">{r.icon}</div>
+                    <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">{r.name_zh}</h3>
+                    <p className="text-xs text-gray-400">{r.name_en}</p>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )
+        })()}
 
         <footer className="text-center mt-16 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-400">
