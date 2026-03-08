@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Main building -->
+  <rect x="55" y="55" width="90" height="105" rx="3" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Roof accent -->
+  <path d="M50 55 L100 35 L150 55" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Door -->
+  <rect x="88" y="125" width="24" height="35" rx="2" fill="#c5a572" opacity="0.3"/>
+  <path d="M88 125 L88 160 M112 125 L112 160 M88 125 L112 125" fill="none" stroke="#c5a572" stroke-width="3"/>
+  <!-- Door handle -->
+  <circle cx="106" cy="143" r="2" fill="#c5a572"/>
+  <!-- Windows row 1 -->
+  <rect x="68" y="68" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <rect x="92" y="68" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <rect x="116" y="68" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Windows row 2 -->
+  <rect x="68" y="95" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <rect x="92" y="95" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <rect x="116" y="95" width="16" height="16" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Star on top -->
+  <polygon points="100,28 102,32 106,32 103,35 104,39 100,37 96,39 97,35 94,32 98,32" fill="#c5a572"/>
+</svg>

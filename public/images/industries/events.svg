@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Calendar body -->
+  <rect x="42" y="52" width="116" height="110" rx="8" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Calendar header bar -->
+  <path d="M42 52 L42 78 Q42 78 42 78 L158 78 L158 52 Q158 44 150 44 L50 44 Q42 44 42 52 Z" fill="#c5a572" opacity="0.25"/>
+  <line x1="42" y1="78" x2="158" y2="78" stroke="#c5a572" stroke-width="3"/>
+  <!-- Calendar rings -->
+  <line x1="75" y1="38" x2="75" y2="55" stroke="#c5a572" stroke-width="5" stroke-linecap="round"/>
+  <line x1="125" y1="38" x2="125" y2="55" stroke="#c5a572" stroke-width="5" stroke-linecap="round"/>
+  <!-- Grid dots for dates -->
+  <circle cx="65" cy="95" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="87" cy="95" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="65" cy="115" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="87" cy="115" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="65" cy="135" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="87" cy="135" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="135" cy="95" r="3" fill="#c5a572" opacity="0.4"/>
+  <circle cx="135" cy="115" r="3" fill="#c5a572" opacity="0.4"/>
+  <!-- Star (featured event) -->
+  <polygon points="112,108 117,120 130,121 120,129 123,142 112,135 101,142 104,129 94,121 107,120" fill="#c5a572" opacity="0.85"/>
+</svg>

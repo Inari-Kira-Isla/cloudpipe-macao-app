@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Crate/box -->
+  <path d="M45 90 L45 155 Q45 160 50 160 L150 160 Q155 160 155 155 L155 90" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Box lid -->
+  <path d="M38 90 L100 70 L162 90 L100 100 Z" fill="#c5a572" opacity="0.15" stroke="#c5a572" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- Box slats -->
+  <line x1="45" y1="115" x2="155" y2="115" stroke="#c5a572" stroke-width="2" opacity="0.4"/>
+  <line x1="45" y1="138" x2="155" y2="138" stroke="#c5a572" stroke-width="2" opacity="0.4"/>
+  <!-- Fish -->
+  <path d="M70 125 Q85 115 105 120 Q115 122 120 130 Q115 138 105 140 Q85 145 70 135 Q75 130 70 125 Z" fill="none" stroke="#c5a572" stroke-width="3"/>
+  <!-- Fish tail -->
+  <path d="M70 125 L58 118 L58 142 L70 135" fill="none" stroke="#c5a572" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Fish eye -->
+  <circle cx="108" cy="128" r="3" fill="#c5a572"/>
+  <!-- Fish fin -->
+  <path d="M88 122 Q92 112 96 122" fill="none" stroke="#c5a572" stroke-width="2" stroke-linecap="round"/>
+  <!-- Small fish 2 (background) -->
+  <path d="M120 142 Q128 138 135 140 Q138 142 135 144 Q128 146 120 142 Z" fill="#c5a572" opacity="0.4"/>
+  <!-- Ice/cold marks -->
+  <circle cx="140" cy="100" r="2" fill="#c5a572" opacity="0.3"/>
+  <circle cx="60" cy="98" r="2" fill="#c5a572" opacity="0.3"/>
+  <circle cx="100" cy="82" r="2" fill="#c5a572" opacity="0.3"/>
+</svg>

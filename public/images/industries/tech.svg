@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Chip body -->
+  <rect x="60" y="60" width="80" height="80" rx="6" fill="#c5a572" opacity="0.1" stroke="#c5a572" stroke-width="3.5"/>
+  <!-- Inner chip die -->
+  <rect x="78" y="78" width="44" height="44" rx="3" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="2"/>
+  <!-- Circuit pattern inside die -->
+  <path d="M88 88 L88 95 L100 95 L100 88" fill="none" stroke="#c5a572" stroke-width="1.5" opacity="0.6"/>
+  <path d="M105 95 L112 95 L112 105 L105 105" fill="none" stroke="#c5a572" stroke-width="1.5" opacity="0.6"/>
+  <path d="M88 105 L95 105 L95 112" fill="none" stroke="#c5a572" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="100" cy="105" r="3" fill="#c5a572" opacity="0.5"/>
+  <!-- Top pins -->
+  <line x1="75" y1="45" x2="75" y2="60" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="90" y1="45" x2="90" y2="60" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="110" y1="45" x2="110" y2="60" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="125" y1="45" x2="125" y2="60" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Bottom pins -->
+  <line x1="75" y1="140" x2="75" y2="155" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="90" y1="140" x2="90" y2="155" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="110" y1="140" x2="110" y2="155" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="125" y1="140" x2="125" y2="155" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Left pins -->
+  <line x1="45" y1="75" x2="60" y2="75" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="90" x2="60" y2="90" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="110" x2="60" y2="110" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="125" x2="60" y2="125" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Right pins -->
+  <line x1="140" y1="75" x2="155" y2="75" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="140" y1="90" x2="155" y2="90" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="140" y1="110" x2="155" y2="110" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="140" y1="125" x2="155" y2="125" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Trace lines from pins -->
+  <path d="M75 45 L75 38 L50 38" stroke="#c5a572" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+  <path d="M155 75 L162 75 L162 50" stroke="#c5a572" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+  <path d="M125 155 L125 162 L150 162" stroke="#c5a572" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+  <path d="M45 125 L38 125 L38 155" stroke="#c5a572" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+</svg>

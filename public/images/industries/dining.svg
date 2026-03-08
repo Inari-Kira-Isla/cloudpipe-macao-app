@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Bowl -->
+  <path d="M60 110 Q60 88 100 85 Q140 88 140 110 L135 130 Q130 142 100 145 Q70 142 65 130 Z" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Bowl base -->
+  <path d="M88 145 L88 155 Q88 160 100 160 Q112 160 112 155 L112 145" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Left chopstick -->
+  <path d="M72 45 L90 100" fill="none" stroke="#c5a572" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Right chopstick -->
+  <path d="M128 45 L110 100" fill="none" stroke="#c5a572" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Steam lines -->
+  <path d="M85 72 Q82 62 85 52" fill="none" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M100 68 Q97 58 100 48" fill="none" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M115 72 Q112 62 115 52" fill="none" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+</svg>

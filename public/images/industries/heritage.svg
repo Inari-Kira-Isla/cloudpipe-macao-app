@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Classical arch -->
+  <path d="M48 160 L48 55 Q48 48 55 48 L65 48 L65 160" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M135 160 L135 55 Q135 48 142 48 L152 48 L152 160" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Arch keystone -->
+  <path d="M65 55 Q65 42 100 35 Q135 42 135 55" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Inner arch -->
+  <path d="M65 160 L65 85 Q65 60 100 55 Q135 60 135 85 L135 160" fill="#c5a572" opacity="0.08" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Keystone block -->
+  <path d="M94 38 L106 38 L108 50 L92 50 Z" fill="#c5a572" opacity="0.5"/>
+  <!-- Column fluting (left) -->
+  <line x1="53" y1="60" x2="53" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <line x1="57" y1="60" x2="57" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <line x1="61" y1="60" x2="61" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <!-- Column fluting (right) -->
+  <line x1="139" y1="60" x2="139" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <line x1="143" y1="60" x2="143" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <line x1="147" y1="60" x2="147" y2="155" stroke="#c5a572" stroke-width="1" opacity="0.3"/>
+  <!-- Capital decorations -->
+  <path d="M45 52 L68 52" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <path d="M132 52 L155 52" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Base -->
+  <rect x="35" y="158" width="130" height="6" rx="2" fill="#c5a572"/>
+  <!-- Inner arch detail -->
+  <path d="M80 160 L80 100 Q80 78 100 72 Q120 78 120 100 L120 160" fill="none" stroke="#c5a572" stroke-width="1.5" opacity="0.3"/>
+</svg>

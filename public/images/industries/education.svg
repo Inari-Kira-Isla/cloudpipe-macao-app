@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Open book - left page -->
+  <path d="M100 75 Q80 70 50 72 L50 148 Q80 145 100 150 Z" fill="#c5a572" opacity="0.12" stroke="#c5a572" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- Open book - right page -->
+  <path d="M100 75 Q120 70 150 72 L150 148 Q120 145 100 150 Z" fill="#c5a572" opacity="0.12" stroke="#c5a572" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- Book spine -->
+  <line x1="100" y1="75" x2="100" y2="150" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Text lines left page -->
+  <line x1="62" y1="90" x2="92" y2="88" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="60" y1="100" x2="93" y2="98" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="58" y1="110" x2="94" y2="108" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="57" y1="120" x2="95" y2="118" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="56" y1="130" x2="95" y2="128" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <!-- Text lines right page -->
+  <line x1="108" y1="88" x2="138" y2="90" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="107" y1="98" x2="140" y2="100" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="106" y1="108" x2="142" y2="110" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="105" y1="118" x2="143" y2="120" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <line x1="105" y1="128" x2="144" y2="130" stroke="#c5a572" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <!-- Graduation cap -->
+  <polygon points="100,35 140,50 100,62 60,50" fill="#c5a572" opacity="0.7" stroke="#c5a572" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Cap top -->
+  <rect x="95" y="32" width="10" height="6" rx="1" fill="#c5a572"/>
+  <!-- Tassel -->
+  <line x1="140" y1="50" x2="145" y2="68" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="145" cy="70" r="3" fill="#c5a572"/>
+</svg>

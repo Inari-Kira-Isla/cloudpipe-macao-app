@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Diamond gem - top facet -->
+  <polygon points="100,38 130,70 100,58 70,70" fill="#c5a572" opacity="0.35" stroke="#c5a572" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Diamond gem - crown left -->
+  <polygon points="55,70 70,70 100,58 100,70" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Diamond gem - crown right -->
+  <polygon points="145,70 130,70 100,58 100,70" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Diamond crown band -->
+  <polygon points="55,70 145,70 130,70 100,70 70,70" fill="none" stroke="#c5a572" stroke-width="3"/>
+  <!-- Diamond pavilion - left -->
+  <polygon points="55,70 100,155 100,70" fill="#c5a572" opacity="0.15" stroke="#c5a572" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Diamond pavilion - right -->
+  <polygon points="145,70 100,155 100,70" fill="#c5a572" opacity="0.25" stroke="#c5a572" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Internal facet lines -->
+  <line x1="78" y1="70" x2="100" y2="155" stroke="#c5a572" stroke-width="1.5" opacity="0.3"/>
+  <line x1="122" y1="70" x2="100" y2="155" stroke="#c5a572" stroke-width="1.5" opacity="0.3"/>
+  <!-- Sparkle effects -->
+  <path d="M148 42 L152 48 L158 42 L152 36 Z" fill="#c5a572" opacity="0.6"/>
+  <path d="M42 50 L44 54 L48 50 L44 46 Z" fill="#c5a572" opacity="0.4"/>
+  <path d="M155 58 L156 61 L159 58 L156 55 Z" fill="#c5a572" opacity="0.35"/>
+  <circle cx="52" cy="38" r="1.5" fill="#c5a572" opacity="0.4"/>
+  <circle cx="160" cy="48" r="1" fill="#c5a572" opacity="0.3"/>
+</svg>

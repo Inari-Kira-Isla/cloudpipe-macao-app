@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Pagoda gate / torii-style temple gate -->
+  <!-- Top roof -->
+  <path d="M40 62 Q45 50 100 45 Q155 50 160 62" fill="none" stroke="#c5a572" stroke-width="4" stroke-linecap="round"/>
+  <path d="M42 62 L158 62" stroke="#c5a572" stroke-width="4" stroke-linecap="round"/>
+  <!-- Curved roof ends -->
+  <path d="M40 62 Q35 58 32 52" fill="none" stroke="#c5a572" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M160 62 Q165 58 168 52" fill="none" stroke="#c5a572" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Second tier roof -->
+  <path d="M50 85 Q55 75 100 72 Q145 75 150 85" fill="none" stroke="#c5a572" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M52 85 L148 85" stroke="#c5a572" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M50 85 Q46 82 43 77" fill="none" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <path d="M150 85 Q154 82 157 77" fill="none" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Pillars -->
+  <rect x="62" y="85" width="7" height="75" rx="1" fill="#c5a572"/>
+  <rect x="131" y="85" width="7" height="75" rx="1" fill="#c5a572"/>
+  <!-- Cross beam -->
+  <rect x="62" y="105" width="76" height="5" rx="1" fill="#c5a572"/>
+  <!-- Base -->
+  <rect x="52" y="157" width="96" height="5" rx="2" fill="#c5a572"/>
+  <!-- Center decoration -->
+  <circle cx="100" cy="130" r="10" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <circle cx="100" cy="130" r="4" fill="#c5a572"/>
+</svg>

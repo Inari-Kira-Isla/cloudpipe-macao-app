@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- House roof -->
+  <path d="M30 95 L100 40 L170 95" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- House body -->
+  <rect x="48" y="92" width="104" height="68" rx="3" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Door -->
+  <rect x="85" y="118" width="30" height="42" rx="3" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="3"/>
+  <!-- Door handle -->
+  <circle cx="108" cy="140" r="2.5" fill="#c5a572"/>
+  <!-- Window left -->
+  <rect x="56" y="102" width="22" height="22" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <line x1="67" y1="102" x2="67" y2="124" stroke="#c5a572" stroke-width="1.5"/>
+  <line x1="56" y1="113" x2="78" y2="113" stroke="#c5a572" stroke-width="1.5"/>
+  <!-- Window right -->
+  <rect x="122" y="102" width="22" height="22" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <line x1="133" y1="102" x2="133" y2="124" stroke="#c5a572" stroke-width="1.5"/>
+  <line x1="122" y1="113" x2="144" y2="113" stroke="#c5a572" stroke-width="1.5"/>
+  <!-- Chimney -->
+  <rect x="130" y="48" width="14" height="30" rx="2" fill="none" stroke="#c5a572" stroke-width="3"/>
+  <!-- Key -->
+  <circle cx="50" cy="155" r="10" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <circle cx="50" cy="155" r="4" fill="none" stroke="#c5a572" stroke-width="1.5"/>
+  <line x1="60" y1="155" x2="82" y2="155" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="75" y1="155" x2="75" y2="162" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="82" y1="155" x2="82" y2="162" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

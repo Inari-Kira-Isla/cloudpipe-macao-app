@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Playing card (back card) -->
+  <rect x="85" y="38" width="65" height="90" rx="6" fill="none" stroke="#c5a572" stroke-width="3" transform="rotate(8, 117, 83)"/>
+  <rect x="89" y="42" width="57" height="82" rx="3" fill="#c5a572" opacity="0.1" transform="rotate(8, 117, 83)"/>
+  <!-- Playing card (front card - Ace) -->
+  <rect x="50" y="48" width="65" height="90" rx="6" fill="none" stroke="#c5a572" stroke-width="3.5" transform="rotate(-5, 82, 93)"/>
+  <!-- Spade symbol on card -->
+  <path d="M82 80 Q82 68 72 68 Q62 68 62 80 Q62 90 82 100 Q102 90 102 80 Q102 68 92 68 Q82 68 82 80 Z" fill="#c5a572" transform="rotate(-5, 82, 93)" opacity="0.7"/>
+  <line x1="82" y1="96" x2="82" y2="108" stroke="#c5a572" stroke-width="2.5" transform="rotate(-5, 82, 93)"/>
+  <!-- Dice -->
+  <rect x="108" y="120" width="48" height="48" rx="8" fill="none" stroke="#c5a572" stroke-width="3.5" transform="rotate(12, 132, 144)"/>
+  <!-- Dice dots (showing 5) -->
+  <circle cx="120" cy="132" r="3.5" fill="#c5a572" transform="rotate(12, 132, 144)"/>
+  <circle cx="144" cy="132" r="3.5" fill="#c5a572" transform="rotate(12, 132, 144)"/>
+  <circle cx="132" cy="144" r="3.5" fill="#c5a572" transform="rotate(12, 132, 144)"/>
+  <circle cx="120" cy="156" r="3.5" fill="#c5a572" transform="rotate(12, 132, 144)"/>
+  <circle cx="144" cy="156" r="3.5" fill="#c5a572" transform="rotate(12, 132, 144)"/>
+  <!-- Second dice (partial, behind) -->
+  <rect x="42" y="122" width="44" height="44" rx="7" fill="none" stroke="#c5a572" stroke-width="2.5" opacity="0.5" transform="rotate(-8, 64, 144)"/>
+  <circle cx="54" cy="134" r="3" fill="#c5a572" opacity="0.5" transform="rotate(-8, 64, 144)"/>
+  <circle cx="74" cy="154" r="3" fill="#c5a572" opacity="0.5" transform="rotate(-8, 64, 144)"/>
+</svg>

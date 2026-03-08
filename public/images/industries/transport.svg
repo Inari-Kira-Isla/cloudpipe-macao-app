@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Bus body -->
+  <rect x="38" y="68" width="124" height="72" rx="10" fill="none" stroke="#c5a572" stroke-width="4"/>
+  <!-- Bus roof -->
+  <path d="M52 68 L52 58 Q52 52 58 52 L142 52 Q148 52 148 58 L148 68" fill="none" stroke="#c5a572" stroke-width="3.5"/>
+  <!-- Windshield -->
+  <rect x="48" y="78" width="35" height="30" rx="4" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Side windows -->
+  <rect x="92" y="78" width="22" height="24" rx="3" fill="#c5a572" opacity="0.15" stroke="#c5a572" stroke-width="2.5"/>
+  <rect x="120" y="78" width="22" height="24" rx="3" fill="#c5a572" opacity="0.15" stroke="#c5a572" stroke-width="2.5"/>
+  <!-- Door -->
+  <rect x="48" y="110" width="20" height="30" rx="2" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <line x1="58" y1="110" x2="58" y2="140" stroke="#c5a572" stroke-width="2"/>
+  <!-- Bumper -->
+  <line x1="42" y1="140" x2="158" y2="140" stroke="#c5a572" stroke-width="3"/>
+  <!-- Wheels -->
+  <circle cx="75" cy="145" r="14" fill="#1a1a2e" stroke="#c5a572" stroke-width="4"/>
+  <circle cx="75" cy="145" r="5" fill="#c5a572" opacity="0.5"/>
+  <circle cx="138" cy="145" r="14" fill="#1a1a2e" stroke="#c5a572" stroke-width="4"/>
+  <circle cx="138" cy="145" r="5" fill="#c5a572" opacity="0.5"/>
+  <!-- Headlight -->
+  <rect x="152" y="85" width="10" height="8" rx="2" fill="#c5a572" opacity="0.6"/>
+  <!-- Route display -->
+  <rect x="62" y="56" width="36" height="10" rx="2" fill="#c5a572" opacity="0.3"/>
+</svg>

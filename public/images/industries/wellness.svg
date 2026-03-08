@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Heart shape -->
+  <path d="M100 155 Q55 120 45 90 Q38 68 55 55 Q72 42 90 55 Q96 60 100 68 Q104 60 110 55 Q128 42 145 55 Q162 68 155 90 Q145 120 100 155 Z" fill="#c5a572" opacity="0.15" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Cross (health plus) - vertical -->
+  <rect x="93" y="78" width="14" height="48" rx="3" fill="#c5a572" opacity="0.85"/>
+  <!-- Cross (health plus) - horizontal -->
+  <rect x="76" y="95" width="48" height="14" rx="3" fill="#c5a572" opacity="0.85"/>
+  <!-- Pulse line -->
+  <path d="M38 165 L70 165 L78 155 L86 175 L94 148 L102 172 L108 165 L162 165" fill="none" stroke="#c5a572" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+</svg>

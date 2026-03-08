@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Newspaper body -->
+  <rect x="38" y="42" width="110" height="120" rx="5" fill="none" stroke="#c5a572" stroke-width="3.5"/>
+  <!-- Folded edge -->
+  <path d="M148 52 Q158 52 158 62 L158 152 Q158 162 148 162" fill="none" stroke="#c5a572" stroke-width="3.5"/>
+  <line x1="148" y1="42" x2="148" y2="162" stroke="#c5a572" stroke-width="2" opacity="0.3"/>
+  <!-- Headline -->
+  <rect x="50" y="55" width="86" height="12" rx="2" fill="#c5a572" opacity="0.7"/>
+  <!-- Sub headline -->
+  <rect x="50" y="73" width="60" height="5" rx="1" fill="#c5a572" opacity="0.35"/>
+  <!-- Image placeholder -->
+  <rect x="50" y="86" width="38" height="32" rx="3" fill="#c5a572" opacity="0.2" stroke="#c5a572" stroke-width="2"/>
+  <!-- Mountain icon in image -->
+  <path d="M55 112 L65 98 L72 105 L82 92 L88 112" fill="none" stroke="#c5a572" stroke-width="1.5" opacity="0.5"/>
+  <!-- Text lines -->
+  <line x1="96" y1="90" x2="136" y2="90" stroke="#c5a572" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  <line x1="96" y1="98" x2="136" y2="98" stroke="#c5a572" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  <line x1="96" y1="106" x2="136" y2="106" stroke="#c5a572" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  <line x1="96" y1="114" x2="125" y2="114" stroke="#c5a572" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  <!-- Lower text columns -->
+  <line x1="50" y1="128" x2="90" y2="128" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="50" y1="136" x2="90" y2="136" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="50" y1="144" x2="90" y2="144" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="50" y1="152" x2="75" y2="152" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="98" y1="128" x2="136" y2="128" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="98" y1="136" x2="136" y2="136" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="98" y1="144" x2="136" y2="144" stroke="#c5a572" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <!-- Broadcast signal arcs -->
+  <path d="M155 38 Q165 38 165 48" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.4"/>
+  <path d="M155 32 Q172 32 172 48" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.3"/>
+  <circle cx="155" cy="45" r="2.5" fill="#c5a572" opacity="0.5"/>
+</svg>

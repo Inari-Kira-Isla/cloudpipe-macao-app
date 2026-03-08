@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Dome -->
+  <path d="M70 78 Q70 45 100 38 Q130 45 130 78" fill="#c5a572" opacity="0.1" stroke="#c5a572" stroke-width="3.5"/>
+  <!-- Dome finial/spire -->
+  <line x1="100" y1="38" x2="100" y2="26" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Flag -->
+  <path d="M100 26 L125 32 L100 40" fill="#c5a572" opacity="0.5"/>
+  <!-- Dome band -->
+  <line x1="70" y1="78" x2="130" y2="78" stroke="#c5a572" stroke-width="3"/>
+  <!-- Main building body -->
+  <rect x="38" y="78" width="124" height="72" rx="3" fill="none" stroke="#c5a572" stroke-width="3.5"/>
+  <!-- Entrance portico -->
+  <rect x="75" y="78" width="50" height="72" rx="2" fill="none" stroke="#c5a572" stroke-width="2"/>
+  <!-- Portico columns -->
+  <line x1="82" y1="85" x2="82" y2="145" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="85" x2="100" y2="145" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <line x1="118" y1="85" x2="118" y2="145" stroke="#c5a572" stroke-width="3" stroke-linecap="round"/>
+  <!-- Portico top beam -->
+  <rect x="75" y="82" width="50" height="5" rx="1" fill="#c5a572" opacity="0.5"/>
+  <!-- Windows left wing -->
+  <rect x="46" y="90" width="18" height="14" rx="2" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.7"/>
+  <rect x="46" y="115" width="18" height="14" rx="2" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.7"/>
+  <!-- Windows right wing -->
+  <rect x="136" y="90" width="18" height="14" rx="2" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.7"/>
+  <rect x="136" y="115" width="18" height="14" rx="2" fill="none" stroke="#c5a572" stroke-width="2" opacity="0.7"/>
+  <!-- Steps -->
+  <rect x="70" y="150" width="60" height="5" rx="1" fill="#c5a572" opacity="0.5"/>
+  <rect x="65" y="155" width="70" height="5" rx="1" fill="#c5a572" opacity="0.4"/>
+  <rect x="60" y="160" width="80" height="5" rx="1" fill="#c5a572" opacity="0.3"/>
+</svg>

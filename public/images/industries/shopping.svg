@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#1a1a2e"/>
+  <!-- Shopping bag body -->
+  <path d="M58 78 L55 155 Q55 162 62 162 L138 162 Q145 162 145 155 L142 78 Q142 72 136 72 L64 72 Q58 72 58 78 Z" fill="none" stroke="#c5a572" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Bag handles -->
+  <path d="M78 72 L78 58 Q78 42 100 42 Q122 42 122 58 L122 72" fill="none" stroke="#c5a572" stroke-width="4" stroke-linecap="round"/>
+  <!-- Decorative fold lines -->
+  <path d="M58 85 L142 85" stroke="#c5a572" stroke-width="2" opacity="0.4"/>
+  <!-- Diamond decoration on bag -->
+  <polygon points="100,105 112,120 100,135 88,120" fill="none" stroke="#c5a572" stroke-width="2.5"/>
+  <polygon points="100,112 106,120 100,128 94,120" fill="#c5a572" opacity="0.4"/>
+</svg>
