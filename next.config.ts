@@ -2,41 +2,67 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async redirects() {
-    // Old flat URLs → new industry-prefixed URLs (301 permanent)
-    const categoryToIndustry: Record<string, string> = {
+    const redirects = []
+
+    // ── Phase 2 → Phase 3: Old industry slug renames ──
+    const industryRenames: [string, string][] = [
+      ['food-trade', 'food-supply'],
+      ['hospitality', 'hotels'],
+      ['lifestyle', 'shopping'],
+      ['services', 'professional-services'],
+      ['tourism', 'attractions'],
+    ]
+    for (const [old, dest] of industryRenames) {
+      redirects.push({ source: `/macao/${old}`, destination: `/macao/${dest}`, permanent: true })
+    }
+
+    // ── Phase 2 → Phase 3: Categories that moved to different industries ──
+    const categoryMoves: [string, string, string, string][] = [
+      // [old-industry, category, new-industry, new-category]
+      ['food-trade', 'food-import', 'food-supply', 'food-import'],
+      ['food-trade', 'food-delivery', 'food-supply', 'food-delivery'],
+      ['hospitality', 'hotel', 'hotels', 'hotel'],
+      ['hospitality', 'entertainment', 'gaming', 'entertainment'],
+      ['lifestyle', 'retail', 'shopping', 'retail'],
+      ['lifestyle', 'beauty', 'wellness', 'beauty'],
+      ['services', 'education', 'education', 'education'],
+      ['services', 'professional', 'professional-services', 'professional'],
+      ['services', 'tech', 'tech', 'tech'],
+      ['tourism', 'tourism', 'attractions', 'tourism'],
+      ['dining', 'bar', 'nightlife', 'bar'],
+    ]
+    for (const [oldInd, cat, newInd, newCat] of categoryMoves) {
+      // Category page
+      redirects.push({ source: `/macao/${oldInd}/${cat}`, destination: `/macao/${newInd}/${newCat}`, permanent: true })
+      // Merchant pages under category
+      redirects.push({ source: `/macao/${oldInd}/${cat}/:slug`, destination: `/macao/${newInd}/${newCat}/:slug`, permanent: true })
+    }
+
+    // ── Phase 1 → Phase 3: Original flat category URLs ──
+    // Skip categories whose slug conflicts with new industry slugs (education, tech)
+    const flatCategoryMap: Record<string, string> = {
       restaurant: 'dining',
       japanese: 'dining',
       portuguese: 'dining',
       cafe: 'dining',
-      bar: 'dining',
       bakery: 'dining',
-      'food-import': 'food-trade',
-      'food-delivery': 'food-trade',
-      hotel: 'hospitality',
-      entertainment: 'hospitality',
-      retail: 'lifestyle',
-      beauty: 'lifestyle',
-      education: 'services',
-      professional: 'services',
-      tech: 'services',
-      tourism: 'tourism',
+      bar: 'nightlife',
+      'food-import': 'food-supply',
+      'food-delivery': 'food-supply',
+      hotel: 'hotels',
+      entertainment: 'gaming',
+      retail: 'shopping',
+      beauty: 'wellness',
+      professional: 'professional-services',
+    }
+    for (const [cat, ind] of Object.entries(flatCategoryMap)) {
+      redirects.push({ source: `/macao/${cat}`, destination: `/macao/${ind}/${cat}`, permanent: true })
+      redirects.push({ source: `/macao/${cat}/:slug`, destination: `/macao/${ind}/${cat}/:slug`, permanent: true })
     }
 
-    const redirects = []
-    for (const [cat, ind] of Object.entries(categoryToIndustry)) {
-      // /macao/japanese → /macao/dining/japanese
-      redirects.push({
-        source: `/macao/${cat}`,
-        destination: `/macao/${ind}/${cat}`,
-        permanent: true,
-      })
-      // /macao/japanese/:slug → /macao/dining/japanese/:slug
-      redirects.push({
-        source: `/macao/${cat}/:slug`,
-        destination: `/macao/${ind}/${cat}/:slug`,
-        permanent: true,
-      })
-    }
+    // Special: /macao/tourism/:slug (Phase 1 flat merchant pages, after specific tourism/tourism redirect above)
+    redirects.push({ source: `/macao/tourism/:slug`, destination: `/macao/attractions/tourism/:slug`, permanent: true })
+
     return redirects
   },
 };
