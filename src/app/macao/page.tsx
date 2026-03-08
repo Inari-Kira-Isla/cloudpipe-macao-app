@@ -267,24 +267,28 @@ export default async function MacaoIndexPage() {
           </p>
 
           {/* Industry cards grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
             {INDUSTRIES.map(ind => {
               const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
               const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
               return (
                 <a key={ind.slug} href={`/macao/${ind.slug}`}
-                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
+                  className="group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                   <img
-                    src={`/images/industries/${ind.slug}.png`}
+                    src={`/images/industries/${ind.slug}-hero.jpg`}
                     alt={ind.name_zh}
-                    width={56}
-                    height={56}
-                    className="w-14 h-14 mx-auto mb-2 rounded-lg"
+                    width={400}
+                    height={300}
+                    className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
-                  <h3 className="font-bold text-[#1a1a2e] text-sm mb-1">{ind.name_zh}</h3>
-                  <p className="text-xs text-gray-400">{ind.name_en}</p>
-                  {indTotal > 0 && <p className="text-xs text-[#0f4c81] mt-1 font-medium">{indTotal} 家商戶</p>}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                    <h3 className="font-bold text-base mb-0.5 drop-shadow-lg">{ind.icon} {ind.name_zh}</h3>
+                    <p className="text-xs text-white/80">{ind.name_en}</p>
+                    {indTotal > 0 && <p className="text-xs text-amber-300 font-medium mt-0.5">{indTotal} 家商戶</p>}
+                  </div>
                 </a>
               )
             })}
@@ -297,7 +301,7 @@ export default async function MacaoIndexPage() {
             return (
               <div key={ind.slug} className="mb-6">
                 <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
-                  <img src={`/images/industries/${ind.slug}.png`} alt={ind.name_zh} width={28} height={28} className="w-7 h-7 rounded" />
+                  <img src={`/images/industries/${ind.slug}-hero.jpg`} alt={ind.name_zh} width={28} height={28} className="w-7 h-7 rounded object-cover" />
                   <h3 className="font-bold text-[#1a1a2e] group-hover:text-[#0f4c81] transition-colors">{ind.name_zh}</h3>
                   <span className="text-xs text-gray-400">{ind.name_en} · {indTotal} 家</span>
                 </a>
