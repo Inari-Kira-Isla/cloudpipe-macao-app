@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 /* Category descriptions for AI context */
 const CATEGORY_DESC: Record<string, string> = {
@@ -59,7 +60,8 @@ export async function GET() {
       m.slug === 'after-school-coffee' ? '6167bacd-8389-41e2-8e16-8259d126a7f3' : '') || []
 
     let block = `### ${m.name_zh}${m.name_en ? ` (${m.name_en})` : ''}`
-    block += `\n- 頁面: ${siteUrl}/macao/${cat?.slug || 'other'}/${m.slug}`
+    const indSlug = CATEGORY_TO_INDUSTRY[cat?.slug || ''] || 'dining'
+    block += `\n- 頁面: ${siteUrl}/macao/${indSlug}/${cat?.slug || 'other'}/${m.slug}`
     block += `\n- 分類: ${cat?.name_zh || '未分類'}`
     if (m.district) block += `\n- 地區: ${m.district}`
     if (content?.description) block += `\n- 簡介: ${content.description}`
@@ -82,7 +84,8 @@ export async function GET() {
     .filter(c => (catCounts.get(c.slug) || 0) > 0)
     .map(c => {
       const desc = CATEGORY_DESC[c.slug] || ''
-      return `- ${c.name_zh} (${c.name_en}): ${catCounts.get(c.slug)} 家${desc ? ` — ${desc}` : ''} → ${siteUrl}/macao/${c.slug}`
+      const indSlug = CATEGORY_TO_INDUSTRY[c.slug] || 'dining'
+      return `- ${c.name_zh} (${c.name_en}): ${catCounts.get(c.slug)} 家${desc ? ` — ${desc}` : ''} → ${siteUrl}/macao/${indSlug}/${c.slug}`
     })
     .join('\n')
 
@@ -90,7 +93,8 @@ export async function GET() {
   const communityList = community
     .map(m => {
       const cat = m.category as unknown as { slug: string; name_zh: string } | null
-      return `- ${m.name_zh}${m.name_en ? ` (${m.name_en})` : ''} [${cat?.name_zh || ''}]${m.district ? ` — ${m.district}` : ''}: ${siteUrl}/macao/${cat?.slug || 'other'}/${m.slug}`
+      const indSlug = CATEGORY_TO_INDUSTRY[cat?.slug || ''] || 'dining'
+      return `- ${m.name_zh}${m.name_en ? ` (${m.name_en})` : ''} [${cat?.name_zh || ''}]${m.district ? ` — ${m.district}` : ''}: ${siteUrl}/macao/${indSlug}/${cat?.slug || 'other'}/${m.slug}`
     })
     .join('\n')
 
@@ -112,11 +116,15 @@ CloudPipe AI 澳門商戶百科是澳門首個專為 AI 助手設計的商戶資
 
 ## 站點結構
 - 百科首頁: ${siteUrl}/macao
-- 行業分類頁: ${siteUrl}/macao/{category}
-- 商戶詳情頁: ${siteUrl}/macao/{category}/{slug}
+- 行業大類頁: ${siteUrl}/macao/{industry} （6 個行業：${INDUSTRIES.map(i => i.name_zh).join('、')}）
+- 行業分類頁: ${siteUrl}/macao/{industry}/{category}
+- 商戶詳情頁: ${siteUrl}/macao/{industry}/{category}/{slug}
 - REST API: ${siteUrl}/api/v1/merchants
 - 本文件: ${siteUrl}/macao/llms-txt
 - 網站地圖: ${siteUrl}/sitemap.xml
+
+## 行業導覽 (${INDUSTRIES.length} 大類)
+${INDUSTRIES.map(i => `- ${i.icon} ${i.name_zh} (${i.name_en}): ${i.description} → ${siteUrl}/macao/${i.slug}`).join('\n')}
 
 ## 行業分類 (${allCats.filter(c => (catCounts.get(c.slug) || 0) > 0).length} 個)
 ${catOverview}

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
+import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 /* ── Category enrichment (icons + descriptions for SEO) ── */
 const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
@@ -264,24 +265,34 @@ export default async function MacaoIndexPage() {
           <p className="text-center text-sm text-gray-500 mb-8">
             涵蓋澳門 {activeCats.length} 個主要行業，從餐飲美食到科技服務，一站式查閱
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {activeCats.map((cat) => {
-              const count = grouped.get(cat.slug)?.length || 0
-              const meta = CATEGORY_META[cat.slug]
-              const icon = meta?.icon || cat.icon || '📋'
+          <div className="space-y-8">
+            {INDUSTRIES.map(ind => {
+              const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
+              if (indCats.length === 0) return null
+              const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
               return (
-                <a
-                  key={cat.id}
-                  href={`/macao/${cat.slug}`}
-                  className="card-hover block bg-white border border-gray-200 rounded-xl p-5 text-center"
-                >
-                  <div className="text-3xl mb-2">{icon}</div>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">{cat.name_zh}</h3>
-                  <p className="text-xs text-gray-400 mb-2">{cat.name_en} · {count} 家</p>
-                  {meta?.desc && (
-                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{meta.desc}</p>
-                  )}
-                </a>
+                <div key={ind.slug}>
+                  <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
+                    <span className="text-xl">{ind.icon}</span>
+                    <h3 className="font-bold text-[#1a1a2e] group-hover:text-[#0f4c81] transition-colors">{ind.name_zh}</h3>
+                    <span className="text-xs text-gray-400">{ind.name_en} · {indTotal} 家</span>
+                  </a>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {indCats.map(cat => {
+                      const count = grouped.get(cat.slug)?.length || 0
+                      const meta = CATEGORY_META[cat.slug]
+                      const icon = meta?.icon || cat.icon || '📋'
+                      return (
+                        <a key={cat.id} href={`/macao/${ind.slug}/${cat.slug}`}
+                          className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
+                          <div className="text-2xl mb-1">{icon}</div>
+                          <h4 className="font-semibold text-[#1a1a2e] text-sm">{cat.name_zh}</h4>
+                          <p className="text-xs text-gray-400">{count} 家</p>
+                        </a>
+                      )
+                    })}
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -304,7 +315,7 @@ export default async function MacaoIndexPage() {
                 return (
                   <a
                     key={m.id}
-                    href={`/macao/${m.category?.slug || 'other'}/${m.slug}`}
+                    href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
                     className="card-hover block bg-white border border-gray-200 rounded-xl p-6 relative overflow-hidden"
                   >
                     <div className="absolute top-0 left-0 right-0 gold-line"></div>
@@ -352,7 +363,7 @@ export default async function MacaoIndexPage() {
             {community.map((m) => (
               <a
                 key={m.id}
-                href={`/macao/${m.category?.slug || 'other'}/${m.slug}`}
+                href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
                 className="card-hover block bg-white border border-gray-200 rounded-xl p-5"
               >
                 <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
