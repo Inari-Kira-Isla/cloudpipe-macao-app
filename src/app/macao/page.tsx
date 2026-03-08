@@ -57,10 +57,10 @@ const HOMEPAGE_FAQS = [
 
 export const metadata: Metadata = {
   title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
-  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 140+ 家澳門商戶，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 16 個行業。Schema.org 結構化數據、FAQ、llms.txt，讓 ChatGPT、Perplexity、Gemini 準確回答澳門商戶問題。',
+  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 80+ 家澳門商戶，涵蓋 20 個行業大類，120+ 子分類。Schema.org 結構化數據、FAQ、llms.txt，讓 ChatGPT、Perplexity、Gemini 準確回答澳門商戶問題。',
   openGraph: {
     title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
-    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 140+ 家商戶，16 個行業分類，Schema.org 結構化數據。',
+    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 80+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
     type: 'website',
     locale: 'zh_TW',
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/macao`,
@@ -123,18 +123,18 @@ export default async function MacaoIndexPage() {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: '澳門商戶百科',
-      description: `澳門最完整的 AI 友善商戶資訊平台，收錄 ${merchants.length} 家商戶，${activeCats.length} 個行業分類`,
+      description: `澳門最完整的 AI 友善商戶資訊平台，收錄 ${merchants.length} 家商戶，${INDUSTRIES.length} 個行業大類`,
       url: `${siteUrl}/macao`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI', url: siteUrl },
       numberOfItems: merchants.length,
       mainEntity: {
         '@type': 'ItemList',
-        numberOfItems: activeCats.length,
-        itemListElement: activeCats.map((cat, i) => ({
+        numberOfItems: INDUSTRIES.length,
+        itemListElement: INDUSTRIES.map((ind, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          name: cat.name_zh,
-          url: `${siteUrl}/macao/${cat.slug}`,
+          name: ind.name_zh,
+          url: `${siteUrl}/macao/${ind.slug}`,
         })),
       },
     },
@@ -255,47 +255,63 @@ export default async function MacaoIndexPage() {
           </div>
         </section>
 
-        {/* ═══ Category Navigation ═══ */}
+        {/* ═══ 20 行業導覽 ═══ */}
         <section className="mb-14">
           <div className="flex items-center gap-3 mb-6">
             <div className="gold-line flex-1 max-w-[40px]"></div>
-            <h2 className="text-xl font-bold text-[#1a1a2e]">行業分類</h2>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">20 大行業百科</h2>
             <div className="gold-line flex-1 max-w-[40px]"></div>
           </div>
           <p className="text-center text-sm text-gray-500 mb-8">
-            涵蓋澳門 {activeCats.length} 個主要行業，從餐飲美食到科技服務，一站式查閱
+            覆蓋澳門 {INDUSTRIES.length} 個行業，每個行業配備深度概覽、FAQ 和結構化數據
           </p>
-          <div className="space-y-8">
+
+          {/* Industry cards grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-10">
             {INDUSTRIES.map(ind => {
               const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
-              if (indCats.length === 0) return null
               const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
               return (
-                <div key={ind.slug}>
-                  <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
-                    <span className="text-xl">{ind.icon}</span>
-                    <h3 className="font-bold text-[#1a1a2e] group-hover:text-[#0f4c81] transition-colors">{ind.name_zh}</h3>
-                    <span className="text-xs text-gray-400">{ind.name_en} · {indTotal} 家</span>
-                  </a>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {indCats.map(cat => {
-                      const count = grouped.get(cat.slug)?.length || 0
-                      const meta = CATEGORY_META[cat.slug]
-                      const icon = meta?.icon || cat.icon || '📋'
-                      return (
-                        <a key={cat.id} href={`/macao/${ind.slug}/${cat.slug}`}
-                          className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
-                          <div className="text-2xl mb-1">{icon}</div>
-                          <h4 className="font-semibold text-[#1a1a2e] text-sm">{cat.name_zh}</h4>
-                          <p className="text-xs text-gray-400">{count} 家</p>
-                        </a>
-                      )
-                    })}
-                  </div>
-                </div>
+                <a key={ind.slug} href={`/macao/${ind.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
+                  <div className="text-3xl mb-2">{ind.icon}</div>
+                  <h3 className="font-bold text-[#1a1a2e] text-sm mb-1">{ind.name_zh}</h3>
+                  <p className="text-xs text-gray-400">{ind.name_en}</p>
+                  {indTotal > 0 && <p className="text-xs text-[#0f4c81] mt-1 font-medium">{indTotal} 家商戶</p>}
+                </a>
               )
             })}
           </div>
+
+          {/* Existing categories with merchants (expanded) */}
+          {INDUSTRIES.filter(ind => activeCats.some(c => ind.categories.includes(c.slug))).map(ind => {
+            const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
+            const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
+            return (
+              <div key={ind.slug} className="mb-6">
+                <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
+                  <span className="text-xl">{ind.icon}</span>
+                  <h3 className="font-bold text-[#1a1a2e] group-hover:text-[#0f4c81] transition-colors">{ind.name_zh}</h3>
+                  <span className="text-xs text-gray-400">{ind.name_en} · {indTotal} 家</span>
+                </a>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {indCats.map(cat => {
+                    const count = grouped.get(cat.slug)?.length || 0
+                    const meta = CATEGORY_META[cat.slug]
+                    const icon = meta?.icon || cat.icon || '📋'
+                    return (
+                      <a key={cat.id} href={`/macao/${ind.slug}/${cat.slug}`}
+                        className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
+                        <div className="text-2xl mb-1">{icon}</div>
+                        <h4 className="font-semibold text-[#1a1a2e] text-sm">{cat.name_zh}</h4>
+                        <p className="text-xs text-gray-400">{count} 家</p>
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </section>
 
         {/* ═══ Featured / Premium Brands ═══ */}
