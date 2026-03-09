@@ -44,8 +44,8 @@ export async function GET() {
     faqMap.get(f.merchant_id)!.push(f)
   }
 
-  const featured = allMerchants.filter(m => m.tier === 'owned' || m.tier === 'premium')
-  const community = allMerchants.filter(m => m.tier !== 'owned' && m.tier !== 'premium')
+  const featured = allMerchants.filter(m => m.slug && (m.tier === 'owned' || m.tier === 'premium'))
+  const community = allMerchants.filter(m => m.slug && m.tier !== 'owned' && m.tier !== 'premium')
 
   /* ── Build featured merchants with rich descriptions ── */
   const featuredList = featured.map(m => {

@@ -140,7 +140,7 @@ export default async function CategoryPage({ params }: PageProps) {
 
       <main className="max-w-6xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {merchants.map((m) => (
+          {merchants.filter(m => m.slug).map((m) => (
             <a key={m.id} href={`/macao/${indSlug}/${catSlug}/${m.slug}`}
               className="card-hover block bg-white border border-gray-200 rounded-xl p-5">
               <h2 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h2>

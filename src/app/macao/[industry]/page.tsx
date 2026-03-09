@@ -239,7 +239,7 @@ export default async function IndustryPage({ params }: PageProps) {
             <span className="text-sm text-gray-400">{merchants.length} 家</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {merchants.map(m => (
+            {merchants.filter(m => m.slug).map(m => (
               <a key={m.id} href={`/macao/${slug}/${m.category?.slug || 'other'}/${m.slug}`}
                 className="card-hover block bg-white border border-gray-200 rounded-xl p-5">
                 <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>

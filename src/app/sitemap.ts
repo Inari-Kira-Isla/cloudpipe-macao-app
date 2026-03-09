@@ -46,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Merchant pages (nested under industry/category)
   for (const m of (merchants || [])) {
+    if (!m.slug) continue // Skip merchants with null slugs
     const cat = m.category as unknown as { slug: string } | null
     if (cat?.slug) {
       const indSlug = CATEGORY_TO_INDUSTRY[cat.slug] || 'dining'

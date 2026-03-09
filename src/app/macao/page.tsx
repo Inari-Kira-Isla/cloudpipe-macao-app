@@ -343,7 +343,7 @@ export default async function MacaoIndexPage() {
               擁有完整 AEO 優化的澳門品牌 — 豐富內容、FAQ、結構化數據
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {featured.map((m) => {
+              {featured.filter(m => m.slug).map((m) => {
                 const content = contentMap.get(m.id) as Pick<MerchantContent, 'merchant_id' | 'title' | 'description'> | undefined
                 return (
                   <a
@@ -393,7 +393,7 @@ export default async function MacaoIndexPage() {
             <span className="text-sm text-gray-400">{community.length} 家</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {community.map((m) => (
+            {community.filter(m => m.slug).map((m) => (
               <a
                 key={m.id}
                 href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
