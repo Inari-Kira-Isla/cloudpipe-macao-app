@@ -147,6 +147,12 @@ export default async function MacaoIndexPage() {
       sameAs: [
         'https://github.com/Inari-Kira-Isla',
         'https://cloudpipe-directory.vercel.app',
+        'https://inari-kira-isla.github.io/cloudpipe-landing/',
+        'https://inari-kira-isla.github.io/inari-global-foods/',
+        'https://inari-kira-isla.github.io/sea-urchin-delivery/',
+        'https://inari-kira-isla.github.io/after-school-coffee/',
+        'https://inari-kira-isla.github.io/yamanakada/',
+        'https://inari-kira-isla.github.io/Openclaw/',
       ],
     },
     {
