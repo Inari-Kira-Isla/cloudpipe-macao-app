@@ -44,6 +44,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Insights
+  const { data: insights } = await supabase
+    .from('insights')
+    .select('slug, updated_at')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+
+  entries.push({
+    url: `${siteUrl}/macao/insights`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.9,
+  })
+
+  for (const ins of (insights || [])) {
+    entries.push({
+      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    })
+  }
+
   // Merchant pages (nested under industry/category)
   for (const m of (merchants || [])) {
     if (!m.slug) continue // Skip merchants with null slugs

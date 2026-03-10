@@ -70,16 +70,29 @@ export const metadata: Metadata = {
   },
 }
 
+interface InsightSummary {
+  slug: string
+  title: string
+  subtitle?: string
+  description: string
+  related_industries: string[]
+  tags: string[]
+  read_time_minutes: number
+  published_at?: string
+}
+
 async function getData() {
-  const [{ data: categories }, { data: merchants }, { data: contentList }] = await Promise.all([
+  const [{ data: categories }, { data: merchants }, { data: contentList }, { data: insights }] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     supabase.from('merchants').select('*, category:categories(slug, name_zh, icon)').eq('status', 'live').order('tier', { ascending: true }),
     supabase.from('merchant_content').select('merchant_id, title, description').not('title', 'is', null),
+    supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
   ])
   return {
     categories: (categories || []) as Category[],
     merchants: (merchants || []) as (Merchant & { category: Pick<Category, 'slug' | 'name_zh' | 'icon'> })[],
     contentMap: new Map((contentList || []).map((c: Pick<MerchantContent, 'merchant_id' | 'title' | 'description'>) => [c.merchant_id, c])),
+    insights: (insights || []) as InsightSummary[],
   }
 }
 
@@ -88,8 +101,13 @@ function PriceLabel({ range }: { range: string }) {
   return <span>{map[range] || range}</span>
 }
 
+const INSIGHT_INDUSTRY_LABELS: Record<string, string> = {
+  dining: '餐飲美食', hotels: '酒店住宿', attractions: '景點文化',
+  shopping: '購物零售', wellness: '健康美容', services: '專業服務',
+}
+
 export default async function MacaoIndexPage() {
-  const { categories, merchants, contentMap } = await getData()
+  const { categories, merchants, contentMap, insights } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const grouped = new Map<string, typeof merchants>()
@@ -330,6 +348,54 @@ export default async function MacaoIndexPage() {
             )
           })}
         </section>
+
+        {/* ═══ 深度分析 ═══ */}
+        {insights.length > 0 && (
+          <section className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+              <h2 className="text-xl font-bold text-[#1a1a2e]">深度分析</h2>
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+            </div>
+            <p className="text-center text-sm text-gray-500 mb-8">
+              數據驅動的澳門行業洞察 — 平台比較、趨勢報告、行動指南
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {insights.map(article => (
+                <a
+                  key={article.slug}
+                  href={`/macao/insights/${article.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-6 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 right-0 gold-line"></div>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-base font-bold text-[#1a1a2e] leading-tight pr-2">{article.title}</h3>
+                    <span className="text-xs px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded-full font-semibold flex-shrink-0">
+                      {article.read_time_minutes} 分鐘
+                    </span>
+                  </div>
+                  {article.subtitle && <p className="text-xs text-gray-500 mb-2">{article.subtitle}</p>}
+                  <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{article.description}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(article.related_industries || []).slice(0, 2).map(ind => (
+                      <span key={ind} className="text-xs px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
+                        {INSIGHT_INDUSTRY_LABELS[ind] || ind}
+                      </span>
+                    ))}
+                    {(article.tags || []).slice(0, 1).map(tag => (
+                      <span key={tag} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <a href="/macao/insights" className="text-sm text-[#0f4c81] hover:underline font-medium">
+                查看所有深度分析 →
+              </a>
+            </div>
+          </section>
+        )}
 
         {/* ═══ Featured / Premium Brands ═══ */}
         {featured.length > 0 && (

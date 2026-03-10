@@ -72,3 +72,34 @@ export interface MerchantSource {
   source_id?: string
   raw_data?: unknown
 }
+
+export interface InsightArticle {
+  id: string
+  slug: string
+  title: string
+  subtitle?: string
+  description: string
+  body_html: string
+  sections: { id: string; title: string }[]
+  table_data?: {
+    headers: string[]
+    rows: Record<string, string>[]
+  }
+  faqs: { question: string; answer: string }[]
+  related_industries: string[]
+  related_merchant_slugs: string[]
+  tags: string[]
+  og_title?: string
+  og_description?: string
+  og_image?: string
+  word_count: number
+  read_time_minutes: number
+  authority_sources?: { name: string; url: string; stat?: string }[]
+  status: 'draft' | 'review' | 'published' | 'archived'
+  lang: string
+  generated_by?: string
+  reviewed: boolean
+  created_at: string
+  updated_at: string
+  published_at?: string
+}
