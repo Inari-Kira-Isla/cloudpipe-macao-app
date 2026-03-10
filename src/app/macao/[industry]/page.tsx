@@ -9,15 +9,22 @@ interface PageProps {
   params: Promise<{ industry: string }>
 }
 
+interface InsightSummary {
+  slug: string; title: string; subtitle?: string; read_time_minutes: number; tags: string[]
+}
+
 async function getData(industrySlug: string) {
   const industry = getIndustry(industrySlug)
   if (!industry) return null
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .in('slug', industry.categories)
-    .order('sort_order')
+  const [{ data: categories }, { data: insights }] = await Promise.all([
+    supabase.from('categories').select('*').in('slug', industry.categories).order('sort_order'),
+    supabase.from('insights')
+      .select('slug, title, subtitle, read_time_minutes, tags')
+      .eq('status', 'published').eq('lang', 'zh')
+      .contains('related_industries', [industrySlug])
+      .order('published_at', { ascending: false }).limit(4),
+  ])
 
   const { data: merchants } = await supabase
     .from('merchants')
@@ -30,6 +37,7 @@ async function getData(industrySlug: string) {
     industry,
     categories: (categories || []) as Category[],
     merchants: (merchants || []) as (Merchant & { category: Pick<Category, 'slug' | 'name_zh' | 'icon'> })[],
+    insights: (insights || []) as InsightSummary[],
   }
 }
 
@@ -86,7 +94,7 @@ export default async function IndustryPage({ params }: PageProps) {
   const data = await getData(slug)
   if (!data) notFound()
 
-  const { industry, categories, merchants } = data
+  const { industry, categories, merchants, insights } = data
   const content = INDUSTRY_CONTENT[slug]
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
@@ -258,6 +266,37 @@ export default async function IndustryPage({ params }: PageProps) {
             ))}
           </div>
         </section>
+
+        {/* Related Insights */}
+        {insights.length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+              <h2 className="text-xl font-bold text-[#1a1a2e]">深度分析</h2>
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {insights.map(a => (
+                <a key={a.slug} href={`/macao/insights/${a.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-5 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 gold-line"></div>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight pr-2">{a.title}</h3>
+                    <span className="text-xs px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded-full font-semibold flex-shrink-0">
+                      {a.read_time_minutes} 分鐘
+                    </span>
+                  </div>
+                  {a.subtitle && <p className="text-xs text-gray-500 mb-2">{a.subtitle}</p>}
+                  <div className="flex flex-wrap gap-1">
+                    {(a.tags || []).slice(0, 3).map(tag => (
+                      <span key={tag} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Related Industries */}
         {(() => {

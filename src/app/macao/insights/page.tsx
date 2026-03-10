@@ -55,10 +55,13 @@ const INDUSTRY_LABELS: Record<string, Record<Lang, string>> = {
   gaming:      { zh: '博彩娛樂', en: 'Gaming', pt: 'Jogos' },
   tourism:     { zh: '旅遊觀光', en: 'Tourism', pt: 'Turismo' },
   finance:     { zh: '金融保險', en: 'Finance', pt: 'Finanças' },
+  'food-supply': { zh: '食品供應', en: 'Food Supply', pt: 'Abastecimento' },
 }
 
+const INDUSTRY_FILTER_LABELS: Record<Lang, string> = { zh: '全部', en: 'All', pt: 'Todos' }
+
 interface PageProps {
-  searchParams: Promise<{ lang?: string }>
+  searchParams: Promise<{ lang?: string; industry?: string }>
 }
 
 function parseLang(raw?: string): Lang {
@@ -66,13 +69,16 @@ function parseLang(raw?: string): Lang {
   return 'zh'
 }
 
-async function getInsights(lang: Lang) {
-  const { data } = await supabase
+async function getInsights(lang: Lang, industry?: string) {
+  let query = supabase
     .from('insights')
     .select('slug, title, subtitle, description, lang, related_industries, tags, word_count, read_time_minutes, published_at')
     .eq('status', 'published')
     .eq('lang', lang)
-    .order('published_at', { ascending: false })
+  if (industry) {
+    query = query.contains('related_industries', [industry])
+  }
+  const { data } = await query.order('published_at', { ascending: false })
   return (data || []) as (Pick<InsightArticle, 'slug' | 'title' | 'subtitle' | 'description' | 'related_industries' | 'tags' | 'word_count' | 'read_time_minutes' | 'published_at'> & { lang: string })[]
 }
 
@@ -94,10 +100,11 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default async function InsightsListPage({ searchParams }: PageProps) {
-  const { lang: langParam } = await searchParams
+  const { lang: langParam, industry: industryParam } = await searchParams
   const lang = parseLang(langParam)
   const ui = UI[lang]
-  const insights = await getInsights(lang)
+  const activeIndustry = industryParam && Object.keys(INDUSTRY_LABELS).includes(industryParam) ? industryParam : undefined
+  const insights = await getInsights(lang, activeIndustry)
 
   const collectionSchema = {
     '@context': 'https://schema.org',
@@ -166,6 +173,39 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
                 {LANG_LABELS[l]}
               </a>
             ))}
+          </div>
+
+          {/* ═══ Industry Filter Pills ═══ */}
+          <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+            <a
+              href={lang === 'zh' ? '/macao/insights' : `/macao/insights?lang=${lang}`}
+              className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                !activeIndustry
+                  ? 'bg-white/25 text-white border border-white/40 font-semibold'
+                  : 'text-white/60 hover:text-white/90'
+              }`}
+            >
+              {INDUSTRY_FILTER_LABELS[lang]}
+            </a>
+            {Object.entries(INDUSTRY_LABELS).map(([key, labels]) => {
+              const params = new URLSearchParams()
+              if (lang !== 'zh') params.set('lang', lang)
+              params.set('industry', key)
+              const href = `/macao/insights?${params.toString()}`
+              return (
+                <a
+                  key={key}
+                  href={href}
+                  className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                    activeIndustry === key
+                      ? 'bg-white/25 text-white border border-white/40 font-semibold'
+                      : 'text-white/60 hover:text-white/90'
+                  }`}
+                >
+                  {labels[lang]}
+                </a>
+              )
+            })}
           </div>
         </div>
       </div>

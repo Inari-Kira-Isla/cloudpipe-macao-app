@@ -44,7 +44,9 @@ interface PageProps {
   params: Promise<{ industry: string; category: string; slug: string }>
 }
 
-async function getMerchant(slug: string) {
+interface InsightLink { slug: string; title: string; read_time_minutes: number; tags: string[] }
+
+async function getMerchant(slug: string, industrySlug: string) {
   const { data: merchant } = await supabase
     .from('merchants')
     .select('*, category:categories(*)')
@@ -54,17 +56,30 @@ async function getMerchant(slug: string) {
 
   if (!merchant) return null
 
-  const [{ data: content }, { data: faqs }] = await Promise.all([
+  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
     supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
+    supabase.from('insights').select('slug, title, read_time_minutes, tags')
+      .eq('status', 'published').eq('lang', 'zh')
+      .contains('related_merchant_slugs', [slug]).limit(3),
+    supabase.from('insights').select('slug, title, read_time_minutes, tags')
+      .eq('status', 'published').eq('lang', 'zh')
+      .contains('related_industries', [industrySlug]).limit(3),
   ])
 
-  return { merchant: merchant as Merchant & { category: Category }, content: content as MerchantContent | null, faqs: (faqs || []) as MerchantFAQ[] }
+  // Merge: direct matches first, then industry matches (deduplicate)
+  const seen = new Set<string>()
+  const insights: InsightLink[] = []
+  for (const a of [...(directInsights || []), ...(industryInsights || [])]) {
+    if (!seen.has(a.slug) && insights.length < 3) { seen.add(a.slug); insights.push(a as InsightLink) }
+  }
+
+  return { merchant: merchant as Merchant & { category: Category }, content: content as MerchantContent | null, faqs: (faqs || []) as MerchantFAQ[], insights }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params
-  const data = await getMerchant(slug)
+  const { slug, industry: indSlug } = await params
+  const data = await getMerchant(slug, indSlug)
   if (!data) return { title: '找不到商戶' }
 
   const { merchant, content } = data
@@ -88,10 +103,10 @@ function PriceLabel({ range }: { range: string }) {
 
 export default async function MerchantPage({ params }: PageProps) {
   const { industry: indSlug, category: catSlug, slug } = await params
-  const data = await getMerchant(slug)
+  const data = await getMerchant(slug, indSlug)
   if (!data) notFound()
 
-  const { merchant, content, faqs } = data
+  const { merchant, content, faqs, insights } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -248,6 +263,31 @@ export default async function MerchantPage({ params }: PageProps) {
                     <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</p>
                   </div>
                 </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Related Insights */}
+        {insights.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              深度分析
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {insights.map(a => (
+                <a key={a.slug} href={`/macao/insights/${a.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 gold-line"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-2">{a.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span>{a.read_time_minutes} 分鐘</span>
+                    {(a.tags || []).slice(0, 2).map(tag => (
+                      <span key={tag} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </a>
               ))}
             </div>
           </section>
