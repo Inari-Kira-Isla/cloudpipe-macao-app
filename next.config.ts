@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      { source: '/llms.txt', destination: '/macao/llms-txt' },
+    ]
+  },
   async redirects() {
     const redirects = []
 

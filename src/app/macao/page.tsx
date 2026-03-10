@@ -63,10 +63,10 @@ export const metadata: Metadata = {
     description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
     type: 'website',
     locale: 'zh_TW',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL}/macao`,
+    url: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/macao`,
+    canonical: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
   },
 }
 
@@ -90,7 +90,7 @@ function PriceLabel({ range }: { range: string }) {
 
 export default async function MacaoIndexPage() {
   const { categories, merchants, contentMap } = await getData()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const grouped = new Map<string, typeof merchants>()
   for (const m of merchants) {

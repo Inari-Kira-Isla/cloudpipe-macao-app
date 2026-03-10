@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { industry: slug } = await params
   const industry = getIndustry(slug)
   if (!industry) return { title: '找不到行業' }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   return {
     title: `${industry.name_zh} — 澳門商戶百科`,
     description: `澳門${industry.name_zh}行業完整指南。${industry.description} CloudPipe AI 澳門商戶百科收錄各類${industry.name_zh}商戶資訊。`,
@@ -88,7 +88,7 @@ export default async function IndustryPage({ params }: PageProps) {
 
   const { industry, categories, merchants } = data
   const content = INDUSTRY_CONTENT[slug]
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const grouped = new Map<string, typeof merchants>()
   for (const m of merchants) {

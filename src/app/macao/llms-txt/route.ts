@@ -33,7 +33,7 @@ export async function GET() {
     supabase.from('merchant_faqs').select('merchant_id, question, answer').order('sort_order'),
   ])
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date().toISOString().split('T')[0]
   const allMerchants = merchants || []
   const allCats = categories || []

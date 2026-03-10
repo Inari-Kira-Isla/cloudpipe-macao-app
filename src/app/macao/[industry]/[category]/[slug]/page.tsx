@@ -4,6 +4,42 @@ import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
 import { getIndustry } from '@/lib/industries'
 
+/* ── Category → Schema.org type mapping ── */
+const CATEGORY_SCHEMA_MAP: Record<string, string> = {
+  // dining
+  restaurant: 'Restaurant', japanese: 'Restaurant', portuguese: 'Restaurant',
+  chinese: 'Restaurant', western: 'Restaurant', 'tea-restaurant': 'Restaurant',
+  hotpot: 'Restaurant', michelin: 'Restaurant', 'street-food': 'Restaurant',
+  'fast-food': 'Restaurant', dessert: 'Restaurant',
+  cafe: 'CafeOrCoffeeShop', bakery: 'Bakery',
+  // hotels
+  hotel: 'Hotel', resort: 'Resort', 'budget-hotel': 'Hotel',
+  'serviced-apartment': 'LodgingBusiness', hostel: 'Hostel',
+  // nightlife
+  bar: 'BarOrPub', nightclub: 'NightClub', ktv: 'EntertainmentBusiness',
+  lounge: 'BarOrPub', show: 'EntertainmentBusiness', 'spa-sauna': 'HealthAndBeautyBusiness',
+  // shopping
+  retail: 'Store', 'shopping-mall': 'ShoppingCenter', 'duty-free': 'Store',
+  souvenir: 'Store', fashion: 'ClothingStore', electronics: 'ElectronicsStore',
+  supermarket: 'GroceryStore', drugstore: 'Pharmacy',
+  // wellness
+  beauty: 'HealthAndBeautyBusiness', gym: 'HealthClub',
+  clinic: 'MedicalClinic', spa: 'DaySpa', yoga: 'HealthClub',
+  // professional-services
+  professional: 'ProfessionalService', legal: 'LegalService',
+  // education
+  education: 'EducationalOrganization',
+  // gaming
+  entertainment: 'EntertainmentBusiness', casino: 'Casino',
+  // tourism/attractions
+  tourism: 'TouristAttraction', museum: 'Museum', temple: 'PlaceOfWorship',
+  park: 'Park', 'theme-park': 'AmusementPark', landmark: 'LandmarksOrHistoricalBuildings',
+  // finance
+  finance: 'FinancialService',
+  // food-supply
+  'food-import': 'LocalBusiness', 'food-delivery': 'FoodEstablishment',
+}
+
 interface PageProps {
   params: Promise<{ industry: string; category: string; slug: string }>
 }
@@ -34,7 +70,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { merchant, content } = data
   const title = content?.og_title || `${merchant.name_zh} — 澳門百科 | CloudPipe`
   const description = content?.og_description || content?.description || `${merchant.name_zh} 的完整資訊、評價、FAQ`
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   return {
     title,
@@ -58,11 +94,11 @@ export default async function MerchantPage({ params }: PageProps) {
   const { merchant, content, faqs } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const schemaOrg = {
     '@context': 'https://schema.org',
-    '@type': merchant.schema_type || 'Organization',
+    '@type': (merchant.schema_type && merchant.schema_type !== 'Organization') ? merchant.schema_type : (CATEGORY_SCHEMA_MAP[catSlug] || 'LocalBusiness'),
     name: merchant.name_zh,
     alternateName: merchant.name_en,
     description: content?.description || `${merchant.name_zh} — 澳門${cat?.name_zh || ''}`,

@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { industry, category } = await params
   const data = await getData(industry, category)
   if (!data) return { title: '找不到分類' }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   return {
     title: `${data.category.name_zh} — 澳門${data.industry.name_zh} | CloudPipe`,
     description: `澳門${data.category.name_zh}商戶百科，共 ${data.merchants.length} 家。${data.industry.description}`,
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params }: PageProps) {
   if (!data) notFound()
 
   const { industry, category, merchants } = data
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const icon = CATEGORY_ICONS[catSlug] || category.icon || '📋'
 
   const content = INDUSTRY_CONTENT[indSlug]
