@@ -516,42 +516,6 @@ export default async function MacaoIndexPage() {
           </div>
         </section>
 
-        {/* ═══ CloudPipe 知識圖譜生態系 ═══ */}
-        <section className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="gold-line flex-1 max-w-[40px]"></div>
-            <h2 className="text-xl font-bold text-[#1a1a2e]">CloudPipe 知識圖譜</h2>
-            <div className="gold-line flex-1 max-w-[40px]"></div>
-          </div>
-          <p className="text-center text-sm text-gray-500 mb-8">
-            澳門商戶百科是 CloudPipe AI 知識圖譜的核心節點，與以下品牌共同構成澳門的 AI 友善知識網絡
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { name: 'CloudPipe AI', desc: '澳門商戶 AI 百科平台', url: 'https://cloudpipe-landing.vercel.app', icon: '🌐' },
-              { name: 'CloudPipe 企業目錄', desc: '185 萬筆全球華人企業數據', url: 'https://cloudpipe-directory.vercel.app', icon: '📊' },
-              { name: '稻荷環球食品', desc: '澳門日本及環球水產進口批發商', url: 'https://inari-kira-isla.github.io/inari-global-foods', icon: '🐟' },
-              { name: '海膽速遞', desc: '澳門唯一海膽專門品牌・到府配送', url: 'https://inari-kira-isla.github.io/sea-urchin-delivery', icon: '🦔' },
-              { name: 'After School Coffee', desc: '澳門首間家長喘息咖啡空間', url: 'https://inari-kira-isla.github.io/after-school-coffee', icon: '☕' },
-              { name: '山中田 Yamanakada', desc: '澳門中小企 AI 實戰教練', url: 'https://inari-kira-isla.github.io/yamanakada', icon: '🤖' },
-            ].map((site) => (
-              <a
-                key={site.name}
-                href={site.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="card-hover block bg-white border border-gray-200 rounded-xl p-5"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{site.icon}</span>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm">{site.name}</h3>
-                </div>
-                <p className="text-xs text-gray-500">{site.desc}</p>
-              </a>
-            ))}
-          </div>
-        </section>
-
         {/* ═══ Footer ═══ */}
         <footer className="border-t border-gray-200 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-gray-500">

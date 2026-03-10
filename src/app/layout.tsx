@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import EcosystemFooter from "@/components/EcosystemFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,6 +43,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: siteUrl,
+    languages: {
+      'zh-TW': siteUrl,
+      'zh-CN': siteUrl,
+      'x-default': siteUrl,
+    },
   },
   other: {
     'llms-txt': `${siteUrl}/macao/llms-txt`,
@@ -57,11 +63,19 @@ export default function RootLayout({
     <html lang="zh-Hant">
       <head>
         <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
+        <meta httpEquiv="content-language" content="zh-TW, zh-CN, en" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <EcosystemFooter currentUrl="https://cloudpipe-macao-app.vercel.app" />
+        {/* Baidu Auto-Push — submit URL on every page visit */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js'}else{bp.src='http://push.zhanzhang.baidu.com/push.js'};var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(bp,s)})();`,
+          }}
+        />
         {/* AI Crawler Tracker - 1x1 pixel */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
