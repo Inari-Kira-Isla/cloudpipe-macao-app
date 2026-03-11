@@ -10,7 +10,7 @@ const supabase = createClient(
 async function fetchAllRows(
   table: string,
   select: string,
-  buildFilters: (q: ReturnType<typeof supabase.from>) => any
+  buildFilters: (q: any) => any
 ): Promise<any[]> {
   const PAGE = 1000
   const all: any[] = []
