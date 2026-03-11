@@ -277,8 +277,54 @@ export async function GET(request: NextRequest) {
         break
       }
 
+      case 'daily': {
+        const visits = await fetchAllRows(
+          'crawler_visits',
+          'ts, bot_owner, site',
+          (q: any) => {
+            let fq = q.gte('ts', since)
+            if (siteFilter) fq = fq.eq('site', siteFilter)
+            if (bot) fq = fq.eq('bot_name', bot)
+            return fq
+          }
+        )
+
+        const dailyMap: Record<string, { total: number; by_owner: Record<string, number>; by_site: Record<string, number> }> = {}
+        const allOwners = new Set<string>()
+        const allSites = new Set<string>()
+
+        for (const v of visits) {
+          const date = (v.ts as string).slice(0, 10)
+          if (!dailyMap[date]) dailyMap[date] = { total: 0, by_owner: {}, by_site: {} }
+          dailyMap[date].total++
+          const owner = v.bot_owner || 'Unknown'
+          dailyMap[date].by_owner[owner] = (dailyMap[date].by_owner[owner] || 0) + 1
+          allOwners.add(owner)
+          const site = v.site || 'cloudpipe-macao-app'
+          dailyMap[date].by_site[site] = (dailyMap[date].by_site[site] || 0) + 1
+          allSites.add(site)
+        }
+
+        // Fill missing dates with zeros
+        const dailyArr: Array<{ date: string; total: number; by_owner: Record<string, number>; by_site: Record<string, number> }> = []
+        const startDate = new Date(since)
+        const endDate = new Date()
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const ds = d.toISOString().slice(0, 10)
+          dailyArr.push({ date: ds, ...(dailyMap[ds] || { total: 0, by_owner: {}, by_site: {} }) })
+        }
+
+        result = {
+          period: { since, days },
+          daily: dailyArr,
+          owners: [...allOwners].sort(),
+          sites: [...allSites].sort(),
+        }
+        break
+      }
+
       default:
-        return NextResponse.json({ error: 'Invalid view. Use: summary, bots, pages, sessions, journey, spider-web' }, { status: 400 })
+        return NextResponse.json({ error: 'Invalid view. Use: summary, bots, pages, sessions, journey, spider-web, daily' }, { status: 400 })
     }
 
     return NextResponse.json(result, {
