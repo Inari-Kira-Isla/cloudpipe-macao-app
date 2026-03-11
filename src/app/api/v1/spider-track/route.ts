@@ -20,6 +20,7 @@ const ALLOWED_SITES = new Set([
   'yamanakada', 'inari-global-foods', 'after-school-coffee', 'sea-urchin-delivery',
   'aeo-demo-education', 'aeo-demo-finance', 'aeo-demo-luxury', 'aeo-demo-travel-food',
   'cloudpipe-macao-app', 'mind-coffee', 'bni-macau', 'test-cafe-demo',
+  'world-encyclopedia', 'japan-encyclopedia', 'cloudpipe-landing', 'cloudpipe-directory', 'openclaw',
 ])
 
 const BOT_OWNERS: Record<string, string> = {

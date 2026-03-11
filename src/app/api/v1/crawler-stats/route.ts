@@ -248,7 +248,8 @@ export async function GET(request: NextRequest) {
             if (v.referer) {
               for (const knownSite of ['yamanakada', 'inari-global-foods', 'after-school-coffee', 'sea-urchin-delivery',
                 'cloudpipe-macao-app', 'mind-coffee', 'bni-macau', 'test-cafe-demo',
-                'aeo-demo-education', 'aeo-demo-finance', 'aeo-demo-luxury', 'aeo-demo-travel-food']) {
+                'aeo-demo-education', 'aeo-demo-finance', 'aeo-demo-luxury', 'aeo-demo-travel-food',
+                'world-encyclopedia', 'japan-encyclopedia', 'cloudpipe-landing', 'cloudpipe-directory', 'openclaw']) {
                 if (v.referer.includes(knownSite)) { fromSite = knownSite; break }
               }
             }
