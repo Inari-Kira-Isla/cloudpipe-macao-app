@@ -6,6 +6,26 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Supabase default limit is 1000 rows. This helper paginates to fetch ALL matching rows.
+async function fetchAllRows(
+  table: string,
+  select: string,
+  buildFilters: (q: ReturnType<typeof supabase.from>) => any
+): Promise<any[]> {
+  const PAGE = 1000
+  const all: any[] = []
+  let from = 0
+  while (true) {
+    const q = buildFilters(supabase.from(table).select(select))
+    const { data, error } = await q.range(from, from + PAGE - 1)
+    if (error || !data || data.length === 0) break
+    all.push(...data)
+    if (data.length < PAGE) break
+    from += PAGE
+  }
+  return all
+}
+
 /**
  * GET /api/v1/crawler-stats
  *
@@ -35,15 +55,16 @@ export async function GET(request: NextRequest) {
 
     switch (view) {
       case 'summary': {
-        // Overall stats: total visits, unique bots, top pages, top bots
-        let summaryQuery = supabase
-          .from('crawler_visits')
-          .select('bot_name, bot_owner, path, page_type, industry, site, session_id')
-          .gte('ts', since)
-        if (siteFilter) summaryQuery = summaryQuery.eq('site', siteFilter)
-        const { data: visits } = await summaryQuery
+        const visits = await fetchAllRows('crawler_visits',
+          'bot_name, bot_owner, path, page_type, industry, site, session_id',
+          (q) => {
+            let fq = q.gte('ts', since)
+            if (siteFilter) fq = fq.eq('site', siteFilter)
+            return fq
+          }
+        )
 
-        if (!visits?.length) {
+        if (!visits.length) {
           result = { total_visits: 0, unique_bots: 0, bots: {}, pages: {}, industries: {}, page_types: {}, sites: {} }
           break
         }
@@ -88,7 +109,6 @@ export async function GET(request: NextRequest) {
       }
 
       case 'bots': {
-        // Per-bot breakdown with daily counts
         let query = supabase
           .from('crawler_visits')
           .select('bot_name, bot_owner, ts, path, site')
@@ -104,16 +124,17 @@ export async function GET(request: NextRequest) {
       }
 
       case 'pages': {
-        // Per-page visit counts
-        let pagesQuery = supabase
-          .from('crawler_visits')
-          .select('path, bot_name, industry, category, page_type, site')
-          .gte('ts', since)
-        if (siteFilter) pagesQuery = pagesQuery.eq('site', siteFilter)
-        const { data: visits } = await pagesQuery
+        const visits = await fetchAllRows('crawler_visits',
+          'path, bot_name, industry, category, page_type, site',
+          (q) => {
+            let fq = q.gte('ts', since)
+            if (siteFilter) fq = fq.eq('site', siteFilter)
+            return fq
+          }
+        )
 
         const pageSummary: Record<string, { count: number; bots: Set<string>; industry: string | null; page_type: string }> = {}
-        for (const v of (visits || [])) {
+        for (const v of visits) {
           if (pathFilter && !v.path.startsWith(pathFilter)) continue
           if (!pageSummary[v.path]) {
             pageSummary[v.path] = { count: 0, bots: new Set(), industry: v.industry, page_type: v.page_type }
@@ -136,23 +157,22 @@ export async function GET(request: NextRequest) {
       }
 
       case 'sessions': {
-        // List crawl sessions (grouped by session_id)
-        let query = supabase
-          .from('crawler_visits')
-          .select('session_id, bot_name, bot_owner, path, ts, referer, site')
-          .gte('ts', since)
-          .order('ts', { ascending: false })
-
-        if (bot) query = query.eq('bot_name', bot)
-        if (siteFilter) query = query.eq('site', siteFilter)
-        const { data: visits } = await query
+        const visits = await fetchAllRows('crawler_visits',
+          'session_id, bot_name, bot_owner, path, ts, referer, site',
+          (q) => {
+            let fq = q.gte('ts', since).order('ts', { ascending: false })
+            if (bot) fq = fq.eq('bot_name', bot)
+            if (siteFilter) fq = fq.eq('site', siteFilter)
+            return fq
+          }
+        )
 
         const sessions: Record<string, {
           bot: string; owner: string; pages: number;
           first_ts: string; last_ts: string; paths: string[]; sites: Set<string>
         }> = {}
 
-        for (const v of (visits || [])) {
+        for (const v of visits) {
           if (!v.session_id) continue
           if (!sessions[v.session_id]) {
             sessions[v.session_id] = {
@@ -176,7 +196,6 @@ export async function GET(request: NextRequest) {
       }
 
       case 'journey': {
-        // Full journey for a specific session
         if (!sessionId) {
           return NextResponse.json({ error: 'session parameter required' }, { status: 400 })
         }
@@ -204,23 +223,20 @@ export async function GET(request: NextRequest) {
       }
 
       case 'spider-web': {
-        // Cross-site spider web traffic flow
-        // Shows how bots traverse between sites in the ecosystem
-        let swQuery = supabase
-          .from('crawler_visits')
-          .select('bot_name, bot_owner, path, referer, site, page_type, ts, session_id')
-          .gte('ts', since)
-          .order('ts', { ascending: false })
+        const visits = await fetchAllRows('crawler_visits',
+          'bot_name, bot_owner, path, referer, site, page_type, ts, session_id',
+          (q) => {
+            let fq = q.gte('ts', since).order('ts', { ascending: false })
+            if (bot) fq = fq.eq('bot_name', bot)
+            return fq
+          }
+        )
 
-        if (bot) swQuery = swQuery.eq('bot_name', bot)
-        const { data: visits } = await swQuery
-
-        // Build site-to-site flow matrix
         const flows: Record<string, { count: number; bots: Set<string> }> = {}
         const siteVisits: Record<string, { total: number; bots: Set<string>; spider_web: number }> = {}
         const crossSiteSessions = new Set<string>()
 
-        for (const v of (visits || [])) {
+        for (const v of visits) {
           const site = v.site || 'cloudpipe-macao-app'
           if (!siteVisits[site]) siteVisits[site] = { total: 0, bots: new Set(), spider_web: 0 }
           siteVisits[site].total++
@@ -228,7 +244,6 @@ export async function GET(request: NextRequest) {
 
           if (v.page_type === 'spider-web' && v.referer) {
             siteVisits[site].spider_web++
-            // Determine source site from referer or industry field
             let fromSite = 'unknown'
             if (v.referer) {
               for (const knownSite of ['yamanakada', 'inari-global-foods', 'after-school-coffee', 'sea-urchin-delivery',
