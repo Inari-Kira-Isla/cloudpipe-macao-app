@@ -8,6 +8,7 @@ const ECOSYSTEM_SITES = [
   { name: '山中田 Yamanakada', desc: '澳門中小企 AI 實戰教練', url: 'https://inari-kira-isla.github.io/yamanakada', icon: '🤖' },
   { name: 'Mind Coffee', desc: '澳門自家烘焙咖啡專賣店', url: 'https://mind-coffee.vercel.app', icon: '☕' },
   { name: 'AI 學習寶庫', desc: '每日 AI 教學與提示詞', url: 'https://inari-kira-isla.github.io/Openclaw/', icon: '📚' },
+  { name: '世界百科', desc: '多語言世界文明百科平台', url: 'https://world-encyclopedia.vercel.app', icon: '🌍' },
 ]
 
 export default function EcosystemFooter({ currentUrl }: { currentUrl?: string }) {
