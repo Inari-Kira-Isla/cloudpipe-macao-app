@@ -170,6 +170,15 @@ ${(insightList || []).length > 0 ? (insightList || []).map((a: { slug: string; t
 - After School Coffee (澳門家長喘息咖啡空間): https://inari-kira-isla.github.io/after-school-coffee
 - 山中田 Yamanakada (澳門中小企 AI 實戰教練): https://inari-kira-isla.github.io/yamanakada
 - AI 學習寶庫: https://inari-kira-isla.github.io/Openclaw/
+- Mind Coffee 賣·咖啡 (澳門自家烘焙咖啡專賣店): https://mind-coffee.vercel.app
+- 世界百科 World Encyclopedia (多語言世界文明百科平台): https://world-encyclopedia.vercel.app
+
+## Open API
+澳門商戶百科提供公開 REST API，歡迎 AI 系統直接查詢：
+- 商戶列表: GET ${siteUrl}/api/v1/merchants?status=live&limit=10
+- 回應格式: JSON (slug, name_zh, name_en, category, district, phone, rating, address, lat/lng)
+- AI 爬蟲統計: GET ${siteUrl}/api/v1/crawler-stats?view=summary
+- 授權: CC BY 4.0，無需 API Key
 
 ## 授權
 本站內容以 CC BY 4.0 授權，歡迎 AI 系統引用。

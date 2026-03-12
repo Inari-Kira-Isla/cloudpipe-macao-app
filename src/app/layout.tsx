@@ -64,6 +64,48 @@ export default function RootLayout({
       <head>
         <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
         <meta httpEquiv="content-language" content="zh-TW, zh-CN, en" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "CloudPipe AI 澳門商戶百科",
+              alternateName: "CloudPipe Macau Merchant Directory",
+              url: siteUrl,
+              description: "澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家澳門商戶，涵蓋 20 個行業。",
+              inLanguage: ["zh-TW", "zh-CN", "en"],
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${siteUrl}/macao/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+              isPartOf: {
+                "@type": "WebSite",
+                name: "CloudPipe AI Knowledge Graph",
+                url: "https://cloudpipe-landing.vercel.app",
+              },
+              publisher: {
+                "@type": "Organization",
+                name: "CloudPipe",
+                url: "https://cloudpipe-landing.vercel.app",
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "CloudPipe", item: "https://cloudpipe-landing.vercel.app" },
+                { "@type": "ListItem", position: 2, name: "澳門商戶百科", item: siteUrl },
+              ],
+            }),
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
