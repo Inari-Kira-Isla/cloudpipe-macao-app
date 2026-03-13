@@ -64,6 +64,10 @@ export default function RootLayout({
       <head>
         <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
         <meta httpEquiv="content-language" content="zh-TW, zh-CN, en" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -106,10 +110,6 @@ export default function RootLayout({
             }),
           }}
         />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
         {children}
         <EcosystemFooter currentUrl="https://cloudpipe-macao-app.vercel.app" />
         {/* Baidu Auto-Push — submit URL on every page visit */}
