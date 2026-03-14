@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CloudPipe 澳門商戶 AI 百科
 
-## Getting Started
+**Live**: [cloudpipe-macao-app.vercel.app](https://cloudpipe-macao-app.vercel.app)
 
-First, run the development server:
+澳門首個 AI 自動生成的三語商戶百科平台，涵蓋 940+ 商戶、20 個行業分類。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 數據統計
+
+| 指標 | 數量 |
+|------|------|
+| 上線商戶 | 940+ |
+| 中文內容 | 822 |
+| 英文內容 | 815 |
+| 葡文內容 | 799 |
+| 行業大類 | 6 (餐飲/食品供應/酒店/生活/服務/旅遊) |
+| 行業子類 | 20 |
+
+## 技術架構
+
+- **框架**: Next.js 16 + TypeScript + Tailwind CSS
+- **資料庫**: Supabase (PostgreSQL)
+- **部署**: Vercel (App Router + SSR)
+- **內容生成**: Claude Sonnet AI + 澳門事實檢查系統
+- **AEO**: Schema.org JSON-LD, llms.txt, sitemap.xml, robots.txt AI 友善
+
+## 路由結構
+
+```
+/macao                          → 行業總覽
+/macao/[industry]               → 行業頁
+/macao/[industry]/[category]    → 分類頁
+/macao/[industry]/[category]/[slug] → 商戶詳情頁
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Open API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+GET /api/v1/merchants?industry=dining&category=cafe&lang=zh
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- CORS 開放
+- CC BY 4.0 授權
+- 支援 `industry`, `category`, `lang`, `limit`, `offset` 參數
 
-## Learn More
+## 相關連結
 
-To learn more about Next.js, take a look at the following resources:
+- [CloudPipe 平台](https://cloudpipe-landing.vercel.app) — AI 自動化主站
+- [CloudPipe 全球企業目錄](https://cloudpipe-directory.vercel.app) — 185 萬筆亞太企業資料
+- [AI 學習寶庫](https://inari-kira-isla.github.io/Openclaw/) — AI 提示詞與教學
+- [世界百科](https://world-encyclopedia.vercel.app) — 多語言百科平台
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+CC BY 4.0
