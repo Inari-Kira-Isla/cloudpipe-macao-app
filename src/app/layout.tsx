@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   verification: {
-    google: '9EYAWnIRJ55Ccf3QicIn8s7d4GhYGU1rb9C8etIc200',
+    google: 'hoW2mAa2ikRCjBCFJs4miaJcNfaYKuns-SDlBX930nE',
   },
   alternates: {
     canonical: siteUrl,
