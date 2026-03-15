@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
       },
-      // AI crawlers — explicitly welcome
+      // International AI crawlers — explicitly welcome
       {
         userAgent: 'GPTBot',
         allow: '/',
@@ -39,10 +39,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
       {
-        userAgent: 'Bytespider',
-        allow: '/',
-      },
-      {
         userAgent: 'cohere-ai',
         allow: '/',
       },
@@ -64,6 +60,67 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'FacebookBot',
+        allow: '/',
+      },
+      // Chinese AI crawlers — 全面歡迎
+      {
+        userAgent: 'Bytespider',
+        allow: '/',
+      },
+      {
+        userAgent: 'TikTokSpider',
+        allow: '/',
+      },
+      {
+        userAgent: 'Baiduspider',
+        allow: '/',
+      },
+      {
+        userAgent: 'ChatGLM-Spider',
+        allow: '/',
+      },
+      {
+        userAgent: '360Spider',
+        allow: '/',
+      },
+      {
+        userAgent: 'Sogou',
+        allow: '/',
+      },
+      {
+        userAgent: 'PetalBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'DeepSeekBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'YisouSpider',
+        allow: '/',
+      },
+      {
+        userAgent: 'HunyuanBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'Kimi-Bot',
+        allow: '/',
+      },
+      {
+        userAgent: 'Doubao',
+        allow: '/',
+      },
+      {
+        userAgent: 'SparkBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'SenseChat',
+        allow: '/',
+      },
+      {
+        userAgent: 'XiaoIce',
         allow: '/',
       },
     ],
