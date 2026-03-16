@@ -45,6 +45,14 @@ const AI_BOTS: Record<string, string> = {
   'Kimi': 'Moonshot AI',
   'Doubao': 'ByteDance',
   'XiaoIce': 'XiaoIce',
+  // Additional bots (2026-03-16)
+  'DeepSeekBot': 'DeepSeek',
+  'TikTokSpider': 'ByteDance',
+  'YisouSpider': 'Alibaba',
+  'Kimi-Bot': 'Moonshot AI',
+  'NaverBot': 'Naver',
+  'SeznamBot': 'Seznam',
+  'DuckDuckBot': 'DuckDuckGo',
 }
 
 /** Simple hash for IP anonymization (no PII stored) */

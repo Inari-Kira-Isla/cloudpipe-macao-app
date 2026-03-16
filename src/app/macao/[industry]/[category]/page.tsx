@@ -21,14 +21,23 @@ async function getData(industrySlug: string, categorySlug: string) {
 
   if (!category) return null
 
-  const { data: merchants } = await supabase
-    .from('merchants')
-    .select('*')
-    .eq('category_id', category.id)
-    .eq('status', 'live')
-    .order('tier')
+  const [{ data: merchants }, { data: insights }] = await Promise.all([
+    supabase
+      .from('merchants')
+      .select('*')
+      .eq('category_id', category.id)
+      .eq('status', 'live')
+      .order('tier'),
+    supabase
+      .from('insights')
+      .select('slug, title, read_time_minutes, tags')
+      .eq('status', 'published')
+      .eq('lang', 'zh')
+      .contains('related_industries', [industrySlug])
+      .limit(3),
+  ])
 
-  return { industry, category: category as Category, merchants: (merchants || []) as Merchant[] }
+  return { industry, category: category as Category, merchants: (merchants || []) as Merchant[], insights: insights || [] }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -68,7 +77,7 @@ export default async function CategoryPage({ params }: PageProps) {
   const data = await getData(indSlug, catSlug)
   if (!data) notFound()
 
-  const { industry, category, merchants } = data
+  const { industry, category, merchants, insights } = data
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const icon = CATEGORY_ICONS[catSlug] || category.icon || '📋'
 
@@ -158,9 +167,40 @@ export default async function CategoryPage({ params }: PageProps) {
           <p className="text-center text-gray-400 py-16">此分類尚無商戶</p>
         )}
 
+        {insights.length > 0 && (
+          <section className="mt-12 mb-8">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              深度分析
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {insights.map((a: { slug: string; title: string; read_time_minutes: number; tags: string[] }) => (
+                <a key={a.slug} href={`/macao/insights/${a.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#0f4c81] to-[#d4a574]"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-2">{a.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span>{a.read_time_minutes} 分鐘</span>
+                    {(a.tags || []).slice(0, 2).map((tag: string) => (
+                      <span key={tag} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="text-center mt-4">
+              <a href="/macao/insights" className="text-sm text-[#0f4c81] hover:underline font-medium">
+                查看所有深度分析 →
+              </a>
+            </div>
+          </section>
+        )}
+
         <footer className="text-center mt-16 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-400">
             <a href={`/macao/${indSlug}`} className="text-[#0f4c81] hover:underline">← 返回{industry.name_zh}</a>
+            <span className="mx-3">·</span>
+            <a href="/macao/insights" className="text-[#0f4c81] hover:underline">深度分析</a>
             <span className="mx-3">·</span>
             <a href="/macao" className="text-[#0f4c81] hover:underline">返回澳門百科</a>
           </p>

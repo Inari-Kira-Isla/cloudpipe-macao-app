@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/macao/llms-txt',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
+          { key: 'CDN-Cache-Control', value: 'public, max-age=3600' },
+        ],
+      },
+    ]
+  },
   async rewrites() {
     return [
       { source: '/llms.txt', destination: '/macao/llms-txt' },
