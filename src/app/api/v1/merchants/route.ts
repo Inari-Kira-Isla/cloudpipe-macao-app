@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
     .from('merchants')
     .select('code, slug, name_zh, name_en, phone, website, address_zh, district, latitude, longitude, google_rating, google_reviews, price_range, tier, category:categories(slug, name_zh)', { count: 'exact' })
     .eq('status', 'live')
+    .not('slug', 'is', null)
+    .neq('slug', '')
     .order('code')
     .range(offset, offset + limit - 1)
 

@@ -7,6 +7,7 @@ import type { NextRequest } from 'next/server'
  */
 
 const AI_BOTS: Record<string, string> = {
+  // International AI
   'GPTBot': 'OpenAI',
   'ChatGPT-User': 'OpenAI',
   'OAI-SearchBot': 'OpenAI',
@@ -17,7 +18,6 @@ const AI_BOTS: Record<string, string> = {
   'ClaudeBot': 'Anthropic',
   'Claude-Web': 'Anthropic',
   'PerplexityBot': 'Perplexity',
-  'Bytespider': 'ByteDance',
   'cohere-ai': 'Cohere',
   'Applebot': 'Apple',
   'Applebot-Extended': 'Apple',
@@ -32,6 +32,19 @@ const AI_BOTS: Record<string, string> = {
   'Scrapy': 'Scrapy',
   'PetalBot': 'Aspiegel',
   'YandexBot': 'Yandex',
+  'ia_archiver': 'Internet Archive',
+  // Chinese AI
+  'Bytespider': 'ByteDance',
+  'Baiduspider': 'Baidu',
+  'Sogou': 'Sogou',
+  'ChatGLM': 'Zhipu AI',
+  '360Spider': 'Qihoo 360',
+  'HunyuanBot': 'Tencent',
+  'SenseChat': 'SenseTime',
+  'SparkBot': 'iFlytek',
+  'Kimi': 'Moonshot AI',
+  'Doubao': 'ByteDance',
+  'XiaoIce': 'XiaoIce',
 }
 
 /** Simple hash for IP anonymization (no PII stored) */
@@ -73,6 +86,9 @@ export async function middleware(request: NextRequest) {
   const bot = detectBot(ua)
 
   if (!bot) return response // Not an AI bot, skip
+
+  // Skip logging paths with /null slug (bad data, wastes crawler budget)
+  if (request.nextUrl.pathname.includes('/null')) return response
 
   // Non-blocking: fire and forget the log insertion
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

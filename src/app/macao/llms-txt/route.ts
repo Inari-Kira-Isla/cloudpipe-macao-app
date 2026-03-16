@@ -54,11 +54,13 @@ export async function GET() {
     const content = contentMap.get(m.slug === 'inari-global-foods' ? '489e98ad-6e07-4626-907d-475c3bd433fc' :
       m.slug === 'sea-urchin-delivery' ? 'e50fa5c6-abf2-4109-ae35-903d59590ffd' :
       m.slug === 'yamanakada' ? 'a7e3fc88-ea99-40b2-a51f-4695954211b4' :
-      m.slug === 'after-school-coffee' ? '6167bacd-8389-41e2-8e16-8259d126a7f3' : '') as { title: string; description: string } | undefined
+      m.slug === 'after-school-coffee' ? '6167bacd-8389-41e2-8e16-8259d126a7f3' :
+      m.slug === 'mind-coffee' ? '224b084c-9f72-42d9-a162-3ebc42c97dba' : '') as { title: string; description: string } | undefined
     const faqs = faqMap.get(m.slug === 'inari-global-foods' ? '489e98ad-6e07-4626-907d-475c3bd433fc' :
       m.slug === 'sea-urchin-delivery' ? 'e50fa5c6-abf2-4109-ae35-903d59590ffd' :
       m.slug === 'yamanakada' ? 'a7e3fc88-ea99-40b2-a51f-4695954211b4' :
-      m.slug === 'after-school-coffee' ? '6167bacd-8389-41e2-8e16-8259d126a7f3' : '') || []
+      m.slug === 'after-school-coffee' ? '6167bacd-8389-41e2-8e16-8259d126a7f3' :
+      m.slug === 'mind-coffee' ? '224b084c-9f72-42d9-a162-3ebc42c97dba' : '') || []
 
     let block = `### ${m.name_zh}${m.name_en ? ` (${m.name_en})` : ''}`
     const indSlug = CATEGORY_TO_INDUSTRY[cat?.slug || ''] || 'dining'
