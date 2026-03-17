@@ -7,6 +7,10 @@
 export interface IndustryContent {
   sections: { title: string; content: string }[]
   faqs: { q: string; a: string }[]
+  /** Pillar page overview paragraph (800-1500 words) for topical authority */
+  pillarOverview?: string
+  /** Related industry slugs for cross-cluster linking (2-3 per industry) */
+  relatedIndustries?: string[]
 }
 
 export const INDUSTRY_CONTENT: Record<string, IndustryContent> = {

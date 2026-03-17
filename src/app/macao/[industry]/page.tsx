@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { Category, Merchant } from '@/lib/types'
 import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
+import { PILLAR_CONTENT } from '@/lib/pillar-content'
 
 interface PageProps {
   params: Promise<{ industry: string }>
@@ -51,10 +52,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!industry) return { title: '找不到行業' }
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   return {
-    title: `${industry.name_zh} — 澳門商戶百科`,
-    description: `澳門${industry.name_zh}行業完整指南。${industry.description} CloudPipe AI 澳門商戶百科收錄各類${industry.name_zh}商戶資訊。`,
+    title: `${industry.name_zh}完整指南 — 澳門商戶百科 | CloudPipe AI`,
+    description: `澳門${industry.name_zh}行業完整指南。${industry.description} CloudPipe AI 澳門商戶百科收錄各類${industry.name_zh}商戶資訊，涵蓋常見問題、分類導航與深度分析。`,
     openGraph: {
-      title: `${industry.name_zh} — 澳門商戶百科 | CloudPipe AI`,
+      title: `${industry.name_zh}完整指南 — 澳門商戶百科 | CloudPipe AI`,
       description: `澳門${industry.name_zh}行業完整指南。${industry.description}`,
       type: 'website',
       locale: 'zh_TW',
@@ -96,6 +97,7 @@ export default async function IndustryPage({ params }: PageProps) {
 
   const { industry, categories, merchants, insights } = data
   const content = INDUSTRY_CONTENT[slug]
+  const pillar = PILLAR_CONTENT[slug]
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const grouped = new Map<string, typeof merchants>()
@@ -105,11 +107,24 @@ export default async function IndustryPage({ params }: PageProps) {
     grouped.get(catSlug)!.push(m)
   }
 
-  const schemas = [
+  // Resolve related industries from pillar data (cross-cluster) with fallback to same-wave
+  const relatedSlugs = pillar?.relatedIndustries || []
+  const relatedIndustries = relatedSlugs
+    .map(s => INDUSTRIES.find(i => i.slug === s))
+    .filter((i): i is NonNullable<typeof i> => !!i && i.slug !== slug)
+  // Fallback: if no pillar related industries, use same-wave
+  const finalRelated = relatedIndustries.length > 0
+    ? relatedIndustries
+    : INDUSTRIES.filter(i => i.slug !== slug && i.wave === industry.wave).slice(0, 3)
+
+  // First FAQ answer for Speakable schema
+  const firstFaqAnswer = content?.faqs?.[0]?.a || ''
+
+  const schemas: Record<string, unknown>[] = [
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: `澳門${industry.name_zh}`,
+      name: `澳門${industry.name_zh}完整指南`,
       description: industry.description,
       url: `${siteUrl}/macao/${slug}`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI 澳門商戶百科', url: siteUrl },
@@ -134,7 +149,11 @@ export default async function IndustryPage({ params }: PageProps) {
         { '@type': 'ListItem', position: 3, name: industry.name_zh, item: `${siteUrl}/macao/${slug}` },
       ],
     },
-    ...(content?.faqs ? [{
+  ]
+
+  // FAQPage schema
+  if (content?.faqs && content.faqs.length > 0) {
+    schemas.push({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       mainEntity: content.faqs.map(f => ({
@@ -142,8 +161,22 @@ export default async function IndustryPage({ params }: PageProps) {
         name: f.q,
         acceptedAnswer: { '@type': 'Answer', text: f.a },
       })),
-    }] : []),
-  ]
+    })
+  }
+
+  // Speakable schema - marks the first FAQ answer and pillar overview first paragraph
+  if (firstFaqAnswer || pillar?.overview) {
+    schemas.push({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: `澳門${industry.name_zh}完整指南`,
+      url: `${siteUrl}/macao/${slug}`,
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['#pillar-overview-lead', '#faq-answer-0'],
+      },
+    })
+  }
 
   return (
     <>
@@ -160,22 +193,67 @@ export default async function IndustryPage({ params }: PageProps) {
             <span className="text-white">{industry.name_zh}</span>
           </nav>
           <div className="text-4xl mb-3">{industry.icon}</div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{industry.name_zh}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">澳門{industry.name_zh}完整指南</h1>
           <p className="text-lg text-blue-200">
             {industry.name_en} · {merchants.length} 家商戶 · {categories.length} 個分類
           </p>
+          <p className="text-sm text-blue-200/80 mt-2">{industry.description}</p>
         </div>
       </div>
       <div className="gold-line"></div>
 
       <main className="max-w-6xl mx-auto px-4 py-10">
-        {/* Sub-categories */}
-        <section className="mb-10">
+
+        {/* Table of Contents */}
+        <nav className="mb-10 bg-[#f8f9fa] border border-gray-200 rounded-xl p-6" aria-label="頁面目錄">
+          <h2 className="text-lg font-bold text-[#1a1a2e] mb-3">本頁目錄</h2>
+          <ul className="space-y-1.5 text-sm">
+            {pillar?.overview && (
+              <li><a href="#pillar-overview" className="text-[#0f4c81] hover:underline">行業概覽</a></li>
+            )}
+            <li><a href="#category-nav" className="text-[#0f4c81] hover:underline">分類導航 ({categories.length} 個分類)</a></li>
+            {content?.sections && content.sections.length > 0 && content.sections.map((sec, i) => (
+              <li key={i} className="pl-4">
+                <a href={`#section-${i}`} className="text-[#0f4c81] hover:underline text-xs">
+                  {sec.title.length > 30 ? sec.title.slice(0, 30) + '...' : sec.title}
+                </a>
+              </li>
+            ))}
+            {content?.faqs && <li><a href="#faq-section" className="text-[#0f4c81] hover:underline">常見問題 ({content.faqs.length} 題)</a></li>}
+            <li><a href="#merchant-list" className="text-[#0f4c81] hover:underline">商戶列表 ({merchants.length} 家)</a></li>
+            <li><a href="#related-industries" className="text-[#0f4c81] hover:underline">相關行業</a></li>
+          </ul>
+        </nav>
+
+        {/* Pillar Overview */}
+        {pillar?.overview && (
+          <section id="pillar-overview" className="mb-12 scroll-mt-20">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+              <h2 className="text-xl font-bold text-[#1a1a2e]">澳門{industry.name_zh}行業概覽</h2>
+              <div className="gold-line flex-1 max-w-[40px]"></div>
+            </div>
+            <div className="prose max-w-none">
+              {pillar.overview.split('\n\n').map((paragraph, i) => (
+                <p key={i} id={i === 0 ? 'pillar-overview-lead' : undefined}
+                  className={`text-gray-700 leading-relaxed mb-4 ${i === 0 ? 'text-base font-medium' : 'text-sm'}`}>
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Sub-categories (Content Cluster) */}
+        <section id="category-nav" className="mb-10 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <div className="gold-line flex-1 max-w-[40px]"></div>
-            <h2 className="text-xl font-bold text-[#1a1a2e]">分類導航</h2>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">{industry.name_zh}分類導航</h2>
             <div className="gold-line flex-1 max-w-[40px]"></div>
           </div>
+          <p className="text-sm text-gray-500 mb-4">
+            澳門{industry.name_zh}行業下設 {categories.length} 個細分類別，點擊進入各分類查看商戶詳情。
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map(cat => {
               const meta = CATEGORY_META[cat.slug]
@@ -198,7 +276,7 @@ export default async function IndustryPage({ params }: PageProps) {
             {content.sections.map((sec, i) => (
               <a key={i} href={`#section-${i}`}
                 className="text-xs px-3 py-1.5 bg-[#e8f0fe] text-[#0f4c81] rounded-full hover:bg-[#0f4c81] hover:text-white transition-colors">
-                {sec.title.length > 15 ? sec.title.slice(0, 15) + '…' : sec.title}
+                {sec.title.length > 15 ? sec.title.slice(0, 15) + '...' : sec.title}
               </a>
             ))}
           </nav>
@@ -216,32 +294,34 @@ export default async function IndustryPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* FAQ */}
+        {/* FAQ with H2 question headings for SEO */}
         {content?.faqs && (
-          <section className="mb-10">
+          <section id="faq-section" className="mb-12 scroll-mt-20">
             <div className="flex items-center gap-3 mb-6">
               <div className="gold-line flex-1 max-w-[40px]"></div>
-              <h2 className="text-xl font-bold text-[#1a1a2e]">常見問題</h2>
+              <h2 className="text-xl font-bold text-[#1a1a2e]">澳門{industry.name_zh}常見問題</h2>
               <div className="gold-line flex-1 max-w-[40px]"></div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {content.faqs.map((faq, i) => (
-                <details key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e] text-sm">
-                    <span className="pr-4">{faq.q}</span>
-                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
-                  </summary>
+                <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                  <h3 className="font-semibold p-5 text-[#1a1a2e] text-sm leading-relaxed">
+                    {faq.q}
+                  </h3>
                   <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">{faq.a}</p>
+                    <p id={i === 0 ? 'faq-answer-0' : undefined}
+                      className="mt-3 text-gray-600 leading-relaxed text-sm">
+                      {faq.a}
+                    </p>
                   </div>
-                </details>
+                </div>
               ))}
             </div>
           </section>
         )}
 
         {/* All merchants in this industry */}
-        <section className="mb-10">
+        <section id="merchant-list" className="mb-10 scroll-mt-20">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-[#1a1a2e]">{industry.name_zh}商戶</h2>
             <span className="text-sm text-gray-400">{merchants.length} 家</span>
@@ -298,34 +378,38 @@ export default async function IndustryPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Related Industries */}
-        {(() => {
-          const related = INDUSTRIES.filter(i => i.slug !== slug && i.wave === industry.wave).slice(0, 4)
-          if (related.length === 0) return null
-          return (
-            <section className="mb-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="gold-line flex-1 max-w-[40px]"></div>
-                <h2 className="text-xl font-bold text-[#1a1a2e]">相關行業</h2>
-                <div className="gold-line flex-1 max-w-[40px]"></div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {related.map(r => (
-                  <a key={r.slug} href={`/macao/${r.slug}`}
-                    className="card-hover block bg-white border border-gray-200 rounded-xl p-5 text-center">
-                    <div className="text-2xl mb-2">{r.icon}</div>
-                    <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">{r.name_zh}</h3>
-                    <p className="text-xs text-gray-400">{r.name_en}</p>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )
-        })()}
+        {/* Related Industries (Cross-Cluster Linking) */}
+        <section id="related-industries" className="mb-10 scroll-mt-20">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">相關行業</h2>
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">
+            探索與{industry.name_zh}相關的其他澳門行業，了解更多商戶資訊。
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {finalRelated.map(r => (
+              <a key={r.slug} href={`/macao/${r.slug}`}
+                className="card-hover block bg-white border border-gray-200 rounded-xl p-5 text-center">
+                <div className="text-2xl mb-2">{r.icon}</div>
+                <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">{r.name_zh}</h3>
+                <p className="text-xs text-gray-400">{r.name_en}</p>
+                <p className="text-xs text-[#0f4c81] mt-2">查看指南 →</p>
+              </a>
+            ))}
+          </div>
+        </section>
 
+        {/* Hub Link Footer */}
         <footer className="text-center mt-16 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-400">
-            <a href="/macao" className="text-[#0f4c81] hover:underline">← 返回澳門百科</a>
+          <div className="mb-4">
+            <a href="/macao" className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c81] text-white rounded-xl hover:bg-[#0d3d68] transition-colors text-sm font-medium">
+              ← 返回澳門商戶百科首頁
+            </a>
+          </div>
+          <p className="text-xs text-gray-400 mt-4">
+            澳門商戶百科 — 讓世界的 AI 看見澳門 | CloudPipe AI
           </p>
         </footer>
       </main>
