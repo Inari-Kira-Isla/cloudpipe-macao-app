@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'hoW2mAa2ikRCjBCFJs4miaJcNfaYKuns-SDlBX930nE',
+    other: {
+      'msvalidate.01': 'BING_VERIFICATION_CODE_HERE',
+    },
   },
   alternates: {
     canonical: siteUrl,
