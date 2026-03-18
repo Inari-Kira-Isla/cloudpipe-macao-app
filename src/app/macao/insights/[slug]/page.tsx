@@ -87,11 +87,12 @@ interface RelatedMerchant {
 }
 
 async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
-  if (!slugs?.length) return []
+  const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
+  if (!validSlugs.length) return []
   const { data } = await supabase
     .from('merchants')
     .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating')
-    .in('slug', slugs)
+    .in('slug', validSlugs)
     .eq('status', 'live')
   if (!data) return []
   return data.map((d: Record<string, unknown>) => ({
@@ -399,7 +400,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
               {ui.related}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {merchants.map(m => {
+              {merchants.filter(m => m.slug && m.slug !== 'null').map(m => {
                 const indSlug = CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'
                 return (
                   <a

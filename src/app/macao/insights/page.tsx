@@ -265,7 +265,18 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
           </div>
         )}
 
-        <footer className="border-t border-gray-200 pt-8 mt-14 text-sm text-gray-400 flex flex-col md:flex-row justify-between gap-2">
+        {/* Cross-site ecosystem links for crawler discovery */}
+        <section className="mt-14 mb-8 p-6 bg-gradient-to-r from-[#f8fafc] to-[#eef2ff] rounded-xl border border-gray-200">
+          <h2 className="text-sm font-bold text-[#0f4c81] mb-3 uppercase tracking-wider">CloudPipe AI 生態系</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <a href="https://cloudpipe-landing.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">CloudPipe AI 平台</a>
+            <a href="https://cloudpipe-directory.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">企業目錄 (185 萬筆)</a>
+            <a href="https://inari-kira-isla.github.io/Openclaw/" className="text-[#1a1a2e] hover:text-[#0f4c81]">AI 學習寶庫</a>
+            <a href="https://inari-kira-isla.github.io/inari-web/" className="text-[#1a1a2e] hover:text-[#0f4c81]">稻荷環球食品</a>
+          </div>
+        </section>
+
+        <footer className="border-t border-gray-200 pt-8 text-sm text-gray-400 flex flex-col md:flex-row justify-between gap-2">
           <p>{ui.footer.split('CloudPipe AI')[0]}<a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a>{ui.footer.split('CloudPipe AI')[1]}</p>
           <div className="text-right">
             <a href="/macao" className="text-[#0f4c81] hover:underline">{ui.back}</a>

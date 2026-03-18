@@ -49,6 +49,9 @@ export const metadata: Metadata = {
     languages: {
       'zh-TW': siteUrl,
       'zh-CN': siteUrl,
+      'zh-Hans': siteUrl,
+      'en': siteUrl,
+      'pt': siteUrl,
       'x-default': siteUrl,
     },
   },

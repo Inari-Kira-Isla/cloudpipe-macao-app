@@ -56,7 +56,7 @@ async function getMerchant(slug: string, industrySlug: string) {
 
   if (!merchant) return null
 
-  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }] = await Promise.all([
+  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
     supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
@@ -65,6 +65,10 @@ async function getMerchant(slug: string, industrySlug: string) {
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
       .contains('related_industries', [industrySlug]).limit(3),
+    supabase.from('merchants').select('slug, name_zh, name_en, google_rating, district')
+      .eq('category_id', merchant.category_id).eq('status', 'live')
+      .neq('slug', slug).not('slug', 'is', null)
+      .order('google_rating', { ascending: false, nullsFirst: false }).limit(4),
   ])
 
   // Merge: direct matches first, then industry matches (deduplicate)
@@ -74,7 +78,13 @@ async function getMerchant(slug: string, industrySlug: string) {
     if (!seen.has(a.slug) && insights.length < 3) { seen.add(a.slug); insights.push(a as InsightLink) }
   }
 
-  return { merchant: merchant as Merchant & { category: Category }, content: content as MerchantContent | null, faqs: (faqs || []) as MerchantFAQ[], insights }
+  return {
+    merchant: merchant as Merchant & { category: Category },
+    content: content as MerchantContent | null,
+    faqs: (faqs || []) as MerchantFAQ[],
+    insights,
+    relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -106,7 +116,7 @@ export default async function MerchantPage({ params }: PageProps) {
   const data = await getMerchant(slug, indSlug)
   if (!data) notFound()
 
-  const { merchant, content, faqs, insights } = data
+  const { merchant, content, faqs, insights, relatedMerchants } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -293,6 +303,34 @@ export default async function MerchantPage({ params }: PageProps) {
           </section>
         )}
 
+        {/* Related merchants in same category */}
+        {relatedMerchants.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              同類推薦
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {relatedMerchants.map(rm => (
+                <a key={rm.slug} href={`/macao/${indSlug}/${catSlug}/${rm.slug}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-[#1a1a2e] mb-1">{rm.name_zh}</h3>
+                  {rm.name_en && <p className="text-xs text-gray-400 mb-1">{rm.name_en}</p>}
+                  <div className="flex gap-2 text-xs">
+                    {rm.google_rating && <span className="px-2 py-0.5 rating-badge rounded">★ {rm.google_rating}</span>}
+                    {rm.district && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{rm.district}</span>}
+                  </div>
+                </a>
+              ))}
+            </div>
+            <p className="text-center mt-3">
+              <a href={`/macao/${indSlug}/${catSlug}`} className="text-sm text-[#0f4c81] hover:underline">
+                查看全部{cat?.name_zh || ''}商戶 →
+              </a>
+            </p>
+          </section>
+        )}
+
         <footer className="border-t border-gray-200 pt-8 mt-10 text-sm text-gray-400">
           <div className="flex flex-col md:flex-row justify-between gap-2">
             <div>
@@ -303,6 +341,15 @@ export default async function MerchantPage({ params }: PageProps) {
               <a href={`/macao/${indSlug}/${catSlug}`} className="text-[#0f4c81] hover:underline">← 返回{cat?.name_zh || '分類'}</a>
               <p className="mt-1">© 2026 CloudPipe · CC BY 4.0</p>
             </div>
+          </div>
+          <div className="text-center text-xs text-gray-300 mt-4">
+            <a href="https://cloudpipe-landing.vercel.app" className="hover:text-[#0f4c81]">CloudPipe AI</a>
+            <span className="mx-2">·</span>
+            <a href="https://cloudpipe-directory.vercel.app" className="hover:text-[#0f4c81]">企業目錄</a>
+            <span className="mx-2">·</span>
+            <a href="https://inari-kira-isla.github.io/Openclaw/" className="hover:text-[#0f4c81]">AI 學習寶庫</a>
+            <span className="mx-2">·</span>
+            <a href="https://inari-kira-isla.github.io/inari-web/" className="hover:text-[#0f4c81]">稻荷環球食品</a>
           </div>
         </footer>
       </main>

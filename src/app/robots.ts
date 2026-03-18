@@ -8,15 +8,19 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        disallow: '/macao/*/null',
+        crawlDelay: 2,
       },
       // International AI crawlers — explicitly welcome
       {
         userAgent: 'GPTBot',
         allow: '/',
+        crawlDelay: 2,
       },
       {
         userAgent: 'ChatGPT-User',
         allow: '/',
+        crawlDelay: 2,
       },
       {
         userAgent: 'Google-Extended',

@@ -21,7 +21,9 @@ async function getData(industrySlug: string, categorySlug: string) {
 
   if (!category) return null
 
-  const [{ data: merchants }, { data: insights }] = await Promise.all([
+  // Fetch sibling categories for cross-linking
+  const siblingCatSlugs = industry.categories.filter(c => c !== categorySlug).slice(0, 6)
+  const [{ data: merchants }, { data: insights }, { data: siblingCategories }] = await Promise.all([
     supabase
       .from('merchants')
       .select('*')
@@ -35,9 +37,17 @@ async function getData(industrySlug: string, categorySlug: string) {
       .eq('lang', 'zh')
       .contains('related_industries', [industrySlug])
       .limit(3),
+    siblingCatSlugs.length > 0
+      ? supabase.from('categories').select('slug, name_zh, icon').in('slug', siblingCatSlugs)
+      : Promise.resolve({ data: [] }),
   ])
 
-  return { industry, category: category as Category, merchants: (merchants || []) as Merchant[], insights: insights || [] }
+  return {
+    industry, category: category as Category,
+    merchants: (merchants || []) as Merchant[],
+    insights: insights || [],
+    siblingCategories: (siblingCategories || []) as { slug: string; name_zh: string; icon?: string }[],
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -77,7 +87,7 @@ export default async function CategoryPage({ params }: PageProps) {
   const data = await getData(indSlug, catSlug)
   if (!data) notFound()
 
-  const { industry, category, merchants, insights } = data
+  const { industry, category, merchants, insights, siblingCategories } = data
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const icon = CATEGORY_ICONS[catSlug] || category.icon || '📋'
 
@@ -196,6 +206,24 @@ export default async function CategoryPage({ params }: PageProps) {
           </section>
         )}
 
+        {/* Sibling categories for crawler cross-linking */}
+        {siblingCategories.length > 0 && (
+          <section className="mt-12 mb-8">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {industry.name_zh}其他分類
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {siblingCategories.map(sc => (
+                <a key={sc.slug} href={`/macao/${indSlug}/${sc.slug}`}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-[#1a1a2e] hover:border-[#0f4c81] hover:text-[#0f4c81] transition-colors">
+                  {sc.icon || '📋'} {sc.name_zh}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
         <footer className="text-center mt-16 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-400">
             <a href={`/macao/${indSlug}`} className="text-[#0f4c81] hover:underline">← 返回{industry.name_zh}</a>
@@ -203,6 +231,13 @@ export default async function CategoryPage({ params }: PageProps) {
             <a href="/macao/insights" className="text-[#0f4c81] hover:underline">深度分析</a>
             <span className="mx-3">·</span>
             <a href="/macao" className="text-[#0f4c81] hover:underline">返回澳門百科</a>
+          </p>
+          <p className="text-xs text-gray-300 mt-3">
+            <a href="https://cloudpipe-landing.vercel.app" className="hover:text-[#0f4c81]">CloudPipe AI</a>
+            <span className="mx-2">·</span>
+            <a href="https://cloudpipe-directory.vercel.app" className="hover:text-[#0f4c81]">企業目錄</a>
+            <span className="mx-2">·</span>
+            <a href="https://inari-kira-isla.github.io/Openclaw/" className="hover:text-[#0f4c81]">AI 學習寶庫</a>
           </p>
         </footer>
       </main>
