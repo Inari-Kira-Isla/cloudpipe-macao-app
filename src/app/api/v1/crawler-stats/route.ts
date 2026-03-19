@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-export const runtime = 'edge'
+export const maxDuration = 30
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -95,35 +95,50 @@ export async function GET(request: NextRequest) {
 
     switch (view) {
       case 'summary': {
-        const visits = await fetchAllRows('crawler_visits',
-          'bot_name, bot_owner, path, page_type, industry, site, session_id',
-          (q) => {
-            let fq = q.gte('ts', since)
-            if (siteFilter) fq = fq.eq('site', siteFilter)
-            return fq
-          }
-        )
+        // Use minimal columns for speed — split into two parallel fetches
+        const [coreVisits, detailVisits] = await Promise.all([
+          fetchAllRows('crawler_visits',
+            'bot_name, bot_owner, industry, site',
+            (q: any) => {
+              let fq = q.gte('ts', since)
+              if (siteFilter) fq = fq.eq('site', siteFilter)
+              return fq
+            }
+          ),
+          fetchAllRows('crawler_visits',
+            'path, page_type, session_id',
+            (q: any) => {
+              let fq = q.gte('ts', since)
+              if (siteFilter) fq = fq.eq('site', siteFilter)
+              return fq
+            }
+          ),
+        ])
 
-        if (!visits.length) {
+        if (!coreVisits.length) {
           result = { total_visits: 0, unique_bots: 0, bots: {}, pages: {}, industries: {}, page_types: {}, sites: {} }
           break
         }
 
         const botCounts: Record<string, { count: number; owner: string }> = {}
-        const pageCounts: Record<string, number> = {}
         const industryCounts: Record<string, number> = {}
-        const pageTypeCounts: Record<string, number> = {}
         const siteCounts: Record<string, number> = {}
-        const sessionIds = new Set<string>()
 
-        for (const v of visits) {
+        for (const v of coreVisits) {
           botCounts[v.bot_name] = botCounts[v.bot_name] || { count: 0, owner: v.bot_owner }
           botCounts[v.bot_name].count++
-          pageCounts[v.path] = (pageCounts[v.path] || 0) + 1
           if (v.industry) industryCounts[v.industry] = (industryCounts[v.industry] || 0) + 1
-          pageTypeCounts[v.page_type] = (pageTypeCounts[v.page_type] || 0) + 1
           const site = v.site || 'cloudpipe-macao-app'
           siteCounts[site] = (siteCounts[site] || 0) + 1
+        }
+
+        const pageCounts: Record<string, number> = {}
+        const pageTypeCounts: Record<string, number> = {}
+        const sessionIds = new Set<string>()
+
+        for (const v of detailVisits) {
+          pageCounts[v.path] = (pageCounts[v.path] || 0) + 1
+          pageTypeCounts[v.page_type] = (pageTypeCounts[v.page_type] || 0) + 1
           if (v.session_id) sessionIds.add(v.session_id)
         }
 
@@ -132,7 +147,7 @@ export async function GET(request: NextRequest) {
 
         result = {
           period: { since, days },
-          total_visits: visits.length,
+          total_visits: coreVisits.length,
           unique_bots: Object.keys(botCounts).length,
           unique_sessions: sessionIds.size,
           bots: Object.fromEntries(
