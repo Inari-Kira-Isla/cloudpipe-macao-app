@@ -30,7 +30,7 @@ export default function EcosystemFooter({ currentUrl }: { currentUrl?: string })
               key={site.url}
               href={site.url}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener"
               className="block p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
