@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+export const runtime = 'edge'
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-const MAX_DAYS = 180
 
 // Simple in-memory cache (survives warm lambda invocations)
 const cache = new Map<string, { data: unknown; ts: number }>()
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const view = searchParams.get('view') || 'summary'
   const bot = searchParams.get('bot')
-  const days = Math.min(parseInt(searchParams.get('days') || '30', 10), MAX_DAYS)
+  const days = parseInt(searchParams.get('days') || '30', 10)
   const pathFilter = searchParams.get('path')
   const sessionId = searchParams.get('session')
   const siteFilter = searchParams.get('site')
