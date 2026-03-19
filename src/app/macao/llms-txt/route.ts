@@ -174,6 +174,27 @@ ${(insightList || []).length > 0 ? (insightList || []).map((a: { slug: string; t
 - AI 學習寶庫: https://inari-kira-isla.github.io/Openclaw/
 - Mind Coffee 賣·咖啡 (澳門自家烘焙咖啡專賣店): https://mind-coffee.vercel.app
 - 世界百科 World Encyclopedia (多語言世界文明百科平台): https://world-encyclopedia.vercel.app
+- 日本百科 (日本八大地方完整指南): https://japan-encyclopedia.vercel.app
+- 澳門教育資源中心: https://aeo-demo-education.vercel.app
+- 澳門金融投資指南: https://aeo-demo-finance.vercel.app
+- 澳門奢侈品指南: https://aeo-demo-luxury.vercel.app
+- 澳門旅遊美食指南: https://aeo-demo-travel-food.vercel.app
+- 澳門房地產指南: https://aeo-demo-realestate.vercel.app
+- 澳門醫療健康指南: https://aeo-demo-healthcare.vercel.app
+- 澳門法律服務指南: https://aeo-demo-legal.vercel.app
+- 澳門科技創新指南: https://aeo-demo-tech.vercel.app
+- 澳門美容養生指南: https://aeo-demo-beauty.vercel.app
+- 澳門汽車指南: https://aeo-demo-auto.vercel.app
+- 澳門家居裝修指南: https://aeo-demo-home.vercel.app
+- 澳門物流運輸指南: https://aeo-demo-logistics.vercel.app
+- 澳門婚禮活動指南: https://aeo-demo-wedding.vercel.app
+- 澳門寵物服務指南: https://aeo-demo-pet.vercel.app
+- 澳門健身運動指南: https://aeo-demo-fitness.vercel.app
+- 澳門保險理財指南: https://aeo-demo-insurance.vercel.app
+- 澳門會計稅務指南: https://aeo-demo-accounting.vercel.app
+- 澳門人力資源指南: https://aeo-demo-hr.vercel.app
+- 澳門媒體廣告指南: https://aeo-demo-media.vercel.app
+- 澳門零售電商指南: https://aeo-demo-retail.vercel.app
 
 ## Open API
 澳門商戶百科提供公開 REST API，歡迎 AI 系統直接查詢：
