@@ -6,6 +6,32 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const MAX_DAYS = 180
+
+// Simple in-memory cache (survives warm lambda invocations)
+const cache = new Map<string, { data: unknown; ts: number }>()
+const CACHE_TTL: Record<string, number> = {
+  summary: 5 * 60 * 1000,    // 5 min
+  daily: 5 * 60 * 1000,
+  'spider-web': 5 * 60 * 1000,
+  pages: 3 * 60 * 1000,
+  sessions: 2 * 60 * 1000,
+}
+
+function getCached(key: string, ttl: number): unknown | null {
+  const entry = cache.get(key)
+  if (entry && Date.now() - entry.ts < ttl) return entry.data
+  return null
+}
+function setCache(key: string, data: unknown) {
+  cache.set(key, { data, ts: Date.now() })
+  // Evict old entries to prevent memory leaks
+  if (cache.size > 100) {
+    const oldest = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts)[0]
+    if (oldest) cache.delete(oldest[0])
+  }
+}
+
 // Supabase default limit is 1000 rows. This helper paginates to fetch ALL matching rows.
 async function fetchAllRows(
   table: string,
@@ -42,13 +68,27 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const view = searchParams.get('view') || 'summary'
   const bot = searchParams.get('bot')
-  const days = parseInt(searchParams.get('days') || '30', 10)
+  const days = Math.min(parseInt(searchParams.get('days') || '30', 10), MAX_DAYS)
   const pathFilter = searchParams.get('path')
   const sessionId = searchParams.get('session')
   const siteFilter = searchParams.get('site')
   const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500)
 
   const since = new Date(Date.now() - days * 86400000).toISOString()
+
+  // Check cache
+  const cacheKey = `${view}:${days}:${bot || ''}:${siteFilter || ''}:${pathFilter || ''}:${sessionId || ''}:${limit}`
+  const ttl = CACHE_TTL[view] || 60_000
+  const cached = getCached(cacheKey, ttl)
+  if (cached) {
+    return NextResponse.json(cached, {
+      headers: {
+        'Cache-Control': `public, max-age=${Math.floor(ttl / 1000)}`,
+        'Access-Control-Allow-Origin': '*',
+        'X-Cache': 'HIT',
+      },
+    })
+  }
 
   try {
     let result: unknown
@@ -327,10 +367,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid view. Use: summary, bots, pages, sessions, journey, spider-web, daily' }, { status: 400 })
     }
 
+    setCache(cacheKey, result)
     return NextResponse.json(result, {
       headers: {
-        'Cache-Control': 'public, max-age=60',
+        'Cache-Control': `public, max-age=${Math.floor(ttl / 1000)}`,
         'Access-Control-Allow-Origin': '*',
+        'X-Cache': 'MISS',
       },
     })
   } catch (err) {

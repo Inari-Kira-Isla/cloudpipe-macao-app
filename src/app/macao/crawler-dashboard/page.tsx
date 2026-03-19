@@ -68,21 +68,36 @@ export default function CrawlerDashboard() {
   const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web'>('overview')
   const [loading, setLoading] = useState(true)
 
+  const [error, setError] = useState<string | null>(null)
+
+  const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) return fallback
+      const data = await res.json()
+      if (data?.error) return fallback
+      return data as T
+    } catch { return fallback }
+  }
+
   const fetchData = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
-      const [sumRes, sesRes, pgRes, swRes] = await Promise.all([
-        fetch(`${API}?view=summary&days=${days}`),
-        fetch(`${API}?view=sessions&days=${days}&limit=50`),
-        fetch(`${API}?view=pages&days=${days}&limit=50`),
-        fetch(`${API}?view=spider-web&days=${days}`),
+      const [sum, ses, pg, sw] = await Promise.all([
+        safeFetch<Summary | null>(`${API}?view=summary&days=${days}`, null),
+        safeFetch<Session[]>(`${API}?view=sessions&days=${days}&limit=50`, []),
+        safeFetch<PageStat[]>(`${API}?view=pages&days=${days}&limit=50`, []),
+        safeFetch<SpiderWebData | null>(`${API}?view=spider-web&days=${days}`, null),
       ])
-      setSummary(await sumRes.json())
-      setSessions(await sesRes.json())
-      setPages(await pgRes.json())
-      setSpiderWeb(await swRes.json())
+      setSummary(sum)
+      setSessions(ses)
+      setPages(pg)
+      setSpiderWeb(sw)
+      if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
     } catch (e) {
       console.error(e)
+      setError('載入失敗，請重試。')
     }
     setLoading(false)
   }, [days])
@@ -128,6 +143,7 @@ export default function CrawlerDashboard() {
       </div>
 
       {loading && <p style={{ textAlign: 'center', color: '#999' }}>載入中...</p>}
+      {error && <p style={{ textAlign: 'center', color: '#e74c3c', background: '#fef0f0', padding: '12px 16px', borderRadius: 8 }}>{error}</p>}
 
       {summary && !loading && (
         <>
