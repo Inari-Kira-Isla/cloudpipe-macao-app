@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
           botCounts[v.bot_name] = botCounts[v.bot_name] || { count: 0, owner: v.bot_owner }
           botCounts[v.bot_name].count++
           if (v.industry) industryCounts[v.industry] = (industryCounts[v.industry] || 0) + 1
-          const site = v.site || 'cloudpipe-macao-app'
+          const site = (v.site || 'cloudpipe-macao-app').toLowerCase()
           siteCounts[site] = (siteCounts[site] || 0) + 1
         }
 
