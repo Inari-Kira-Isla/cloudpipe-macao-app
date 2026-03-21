@@ -219,16 +219,21 @@ export default function VisibilityPage() {
             ))}
           </div>
 
+          {/* One-Click Fix Generator */}
+          {result.fixes.length > 0 && (
+            <FixGenerator url={result.url} score={result.score} />
+          )}
+
           {/* CTA */}
           <div style={{
             marginTop: 24, padding: 20, borderRadius: 12, textAlign: 'center',
             background: 'linear-gradient(135deg, #111 0%, #333 100%)', color: '#fff',
           }}>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
-              想提升你的 Visibility Score？
+              想讓 CloudPipe 幫你全面優化？
             </div>
             <div style={{ fontSize: 13, color: '#ccc', marginBottom: 16 }}>
-              CloudPipe 提供一鍵 AEO 修復 + AI 爬蟲追蹤 + 每週自動報告
+              專業版包含：AI Agent 對話顧問 + 每週自動報告 + AI 爬蟲追蹤 + 持續優化
             </div>
             <a href="https://cloudpipe-landing.vercel.app" target="_blank" style={{
               display: 'inline-block', padding: '10px 28px', borderRadius: 8,
@@ -257,6 +262,135 @@ export default function VisibilityPage() {
         CloudPipe Visibility Engine — AEO + SEO + GEO 三維掃描
         <br />Powered by CloudPipe AI · 18 項檢查 · 即時修復建議
       </div>
+    </div>
+  )
+}
+
+// ── Fix Generator Component ──
+
+function FixGenerator({ url, score }: { url: string; score: number }) {
+  const [bizName, setBizName] = useState('')
+  const [bizType, setBizType] = useState('')
+  const [desc, setDesc] = useState('')
+  const [phone, setPhone] = useState('')
+  const [addr, setAddr] = useState('')
+  const [fixes, setFixes] = useState<Record<string, string> | null>(null)
+  const [instructions, setInstructions] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  const generate = async () => {
+    if (!bizName.trim()) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/v1/visibility-fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url, business_name: bizName, business_type: bizType,
+          description: desc, phone, address: addr, fix_type: 'all',
+        }),
+      })
+      const data = await res.json()
+      setFixes(data.files || {})
+      setInstructions(data.instructions || [])
+    } catch {
+      alert('生成失敗，請稍後重試')
+    }
+    setLoading(false)
+  }
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text)
+    alert(`已複製 ${label} 到剪貼板！`)
+  }
+
+  return (
+    <div style={{
+      marginTop: 20, borderRadius: 12, border: '2px solid #10a37f',
+      overflow: 'hidden',
+    }}>
+      <button onClick={() => setExpanded(!expanded)} style={{
+        width: '100%', padding: '16px 20px', border: 'none', cursor: 'pointer',
+        background: '#f0faf5', display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', fontSize: 15, fontWeight: 700, color: '#10a37f',
+      }}>
+        <span>🔧 一鍵生成修復檔案（llms.txt + Schema.org + robots.txt）</span>
+        <span>{expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div style={{ padding: 20, background: '#fff' }}>
+          {!fixes ? (
+            <div>
+              <p style={{ fontSize: 13, color: '#666', margin: '0 0 16px' }}>
+                填寫基本資訊，自動生成所有 AEO 必備檔案
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <input placeholder="商戶名稱 *" value={bizName} onChange={e => setBizName(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input placeholder="業務類型（餐廳/酒店/銀行...）" value={bizType} onChange={e => setBizType(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input placeholder="電話 (+853...)" value={phone} onChange={e => setPhone(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input placeholder="地址" value={addr} onChange={e => setAddr(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+              </div>
+              <textarea placeholder="商戶簡介（50-200 字）" value={desc} onChange={e => setDesc(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14, minHeight: 60, resize: 'vertical', boxSizing: 'border-box' }} />
+              <button onClick={generate} disabled={loading || !bizName.trim()} style={{
+                marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none',
+                background: loading ? '#999' : '#10a37f', color: '#fff',
+                fontSize: 14, fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+              }}>
+                {loading ? '生成中...' : '🚀 一鍵生成所有修復檔案'}
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: 'flex', gap: 4, marginBottom: 16, flexWrap: 'wrap' }}>
+                {Object.keys(fixes).map(filename => (
+                  <span key={filename} style={{
+                    padding: '4px 12px', borderRadius: 20, background: '#e8f5e9',
+                    color: '#2e7d32', fontSize: 12, fontWeight: 600,
+                  }}>✓ {filename}</span>
+                ))}
+              </div>
+
+              {Object.entries(fixes).map(([filename, content]) => (
+                <div key={filename} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>📄 {filename}</span>
+                    <button onClick={() => copyToClipboard(content, filename)} style={{
+                      padding: '4px 12px', borderRadius: 6, border: '1px solid #ddd',
+                      background: '#fff', fontSize: 12, cursor: 'pointer',
+                    }}>📋 複製</button>
+                  </div>
+                  <pre style={{
+                    background: '#f5f5f5', padding: 12, borderRadius: 8,
+                    fontSize: 11, overflow: 'auto', maxHeight: 200,
+                    whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                  }}>{content}</pre>
+                </div>
+              ))}
+
+              {instructions.length > 0 && (
+                <div style={{ background: '#fff8e1', padding: 12, borderRadius: 8, marginTop: 12 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📝 安裝步驟：</div>
+                  {instructions.map((inst, i) => (
+                    <div key={i} style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>{inst}</div>
+                  ))}
+                </div>
+              )}
+
+              <button onClick={() => { setFixes(null); setBizName(''); setBizType(''); setDesc(''); setPhone(''); setAddr('') }}
+                style={{ marginTop: 12, padding: '8px 16px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', fontSize: 13, cursor: 'pointer' }}>
+                ← 重新生成
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
