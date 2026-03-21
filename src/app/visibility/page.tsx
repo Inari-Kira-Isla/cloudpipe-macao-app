@@ -219,6 +219,9 @@ export default function VisibilityPage() {
             ))}
           </div>
 
+          {/* AI Agent Chat */}
+          <ChatAgent scanResult={result} />
+
           {/* One-Click Fix Generator */}
           {result.fixes.length > 0 && (
             <FixGenerator url={result.url} score={result.score} />
@@ -261,6 +264,126 @@ export default function VisibilityPage() {
       <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: '#ccc' }}>
         CloudPipe Visibility Engine — AEO + SEO + GEO 三維掃描
         <br />Powered by CloudPipe AI · 18 項檢查 · 即時修復建議
+      </div>
+    </div>
+  )
+}
+
+// ── AI Chat Agent Component ──
+
+function ChatAgent({ scanResult }: { scanResult: ScanResult }) {
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const suggestions = [
+    '為什麼我的 AEO 分數這麼低？',
+    '我應該先修復哪個問題？',
+    '什麼是 llms.txt？對我有什麼好處？',
+    '如何讓 ChatGPT 推薦我的商戶？',
+  ]
+
+  const send = async (question: string) => {
+    if (!question.trim()) return
+    const newMsgs = [...messages, { role: 'user', content: question }]
+    setMessages(newMsgs)
+    setInput('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/v1/visibility-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, scan_result: scanResult }),
+      })
+      const data = await res.json()
+      if (data.answer) {
+        setMessages([...newMsgs, { role: 'assistant', content: data.answer }])
+      } else {
+        setMessages([...newMsgs, { role: 'assistant', content: '抱歉，暫時無法回答。請稍後重試。' }])
+      }
+    } catch {
+      setMessages([...newMsgs, { role: 'assistant', content: '連線失敗，請重試。' }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div style={{
+      marginTop: 20, borderRadius: 12, border: '1px solid #c8ddf5',
+      background: '#f8faff', overflow: 'hidden',
+    }}>
+      <div style={{
+        padding: '12px 20px', background: '#4285f4', color: '#fff',
+        fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <span>💬</span> AI Visibility 顧問
+        <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8 }}>— 問我任何 AEO/SEO/GEO 問題</span>
+      </div>
+
+      <div style={{ padding: 16, maxHeight: 400, overflowY: 'auto' }}>
+        {messages.length === 0 && (
+          <div>
+            <p style={{ fontSize: 13, color: '#666', margin: '0 0 12px' }}>
+              根據掃描結果（{scanResult.score} 分），你可以問我：
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {suggestions.map(q => (
+                <button key={q} onClick={() => send(q)} style={{
+                  padding: '6px 12px', borderRadius: 16, border: '1px solid #c8ddf5',
+                  background: '#fff', fontSize: 12, cursor: 'pointer', color: '#4285f4',
+                }}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {messages.map((msg, i) => (
+          <div key={i} style={{
+            marginBottom: 12,
+            textAlign: msg.role === 'user' ? 'right' : 'left',
+          }}>
+            <div style={{
+              display: 'inline-block', maxWidth: '85%', padding: '10px 14px',
+              borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+              background: msg.role === 'user' ? '#4285f4' : '#fff',
+              color: msg.role === 'user' ? '#fff' : '#333',
+              fontSize: 13, lineHeight: 1.6, textAlign: 'left',
+              border: msg.role === 'assistant' ? '1px solid #e8e8e8' : 'none',
+              whiteSpace: 'pre-wrap',
+            }}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div style={{ fontSize: 13, color: '#999', padding: '8px 0' }}>
+            AI 顧問正在分析...
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px', borderTop: '1px solid #e8e8e8', background: '#fff' }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !loading && send(input)}
+          placeholder="問我任何 AEO/SEO/GEO 問題..."
+          style={{
+            flex: 1, padding: '10px 14px', borderRadius: 20, border: '1px solid #ddd',
+            fontSize: 13, outline: 'none',
+          }}
+        />
+        <button onClick={() => send(input)} disabled={loading || !input.trim()} style={{
+          padding: '10px 20px', borderRadius: 20, border: 'none',
+          background: loading ? '#ccc' : '#4285f4', color: '#fff',
+          fontSize: 13, fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+        }}>
+          發送
+        </button>
       </div>
     </div>
   )
