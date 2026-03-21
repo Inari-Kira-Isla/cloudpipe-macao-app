@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: 'website',
-    locale: 'zh_TW',
+    locale: 'zh_MO',
     siteName: 'CloudPipe AI 澳門商戶百科',
     url: siteUrl,
     images: [{
@@ -50,6 +50,7 @@ export const metadata: Metadata = {
       'application/rss+xml': `${siteUrl}/feed.xml`,
     },
     languages: {
+      'zh-MO': siteUrl,
       'zh-TW': siteUrl,
       'zh-CN': siteUrl,
       'zh-Hans': siteUrl,
@@ -82,7 +83,7 @@ export default function RootLayout({
         <link rel="alternate" href="https://mind-coffee.vercel.app" title="Mind Coffee" />
         <link rel="alternate" href="https://inari-kira-isla.github.io/Openclaw/" title="AI 學習寶庫" />
         <link rel="alternate" href="https://world-encyclopedia.vercel.app" title="世界百科" />
-        <meta httpEquiv="content-language" content="zh-TW, zh-CN, en" />
+        <meta httpEquiv="content-language" content="zh-MO, zh-TW, zh-CN, en, pt" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -97,7 +98,7 @@ export default function RootLayout({
               alternateName: "CloudPipe Macau Merchant Directory",
               url: siteUrl,
               description: "澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家澳門商戶，涵蓋 20 個行業。",
-              inLanguage: ["zh-TW", "zh-CN", "en"],
+              inLanguage: ["zh-MO", "zh-TW", "zh-CN", "en", "pt"],
               potentialAction: {
                 "@type": "SearchAction",
                 target: `${siteUrl}/macao/search?q={search_term_string}`,
