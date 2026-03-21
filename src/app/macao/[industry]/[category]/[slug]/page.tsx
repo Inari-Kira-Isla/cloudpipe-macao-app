@@ -238,7 +238,7 @@ export default async function MerchantPage({ params }: PageProps) {
             {merchant.website && (
               <div>
                 <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">網站</dt>
-                <dd><a href={merchant.website} target="_blank" rel="noopener noreferrer" className="font-medium text-[#0f4c81] hover:underline">{merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 40)}</a></dd>
+                <dd><a href={merchant.website} target="_blank" rel="noopener" className="font-medium text-[#0f4c81] hover:underline">{merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 40)}</a></dd>
               </div>
             )}
             {merchant.email && (
