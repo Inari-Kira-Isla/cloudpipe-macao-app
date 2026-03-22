@@ -1,0 +1,175 @@
+{
+  "project": "CloudPipe 澳門商戶百科 — 資料補缺",
+  "created": "2026-03-22",
+  "total_current": 1130,
+  "target": 1500,
+  "features": [
+    {
+      "id": "F001",
+      "name": "修復佔位子分類（條目=1）",
+      "priority": 1,
+      "status": "done",
+      "description": "17 個只有 1 條記錄的子分類，每個補充到至少 3-5 條",
+      "acceptance_criteria": [
+        "烘焙 ≥5, 度假村 ≥5, 經濟住宿 ≥5, 服務式公寓 ≥5",
+        "零售/購物 ≥5, 時裝 ≥5, 博物館 ≥5",
+        "藝術拍賣 ≥3, 牙科 ≥5, 公證 ≥3, 設計公司 ≥5",
+        "口岸 ≥5, 小學 ≥5, 郵政 ≥3, 街市 ≥5, 飲品 ≥5",
+        "所有修復項通過 Supabase live 驗證"
+      ],
+      "dependencies": [],
+      "assigned_session": 1,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F002",
+      "name": "擴充科技創新（24→64）",
+      "priority": 2,
+      "status": "done",
+      "description": "全場最少的行業，需大幅擴充科技公司、創業孵化、電子商務、金融科技",
+      "acceptance_criteria": [
+        "科技公司 ≥10, 創業孵化 ≥8, 電子商務 ≥8",
+        "金融科技 ≥8, AI/科技 ≥12, 大學實驗室 ≥8",
+        "總條目 ≥60",
+        "每條有完整商戶資料（名稱、地址、描述、FAQ）"
+      ],
+      "dependencies": [],
+      "assigned_session": null,
+      "completed_at": null,
+      "commit_hash": null
+    },
+    {
+      "id": "F003",
+      "name": "擴充博彩娛樂（35→70）",
+      "priority": 2,
+      "status": "done",
+      "description": "澳門核心產業覆蓋不足，需補充娛樂場、貴賓廳、非博彩娛樂",
+      "acceptance_criteria": [
+        "娛樂場 ≥20, 貴賓廳 ≥15, 非博彩娛樂 ≥20",
+        "總條目 ≥70",
+        "每條有完整資料"
+      ],
+      "dependencies": [],
+      "assigned_session": 3,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F004",
+      "name": "擴充社區生活（32→60）",
+      "priority": 3,
+      "status": "done",
+      "description": "補充街市、宗教場所、社團協會、圖書館",
+      "acceptance_criteria": [
+        "街市 ≥8, 郵政 ≥5, 宗教場所 ≥12",
+        "社團協會 ≥12, 圖書館 ≥8",
+        "總條目 ≥60"
+      ],
+      "dependencies": [],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F005",
+      "name": "擴充媒體傳播（34→55）",
+      "priority": 3,
+      "status": "done",
+      "description": "補充網絡媒體、攝影、廣告公司",
+      "acceptance_criteria": [
+        "網絡媒體 ≥12, 攝影 ≥8, 廣告 ≥12",
+        "總條目 ≥55"
+      ],
+      "dependencies": [],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F006",
+      "name": "擴充專業服務（39→65）",
+      "priority": 3,
+      "status": "done",
+      "description": "補充翻譯、公證、HR、設計公司",
+      "acceptance_criteria": [
+        "翻譯 ≥8, 公證 ≥5, HR ≥8, 設計公司 ≥8",
+        "總條目 ≥65"
+      ],
+      "dependencies": [],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F007",
+      "name": "擴充會展活動（37→60）",
+      "priority": 4,
+      "status": "done",
+      "description": "澳門重點發展方向，補充會展中心、商貿展覽、體育賽事",
+      "acceptance_criteria": [
+        "會展中心 ≥15, 商貿展覽 ≥15, 體育賽事 ≥10",
+        "總條目 ≥60"
+      ],
+      "dependencies": [],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F008",
+      "name": "酒店住宿子分類均衡化（54→70）",
+      "priority": 4,
+      "status": "done",
+      "description": "酒店/住宿有51但其他3個子分類都是1，嚴重不均",
+      "acceptance_criteria": [
+        "度假村 ≥8, 經濟住宿 ≥8, 服務式公寓 ≥8",
+        "總條目 ≥70"
+      ],
+      "dependencies": [
+        "F001"
+      ],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F009",
+      "name": "餐飲美食薄弱子分類補充",
+      "priority": 5,
+      "status": "done",
+      "description": "烘焙(1)、西餐(2)、街頭小食(4) 嚴重不足",
+      "acceptance_criteria": [
+        "烘焙 ≥10, 西餐 ≥8, 街頭小食 ≥10",
+        "咖啡/茶飲 ≥10"
+      ],
+      "dependencies": [
+        "F001"
+      ],
+      "assigned_session": 4,
+      "completed_at": "2026-03-22",
+      "commit_hash": null
+    },
+    {
+      "id": "F010",
+      "name": "全站資料完整性驗證",
+      "priority": 6,
+      "status": "done",
+      "description": "驗證所有條目都有完整欄位（名稱、地址、描述、FAQ、schema）",
+      "acceptance_criteria": [
+        "所有 live 條目有名稱+地址+描述",
+        "≥80% 條目有 FAQ",
+        "≥80% 條目有 Schema.org JSON-LD",
+        "總條目 ≥1200"
+      ],
+      "dependencies": [
+        "F001",
+        "F002",
+        "F003"
+      ],
+      "assigned_session": 5,
+      "completed_at": "2026-03-23",
+      "commit_hash": "9a10ec9"
+    }
+  ]
+}
