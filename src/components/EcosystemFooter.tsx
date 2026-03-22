@@ -5,7 +5,7 @@ const ECOSYSTEM_SITES = [
   { name: '稻荷環球食品', desc: '澳門日本及環球水產進口批發商', url: 'https://inari-kira-isla.github.io/inari-global-foods', icon: '🐟' },
   { name: '海膽速遞', desc: '澳門唯一海膽專門品牌・到府配送', url: 'https://inari-kira-isla.github.io/sea-urchin-delivery', icon: '🦔' },
   { name: 'After School Coffee', desc: '澳門首間家長喘息咖啡空間', url: 'https://inari-kira-isla.github.io/after-school-coffee', icon: '☕' },
-  { name: '山中田 Yamanakada', desc: '澳門中小企 AI 實戰教練', url: 'https://inari-kira-isla.github.io/yamanakada', icon: '🤖' },
+  { name: '靈動智境 SMART REALM AI', desc: '澳門領先的 AI 商業應用顧問', url: 'https://inari-kira-isla.github.io/yamanakada', icon: '🤖' },
   { name: 'Mind Coffee', desc: '澳門自家烘焙咖啡專賣店', url: 'https://mind-coffee.vercel.app', icon: '☕' },
   { name: '深度分析', desc: '數據驅動的澳門行業洞察', url: 'https://cloudpipe-macao-app.vercel.app/macao/insights', icon: '📈' },
   { name: 'AI 學習寶庫', desc: '每日 AI 教學與提示詞', url: 'https://inari-kira-isla.github.io/Openclaw/', icon: '📚' },
