@@ -82,15 +82,86 @@ interface InsightSummary {
 }
 
 async function getData() {
-  const [{ data: categories }, { data: merchants }, { data: contentList }, { data: insights }] = await Promise.all([
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  const [
+    { data: categories },
+    { data: allMerchantsSlim },
+    { data: ownedPremiumFull },
+    { data: topCommunityFull },
+    { data: contentList },
+    { data: insights },
+    { count: totalMerchantCount },
+    { data: crawlerRows },
+  ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
-    supabase.from('merchants').select('*, category:categories(slug, name_zh, icon)').eq('status', 'live').order('tier', { ascending: true }),
+    // Slim query for all merchants — only for category counts in industry section
+    supabase.from('merchants')
+      .select('id, slug, tier, category:categories(slug)')
+      .eq('status', 'live'),
+    // Full data for owned/premium (精選品牌)
+    supabase.from('merchants')
+      .select('*, category:categories(slug, name_zh, icon)')
+      .eq('status', 'live')
+      .in('tier', ['owned', 'premium']),
+    // Top 30 community merchants by rating — will be re-sorted by crawler count in JS
+    supabase.from('merchants')
+      .select('*, category:categories(slug, name_zh, icon)')
+      .eq('status', 'live')
+      .neq('tier', 'owned')
+      .neq('tier', 'premium')
+      .not('google_rating', 'is', null)
+      .order('google_rating', { ascending: false })
+      .limit(30),
     supabase.from('merchant_content').select('merchant_id, title, description').not('title', 'is', null),
     supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
+    // Count only — for schema + hero stat (no payload)
+    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
+    // AI crawler visits past 30 days — merchant pages only
+    supabase.from('crawler_visits')
+      .select('path')
+      .eq('site', 'cloudpipe-macao-app')
+      .eq('page_type', 'merchant')
+      .gte('ts', thirtyDaysAgo)
+      .limit(500),
   ])
+
+  // slug → crawler visit count (past 30 days)
+  const slugCounts = new Map<string, number>()
+  for (const row of crawlerRows || []) {
+    const slug = row.path.split('/').pop()
+    if (slug) slugCounts.set(slug, (slugCounts.get(slug) || 0) + 1)
+  }
+
+  // Category counts from full slim dataset (keeps industry section accurate)
+  const groupedCounts = new Map<string, number>()
+  for (const m of allMerchantsSlim || []) {
+    const catSlug = (m as unknown as { category: { slug: string } | null }).category?.slug || 'other'
+    groupedCounts.set(catSlug, (groupedCounts.get(catSlug) || 0) + 1)
+  }
+
+  // Sort community by crawler count desc, then google_rating desc
+  const ownedSlugs = new Set((ownedPremiumFull || []).map(m => m.slug))
+  const communityByRelevance = [...(topCommunityFull || [])]
+    .filter(m => !ownedSlugs.has(m.slug))
+    .sort((a, b) => {
+      const ca = slugCounts.get(a.slug || '') || 0
+      const cb = slugCounts.get(b.slug || '') || 0
+      return cb - ca || (b.google_rating || 0) - (a.google_rating || 0)
+    })
+
+  // Final featured: owned/premium first, then top crawler community, max 24
+  const featuredMerchants = [
+    ...(ownedPremiumFull || []),
+    ...communityByRelevance,
+  ].slice(0, 24) as (Merchant & { category: Pick<Category, 'slug' | 'name_zh' | 'icon'> })[]
+
   return {
     categories: (categories || []) as Category[],
-    merchants: (merchants || []) as (Merchant & { category: Pick<Category, 'slug' | 'name_zh' | 'icon'> })[],
+    groupedCounts,
+    totalMerchantCount: totalMerchantCount || 0,
+    featuredMerchants,
+    slugCounts,
     contentMap: new Map((contentList || []).map((c: Pick<MerchantContent, 'merchant_id' | 'title' | 'description'>) => [c.merchant_id, c])),
     insights: (insights || []) as InsightSummary[],
   }
@@ -107,19 +178,10 @@ const INSIGHT_INDUSTRY_LABELS: Record<string, string> = {
 }
 
 export default async function MacaoIndexPage() {
-  const { categories, merchants, contentMap, insights } = await getData()
+  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-  const grouped = new Map<string, typeof merchants>()
-  for (const m of merchants) {
-    const catSlug = m.category?.slug || 'other'
-    if (!grouped.has(catSlug)) grouped.set(catSlug, [])
-    grouped.get(catSlug)!.push(m)
-  }
-
-  const featured = merchants.filter(m => m.tier === 'owned' || m.tier === 'premium')
-  const community = merchants.filter(m => m.tier !== 'owned' && m.tier !== 'premium')
-  const activeCats = categories.filter(c => (grouped.get(c.slug)?.length || 0) > 0)
+  const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
 
   /* ── Schema.org: WebSite + CollectionPage + Organization + FAQPage ── */
   const schemas = [
@@ -141,10 +203,10 @@ export default async function MacaoIndexPage() {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: '澳門商戶百科',
-      description: `澳門最完整的 AI 友善商戶資訊平台，收錄 ${merchants.length} 家商戶，${INDUSTRIES.length} 個行業大類`,
+      description: `澳門最完整的 AI 友善商戶資訊平台，收錄 ${totalMerchantCount} 家商戶，${INDUSTRIES.length} 個行業大類`,
       url: `${siteUrl}/macao`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI', url: siteUrl },
-      numberOfItems: merchants.length,
+      numberOfItems: totalMerchantCount,
       mainEntity: {
         '@type': 'ItemList',
         numberOfItems: INDUSTRIES.length,
@@ -219,7 +281,7 @@ export default async function MacaoIndexPage() {
           {/* Stats */}
           <div className="flex flex-wrap justify-center gap-8 md:gap-12 mt-6">
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white">{merchants.length}+</div>
+              <div className="text-3xl md:text-4xl font-bold text-white">{totalMerchantCount}+</div>
               <div className="text-xs text-blue-200/70 mt-1">收錄商戶</div>
             </div>
             <div className="text-center">
@@ -227,7 +289,7 @@ export default async function MacaoIndexPage() {
               <div className="text-xs text-blue-200/70 mt-1">行業分類</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white">{featured.length}</div>
+              <div className="text-3xl md:text-4xl font-bold text-white">{featuredMerchants.filter(m => m.tier === 'owned' || m.tier === 'premium').length}</div>
               <div className="text-xs text-blue-200/70 mt-1">精選品牌</div>
             </div>
             <div className="text-center">
@@ -294,7 +356,7 @@ export default async function MacaoIndexPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
             {INDUSTRIES.map(ind => {
               const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
-              const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
+              const indTotal = indCats.reduce((sum, c) => sum + (groupedCounts.get(c.slug) || 0), 0)
               return (
                 <a key={ind.slug} href={`/macao/${ind.slug}`}
                   className="group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
@@ -321,7 +383,7 @@ export default async function MacaoIndexPage() {
           {/* Existing categories with merchants (expanded) */}
           {INDUSTRIES.filter(ind => activeCats.some(c => ind.categories.includes(c.slug))).map(ind => {
             const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
-            const indTotal = indCats.reduce((sum, c) => sum + (grouped.get(c.slug)?.length || 0), 0)
+            const indTotal = indCats.reduce((sum, c) => sum + (groupedCounts.get(c.slug) || 0), 0)
             return (
               <div key={ind.slug} className="mb-6">
                 <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
@@ -331,7 +393,7 @@ export default async function MacaoIndexPage() {
                 </a>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {indCats.map(cat => {
-                    const count = grouped.get(cat.slug)?.length || 0
+                    const count = groupedCounts.get(cat.slug) || 0
                     const meta = CATEGORY_META[cat.slug]
                     const icon = meta?.icon || cat.icon || '📋'
                     return (
@@ -397,100 +459,71 @@ export default async function MacaoIndexPage() {
           </section>
         )}
 
-        {/* ═══ Featured / Premium Brands ═══ */}
-        {featured.length > 0 && (
-          <section className="mb-14">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="gold-line flex-1 max-w-[40px]"></div>
-              <h2 className="text-xl font-bold text-[#1a1a2e]">精選品牌</h2>
-              <div className="gold-line flex-1 max-w-[40px]"></div>
-            </div>
-            <p className="text-center text-sm text-gray-500 mb-8">
-              擁有完整 AEO 優化的澳門品牌 — 豐富內容、FAQ、結構化數據
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {featured.filter(m => m.slug).map((m) => {
-                const content = contentMap.get(m.id) as Pick<MerchantContent, 'merchant_id' | 'title' | 'description'> | undefined
-                return (
+        {/* ═══ AI 熱搜商戶排行 ═══ */}
+        <section className="mb-14">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">🤖 AI 熱搜商戶排行</h2>
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mb-8">
+            以下商戶被 ChatGPT、Perplexity、ClaudeBot 頻繁搜尋 — 精選品牌已完成 AEO 優化，其餘仍有機會
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featuredMerchants.filter(m => m.slug).map((m) => {
+              const isOwned = m.tier === 'owned' || m.tier === 'premium'
+              const crawlerCount = slugCounts.get(m.slug || '') || 0
+              const content = contentMap.get(m.id) as Pick<MerchantContent, 'merchant_id' | 'title' | 'description'> | undefined
+              return (
+                <div key={m.id} className="flex flex-col">
                   <a
-                    key={m.id}
                     href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
-                    className="card-hover block bg-white border border-gray-200 rounded-xl p-6 relative overflow-hidden"
+                    className={`card-hover block bg-white rounded-xl p-5 relative overflow-hidden flex-1 ${isOwned ? 'border border-amber-200' : 'border border-gray-200'}`}
                   >
-                    <div className="absolute top-0 left-0 right-0 gold-line"></div>
+                    {isOwned && <div className="absolute top-0 left-0 right-0 gold-line"></div>}
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-bold text-[#1a1a2e]">{m.name_zh}</h3>
-                      <span className="text-xs px-2.5 py-1 bg-[#fdf6ec] text-[#c5a572] rounded-full font-semibold border border-[#c5a572]/20 flex-shrink-0 ml-2">
-                        精選
-                      </span>
+                      <h3 className="font-semibold text-[#1a1a2e]">{m.name_zh}</h3>
+                      {isOwned
+                        ? <span className="text-xs px-2 py-0.5 bg-[#fdf6ec] text-[#c5a572] rounded-full font-semibold border border-[#c5a572]/20 flex-shrink-0 ml-2">精選</span>
+                        : crawlerCount > 0
+                          ? <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full flex-shrink-0 ml-2">🤖 {crawlerCount} 次</span>
+                          : <span className="text-xs px-2 py-0.5 bg-gray-50 text-gray-400 rounded-full flex-shrink-0 ml-2">未優化</span>
+                      }
                     </div>
-                    {m.name_en && <p className="text-sm text-gray-500 mb-2">{m.name_en}</p>}
-                    {content?.description && (
+                    {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
+                    {isOwned && content?.description && (
                       <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{content.description}</p>
                     )}
-                    <div className="flex flex-wrap gap-2 text-xs">
+                    <div className="flex flex-wrap gap-1.5 text-xs">
                       {m.category?.name_zh && (
-                        <span className="px-2.5 py-1 bg-[#e8f0fe] text-[#0f4c81] rounded-md font-medium">
+                        <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
                           {CATEGORY_META[m.category.slug]?.icon || m.category.icon || '📋'} {m.category.name_zh}
                         </span>
                       )}
                       {m.google_rating && (
-                        <span className="px-2.5 py-1 rating-badge rounded-md">
-                          ★ {m.google_rating}
-                        </span>
+                        <span className="px-2 py-0.5 rating-badge rounded">★ {m.google_rating}</span>
                       )}
                       {m.district && (
-                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md">
-                          {m.district}
-                        </span>
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{m.district}</span>
                       )}
                     </div>
                   </a>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ═══ All Community Merchants ═══ */}
-        <section className="mb-14">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-[#1a1a2e]">全部商戶</h2>
-            <span className="text-sm text-gray-400">{community.length} 家</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {community.filter(m => m.slug).map((m) => (
-              <a
-                key={m.id}
-                href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
-                className="card-hover block bg-white border border-gray-200 rounded-xl p-5"
-              >
-                <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
-                {m.name_en && <p className="text-xs text-gray-400 mb-3">{m.name_en}</p>}
-                <div className="flex flex-wrap gap-1.5 text-xs">
-                  {m.category?.name_zh && (
-                    <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
-                      {CATEGORY_META[m.category.slug]?.icon || m.category.icon || '📋'} {m.category.name_zh}
-                    </span>
-                  )}
-                  {m.google_rating && (
-                    <span className="px-2 py-0.5 rating-badge rounded">
-                      ★ {m.google_rating}
-                    </span>
-                  )}
-                  {m.price_range && (
-                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
-                      <PriceLabel range={m.price_range} />
-                    </span>
-                  )}
-                  {m.district && (
-                    <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded">
-                      {m.district}
-                    </span>
+                  {!isOwned && (
+                    <a
+                      href="https://cloudpipe-landing.vercel.app#contact"
+                      className="mt-1.5 block text-center text-xs text-[#0f4c81] hover:underline py-1.5 bg-[#e8f0fe] rounded-lg"
+                    >
+                      🚀 升級 AEO 優化 → 讓 AI 主動引用你的商戶
+                    </a>
                   )}
                 </div>
-              </a>
-            ))}
+              )
+            })}
+          </div>
+          <div className="mt-8 text-center">
+            <a href="/macao/dining" className="inline-flex items-center gap-1 text-sm text-[#0f4c81] hover:underline">
+              查看全部 {totalMerchantCount}+ 家商戶 →
+            </a>
           </div>
         </section>
 
