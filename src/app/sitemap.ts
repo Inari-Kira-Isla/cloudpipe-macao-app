@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
