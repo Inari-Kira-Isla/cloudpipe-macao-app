@@ -83,6 +83,7 @@ interface RelatedMerchant {
   name_en?: string
   district?: string
   google_rating?: number
+  website?: string | null
   category: { slug: string; name_zh: string; icon?: string } | null
 }
 
@@ -91,7 +92,7 @@ async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> 
   if (!validSlugs.length) return []
   const { data } = await supabase
     .from('merchants')
-    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating')
+    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
     .in('slug', validSlugs)
     .eq('status', 'live')
   if (!data) return []
@@ -403,27 +404,38 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
               {merchants.filter(m => m.slug && m.slug !== 'null').map(m => {
                 const indSlug = CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'
                 return (
-                  <a
-                    key={m.slug}
-                    href={`/macao/${indSlug}/${m.category?.slug || 'other'}/${m.slug}`}
-                    className="card-hover block bg-white border border-gray-200 rounded-xl p-5"
-                  >
-                    <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
-                    {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
-                    <div className="flex flex-wrap gap-1.5 text-xs">
-                      {m.category?.name_zh && (
-                        <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
-                          {m.category.icon || '📋'} {m.category.name_zh}
-                        </span>
-                      )}
-                      {m.google_rating && (
-                        <span className="px-2 py-0.5 rating-badge rounded">★ {m.google_rating}</span>
-                      )}
-                      {m.district && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{m.district}</span>
-                      )}
-                    </div>
-                  </a>
+                  <div key={m.slug} className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-2">
+                    <a
+                      href={`/macao/${indSlug}/${m.category?.slug || 'other'}/${m.slug}`}
+                      className="card-hover block"
+                    >
+                      <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
+                      {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
+                      <div className="flex flex-wrap gap-1.5 text-xs">
+                        {m.category?.name_zh && (
+                          <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
+                            {m.category.icon || '📋'} {m.category.name_zh}
+                          </span>
+                        )}
+                        {m.google_rating && (
+                          <span className="px-2 py-0.5 rating-badge rounded">★ {m.google_rating}</span>
+                        )}
+                        {m.district && (
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{m.district}</span>
+                        )}
+                      </div>
+                    </a>
+                    {m.website && (
+                      <a
+                        href={m.website}
+                        target="_blank"
+                        rel="noopener"
+                        className="text-xs text-[#0f4c81] hover:underline truncate"
+                      >
+                        🔗 {m.website.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
+                  </div>
                 )
               })}
             </div>
