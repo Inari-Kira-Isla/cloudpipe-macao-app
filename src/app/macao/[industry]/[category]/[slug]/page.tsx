@@ -121,9 +121,15 @@ export default async function MerchantPage({ params }: PageProps) {
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
+  const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
+  const sameAsUrls = [
+    merchant.website,
+  ].filter(Boolean) as string[]
+
   const schemaOrg = {
     '@context': 'https://schema.org',
     '@type': (merchant.schema_type && merchant.schema_type !== 'Organization') ? merchant.schema_type : (CATEGORY_SCHEMA_MAP[catSlug] || 'LocalBusiness'),
+    '@id': pageUrl,
     name: merchant.name_zh,
     alternateName: merchant.name_en,
     description: content?.description || `${merchant.name_zh} — 澳門${cat?.name_zh || ''}`,
@@ -148,6 +154,11 @@ export default async function MerchantPage({ params }: PageProps) {
         '@type': 'OpeningHoursSpecification', dayOfWeek: day, opens: (hours as string).split('-')[0], closes: (hours as string).split('-')[1],
       })),
     }),
+    ...(sameAsUrls.length > 0 && { sameAs: sameAsUrls }),
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', 'main section:first-child', '.prose'],
+    },
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
   }
 
