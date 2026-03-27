@@ -102,6 +102,49 @@ async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> 
   })) as RelatedMerchant[]
 }
 
+// industry slug → matching category slugs (used for fallback merchant lookup)
+const INDUSTRY_TO_CATEGORIES: Record<string, string[]> = {
+  dining: ['restaurant', 'japanese', 'portuguese', 'chinese', 'western', 'cafe', 'bakery', 'hotpot', 'michelin', 'street-food', 'fast-food', 'dessert', 'tea-restaurant'],
+  hotels: ['hotel', 'resort', 'hostel'],
+  attractions: ['tourism', 'museum', 'theme-park', 'heritage'],
+  shopping: ['retail', 'shopping-mall', 'supermarket', 'pharmacy'],
+  wellness: ['beauty', 'gym', 'spa', 'medical'],
+  nightlife: ['bar', 'club', 'lounge'],
+  gaming: ['entertainment', 'casino'],
+  'food-supply': ['food-import', 'food-delivery', 'wholesale'],
+  education: ['school', 'tutoring', 'university'],
+  finance: ['bank', 'insurance', 'fintech'],
+  'professional-services': ['legal', 'accounting', 'consulting'],
+  events: ['event-venue', 'catering'],
+  'real-estate': ['property', 'real-estate'],
+}
+
+// Fallback: fetch top-rated merchants from related industries when no slugs assigned
+async function getFallbackMerchants(industries: string[]): Promise<RelatedMerchant[]> {
+  if (!industries?.length) return []
+  const categorySlugs = industries.flatMap(ind => INDUSTRY_TO_CATEGORIES[ind] || [])
+  if (!categorySlugs.length) return []
+  const { data: cats } = await supabase
+    .from('categories')
+    .select('id')
+    .in('slug', categorySlugs)
+  const catIds = (cats || []).map((c: { id: string }) => c.id)
+  if (!catIds.length) return []
+  const { data } = await supabase
+    .from('merchants')
+    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
+    .eq('status', 'live')
+    .in('category_id', catIds)
+    .not('google_rating', 'is', null)
+    .order('google_rating', { ascending: false })
+    .limit(6)
+  if (!data) return []
+  return data.map((d: Record<string, unknown>) => ({
+    ...d,
+    category: Array.isArray(d.category) ? d.category[0] || null : d.category,
+  })) as RelatedMerchant[]
+}
+
 export async function generateStaticParams() {
   const { data } = await supabase
     .from('insights')
@@ -177,8 +220,12 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
   ])
   if (!article) notFound()
 
-  const [merchants, { data: crossInsightsRaw }] = await Promise.all([
-    getRelatedMerchants(article.related_merchant_slugs || []),
+  const assignedMerchants = await getRelatedMerchants(article.related_merchant_slugs || [])
+  const merchants = assignedMerchants.length > 0
+    ? assignedMerchants
+    : await getFallbackMerchants(article.related_industries || [])
+
+  const [{ data: crossInsightsRaw }] = await Promise.all([
     supabase.from('insights')
       .select('slug, title, subtitle, read_time_minutes, tags, related_industries')
       .eq('status', 'published').eq('lang', lang)
@@ -398,7 +445,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
           <section className="mb-10">
             <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
               <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
-              {ui.related}
+              {assignedMerchants.length > 0 ? ui.related : (lang === 'zh' ? '相關商戶推薦' : lang === 'en' ? 'Merchants in This Category' : 'Comerciantes Relacionados')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {merchants.filter(m => m.slug && m.slug !== 'null').map(m => {
