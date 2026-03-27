@@ -99,6 +99,7 @@ def generate_batch(name_zh, count, batch_num):
     result = call_model(
         agent_id="content-optimizer",
         messages=[{"role": "user", "content": prompt}],
+        task_tier="haiku-cli",
         action=f"mass_{name_zh}_{batch_num}", max_tokens=3000, use_cache=False,
     )
     if not result.get("ok"):
