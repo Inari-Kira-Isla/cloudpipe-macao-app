@@ -83,6 +83,9 @@ interface InsightSummary {
 
 async function getData() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayStr = todayStart.toISOString()
 
   const [
     { data: categories },
@@ -93,6 +96,9 @@ async function getData() {
     { data: insights },
     { count: totalMerchantCount },
     { data: crawlerRows },
+    { count: totalAiVisits },
+    { count: todayAiVisits },
+    { data: botRows },
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     // Slim query for all merchants — only for category counts in industry section
@@ -124,6 +130,20 @@ async function getData() {
       .eq('page_type', 'merchant')
       .gte('ts', thirtyDaysAgo)
       .limit(500),
+    // Total AI visits (all time)
+    supabase.from('crawler_visits')
+      .select('*', { count: 'exact', head: true })
+      .eq('site', 'cloudpipe-macao-app'),
+    // Today's AI visits
+    supabase.from('crawler_visits')
+      .select('*', { count: 'exact', head: true })
+      .eq('site', 'cloudpipe-macao-app')
+      .gte('ts', todayStr),
+    // Bot breakdown — top bots
+    supabase.from('crawler_visits')
+      .select('bot_name, bot_owner')
+      .eq('site', 'cloudpipe-macao-app')
+      .limit(2000),
   ])
 
   // slug → crawler visit count (past 30 days)
@@ -132,6 +152,18 @@ async function getData() {
     const slug = row.path.split('/').pop()
     if (slug) slugCounts.set(slug, (slugCounts.get(slug) || 0) + 1)
   }
+
+  // Bot breakdown — count by owner
+  const botOwnerCounts = new Map<string, number>()
+  for (const row of botRows || []) {
+    if (row.bot_owner) {
+      botOwnerCounts.set(row.bot_owner, (botOwnerCounts.get(row.bot_owner) || 0) + 1)
+    }
+  }
+  const topBots = [...botOwnerCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([owner]) => owner)
 
   // Category counts from full slim dataset (keeps industry section accurate)
   const groupedCounts = new Map<string, number>()
@@ -164,6 +196,12 @@ async function getData() {
     slugCounts,
     contentMap: new Map((contentList || []).map((c: Pick<MerchantContent, 'merchant_id' | 'title' | 'description'>) => [c.merchant_id, c])),
     insights: (insights || []) as InsightSummary[],
+    crawlerStats: {
+      total: totalAiVisits || 0,
+      today: todayAiVisits || 0,
+      botCount: botOwnerCounts.size,
+      topBots,
+    },
   }
 }
 
@@ -178,7 +216,7 @@ const INSIGHT_INDUSTRY_LABELS: Record<string, string> = {
 }
 
 export default async function MacaoIndexPage() {
-  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights } = await getData()
+  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
@@ -300,6 +338,61 @@ export default async function MacaoIndexPage() {
         </div>
       </div>
       <div className="gold-line"></div>
+
+      {/* ═══ AI 爬取統計橫幅 ═══ */}
+      <div className="bg-[#0a1628] text-white">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            {/* Left: label */}
+            <div className="flex-shrink-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-green-400">AI 爬取監測</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[160px]">
+                全球 AI 引擎主動爬取<br />澳門商戶百科的次數
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap gap-6 md:gap-10 flex-1">
+              <div>
+                <div className="text-2xl md:text-3xl font-bold text-white tabular-nums">
+                  {crawlerStats.total.toLocaleString()}
+                </div>
+                <div className="text-xs text-slate-400 mt-0.5">累計 AI 爬取</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-bold text-emerald-400 tabular-nums">
+                  +{crawlerStats.today.toLocaleString()}
+                </div>
+                <div className="text-xs text-slate-400 mt-0.5">今日新增</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-bold text-blue-300 tabular-nums">
+                  {crawlerStats.botCount}
+                </div>
+                <div className="text-xs text-slate-400 mt-0.5">AI 引擎種類</div>
+              </div>
+            </div>
+
+            {/* Bot logos */}
+            <div className="flex-shrink-0">
+              <div className="text-xs text-slate-500 mb-2 uppercase tracking-wider">已爬取的 AI 引擎</div>
+              <div className="flex flex-wrap gap-1.5">
+                {crawlerStats.topBots.map(bot => (
+                  <span
+                    key={bot}
+                    className="px-2 py-0.5 rounded text-xs bg-slate-700/60 text-slate-300 border border-slate-600/40"
+                  >
+                    {bot}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <main className="max-w-6xl mx-auto px-4 py-10">
 
