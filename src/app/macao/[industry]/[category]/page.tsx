@@ -100,8 +100,22 @@ export default async function CategoryPage({ params }: PageProps) {
       name: `澳門${category.name_zh}`,
       description: `澳門${category.name_zh}商戶百科，共 ${merchants.length} 家`,
       url: `${siteUrl}/macao/${indSlug}/${catSlug}`,
-      isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI 澳門商戶百科', url: siteUrl },
+      isPartOf: {
+        '@type': 'CollectionPage',
+        name: `澳門${industry.name_zh}完整指南`,
+        url: `${siteUrl}/macao/${indSlug}`,
+      },
       numberOfItems: merchants.length,
+      about: {
+        '@type': 'Thing',
+        name: `澳門${category.name_zh}`,
+      },
+      mentions: merchants.filter(m => m.slug).slice(0, 20).map(m => ({
+        '@type': 'LocalBusiness',
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${indSlug}/${catSlug}/${m.slug}`,
+      })),
+      relatedLink: insights.map((i: { slug: string }) => `${siteUrl}/macao/insights/${i.slug}`),
     },
     {
       '@context': 'https://schema.org',

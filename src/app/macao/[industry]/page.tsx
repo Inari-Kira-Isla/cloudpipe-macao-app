@@ -129,6 +129,17 @@ export default async function IndustryPage({ params }: PageProps) {
       url: `${siteUrl}/macao/${slug}`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI 澳門商戶百科', url: siteUrl },
       numberOfItems: merchants.length,
+      about: {
+        '@type': 'Thing',
+        name: `澳門${industry.name_zh}`,
+        description: industry.description,
+      },
+      mentions: merchants.filter(m => m.slug).slice(0, 20).map(m => ({
+        '@type': 'LocalBusiness',
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${slug}/${m.category?.slug || 'other'}/${m.slug}`,
+      })),
+      relatedLink: insights.map(i => `${siteUrl}/macao/insights/${i.slug}`),
       mainEntity: {
         '@type': 'ItemList',
         numberOfItems: categories.length,
