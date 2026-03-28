@@ -334,6 +334,20 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
         url: `${siteUrl}/macao/${ind.slug}`,
       })),
     }),
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      isBasedOn: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'WebPage',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
+    ...(merchants.length > 0 && {
+      mentions: merchants.filter(m => m.slug && m.slug !== 'null').slice(0, 10).map(m => ({
+        '@type': 'LocalBusiness',
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${(article.related_industries?.[0]) || 'dining'}/${m.category?.slug || 'general'}/${m.slug}`,
+      })),
+    }),
   }
 
   const faqSchema = article.faqs?.length > 0 ? {

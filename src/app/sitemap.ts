@@ -57,16 +57,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   entries.push({
     url: `${siteUrl}/macao/insights`,
     lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.9,
+    changeFrequency: 'daily',
+    priority: 1.0,
   })
 
   for (const ins of (insights || [])) {
     entries.push({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'monthly',
-      priority: 0.85,
+      changeFrequency: 'weekly',
+      priority: 0.95,
     })
   }
 
