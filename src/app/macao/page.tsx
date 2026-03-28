@@ -547,12 +547,15 @@ export default async function MacaoIndexPage() {
                     {isOwned && <div className="absolute top-0 left-0 right-0 gold-line"></div>}
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-[#1a1a2e]">{m.name_zh}</h3>
-                      {isOwned
-                        ? <span className="text-xs px-2 py-0.5 bg-[#fdf6ec] text-[#c5a572] rounded-full font-semibold border border-[#c5a572]/20 flex-shrink-0 ml-2">精選</span>
-                        : crawlerCount > 0
-                          ? <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full flex-shrink-0 ml-2">🤖 {crawlerCount} 次</span>
-                          : <span className="text-xs px-2 py-0.5 bg-gray-50 text-gray-400 rounded-full flex-shrink-0 ml-2">未優化</span>
-                      }
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                        {isOwned && (
+                          <span className="text-xs px-2 py-0.5 bg-[#fdf6ec] text-[#c5a572] rounded-full font-semibold border border-[#c5a572]/20">精選</span>
+                        )}
+                        {crawlerCount > 0
+                          ? <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">🤖 {crawlerCount} 次</span>
+                          : !isOwned && <span className="text-xs px-2 py-0.5 bg-gray-50 text-gray-400 rounded-full">未優化</span>
+                        }
+                      </div>
                     </div>
                     {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
                     {isOwned && content?.description && (
