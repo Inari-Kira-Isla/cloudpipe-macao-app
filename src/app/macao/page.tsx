@@ -473,43 +473,14 @@ export default async function MacaoIndexPage() {
             })}
           </div>
 
-          {/* Existing categories with merchants (expanded) */}
-          {INDUSTRIES.filter(ind => activeCats.some(c => ind.categories.includes(c.slug))).map(ind => {
-            const indCats = activeCats.filter(c => ind.categories.includes(c.slug))
-            const indTotal = indCats.reduce((sum, c) => sum + (groupedCounts.get(c.slug) || 0), 0)
-            return (
-              <div key={ind.slug} className="mb-6">
-                <a href={`/macao/${ind.slug}`} className="flex items-center gap-2 mb-3 group">
-                  <img src={`/images/industries/${ind.slug}-hero.jpg`} alt={ind.name_zh} width={28} height={28} className="w-7 h-7 rounded object-cover" />
-                  <h3 className="font-bold text-[#1a1a2e] group-hover:text-[#0f4c81] transition-colors">{ind.name_zh}</h3>
-                  <span className="text-xs text-gray-400">{ind.name_en} · {indTotal} 家</span>
-                </a>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {indCats.map(cat => {
-                    const count = groupedCounts.get(cat.slug) || 0
-                    const meta = CATEGORY_META[cat.slug]
-                    const icon = meta?.icon || cat.icon || '📋'
-                    return (
-                      <a key={cat.id} href={`/macao/${ind.slug}/${cat.slug}`}
-                        className="card-hover block bg-white border border-gray-200 rounded-xl p-4 text-center">
-                        <div className="text-2xl mb-1">{icon}</div>
-                        <h4 className="font-semibold text-[#1a1a2e] text-sm">{cat.name_zh}</h4>
-                        <p className="text-xs text-gray-400">{count} 家</p>
-                      </a>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
         </section>
 
-        {/* ═══ 深度分析 ═══ */}
+        {/* ═══ 行業洞察報告 ═══ */}
         {insights.length > 0 && (
           <section className="mb-14">
             <div className="flex items-center gap-3 mb-6">
               <div className="gold-line flex-1 max-w-[40px]"></div>
-              <h2 className="text-xl font-bold text-[#1a1a2e]">深度分析</h2>
+              <h2 className="text-xl font-bold text-[#1a1a2e]">行業洞察報告</h2>
               <div className="gold-line flex-1 max-w-[40px]"></div>
             </div>
             <p className="text-center text-sm text-gray-500 mb-8">
