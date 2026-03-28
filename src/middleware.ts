@@ -70,6 +70,13 @@ function parsePath(path: string): { pageType: string; industry: string | null; c
   if (path === '/sitemap.xml') return { pageType: 'sitemap', industry: null, category: null }
   if (path === '/robots.txt') return { pageType: 'robots', industry: null, category: null }
 
+  // Insights section (must be checked before generic segment matching)
+  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: null, category: null }
+  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: null, category: null }
+
+  // Crawler dashboard (internal, skip)
+  if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: null, category: null }
+
   const segments = path.replace(/^\/macao\//, '').replace(/\/$/, '').split('/')
   if (segments.length === 1) return { pageType: 'industry', industry: segments[0], category: null }
   if (segments.length === 2) return { pageType: 'category', industry: segments[0], category: segments[1] }
