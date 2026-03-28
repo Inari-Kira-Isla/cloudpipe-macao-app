@@ -71,8 +71,9 @@ function parsePath(path: string): { pageType: string; industry: string | null; c
   if (path === '/robots.txt') return { pageType: 'robots', industry: null, category: null }
 
   // Insights section (must be checked before generic segment matching)
-  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: null, category: null }
-  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: null, category: null }
+  // Keep industry: 'insights' so AEO monitor's industries['insights'] counter stays populated
+  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: 'insights', category: null }
+  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: 'insights', category: null }
 
   // Crawler dashboard (internal, skip)
   if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: null, category: null }
