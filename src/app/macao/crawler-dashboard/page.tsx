@@ -38,13 +38,14 @@ interface SpiderWebData {
 }
 
 interface MerchantDiscoveryItem {
-  slug: string; name_zh: string; name_en: string; industry: string; district: string
+  slug: string; name_zh: string; name_en: string; industry: string; district: string; region: string
   visits: number; botCount: number; bots: string[]; lastTs: string
   insightCount: number; totalWords: number; sampleInsights: string[]
   score: number; readinessLabel: string; readinessColor: string
 }
 interface MerchantDiscovery {
   days: number
+  regionStats: Record<string, { total: number; crawled: number; covered: number; ready: number; nearReady: number; gap: number }>
   summary: {
     totalTracked: number; crawledByAI: number; insightCovered: number
     aiReady: number; nearReady: number; coverageGap: number
@@ -104,7 +105,7 @@ export default function CrawlerDashboard() {
   const [routingLoading, setRoutingLoading] = useState(false)
   const [discovery, setDiscovery] = useState<MerchantDiscovery | null>(null)
   const [discoveryLoading, setDiscoveryLoading] = useState(false)
-  const [discoveryDistrict, setDiscoveryDistrict] = useState('')
+  const [discoveryRegion, setDiscoveryRegion] = useState('')
   const [discoveryIndustry, setDiscoveryIndustry] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -752,12 +753,44 @@ export default function CrawlerDashboard() {
                     </p>
                   </div>
 
+                  {/* 4-Region Stats */}
+                  {(() => {
+                    const REGION_LABELS: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
+                    const rs = discovery.regionStats || {}
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+                        {['macao','hongkong','taiwan','japan'].map(r => {
+                          const d = rs[r] || { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 }
+                          const pct = d.total > 0 ? Math.round(d.ready / d.total * 100) : 0
+                          const isActive = discoveryRegion === r
+                          return (
+                            <div key={r}
+                              onClick={() => setDiscoveryRegion(isActive ? '' : r)}
+                              style={{ background: isActive ? '#eff6ff' : '#fafafa', border: `2px solid ${isActive ? '#3b82f6' : '#eee'}`, borderRadius: 10, padding: 14, cursor: 'pointer' }}
+                            >
+                              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{REGION_LABELS[r]}</div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
+                                <div><span style={{ color: '#888' }}>商戶 </span><b>{d.total}</b></div>
+                                <div><span style={{ color: '#888' }}>AI爬 </span><b style={{ color: d.crawled > 0 ? '#10a37f' : '#999' }}>{d.crawled}</b></div>
+                                <div><span style={{ color: '#888' }}>已就緒 </span><b style={{ color: '#16a34a' }}>{d.ready}</b></div>
+                                <div><span style={{ color: '#888' }}>接近 </span><b style={{ color: '#d97706' }}>{d.nearReady}</b></div>
+                              </div>
+                              <div style={{ marginTop: 8, background: '#e5e5e5', borderRadius: 4, height: 6 }}>
+                                <div style={{ width: `${pct}%`, background: pct >= 50 ? '#16a34a' : pct >= 20 ? '#d97706' : '#fca5a5', height: '100%', borderRadius: 4 }} />
+                              </div>
+                              <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>就緒率 {pct}%</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
+
                   {/* Merchant Table */}
                   {(() => {
-                    const allDistricts = [...new Set(discovery.merchants.map(m => m.district).filter(Boolean))].sort()
                     const allIndustries = [...new Set(discovery.merchants.map(m => m.industry).filter(Boolean))].sort()
                     const filtered = discovery.merchants.filter(m =>
-                      (!discoveryDistrict || m.district === discoveryDistrict) &&
+                      (!discoveryRegion || m.region === discoveryRegion) &&
                       (!discoveryIndustry || m.industry === discoveryIndustry)
                     )
                     const DISTRICT_ZH: Record<string, string> = {
@@ -768,6 +801,7 @@ export default function CrawlerDashboard() {
                       wellness: '健康', gaming: '博彩', nightlife: '夜生活', entertainment: '娛樂',
                       transport: '交通', services: '服務', other: '其他',
                     }
+                    const REGION_ZH: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
                     return (
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
@@ -775,14 +809,15 @@ export default function CrawlerDashboard() {
                             🏪 商戶發現度排行（{filtered.length} 個）
                           </h3>
                           <select
-                            value={discoveryDistrict}
-                            onChange={e => setDiscoveryDistrict(e.target.value)}
+                            value={discoveryRegion}
+                            onChange={e => setDiscoveryRegion(e.target.value)}
                             style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}
                           >
                             <option value=''>全部地區</option>
-                            {allDistricts.map(d => (
-                              <option key={d} value={d}>{DISTRICT_ZH[d] || d}</option>
-                            ))}
+                            <option value='macao'>🇲🇴 澳門</option>
+                            <option value='hongkong'>🇭🇰 香港</option>
+                            <option value='taiwan'>🇹🇼 台灣</option>
+                            <option value='japan'>🇯🇵 日本</option>
                           </select>
                           <select
                             value={discoveryIndustry}
@@ -794,9 +829,9 @@ export default function CrawlerDashboard() {
                               <option key={ind} value={ind}>{INDUSTRY_ZH[ind] || ind}</option>
                             ))}
                           </select>
-                          {(discoveryDistrict || discoveryIndustry) && (
+                          {(discoveryRegion || discoveryIndustry) && (
                             <button
-                              onClick={() => { setDiscoveryDistrict(''); setDiscoveryIndustry('') }}
+                              onClick={() => { setDiscoveryRegion(''); setDiscoveryIndustry('') }}
                               style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#f5f5f5', cursor: 'pointer' }}
                             >清除篩選</button>
                           )}
@@ -805,7 +840,7 @@ export default function CrawlerDashboard() {
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                             <thead>
                               <tr style={{ background: '#f5f5f5' }}>
-                                {['商戶', '地區', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
+                                {['商戶', '地區/區域', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
                                   <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>
                                 ))}
                               </tr>
@@ -823,9 +858,14 @@ export default function CrawlerDashboard() {
                                     )}
                                   </td>
                                   <td style={{ padding: '7px 10px' }}>
-                                    <span style={{ fontSize: 10, background: m.district ? '#e0f2fe' : '#f0f0f0', color: m.district ? '#0369a1' : '#999', padding: '2px 6px', borderRadius: 4, whiteSpace: 'nowrap' }}>
-                                      {DISTRICT_ZH[m.district] || m.district || '未知'}
-                                    </span>
+                                    <div style={{ fontSize: 10, marginBottom: 2 }}>
+                                      <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '1px 5px', borderRadius: 3 }}>
+                                        {REGION_ZH[m.region] || m.region}
+                                      </span>
+                                    </div>
+                                    {m.district && (
+                                      <span style={{ fontSize: 10, color: '#888' }}>{DISTRICT_ZH[m.district] || m.district}</span>
+                                    )}
                                   </td>
                                   <td style={{ padding: '7px 10px' }}>
                                     <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span>

@@ -11,15 +11,29 @@ const supabase = createClient(
 let _cache: { data: unknown; ts: number } | null = null
 const CACHE_TTL = 5 * 60 * 1000
 
-/** Extract merchant slug from paths like /macao/dining/japanese/slug or /macao/merchants/slug */
+const REGION_PREFIXES = ['macao', 'hongkong', 'taiwan', 'japan']
+
+/** Extract merchant slug from paths like /macao/dining/japanese/slug */
 function extractMerchantSlug(path: string): string | null {
   const segments = path.replace(/\?.*$/, '').split('/').filter(Boolean)
-  // /macao/[industry]/[category]/[merchant-slug]  → 4 segments
-  // /macao/merchants/[merchant-slug]              → 3 segments
-  if (segments.length >= 3 && segments[0] === 'macao') {
+  if (segments.length >= 3 && REGION_PREFIXES.includes(segments[0])) {
     return segments[segments.length - 1] || null
   }
   return null
+}
+
+/** Extract region from crawler path first segment */
+function extractRegion(path: string): string {
+  const seg = path.replace(/\?.*$/, '').split('/').filter(Boolean)[0] || ''
+  return REGION_PREFIXES.includes(seg) ? seg : 'macao'
+}
+
+/** Derive region from slug prefix (same logic as insight-progress) */
+function regionFromSlug(slug: string): string {
+  if (slug.startsWith('hongkong-')) return 'hongkong'
+  if (slug.startsWith('taiwan-')) return 'taiwan'
+  if (slug.startsWith('japan-')) return 'japan'
+  return 'macao'
 }
 
 /** AI citation readiness based on insight coverage + content density */
@@ -69,11 +83,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Aggregate by merchant slug
-    const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string; industry: string }> = {}
+    const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string; industry: string; region: string }> = {}
     for (const row of visitRows) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
-      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '' }
+      const region = extractRegion(row.path)
+      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '', region }
       visitBySlug[slug].count++
       visitBySlug[slug].bots.add(row.bot_name)
       if (row.ts > visitBySlug[slug].lastTs) visitBySlug[slug].lastTs = row.ts
@@ -152,7 +167,7 @@ export async function GET(req: NextRequest) {
     const { data: catData } = await supabase.from('categories').select('id,slug')
     for (const cat of catData || []) catMap[cat.id] = cat.slug
 
-    const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string; district: string }> = {}
+    const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string; district: string; region: string }> = {}
     const slugArr = [...allSlugs].slice(0, 500)  // limit query size
     if (slugArr.length > 0) {
       const { data: mData } = await supabase
@@ -171,6 +186,7 @@ export async function GET(req: NextRequest) {
           name_en: m.name_en || '',
           industry,
           district: m.district || '',
+          region: visitBySlug[m.slug]?.region || regionFromSlug(m.slug),
         }
       }
     }
@@ -179,7 +195,7 @@ export async function GET(req: NextRequest) {
     const merchantList = [...allSlugs].map(slug => {
       const v = visitBySlug[slug] || { count: 0, bots: new Set<string>(), lastTs: '' }
       const c = coverageBySlug[slug] || { insightCount: 0, totalWords: 0, sampleInsights: [] }
-      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry || 'other', district: '' }
+      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry || 'other', district: '', region: v.region || regionFromSlug(slug) }
       const botArr = [...v.bots]
       const readiness = calcReadiness(v.count, c.insightCount, c.totalWords, botArr.length)
 
@@ -189,6 +205,7 @@ export async function GET(req: NextRequest) {
         name_en: name.name_en,
         industry: name.industry,
         district: name.district,
+        region: name.region,
         visits: v.count,
         botCount: botArr.length,
         bots: botArr,
@@ -221,6 +238,20 @@ export async function GET(req: NextRequest) {
       else insightCoverageHist['11+']++
     }
 
+    // Per-region breakdown
+    const REGIONS = ['macao', 'hongkong', 'taiwan', 'japan']
+    const regionStats = Object.fromEntries(REGIONS.map(r => {
+      const rm = merchantList.filter(m => m.region === r)
+      return [r, {
+        total: rm.length,
+        crawled: rm.filter(m => m.visits > 0).length,
+        covered: rm.filter(m => m.insightCount > 0).length,
+        ready: rm.filter(m => m.readinessLabel.startsWith('✅')).length,
+        nearReady: rm.filter(m => m.readinessLabel.startsWith('🟡')).length,
+        gap: rm.filter(m => m.insightCount === 0).length,
+      }]
+    }))
+
     const result = {
       days,
       summary: {
@@ -232,7 +263,8 @@ export async function GET(req: NextRequest) {
         coverageGap: allSlugs.size - covered,
         insightCoverageHist,
       },
-      merchants: merchantList.slice(0, 100),  // top 100
+      regionStats,
+      merchants: merchantList.slice(0, 200),  // top 200
     }
 
     _cache = { data: result, ts: Date.now() }
