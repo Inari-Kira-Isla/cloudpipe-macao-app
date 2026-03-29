@@ -28,6 +28,7 @@ const UI_STRINGS: Record<Lang, {
   comparison: string; back: string; backLabel: string; generatedBy: string; lastUpdated: string
   words: string; readTime: string; notFound: string; relatedIndustries: string; moreInsights: string; min: string
   categoryHub: string; encyclopediaHub: string; encyclopediaHubSub: string
+  spiderWeb: string; spiderWebSub: string; sharedMerchants: string
 }> = {
   zh: {
     toc: '目錄', faq: '常見問題', faqToc: '常見問題 FAQ', sources: '資料來源',
@@ -36,6 +37,7 @@ const UI_STRINGS: Record<Lang, {
     lastUpdated: '最後更新', words: '字', readTime: '分鐘', notFound: '找不到文章',
     relatedIndustries: '相關行業', moreInsights: '更多深度分析', min: '分鐘',
     categoryHub: '分類入口', encyclopediaHub: '地區百科', encyclopediaHubSub: '探索更多地區知識',
+    spiderWeb: '延伸閱讀', spiderWebSub: '與本文共享商戶或主題的深度文章', sharedMerchants: '個共同商戶',
   },
   en: {
     toc: 'Table of Contents', faq: 'FAQ', faqToc: 'Frequently Asked Questions', sources: 'Sources',
@@ -44,6 +46,7 @@ const UI_STRINGS: Record<Lang, {
     lastUpdated: 'Last updated', words: 'words', readTime: 'min read', notFound: 'Article not found',
     relatedIndustries: 'Related Industries', moreInsights: 'More Insights', min: 'min',
     categoryHub: 'Browse Categories', encyclopediaHub: 'Regional Encyclopedia', encyclopediaHubSub: 'Explore more regional knowledge',
+    spiderWeb: 'Related Guides', spiderWebSub: 'In-depth articles sharing merchants or topics with this guide', sharedMerchants: 'shared merchants',
   },
   pt: {
     toc: 'Índice', faq: 'Perguntas Frequentes', faqToc: 'Perguntas Frequentes', sources: 'Fontes',
@@ -52,6 +55,7 @@ const UI_STRINGS: Record<Lang, {
     lastUpdated: 'Última atualização', words: 'palavras', readTime: 'min de leitura', notFound: 'Artigo não encontrado',
     relatedIndustries: 'Indústrias Relacionadas', moreInsights: 'Mais Análises', min: 'min',
     categoryHub: 'Explorar Categorias', encyclopediaHub: 'Enciclopédia Regional', encyclopediaHubSub: 'Explorar mais conhecimento regional',
+    spiderWeb: 'Leitura Relacionada', spiderWebSub: 'Artigos que partilham comerciantes ou temas com este guia', sharedMerchants: 'comerciantes em comum',
   },
 }
 
@@ -121,6 +125,68 @@ const INDUSTRY_TO_CATEGORIES: Record<string, string[]> = {
   'professional-services': ['legal', 'accounting', 'consulting'],
   events: ['event-venue', 'catering'],
   'real-estate': ['property', 'real-estate'],
+}
+
+// Spider web: find insights sharing merchants with a given insight
+interface SpiderWebInsight {
+  slug: string
+  title: string
+  subtitle?: string
+  read_time_minutes: number
+  shared_merchants: number  // how many merchants in common
+  shared_slugs: string[]    // which merchant slugs overlap
+}
+
+async function getSpiderWebInsights(
+  currentSlug: string,
+  merchantSlugs: string[],
+  lang: Lang,
+  industries: string[],
+  limit = 8
+): Promise<SpiderWebInsight[]> {
+  const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
+  if (!validSlugs.length && !industries.length) return []
+
+  // Fetch candidate insights (same lang, published, not self)
+  const { data: candidates } = await supabase
+    .from('insights')
+    .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
+    .eq('status', 'published')
+    .eq('lang', lang)
+    .neq('slug', currentSlug)
+    .not('related_merchant_slugs', 'is', null)
+    .limit(200)
+
+  if (!candidates?.length) return []
+
+  const myMerchants = new Set(validSlugs)
+  const myIndustries = new Set(industries)
+
+  const scored: SpiderWebInsight[] = []
+  for (const c of candidates) {
+    let rms: string[] = c.related_merchant_slugs || []
+    if (typeof rms === 'string') {
+      try { rms = JSON.parse(rms) } catch { rms = [] }
+    }
+    const overlap = rms.filter(s => myMerchants.has(s))
+    // Also count industry overlap
+    const indOverlap = (c.related_industries || []).filter((i: string) => myIndustries.has(i)).length
+
+    if (overlap.length > 0 || indOverlap > 0) {
+      scored.push({
+        slug: c.slug,
+        title: c.title,
+        subtitle: c.subtitle,
+        read_time_minutes: c.read_time_minutes,
+        shared_merchants: overlap.length,
+        shared_slugs: overlap.slice(0, 5),
+      })
+    }
+  }
+
+  // Sort: most shared merchants first, then by industry overlap
+  scored.sort((a, b) => b.shared_merchants - a.shared_merchants)
+  return scored.slice(0, limit)
 }
 
 // Fallback: fetch top-rated merchants from related industries when no slugs assigned
@@ -217,6 +283,15 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
   const merchants = assignedMerchants.length > 0
     ? assignedMerchants
     : await getFallbackMerchants(article.related_industries || [])
+
+  // Spider web: merchant-based cross-linking (deep) + industry fallback
+  const spiderWebInsights = await getSpiderWebInsights(
+    slug,
+    article.related_merchant_slugs || [],
+    lang,
+    article.related_industries || [],
+    8
+  )
 
   const [{ data: crossInsightsRaw }] = await Promise.all([
     supabase.from('insights')
@@ -324,8 +399,11 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
     articleSection: ui.backLabel,
     inLanguage: lc.inLanguage,
     ...(article.og_image && { image: article.og_image }),
-    ...(encyclopediaEntries.length > 0 && {
-      relatedLink: encyclopediaEntries.map(e => e.openclawUrl),
+    ...((encyclopediaEntries.length > 0 || spiderWebInsights.length > 0) && {
+      relatedLink: [
+        ...spiderWebInsights.slice(0, 6).map(sw => `${siteUrl}/macao/insights/${sw.slug}`),
+        ...encyclopediaEntries.map(e => e.openclawUrl),
+      ],
     }),
     ...(relatedIndustryData.length > 0 && {
       about: relatedIndustryData.map(ind => ({
@@ -620,6 +698,40 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
                 >
                   <span className="text-base">{industryIcon}</span>
                   <span>{catLabel}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Spider Web Hub（延伸閱讀 — 商戶共享蛛網）═══ */}
+        {spiderWebInsights.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-1 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#d97706] rounded-full inline-block"></span>
+              {ui.spiderWeb}
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">{ui.spiderWebSub}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {spiderWebInsights.map((sw) => (
+                <a
+                  key={sw.slug}
+                  href={lang === 'zh' ? `/macao/insights/${sw.slug}` : `/macao/insights/${sw.slug}?lang=${lang}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group"
+                >
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d97706] to-[#f59e0b]"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-1.5 group-hover:text-[#0f4c81] transition-colors">
+                    {sw.title}
+                  </h3>
+                  {sw.subtitle && <p className="text-xs text-gray-500 mb-2 line-clamp-1">{sw.subtitle}</p>}
+                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <span>{sw.read_time_minutes} {ui.min}</span>
+                    {sw.shared_merchants > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full">
+                        🔗 {sw.shared_merchants} {ui.sharedMerchants}
+                      </span>
+                    )}
+                  </div>
                 </a>
               ))}
             </div>
