@@ -152,12 +152,12 @@ export async function GET(req: NextRequest) {
     const { data: catData } = await supabase.from('categories').select('id,slug')
     for (const cat of catData || []) catMap[cat.id] = cat.slug
 
-    const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string }> = {}
+    const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string; district: string }> = {}
     const slugArr = [...allSlugs].slice(0, 500)  // limit query size
     if (slugArr.length > 0) {
       const { data: mData } = await supabase
         .from('merchants')
-        .select('slug,name_zh,name_en,schema_type,category_id')
+        .select('slug,name_zh,name_en,schema_type,category_id,district')
         .in('slug', slugArr)
       for (const m of mData || []) {
         const catSlug = catMap[m.category_id] || ''
@@ -170,6 +170,7 @@ export async function GET(req: NextRequest) {
           name_zh: m.name_zh || m.slug,
           name_en: m.name_en || '',
           industry,
+          district: m.district || '',
         }
       }
     }
@@ -178,7 +179,7 @@ export async function GET(req: NextRequest) {
     const merchantList = [...allSlugs].map(slug => {
       const v = visitBySlug[slug] || { count: 0, bots: new Set<string>(), lastTs: '' }
       const c = coverageBySlug[slug] || { insightCount: 0, totalWords: 0, sampleInsights: [] }
-      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry || 'other' }
+      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry || 'other', district: '' }
       const botArr = [...v.bots]
       const readiness = calcReadiness(v.count, c.insightCount, c.totalWords, botArr.length)
 
@@ -187,6 +188,7 @@ export async function GET(req: NextRequest) {
         name_zh: name.name_zh,
         name_en: name.name_en,
         industry: name.industry,
+        district: name.district,
         visits: v.count,
         botCount: botArr.length,
         bots: botArr,

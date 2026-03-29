@@ -38,7 +38,7 @@ interface SpiderWebData {
 }
 
 interface MerchantDiscoveryItem {
-  slug: string; name_zh: string; name_en: string; industry: string
+  slug: string; name_zh: string; name_en: string; industry: string; district: string
   visits: number; botCount: number; bots: string[]; lastTs: string
   insightCount: number; totalWords: number; sampleInsights: string[]
   score: number; readinessLabel: string; readinessColor: string
@@ -104,6 +104,8 @@ export default function CrawlerDashboard() {
   const [routingLoading, setRoutingLoading] = useState(false)
   const [discovery, setDiscovery] = useState<MerchantDiscovery | null>(null)
   const [discoveryLoading, setDiscoveryLoading] = useState(false)
+  const [discoveryDistrict, setDiscoveryDistrict] = useState('')
+  const [discoveryIndustry, setDiscoveryIndustry] = useState('')
   const [loading, setLoading] = useState(true)
 
   const [error, setError] = useState<string | null>(null)
@@ -751,64 +753,115 @@ export default function CrawlerDashboard() {
                   </div>
 
                   {/* Merchant Table */}
-                  <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
-                      🏪 商戶發現度排行（Insight→商戶爬取追蹤，共 {discovery.merchants.length} 個）
-                    </h3>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                        <thead>
-                          <tr style={{ background: '#f5f5f5' }}>
-                            {['商戶', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
-                              <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>
+                  {(() => {
+                    const allDistricts = [...new Set(discovery.merchants.map(m => m.district).filter(Boolean))].sort()
+                    const allIndustries = [...new Set(discovery.merchants.map(m => m.industry).filter(Boolean))].sort()
+                    const filtered = discovery.merchants.filter(m =>
+                      (!discoveryDistrict || m.district === discoveryDistrict) &&
+                      (!discoveryIndustry || m.industry === discoveryIndustry)
+                    )
+                    const DISTRICT_ZH: Record<string, string> = {
+                      peninsula: '澳門半島', taipa: '氹仔', cotai: '路氹城', coloane: '路環',
+                    }
+                    const INDUSTRY_ZH: Record<string, string> = {
+                      dining: '餐飲', hotels: '住宿', shopping: '購物', attractions: '景點',
+                      wellness: '健康', gaming: '博彩', nightlife: '夜生活', entertainment: '娛樂',
+                      transport: '交通', services: '服務', other: '其他',
+                    }
+                    return (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                          <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>
+                            🏪 商戶發現度排行（{filtered.length} 個）
+                          </h3>
+                          <select
+                            value={discoveryDistrict}
+                            onChange={e => setDiscoveryDistrict(e.target.value)}
+                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}
+                          >
+                            <option value=''>全部地區</option>
+                            {allDistricts.map(d => (
+                              <option key={d} value={d}>{DISTRICT_ZH[d] || d}</option>
                             ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {discovery.merchants.slice(0, 60).map((m, i) => (
-                            <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                              <td style={{ padding: '7px 10px' }}>
-                                <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
-                                {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
-                                {m.sampleInsights.length > 0 && (
-                                  <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>
-                                    → {m.sampleInsights[0].slice(0, 30)}{m.sampleInsights[0].length > 30 ? '…' : ''}
-                                  </div>
-                                )}
-                              </td>
-                              <td style={{ padding: '7px 10px' }}>
-                                <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{m.industry}</span>
-                              </td>
-                              <td style={{ padding: '7px 10px', fontWeight: 600, color: m.visits > 0 ? '#10a37f' : '#ccc' }}>
-                                {m.visits > 0 ? m.visits : '—'}
-                              </td>
-                              <td style={{ padding: '7px 10px', color: '#555' }}>
-                                {m.botCount > 0 ? (
-                                  <span title={m.bots.join(', ')}>{m.botCount}</span>
-                                ) : '—'}
-                              </td>
-                              <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>
-                                {m.insightCount}
-                              </td>
-                              <td style={{ padding: '7px 10px', color: '#555' }}>
-                                {m.totalWords > 0 ? `${(m.totalWords / 1000).toFixed(1)}k` : '—'}
-                              </td>
-                              <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
-                                <span style={{ color: m.readinessColor, fontWeight: 600, fontSize: 11 }}>{m.readinessLabel}</span>
-                              </td>
-                              <td style={{ padding: '7px 10px', fontWeight: 700 }}>{m.score}</td>
-                              <td style={{ padding: '7px 10px', color: '#999', fontSize: 10 }}>
-                                {m.lastTs ? formatTime(m.lastTs) : '—'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
-                      分數 = AI爬取×2 + 不同Bot×5 + Insight數×10 + 總字數/200 ｜ 閾值 ≥100分 + ≥5篇 Insight = ✅ 已就緒
-                    </p>
-                  </div>
+                          </select>
+                          <select
+                            value={discoveryIndustry}
+                            onChange={e => setDiscoveryIndustry(e.target.value)}
+                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}
+                          >
+                            <option value=''>全部行業</option>
+                            {allIndustries.map(ind => (
+                              <option key={ind} value={ind}>{INDUSTRY_ZH[ind] || ind}</option>
+                            ))}
+                          </select>
+                          {(discoveryDistrict || discoveryIndustry) && (
+                            <button
+                              onClick={() => { setDiscoveryDistrict(''); setDiscoveryIndustry('') }}
+                              style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#f5f5f5', cursor: 'pointer' }}
+                            >清除篩選</button>
+                          )}
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                            <thead>
+                              <tr style={{ background: '#f5f5f5' }}>
+                                {['商戶', '地區', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
+                                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filtered.slice(0, 80).map((m, i) => (
+                                <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                                  <td style={{ padding: '7px 10px' }}>
+                                    <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
+                                    {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
+                                    {m.sampleInsights.length > 0 && (
+                                      <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>
+                                        → {m.sampleInsights[0].slice(0, 30)}{m.sampleInsights[0].length > 30 ? '…' : ''}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: '7px 10px' }}>
+                                    <span style={{ fontSize: 10, background: m.district ? '#e0f2fe' : '#f0f0f0', color: m.district ? '#0369a1' : '#999', padding: '2px 6px', borderRadius: 4, whiteSpace: 'nowrap' }}>
+                                      {DISTRICT_ZH[m.district] || m.district || '未知'}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '7px 10px' }}>
+                                    <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span>
+                                  </td>
+                                  <td style={{ padding: '7px 10px', fontWeight: 600, color: m.visits > 0 ? '#10a37f' : '#ccc' }}>
+                                    {m.visits > 0 ? m.visits : '—'}
+                                  </td>
+                                  <td style={{ padding: '7px 10px', color: '#555' }}>
+                                    {m.botCount > 0 ? (
+                                      <span title={m.bots.join(', ')}>{m.botCount}</span>
+                                    ) : '—'}
+                                  </td>
+                                  <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>
+                                    {m.insightCount}
+                                  </td>
+                                  <td style={{ padding: '7px 10px', color: '#555' }}>
+                                    {m.totalWords > 0 ? `${(m.totalWords / 1000).toFixed(1)}k` : '—'}
+                                  </td>
+                                  <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                                    <span style={{ color: m.readinessColor, fontWeight: 600, fontSize: 11 }}>{m.readinessLabel}</span>
+                                  </td>
+                                  <td style={{ padding: '7px 10px', fontWeight: 700 }}>{m.score}</td>
+                                  <td style={{ padding: '7px 10px', color: '#999', fontSize: 10 }}>
+                                    {m.lastTs ? formatTime(m.lastTs) : '—'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
+                          分數 = AI爬取×2 + 不同Bot×5 + Insight數×10 + 總字數/200 ｜ 閾值 ≥100分 + ≥5篇 Insight = ✅ 已就緒
+                        </p>
+                      </div>
+                    )
+                  })()}
                 </>
               )
             })()}
