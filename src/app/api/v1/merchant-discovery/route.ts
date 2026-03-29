@@ -30,9 +30,9 @@ function extractRegion(path: string): string {
 
 /** Derive region from slug prefix (same logic as insight-progress) */
 function regionFromSlug(slug: string): string {
-  if (slug.startsWith('hongkong-')) return 'hongkong'
-  if (slug.startsWith('taiwan-')) return 'taiwan'
-  if (slug.startsWith('japan-')) return 'japan'
+  if (slug.startsWith('hongkong-') || slug.startsWith('hk-')) return 'hongkong'
+  if (slug.startsWith('taiwan-') || slug.startsWith('tw-')) return 'taiwan'
+  if (slug.startsWith('japan-') || slug.startsWith('jp-')) return 'japan'
   return 'macao'
 }
 
