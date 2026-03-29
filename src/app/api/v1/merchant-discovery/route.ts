@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     while (true) {
       const { data } = await supabase
         .from('crawler_visits')
-        .select('path,bot_name,bot_owner,ts')
+        .select('path,bot_name,bot_owner,ts,industry')
         .eq('page_type', 'merchant')
         .gte('ts', since)
         .range(offset, offset + 999)
@@ -69,14 +69,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Aggregate by merchant slug
-    const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string }> = {}
+    const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string; industry: string }> = {}
     for (const row of visitRows) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
-      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts }
+      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '' }
       visitBySlug[slug].count++
       visitBySlug[slug].bots.add(row.bot_name)
       if (row.ts > visitBySlug[slug].lastTs) visitBySlug[slug].lastTs = row.ts
+      if (!visitBySlug[slug].industry && row.industry) visitBySlug[slug].industry = row.industry
     }
 
     // ── 2. Insights coverage per merchant ─────────────────────────────────────
@@ -120,27 +121,55 @@ export async function GET(req: NextRequest) {
       ...Object.keys(coverageBySlug),
     ])
 
+    const SCHEMA_TO_IND: Record<string, string> = {
+      Restaurant: 'dining', CafeOrCoffeeShop: 'dining', Bakery: 'dining',
+      FoodEstablishment: 'dining', Hotel: 'hotels', LodgingBusiness: 'hotels',
+      Store: 'shopping', ShoppingCenter: 'shopping',
+      TouristAttraction: 'attractions', Museum: 'attractions', Park: 'attractions',
+      LandmarksOrHistoricalBuildings: 'attractions', PlaceOfWorship: 'attractions',
+      HealthClub: 'wellness', DaySpa: 'wellness', Casino: 'gaming',
+      EntertainmentBusiness: 'gaming', BarOrPub: 'nightlife',
+    }
+
+    const CATEGORY_TO_IND: Record<string, string> = {
+      'dining': 'dining', 'restaurants': 'dining', 'japanese': 'dining', 'chinese': 'dining',
+      'western': 'dining', 'portuguese': 'dining', 'seafood': 'dining', 'desserts': 'dining',
+      'cafes': 'dining', 'bakeries': 'dining', 'street-food': 'dining', 'buffet': 'dining',
+      'hotels': 'hotels', 'resorts': 'hotels', 'hostels': 'hotels', 'guesthouses': 'hotels',
+      'shopping': 'shopping', 'malls': 'shopping', 'boutiques': 'shopping', 'markets': 'shopping',
+      'souvenirs': 'shopping', 'electronics': 'shopping', 'jewelry': 'shopping',
+      'attractions': 'attractions', 'museums': 'attractions', 'temples': 'attractions',
+      'landmarks': 'attractions', 'parks': 'attractions', 'heritage': 'attractions',
+      'wellness': 'wellness', 'spas': 'wellness', 'fitness': 'wellness', 'beauty': 'wellness',
+      'gaming': 'gaming', 'casinos': 'gaming',
+      'nightlife': 'nightlife', 'bars': 'nightlife', 'clubs': 'nightlife',
+      'entertainment': 'entertainment', 'shows': 'entertainment',
+      'transport': 'transport', 'services': 'services',
+    }
+
+    // Fetch categories id→slug map
+    const catMap: Record<number, string> = {}
+    const { data: catData } = await supabase.from('categories').select('id,slug')
+    for (const cat of catData || []) catMap[cat.id] = cat.slug
+
     const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string }> = {}
     const slugArr = [...allSlugs].slice(0, 500)  // limit query size
     if (slugArr.length > 0) {
       const { data: mData } = await supabase
         .from('merchants')
-        .select('slug,name_zh,name_en,schema_type')
+        .select('slug,name_zh,name_en,schema_type,category_id')
         .in('slug', slugArr)
       for (const m of mData || []) {
-        const SCHEMA_TO_IND: Record<string, string> = {
-          Restaurant: 'dining', CafeOrCoffeeShop: 'dining', Bakery: 'dining',
-          FoodEstablishment: 'dining', Hotel: 'hotels', LodgingBusiness: 'hotels',
-          Store: 'shopping', ShoppingCenter: 'shopping',
-          TouristAttraction: 'attractions', Museum: 'attractions', Park: 'attractions',
-          LandmarksOrHistoricalBuildings: 'attractions', PlaceOfWorship: 'attractions',
-          HealthClub: 'wellness', DaySpa: 'wellness', Casino: 'gaming',
-          EntertainmentBusiness: 'gaming', BarOrPub: 'nightlife',
-        }
+        const catSlug = catMap[m.category_id] || ''
+        const industry =
+          CATEGORY_TO_IND[catSlug] ||
+          SCHEMA_TO_IND[m.schema_type] ||
+          visitBySlug[m.slug]?.industry ||
+          'other'
         merchantNames[m.slug] = {
           name_zh: m.name_zh || m.slug,
           name_en: m.name_en || '',
-          industry: SCHEMA_TO_IND[m.schema_type] || 'other',
+          industry,
         }
       }
     }
@@ -149,7 +178,7 @@ export async function GET(req: NextRequest) {
     const merchantList = [...allSlugs].map(slug => {
       const v = visitBySlug[slug] || { count: 0, bots: new Set<string>(), lastTs: '' }
       const c = coverageBySlug[slug] || { insightCount: 0, totalWords: 0, sampleInsights: [] }
-      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: 'unknown' }
+      const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry || 'other' }
       const botArr = [...v.bots]
       const readiness = calcReadiness(v.count, c.insightCount, c.totalWords, botArr.length)
 
