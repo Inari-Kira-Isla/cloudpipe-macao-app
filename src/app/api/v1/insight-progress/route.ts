@@ -20,18 +20,25 @@ export async function GET() {
   }
 
   try {
-    // Fetch all published (slug, lang, region) — paginated
+    // Fetch all published (slug, lang) — paginated; derive region from slug prefix
     const rows: { slug: string; lang: string; region: string }[] = []
     let offset = 0
     while (true) {
       const { data, error } = await supabase
         .from('insights')
-        .select('slug,lang,region')
+        .select('slug,lang')
         .eq('status', 'published')
         .range(offset, offset + 999)
-      if (error) throw error
+      if (error) throw new Error(JSON.stringify(error))
       if (!data || data.length === 0) break
-      rows.push(...data)
+      for (const row of data) {
+        const s = row.slug as string
+        const region = s.startsWith('hongkong-') ? 'hongkong'
+          : s.startsWith('taiwan-') ? 'taiwan'
+          : s.startsWith('japan-') ? 'japan'
+          : 'macau'
+        rows.push({ slug: s, lang: row.lang as string, region })
+      }
       if (data.length < 1000) break
       offset += 1000
     }
@@ -114,6 +121,6 @@ export async function GET() {
     })
   } catch (e) {
     console.error('insight-progress error', e)
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: (e instanceof Error) ? e.message : JSON.stringify(e) }, { status: 500 })
   }
 }
