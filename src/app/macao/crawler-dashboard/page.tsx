@@ -37,6 +37,22 @@ interface SpiderWebData {
   sites: SpiderSite[]
 }
 
+interface MerchantDiscoveryItem {
+  slug: string; name_zh: string; name_en: string; industry: string
+  visits: number; botCount: number; bots: string[]; lastTs: string
+  insightCount: number; totalWords: number; sampleInsights: string[]
+  score: number; readinessLabel: string; readinessColor: string
+}
+interface MerchantDiscovery {
+  days: number
+  summary: {
+    totalTracked: number; crawledByAI: number; insightCovered: number
+    aiReady: number; nearReady: number; coverageGap: number
+    insightCoverageHist: Record<string, number>
+  }
+  merchants: MerchantDiscoveryItem[]
+}
+
 interface TopMerchant {
   slug: string; name_zh: string; name_en: string
   industry: string; cat_slug: string; page_path: string; page_url: string
@@ -83,9 +99,11 @@ export default function CrawlerDashboard() {
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
-  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing'>('overview')
+  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery'>('overview')
   const [routing, setRouting] = useState<RoutingBaseline | null>(null)
   const [routingLoading, setRoutingLoading] = useState(false)
+  const [discovery, setDiscovery] = useState<MerchantDiscovery | null>(null)
+  const [discoveryLoading, setDiscoveryLoading] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const [error, setError] = useState<string | null>(null)
@@ -130,6 +148,14 @@ export default function CrawlerDashboard() {
     const data = await safeFetch<RoutingBaseline | null>(ROUTING_API, null)
     setRouting(data)
     setRoutingLoading(false)
+  }
+
+  const loadDiscovery = async () => {
+    if (discovery) return
+    setDiscoveryLoading(true)
+    const data = await safeFetch<MerchantDiscovery | null>(`/api/v1/merchant-discovery?days=${days}`, null)
+    setDiscovery(data)
+    setDiscoveryLoading(false)
   }
 
   const loadJourney = async (sessionId: string) => {
@@ -195,15 +221,19 @@ export default function CrawlerDashboard() {
 
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
-            {(['overview', 'pages', 'sessions', 'spider-web', 'routing'] as const).map(t => (
-              <button key={t} onClick={() => { setTab(t); setJourney(null); if (t === 'routing') loadRouting() }}
+            {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery'] as const).map(t => (
+              <button key={t} onClick={() => {
+                setTab(t); setJourney(null)
+                if (t === 'routing') loadRouting()
+                if (t === 'merchant-discovery') loadDiscovery()
+              }}
                 style={{
                   padding: '8px 20px', border: 'none', cursor: 'pointer',
                   background: 'transparent', fontSize: 14, fontWeight: tab === t ? 600 : 400,
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線' }[t]}
+                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度' }[t]}
               </button>
             ))}
           </div>
@@ -667,12 +697,131 @@ export default function CrawlerDashboard() {
             })()}
           </div>
         )}
+        {/* Merchant Discovery Tab */}
+        {tab === 'merchant-discovery' && (
+          <div>
+            {discoveryLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入商戶發現度數據...</p>}
+            {!discoveryLoading && !discovery && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
+            {discovery && (() => {
+              const s = discovery.summary
+              const READINESS_ORDER = ['✅ 已就緒', '🟡 接近就緒', '🟠 覆蓋不足', '🔴 未被發現']
+              const HIST_LABELS: Record<string, string> = {
+                '0': '無 Insight', '1-2': '1-2 篇', '3-5': '3-5 篇', '6-10': '6-10 篇', '11+': '11+ 篇'
+              }
+              const maxHist = Math.max(...Object.values(s.insightCoverageHist).map(Number), 1)
+              return (
+                <>
+                  {/* Summary Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 24 }}>
+                    {[
+                      { label: '追蹤商戶', value: s.totalTracked, color: '#111' },
+                      { label: 'AI 已爬取', value: s.crawledByAI, color: '#10a37f' },
+                      { label: 'Insight 覆蓋', value: s.insightCovered, color: '#4285f4' },
+                      { label: '✅ AI 就緒', value: s.aiReady, color: '#16a34a' },
+                      { label: '🟡 接近就緒', value: s.nearReady, color: '#d97706' },
+                      { label: '覆蓋缺口', value: s.coverageGap, color: '#dc2626' },
+                    ].map(card => (
+                      <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.value}</div>
+                        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Insight Coverage Histogram */}
+                  <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈（每個商戶被多少篇 Insight 連結）</h3>
+                    {Object.entries(s.insightCoverageHist).map(([k, v]) => (
+                      <div key={k} style={{ marginBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
+                          <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>
+                          <span style={{ fontWeight: 600 }}>{v} 個商戶</span>
+                        </div>
+                        <div style={{ background: '#e5e5e5', borderRadius: 4, height: 8 }}>
+                          <div style={{
+                            width: `${(v / maxHist) * 100}%`, height: '100%', borderRadius: 4,
+                            background: k === '0' ? '#fca5a5' : k === '1-2' ? '#fcd34d' : k === '3-5' ? '#86efac' : '#4ade80',
+                          }} />
+                        </div>
+                      </div>
+                    ))}
+                    <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
+                      AI 引用閾值：≥3 篇 Insight + ≥1000 總字數 = 足夠讓 AI 發現並引用此商戶
+                    </p>
+                  </div>
+
+                  {/* Merchant Table */}
+                  <div>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
+                      🏪 商戶發現度排行（Insight→商戶爬取追蹤，共 {discovery.merchants.length} 個）
+                    </h3>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ background: '#f5f5f5' }}>
+                            {['商戶', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
+                              <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {discovery.merchants.slice(0, 60).map((m, i) => (
+                            <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                              <td style={{ padding: '7px 10px' }}>
+                                <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
+                                {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
+                                {m.sampleInsights.length > 0 && (
+                                  <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>
+                                    → {m.sampleInsights[0].slice(0, 30)}{m.sampleInsights[0].length > 30 ? '…' : ''}
+                                  </div>
+                                )}
+                              </td>
+                              <td style={{ padding: '7px 10px' }}>
+                                <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{m.industry}</span>
+                              </td>
+                              <td style={{ padding: '7px 10px', fontWeight: 600, color: m.visits > 0 ? '#10a37f' : '#ccc' }}>
+                                {m.visits > 0 ? m.visits : '—'}
+                              </td>
+                              <td style={{ padding: '7px 10px', color: '#555' }}>
+                                {m.botCount > 0 ? (
+                                  <span title={m.bots.join(', ')}>{m.botCount}</span>
+                                ) : '—'}
+                              </td>
+                              <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>
+                                {m.insightCount}
+                              </td>
+                              <td style={{ padding: '7px 10px', color: '#555' }}>
+                                {m.totalWords > 0 ? `${(m.totalWords / 1000).toFixed(1)}k` : '—'}
+                              </td>
+                              <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                                <span style={{ color: m.readinessColor, fontWeight: 600, fontSize: 11 }}>{m.readinessLabel}</span>
+                              </td>
+                              <td style={{ padding: '7px 10px', fontWeight: 700 }}>{m.score}</td>
+                              <td style={{ padding: '7px 10px', color: '#999', fontSize: 10 }}>
+                                {m.lastTs ? formatTime(m.lastTs) : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
+                      分數 = AI爬取×2 + 不同Bot×5 + Insight數×10 + 總字數/200 ｜ 閾值 ≥100分 + ≥5篇 Insight = ✅ 已就緒
+                    </p>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        )}
+
         </>
       )}
 
       <div style={{ marginTop: 32, padding: '12px 0', borderTop: '1px solid #eee', fontSize: 11, color: '#bbb', textAlign: 'center' }}>
         CloudPipe AI 爬蟲追蹤 — 偵測 25+ AI Bot · 即時記錄 · Session 重建 · 蜘蛛網跨站追蹤
         <br />API: <code>/api/v1/crawler-stats?view=summary|bots|pages|sessions|journey|spider-web</code>
+        {' '}｜ <code>/api/v1/merchant-discovery</code>
       </div>
     </div>
   )
