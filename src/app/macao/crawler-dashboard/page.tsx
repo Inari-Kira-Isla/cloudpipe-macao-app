@@ -37,7 +37,25 @@ interface SpiderWebData {
   sites: SpiderSite[]
 }
 
+interface TopMerchant {
+  slug: string; name_zh: string; name_en: string
+  industry: string; cat_slug: string; page_path: string; page_url: string
+  score: number; reviews: number; rating: number; district: string; schema_type: string
+}
+interface RoutingBaseline {
+  updatedAt: string
+  tiers: { A: number; B: number; C: number; D: number; total: number }
+  industryTiers: Record<string, { a: number; b: number; c: number; d: number }>
+  topMerchants: TopMerchant[]
+  merchantsByIndustry: Record<string, number>
+  totalMerchants: number
+  merchantsWithReviews: number
+  merchantVisits: { total: number; uniqueSlugs: number; byBot: Record<string, number>; recentPaths: { path: string; bot: string; ts: string }[] }
+  categoryVisits: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
+}
+
 const API = '/api/v1/crawler-stats'
+const ROUTING_API = '/api/v1/routing-baseline'
 
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
@@ -65,7 +83,9 @@ export default function CrawlerDashboard() {
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
-  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web'>('overview')
+  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing'>('overview')
+  const [routing, setRouting] = useState<RoutingBaseline | null>(null)
+  const [routingLoading, setRoutingLoading] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const [error, setError] = useState<string | null>(null)
@@ -103,6 +123,14 @@ export default function CrawlerDashboard() {
   }, [days])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  const loadRouting = async () => {
+    if (routing) return
+    setRoutingLoading(true)
+    const data = await safeFetch<RoutingBaseline | null>(ROUTING_API, null)
+    setRouting(data)
+    setRoutingLoading(false)
+  }
 
   const loadJourney = async (sessionId: string) => {
     setJourneySession(sessionId)
@@ -166,16 +194,16 @@ export default function CrawlerDashboard() {
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee' }}>
-            {(['overview', 'pages', 'sessions', 'spider-web'] as const).map(t => (
-              <button key={t} onClick={() => { setTab(t); setJourney(null) }}
+          <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
+            {(['overview', 'pages', 'sessions', 'spider-web', 'routing'] as const).map(t => (
+              <button key={t} onClick={() => { setTab(t); setJourney(null); if (t === 'routing') loadRouting() }}
                 style={{
                   padding: '8px 20px', border: 'none', cursor: 'pointer',
                   background: 'transparent', fontSize: 14, fontWeight: tab === t ? 600 : 400,
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網' }[t]}
+                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線' }[t]}
               </button>
             ))}
           </div>
@@ -452,6 +480,193 @@ export default function CrawlerDashboard() {
               )}
             </div>
           )}
+        {/* ─── Routing Baseline Tab ─── */}
+        {tab === 'routing' && (
+          <div>
+            {routingLoading && <p style={{ color: '#999', textAlign: 'center', padding: 32 }}>載入路由基線數據...</p>}
+            {routing && !routingLoading && (() => {
+              const { tiers, topMerchants, industryTiers, merchantsByIndustry,
+                      totalMerchants, merchantsWithReviews,
+                      merchantVisits, categoryVisits } = routing
+              const TIER_COLORS: Record<string, string> = { A: '#10a37f', B: '#f39c12', C: '#e67e22', D: '#e74c3c' }
+              const TIER_LABELS: Record<string, string> = {
+                A: 'A — 有 Answer Hub', B: 'B — 有商戶連結', C: 'C — 弱連結', D: 'D — 無商戶'
+              }
+              const INDUSTRY_ZH: Record<string, string> = {
+                dining: '餐飲美食', attractions: '景區觀光', hotels: '酒店住宿',
+                shopping: '購物零售', nightlife: '夜生活', wellness: '健康養生',
+                gaming: '博彩娛樂', 'food-supply': '食品供應', other: '其他',
+              }
+              const totalTier = tiers.A + tiers.B + tiers.C + tiers.D
+              return (
+                <>
+                  {/* Tier Overview */}
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📊 Insight 路由等級分佈（{totalTier.toLocaleString()} 篇 ZH）</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+                      {(['A','B','C','D'] as const).map(t => {
+                        const cnt = tiers[t]
+                        const pct = totalTier > 0 ? (cnt / totalTier * 100).toFixed(1) : '0.0'
+                        return (
+                          <div key={t} style={{ background: '#fafafa', border: `2px solid ${TIER_COLORS[t]}`, borderRadius: 10, padding: '14px 12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: TIER_COLORS[t] }}>{cnt.toLocaleString()}</div>
+                            <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>{TIER_LABELS[t]}</div>
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{pct}%</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    {/* Progress bar */}
+                    <div style={{ marginTop: 12, height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', background: '#eee' }}>
+                      {(['A','B','C','D'] as const).map(t => (
+                        <div key={t} style={{ width: `${totalTier > 0 ? tiers[t]/totalTier*100 : 0}%`, background: TIER_COLORS[t], transition: 'width .4s' }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Merchant Visit Baseline */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+                    <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🤖 AI 爬蟲 → 商戶頁（基線）</h4>
+                      <div style={{ fontSize: 28, fontWeight: 700 }}>{merchantVisits.total}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積商戶頁訪問 · {merchantVisits.uniqueSlugs} 個唯一商戶</div>
+                      {Object.entries(merchantVisits.byBot).length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {Object.entries(merchantVisits.byBot).sort((a,b) => b[1]-a[1]).slice(0,5).map(([bot, n]) => (
+                            <div key={bot} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <div style={{ fontSize: 11, width: 90, color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bot}</div>
+                              <div style={{ flex: 1, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ width: `${merchantVisits.total > 0 ? n/merchantVisits.total*100 : 0}%`, height: '100%', background: '#4285f4' }} />
+                              </div>
+                              <div style={{ fontSize: 11, color: '#888', width: 24, textAlign: 'right' }}>{n}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🗂️ AI 爬蟲 → 分類頁（基線）</h4>
+                      <div style={{ fontSize: 28, fontWeight: 700 }}>{categoryVisits.total}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積分類頁訪問</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {Object.entries(categoryVisits.byIndustry).sort((a,b) => b[1]-a[1]).slice(0,6).map(([ind, n]) => (
+                          <div key={ind} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ fontSize: 11, width: 70, color: '#555' }}>{INDUSTRY_ZH[ind] || ind}</div>
+                            <div style={{ flex: 1, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
+                              <div style={{ width: `${categoryVisits.total > 0 ? n/categoryVisits.total*100 : 0}%`, height: '100%', background: '#10a37f' }} />
+                            </div>
+                            <div style={{ fontSize: 11, color: '#888', width: 24, textAlign: 'right' }}>{n}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Industry breakdown of insights */}
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📂 行業 × 路由等級（注入優先順序）</h3>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr style={{ background: '#f5f5f5' }}>
+                            {['行業','A','B','C','D','合計','進度'].map(h => (
+                              <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(industryTiers)
+                            .sort((x, y) => (y[1].a + y[1].b + y[1].c + y[1].d) - (x[1].a + x[1].b + x[1].c + x[1].d))
+                            .map(([ind, t]) => {
+                              const tot = t.a + t.b + t.c + t.d
+                              const donePct = tot > 0 ? t.a / tot * 100 : 0
+                              return (
+                                <tr key={ind} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                  <td style={{ padding: '8px 12px', fontWeight: 500 }}>{INDUSTRY_ZH[ind] || ind}</td>
+                                  <td style={{ padding: '8px 12px', color: TIER_COLORS.A, fontWeight: 600 }}>{t.a}</td>
+                                  <td style={{ padding: '8px 12px', color: TIER_COLORS.B }}>{t.b}</td>
+                                  <td style={{ padding: '8px 12px', color: TIER_COLORS.C }}>{t.c}</td>
+                                  <td style={{ padding: '8px 12px', color: TIER_COLORS.D }}>{t.d}</td>
+                                  <td style={{ padding: '8px 12px', color: '#555' }}>{tot}</td>
+                                  <td style={{ padding: '8px 12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <div style={{ width: 80, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
+                                        <div style={{ width: `${donePct}%`, height: '100%', background: TIER_COLORS.A }} />
+                                      </div>
+                                      <span style={{ fontSize: 11, color: '#999' }}>{donePct.toFixed(1)}%</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Top 20 merchants */}
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>🏆 Top 20 高價值商戶（Answer Hub Layer 2 優先選）</h3>
+                    <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>
+                      評分 = (Google評價數 × 評分/5 + 類型分) × 行業權重 · 共 {totalMerchants} 家 · {merchantsWithReviews} 家有評價數據
+                    </p>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ background: '#f5f5f5' }}>
+                            {['排名','商戶名','行業','評分','Google評價','評分數','地區','頁面路徑'].map(h => (
+                              <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topMerchants.map((m, i) => (
+                            <tr key={m.slug} style={{ borderBottom: '1px solid #f5f5f5', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                              <td style={{ padding: '6px 10px', color: i < 3 ? '#f39c12' : '#888', fontWeight: i < 3 ? 700 : 400 }}>#{i+1}</td>
+                              <td style={{ padding: '6px 10px', fontWeight: 500 }}>
+                                <div>{m.name_zh || m.name_en}</div>
+                                {m.name_zh && m.name_en && <div style={{ fontSize: 10, color: '#aaa' }}>{m.name_en}</div>}
+                              </td>
+                              <td style={{ padding: '6px 10px' }}>
+                                <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span>
+                              </td>
+                              <td style={{ padding: '6px 10px', fontWeight: 600, color: '#10a37f' }}>{m.score.toLocaleString()}</td>
+                              <td style={{ padding: '6px 10px', color: '#555' }}>{m.reviews > 0 ? m.reviews.toLocaleString() : '—'}</td>
+                              <td style={{ padding: '6px 10px', color: '#555' }}>{m.rating > 0 ? `⭐ ${m.rating}` : '—'}</td>
+                              <td style={{ padding: '6px 10px', color: '#888', fontSize: 11 }}>{m.district}</td>
+                              <td style={{ padding: '6px 10px' }}>
+                                <a href={m.page_url} target="_blank" rel="noopener"
+                                   style={{ fontSize: 10, color: '#4285f4', textDecoration: 'none', fontFamily: 'monospace' }}>
+                                  {m.page_path.length > 40 ? m.page_path.slice(0, 40) + '…' : m.page_path}
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Recent merchant visits */}
+                  {merchantVisits.recentPaths.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>最近商戶頁爬取記錄</h3>
+                      <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 12, fontFamily: 'monospace', fontSize: 11 }}>
+                        {merchantVisits.recentPaths.map((r, i) => (
+                          <div key={i} style={{ color: '#aaa', marginBottom: 3 }}>
+                            <span style={{ color: '#666' }}>{formatTime(r.ts)}</span>
+                            <span style={{ color: '#10a37f', marginLeft: 8 }}>{r.bot}</span>
+                            <span style={{ color: '#ddd', marginLeft: 8 }}>{r.path}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+          </div>
+        )}
         </>
       )}
 
