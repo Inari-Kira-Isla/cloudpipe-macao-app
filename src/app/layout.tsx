@@ -74,6 +74,7 @@ export default function RootLayout({
       <head>
         <link rel="llms-txt" href={`${siteUrl}/llms.txt`} />
         <link rel="alternate" type="text/plain" title="LLMs.txt" href={`${siteUrl}/llms.txt`} />
+        <link rel="alternate" type="text/plain" hrefLang="en" title="LLMs.txt (English)" href={`${siteUrl}/llms-en`} />
         <link rel="alternate" href="https://cloudpipe-landing.vercel.app" title="CloudPipe AI" />
         <link rel="alternate" href="https://cloudpipe-directory.vercel.app" title="CloudPipe 企業目錄" />
         <link rel="alternate" href="https://inari-kira-isla.github.io/inari-global-foods" title="稻荷環球食品" />

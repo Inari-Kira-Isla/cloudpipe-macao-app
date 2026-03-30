@@ -317,6 +317,17 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next()
+
+  // Set Content-Language header based on ?lang= parameter (for AI crawlers)
+  const langParam = request.nextUrl.searchParams.get('lang')
+  if (langParam === 'en') {
+    response.headers.set('Content-Language', 'en')
+  } else if (langParam === 'pt') {
+    response.headers.set('Content-Language', 'pt')
+  } else {
+    response.headers.set('Content-Language', 'zh-Hant')
+  }
+
   const ua = request.headers.get('user-agent') || ''
   const bot = detectBot(ua)
 
