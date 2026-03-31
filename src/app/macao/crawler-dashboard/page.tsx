@@ -51,6 +51,9 @@ interface MerchantDiscovery {
     aiReady: number; nearReady: number; coverageGap: number
     insightCoverageHist: Record<string, number>
   }
+  today?: {
+    date: string; totalVisits: number; uniqueMerchants: number; uniqueBots: number; bots: string[]
+  }
   merchants: MerchantDiscoveryItem[]
 }
 
@@ -714,6 +717,21 @@ export default function CrawlerDashboard() {
               const maxHist = Math.max(...Object.values(s.insightCoverageHist).map(Number), 1)
               return (
                 <>
+                  {/* Today Stats Banner */}
+                  {discovery?.today && (
+                    <div style={{ background: 'linear-gradient(135deg, #0f4c81 0%, #1a6fb5 100%)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, color: 'white', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 13, opacity: 0.8 }}>📅 今日 ({discovery.today.date})</div>
+                      <div style={{ display: 'flex', gap: 24 }}>
+                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.totalVisits}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>次爬取</span></div>
+                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueMerchants}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>商戶被訪</span></div>
+                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueBots}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>AI Bots</span></div>
+                      </div>
+                      {discovery.today.bots.length > 0 && (
+                        <div style={{ fontSize: 11, opacity: 0.6 }}>{discovery.today.bots.join(' · ')}</div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Summary Cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[

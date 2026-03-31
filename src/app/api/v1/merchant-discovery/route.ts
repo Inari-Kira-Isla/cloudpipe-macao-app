@@ -221,7 +221,17 @@ export async function GET(req: NextRequest) {
 
     merchantList.sort((a, b) => b.score - a.score)
 
-    // ── 5. Summary stats ──────────────────────────────────────────────────────
+    // ── 5. Today's crawl stats ────────────────────────────────────────────────
+    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayVisits = visitRows.filter(r => (r.ts as string).startsWith(todayStr))
+    const todayMerchantSlugs = new Set<string>()
+    for (const row of todayVisits) {
+      const slug = extractMerchantSlug(row.path)
+      if (slug) todayMerchantSlugs.add(slug)
+    }
+    const todayBots = new Set(todayVisits.map(r => r.bot_name))
+
+    // ── 5b. Summary stats ─────────────────────────────────────────────────────
     const crawled = merchantList.filter(m => m.visits > 0).length
     const covered = merchantList.filter(m => m.insightCount > 0).length
     const ready = merchantList.filter(m => m.readinessLabel.startsWith('✅')).length
@@ -262,6 +272,13 @@ export async function GET(req: NextRequest) {
         nearReady,
         coverageGap: allSlugs.size - covered,
         insightCoverageHist,
+      },
+      today: {
+        date: todayStr,
+        totalVisits: todayVisits.length,
+        uniqueMerchants: todayMerchantSlugs.size,
+        uniqueBots: todayBots.size,
+        bots: [...todayBots],
       },
       regionStats,
       merchants: merchantList.slice(0, 200),  // top 200
