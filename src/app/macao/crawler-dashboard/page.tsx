@@ -74,8 +74,7 @@ interface RoutingBaseline {
   categoryVisits: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
 }
 
-const DASH_TOKEN = 'cloudpipe2026'
-const API = `/api/v1/crawler-stats?token=${DASH_TOKEN}`
+const API = '/api/v1/crawler-stats?token=cloudpipe2026'
 const ROUTING_API = '/api/v1/routing-baseline'
 
 const BOT_COLORS: Record<string, string> = {

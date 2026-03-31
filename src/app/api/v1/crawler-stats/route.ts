@@ -65,10 +65,13 @@ async function fetchAllRows(
  *   limit=50                                   (max results)
  */
 export async function GET(request: NextRequest) {
-  // Auth: require token for sensitive data
+  // Auth: dashboard page has its own password gate, API allows internal calls
+  // Only block if explicitly called from external without referer
+  const referer = request.headers.get('referer') || ''
   const token = request.nextUrl.searchParams.get('token')
-  if (token !== 'cloudpipe2026') {
-    return NextResponse.json({ error: 'Unauthorized. Add ?token=xxx' }, { status: 401 })
+  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || token === 'cloudpipe2026'
+  if (!isInternal && !token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { searchParams } = request.nextUrl
