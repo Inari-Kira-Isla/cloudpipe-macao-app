@@ -4,6 +4,8 @@ import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+// Force Vercel cache invalidation on new insights
+export const maxDuration = 60
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -50,9 +52,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Insights
   const { data: insights } = await supabase
     .from('insights')
-    .select('slug, updated_at')
+    .select('slug, updated_at, created_at, published_at')
     .eq('status', 'published')
-    .order('published_at', { ascending: false })
+    .order('updated_at', { ascending: false })
+    .limit(5000)
 
   entries.push({
     url: `${siteUrl}/macao/insights`,
