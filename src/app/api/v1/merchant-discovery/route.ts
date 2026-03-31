@@ -88,7 +88,8 @@ export async function GET(req: NextRequest) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
       const region = extractRegion(row.path)
-      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '', region }
+      const slugRegion = regionFromSlug(slug)
+      if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '', region: slugRegion }
       visitBySlug[slug].count++
       visitBySlug[slug].bots.add(row.bot_name)
       if (row.ts > visitBySlug[slug].lastTs) visitBySlug[slug].lastTs = row.ts
