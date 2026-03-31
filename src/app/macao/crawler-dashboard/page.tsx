@@ -74,7 +74,8 @@ interface RoutingBaseline {
   categoryVisits: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
 }
 
-const API = '/api/v1/crawler-stats'
+const DASH_TOKEN = 'cloudpipe2026'
+const API = `/api/v1/crawler-stats?token=${DASH_TOKEN}`
 const ROUTING_API = '/api/v1/routing-baseline'
 
 const BOT_COLORS: Record<string, string> = {
@@ -93,6 +94,60 @@ const BOT_COLORS: Record<string, string> = {
 function formatTime(ts: string) {
   const d = new Date(ts)
   return d.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+const DASHBOARD_PASSWORD = 'cloudpipe2026'
+
+function PasswordGate({ children }: { children: React.ReactNode }) {
+  const [authed, setAuthed] = useState(false)
+  const [input, setInput] = useState('')
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('dash_auth') === 'ok') {
+      setAuthed(true)
+    }
+  }, [])
+
+  if (authed) return <>{children}</>
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f5f5f5' }}>
+      <div style={{ background: 'white', padding: 40, borderRadius: 12, boxShadow: '0 2px 20px rgba(0,0,0,0.1)', textAlign: 'center', maxWidth: 360 }}>
+        <h2 style={{ marginBottom: 8, color: '#0f4c81' }}>🔒 Dashboard Access</h2>
+        <p style={{ color: '#888', fontSize: 14, marginBottom: 20 }}>Internal use only</p>
+        <input
+          type="password"
+          value={input}
+          onChange={e => { setInput(e.target.value); setError(false) }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              if (input === DASHBOARD_PASSWORD) {
+                sessionStorage.setItem('dash_auth', 'ok')
+                setAuthed(true)
+              } else {
+                setError(true)
+              }
+            }
+          }}
+          placeholder="Password"
+          style={{ width: '100%', padding: '10px 14px', border: `1px solid ${error ? '#dc2626' : '#ddd'}`, borderRadius: 8, fontSize: 16, marginBottom: 12 }}
+        />
+        <button
+          onClick={() => {
+            if (input === DASHBOARD_PASSWORD) {
+              sessionStorage.setItem('dash_auth', 'ok')
+              setAuthed(true)
+            } else {
+              setError(true)
+            }
+          }}
+          style={{ width: '100%', padding: '10px', background: '#0f4c81', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, cursor: 'pointer' }}
+        >Enter</button>
+        {error && <p style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>Incorrect password</p>}
+      </div>
+    </div>
+  )
 }
 
 export default function CrawlerDashboard() {
@@ -129,10 +184,10 @@ export default function CrawlerDashboard() {
     setError(null)
     try {
       const [sum, ses, pg, sw] = await Promise.all([
-        safeFetch<Summary | null>(`${API}?view=summary&days=${days}`, null),
-        safeFetch<Session[]>(`${API}?view=sessions&days=${days}&limit=50`, []),
-        safeFetch<PageStat[]>(`${API}?view=pages&days=${days}&limit=50`, []),
-        safeFetch<SpiderWebData | null>(`${API}?view=spider-web&days=${days}`, null),
+        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
+        safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, []),
+        safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, []),
+        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
       setSummary(sum)
       setSessions(ses)
@@ -166,7 +221,7 @@ export default function CrawlerDashboard() {
 
   const loadJourney = async (sessionId: string) => {
     setJourneySession(sessionId)
-    const res = await fetch(`${API}?view=journey&session=${sessionId}`)
+    const res = await fetch(`${API}&view=journey&session=${sessionId}`)
     const data = await res.json()
     setJourney(data.journey || [])
   }
@@ -176,6 +231,7 @@ export default function CrawlerDashboard() {
   const maxInd = summary ? Math.max(...Object.values(summary.industries).map(Number), 1) : 1
 
   return (
+    <PasswordGate>
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>AI 爬蟲追蹤 Dashboard</h1>
@@ -935,5 +991,6 @@ export default function CrawlerDashboard() {
         {' '}｜ <code>/api/v1/merchant-discovery</code>
       </div>
     </div>
+    </PasswordGate>
   )
 }

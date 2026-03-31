@@ -65,6 +65,12 @@ async function fetchAllRows(
  *   limit=50                                   (max results)
  */
 export async function GET(request: NextRequest) {
+  // Auth: require token for sensitive data
+  const token = request.nextUrl.searchParams.get('token')
+  if (token !== 'cloudpipe2026') {
+    return NextResponse.json({ error: 'Unauthorized. Add ?token=xxx' }, { status: 401 })
+  }
+
   const { searchParams } = request.nextUrl
   const view = searchParams.get('view') || 'summary'
   const bot = searchParams.get('bot')
