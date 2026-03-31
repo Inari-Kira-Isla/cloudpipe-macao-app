@@ -22,13 +22,7 @@ function extractMerchantSlug(path: string): string | null {
   return null
 }
 
-/** Extract region from crawler path first segment */
-function extractRegion(path: string): string {
-  const seg = path.replace(/\?.*$/, '').split('/').filter(Boolean)[0] || ''
-  return REGION_PREFIXES.includes(seg) ? seg : 'macao'
-}
-
-/** Derive region from slug prefix (same logic as insight-progress) */
+/** Derive region from slug prefix */
 function regionFromSlug(slug: string): string {
   if (slug.startsWith('hongkong-') || slug.startsWith('hk-')) return 'hongkong'
   if (slug.startsWith('taiwan-') || slug.startsWith('tw-')) return 'taiwan'
@@ -87,7 +81,6 @@ export async function GET(req: NextRequest) {
     for (const row of visitRows) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
-      const region = extractRegion(row.path)
       const slugRegion = regionFromSlug(slug)
       if (!visitBySlug[slug]) visitBySlug[slug] = { count: 0, bots: new Set(), lastTs: row.ts, industry: row.industry || '', region: slugRegion }
       visitBySlug[slug].count++
