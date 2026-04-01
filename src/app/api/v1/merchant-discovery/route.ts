@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   try {
     // Primary: GitHub Pages static JSON
     const res = await fetch(`${CACHE_BASE}/merchant-discovery-30.json`, {
-      next: { revalidate: 300 },
+      cache: 'no-store',
     })
     if (res.ok) {
       const data = await res.json()

@@ -16,7 +16,7 @@ const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
 async function readCache(key: string): Promise<unknown | null> {
   try {
     const res = await fetch(`${CACHE_BASE}/${key}.json`, {
-      next: { revalidate: 300 },  // Next.js ISR: revalidate every 5 min
+      cache: 'no-store',
     })
     if (!res.ok) return null
     return await res.json()
