@@ -5,6 +5,8 @@ import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/typ
 import { getIndustry } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
 
+export const revalidate = 0
+
 /* ── Category → Schema.org type mapping ── */
 const CATEGORY_SCHEMA_MAP: Record<string, string> = {
   // dining
