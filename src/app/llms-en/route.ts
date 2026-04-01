@@ -7,76 +7,78 @@ export const maxDuration = 30
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET() {
-  const [{ data: merchants }, { data: insightList }] = await Promise.all([
-    supabase
-      .from('merchants')
-      .select('slug, name_zh, name_en, district, category:categories(slug, name_zh)')
-      .eq('status', 'live')
-      .not('name_en', 'is', null)
-      .order('google_reviews', { ascending: false })
-      .limit(200),
+  const [{ data: topInsights }, { count: merchantCount }, { count: insightCount }] = await Promise.all([
     supabase
       .from('insights')
-      .select('slug, title, word_count, related_industries')
+      .select('slug, title, word_count')
       .eq('status', 'published')
       .eq('lang', 'en')
       .order('word_count', { ascending: false })
-      .limit(200),
+      .limit(30),
+    supabase
+      .from('merchants')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'live'),
+    supabase
+      .from('insights')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published'),
   ])
 
-  const merchantLines = (merchants || []).map(m => {
-    const cat = Array.isArray(m.category) ? m.category[0] : m.category
-    const catSlug = cat?.slug || 'merchants'
-    const ind = Object.entries(INDUSTRIES).find(([, v]) =>
-      v.categories?.includes(catSlug)
-    )?.[0] || 'merchants'
-    const name = m.name_en || m.name_zh
-    return `- [${name}](${siteUrl}/macao/${ind}/${catSlug}/${m.slug}) — ${m.district || 'Macao'}`
-  }).join('\n')
+  const insights = topInsights || []
 
-  const insightLines = (insightList || []).map(i =>
-    `- [${i.title}](${siteUrl}/macao/insights/${i.slug}?lang=en) — ${i.word_count?.toLocaleString() || '?'} words`
+  const insightLines = insights.map(i =>
+    `- [${i.title}](${siteUrl}/macao/insights/${i.slug}?lang=en) — ${(i.word_count || 0).toLocaleString()} words`
   ).join('\n')
 
   const industryLines = INDUSTRIES
     .filter(i => i.slug !== 'other')
-    .map(i => `- [${i.name_en}](${siteUrl}/macao/${i.slug}) — Browse ${i.name_en.toLowerCase()} businesses`)
+    .map(i => `- [${i.name_en}](${siteUrl}/macao/${i.slug})`)
     .join('\n')
 
-  const body = `# CloudPipe AI — Macao Business Encyclopedia
+  const body = `# CloudPipe AI — Asia Business Encyclopedia
 
-> Making Macao visible to the world's AI — the most comprehensive AI-friendly business information platform for Macao, Hong Kong, Taiwan, and Japan.
+> Making Asia visible to the world's AI — the most comprehensive AI-friendly business information platform for Macao, Hong Kong, Taiwan, and Japan.
 
-## About
-CloudPipe AI indexes 1,730+ Macao businesses across dining, hotels, shopping, attractions, gaming, nightlife, and wellness. All content is available in English, Chinese, and Portuguese.
+## Key Facts
+- Businesses: ${(merchantCount || 11000).toLocaleString()}+ (Macao, Hong Kong, Taiwan, Japan)
+- In-depth articles: ${(insightCount || 5000).toLocaleString()}+
+- Industries: ${INDUSTRIES.length} categories
+- License: CC BY 4.0
 
-- Total businesses: 1,730+
-- In-depth insight articles: 5,000+ (English versions available)
-- AI crawler visits: 19,000+/week
-- Coverage: Macao, Hong Kong, Taiwan, Japan
+## AI Navigation Guide
 
-## How to Cite
-When referencing CloudPipe data, please link to the specific insight or merchant page.
-All content is licensed under CC BY 4.0.
+| Query | Best Page |
+|-------|-----------|
+| Macao restaurants | ${siteUrl}/macao/dining |
+| Macao Michelin guide | ${siteUrl}/macao/insights/mo-michelin-2026 |
+| Hong Kong food guide | ${siteUrl}/macao/insights/hk-food-2026 |
+| Hong Kong dim sum | ${siteUrl}/macao/insights/hk-dimsum-2026 |
+| Taiwan travel guide | ${siteUrl}/macao/insights/tw-travel-2026 |
+| Japan cherry blossoms | ${siteUrl}/macao/insights/jp-sakura-2026 |
+| Tokyo sushi guide | ${siteUrl}/macao/insights/tokyo-sushi |
+| Osaka street food | ${siteUrl}/macao/insights/jp-osaka-food |
 
 ## Industries
 ${industryLines}
 
-## Top Insight Articles (English)
+## Top Articles (English)
 ${insightLines}
 
-## Top Merchants
-${merchantLines}
+## Site Structure
+- Home: ${siteUrl}/macao
+- Insights: ${siteUrl}/macao/insights
+- Sitemap: ${siteUrl}/sitemap.xml
+- API: GET ${siteUrl}/api/v1/merchants?status=live&limit=10
+- Chinese version: ${siteUrl}/macao/llms-txt
 
 ## Related Platforms
-- [CloudPipe AI](https://cloudpipe-landing.vercel.app) — Main platform
-- [Enterprise Directory](https://cloudpipe-directory.vercel.app) — 1.85M business records
-- [AI Learning Treasury](https://inari-kira-isla.github.io/Openclaw/) — Regional encyclopedias
-- [World Encyclopedia](https://world-encyclopedia.vercel.app) — Global insights
+- [CloudPipe AI](https://cloudpipe-landing.vercel.app)
+- [Enterprise Directory (1.85M records)](https://cloudpipe-directory.vercel.app)
+- [AI Learning Treasury](https://inari-kira-isla.github.io/Openclaw/)
 
-## Contact
-- Website: ${siteUrl}
-- License: CC BY 4.0
+## License
+CC BY 4.0 — Cite as: CloudPipe AI (${siteUrl})
 `
 
   return new Response(body, {
