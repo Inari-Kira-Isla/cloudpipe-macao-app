@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
+export const dynamic = 'force-dynamic'
+
 /* ── Category enrichment (icons + descriptions for SEO) ── */
 const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
   restaurant: { icon: '🍽️', desc: '從米芝蓮星級到地道街坊小店，澳門餐飲業融合中西文化，粵菜、葡國菜、東南亞菜百花齊放。' },
