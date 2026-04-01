@@ -125,18 +125,32 @@ export async function GET() {
       merchantsByIndustry[m.industry] = (merchantsByIndustry[m.industry] || 0) + 1
     }
 
-    // ── 4. Classify insights (limit 1000, skip body_html to reduce payload) ─
-    const { data: insights_raw } = await supabase.from('insights')
-      .select('slug,title,related_merchant_slugs,tags')
-      .eq('status', 'published').eq('lang', 'zh').limit(1000)
-    const insights = (insights_raw || []).map((ins: any) => ({ ...ins, body_html: '' }))
+    // ── 4. Classify insights (limit 1000) ─
+    // Two parallel queries: metadata + answer-hub count (avoid pulling full body_html)
+    const [{ data: insights_raw }, { count: hubCount }] = await Promise.all([
+      supabase.from('insights')
+        .select('slug,title,related_merchant_slugs,tags')
+        .eq('status', 'published').eq('lang', 'zh').limit(1000),
+      supabase.from('insights')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published').eq('lang', 'zh')
+        .like('body_html', '%answer-hub%'),
+    ])
+    const insights = insights_raw || []
+
+    // Build set of answer-hub slugs (fetch only slugs of hub insights)
+    const { data: hubSlugs } = await supabase.from('insights')
+      .select('slug')
+      .eq('status', 'published').eq('lang', 'zh')
+      .like('body_html', '%answer-hub%')
+      .limit(2000)
+    const hubSet = new Set((hubSlugs || []).map((h: any) => h.slug))
 
     let tierA = 0, tierB = 0, tierC = 0, tierD = 0
     const industryTiers: Record<string, { a: number; b: number; c: number; d: number }> = {}
 
     for (const ins of insights) {
-      const body = (ins.body_html as string) || ''
-      const hasHub = body.includes('answer-hub')
+      const hasHub = hubSet.has(ins.slug as string)
       let rms: string[] = []
       if (ins.related_merchant_slugs) {
         rms = Array.isArray(ins.related_merchant_slugs)
