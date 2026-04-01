@@ -36,12 +36,13 @@ function setCache(key: string, data: unknown) {
 async function fetchAllRows(
   table: string,
   select: string,
-  buildFilters: (q: any) => any
+  buildFilters: (q: any) => any,
+  maxRows = 5000
 ): Promise<any[]> {
   const PAGE = 1000
   const all: any[] = []
   let from = 0
-  while (true) {
+  while (all.length < maxRows) {
     const q = buildFilters(supabase.from(table).select(select))
     const { data, error } = await q.range(from, from + PAGE - 1)
     if (error || !data || data.length === 0) break
@@ -49,7 +50,7 @@ async function fetchAllRows(
     if (data.length < PAGE) break
     from += PAGE
   }
-  return all
+  return all.slice(0, maxRows)
 }
 
 /**
