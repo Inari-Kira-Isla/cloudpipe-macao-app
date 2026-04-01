@@ -60,25 +60,19 @@ export async function GET(req: NextRequest) {
     const days = parseInt(req.nextUrl.searchParams.get('days') || '30')
     const since = new Date(Date.now() - days * 86400_000).toISOString()
 
-    // ── 1. Merchant page AI crawler visits ────────────────────────────────────
-    const visitRows: any[] = []
+    // ── 1. Merchant page AI crawler visits (limit 2000 for speed) ───────────
+    const { data: visitRows } = await supabase
+      .from('crawler_visits')
+      .select('path,bot_name,bot_owner,ts,industry')
+      .eq('page_type', 'merchant')
+      .gte('ts', since)
+      .order('ts', { ascending: false })
+      .limit(2000)
     let offset = 0
-    while (true) {
-      const { data } = await supabase
-        .from('crawler_visits')
-        .select('path,bot_name,bot_owner,ts,industry')
-        .eq('page_type', 'merchant')
-        .gte('ts', since)
-        .range(offset, offset + 999)
-      if (!data?.length) break
-      visitRows.push(...data)
-      if (data.length < 1000) break
-      offset += 1000
-    }
 
     // Aggregate by merchant slug
     const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string; industry: string; region: string }> = {}
-    for (const row of visitRows) {
+    for (const row of visitRows || []) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
       const slugRegion = regionFromSlug(slug)
@@ -89,21 +83,20 @@ export async function GET(req: NextRequest) {
       if (!visitBySlug[slug].industry && row.industry) visitBySlug[slug].industry = row.industry
     }
 
-    // ── 2. Insights coverage per merchant ─────────────────────────────────────
+    // ── 2. Insights coverage per merchant (limit 3000 for speed) ────────────
     const insightRows: any[] = []
     offset = 0
-    while (true) {
+    for (let page = 0; page < 3; page++) {
       const { data } = await supabase
         .from('insights')
         .select('slug,word_count,related_merchant_slugs,title')
         .eq('status', 'published')
         .eq('lang', 'zh')
         .not('related_merchant_slugs', 'is', null)
-        .range(offset, offset + 999)
+        .range(page * 1000, page * 1000 + 999)
       if (!data?.length) break
       insightRows.push(...data)
       if (data.length < 1000) break
-      offset += 1000
     }
 
     // Map merchant → linking insights
@@ -217,7 +210,7 @@ export async function GET(req: NextRequest) {
 
     // ── 5. Today's crawl stats ────────────────────────────────────────────────
     const todayStr = new Date().toISOString().slice(0, 10)
-    const todayVisits = visitRows.filter(r => (r.ts as string).startsWith(todayStr))
+    const todayVisits = (visitRows || []).filter(r => (r.ts as string).startsWith(todayStr))
     const todayMerchantSlugs = new Set<string>()
     for (const row of todayVisits) {
       const slug = extractMerchantSlug(row.path)
