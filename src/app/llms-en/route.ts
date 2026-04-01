@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
