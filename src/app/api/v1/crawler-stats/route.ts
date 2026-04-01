@@ -37,20 +37,13 @@ async function fetchAllRows(
   table: string,
   select: string,
   buildFilters: (q: any) => any,
-  maxRows = 5000
+  maxRows = 1000
 ): Promise<any[]> {
-  const PAGE = 1000
-  const all: any[] = []
-  let from = 0
-  while (all.length < maxRows) {
-    const q = buildFilters(supabase.from(table).select(select))
-    const { data, error } = await q.range(from, from + PAGE - 1)
-    if (error || !data || data.length === 0) break
-    all.push(...data)
-    if (data.length < PAGE) break
-    from += PAGE
-  }
-  return all.slice(0, maxRows)
+  // Single query with limit — no pagination to avoid Vercel timeout
+  const q = buildFilters(supabase.from(table).select(select))
+  const { data, error } = await q.order('ts', { ascending: false }).limit(maxRows)
+  if (error || !data) return []
+  return data
 }
 
 /**
