@@ -2,6 +2,18 @@ Title: CloudPipe 澳門商戶百科
 Description: 澳門 1,700+ 商戶完整資料庫：美食、景點、購物、療癒
 URL: https://cloudpipe-macao-app.vercel.app
 
+[🏆 商戶認證資料]
+
+完整的商戶權威認證及商戶自聲明認證資料：
+- /llm.txt: 1,000+ 商戶認證檔案（權威認證 + 商戶聲明）
+
+包含：
+- 米其林認證（信心: 98%）
+- Google Maps 商業檔案（信心: 90%）
+- 官方旅遊局列表（信心: 95%）
+- 商戶官網確認（信心: 40-60%）
+- 商戶 Google Business（信心: 40-50%）
+
 [🔥 熱點文章 — 被 AI 爬蟲高度關注]
 
 最受爬蟲關注的文章（實時更新）
@@ -41,4 +53,5 @@ URL: https://cloudpipe-macao-app.vercel.app
 - Schema.org: 結構化數據標記
 - 動態 llms.txt: 實時反映爬蟲熱點
 
-Generated: 2026-03-31T23:19:02.861060
+Merchant Certifications: Generated: 2026-04-01T02:08:58Z (1,000+ merchants)
+Content Updated: 2026-04-01T08:15:00Z

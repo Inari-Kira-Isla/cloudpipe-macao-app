@@ -1,0 +1,7892 @@
+# 🏆 Authority Source Certifications - MACAO
+# Generated: 2026-04-01T02:08:13.942830Z
+# Total merchants: 790
+
+
+[Merchant: G018]
+ID: aa79d987-2dcd-4456-af57-5b7cce12f73a
+Name: 漢普閣
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.londonermacao.com/macau-restaurants/hampton-court.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942870Z
+
+[Merchant: G013]
+ID: f509d3f6-25e3-4eba-955c-f08dc0e61bb0
+Name: 麗思咖啡廳
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.ritzcarltoncafemacau.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942886Z
+
+[Merchant: S003]
+ID: a7e3fc88-ea99-40b2-a51f-4695954211b4
+Name: 山中田
+Category: 57257142
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/yamanakada.macau
+
+source-confidence: 0.05
+verified-at: 2026-04-01T02:08:13.942895Z
+
+[Merchant: S002]
+ID: e50fa5c6-abf2-4109-ae35-903d59590ffd
+Name: 海膽速遞
+Category: ebef11b5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://inariglobal.com/sea-urchin
+
+source-confidence: 0.05
+verified-at: 2026-04-01T02:08:13.942901Z
+
+[Merchant: MO-AUTO-12340-01]
+ID: b4b47444-814b-4600-9b72-b83ecea2240f
+Name: 澳門版海鮮市場
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.942907Z
+
+[Merchant: G014]
+ID: 36b70f51-9627-4f37-9803-58d834d938ee
+Name: 譽瓏軒
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.cityofdreamsmacau.com/en/dine/chinese/jade-dragon
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942915Z
+
+[Merchant: HK010]
+ID: e4ed09a0-85b6-470e-901d-943925ec23c3
+Name: 鏞記
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.942921Z
+
+[Merchant: G004]
+ID: de4b8b35-16ba-4f95-b663-a174b5c260c4
+Name: Market Bistro 色香味
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.parisianmacao.com/macau-restaurants/market-bistro.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942927Z
+
+[Merchant: G003]
+ID: 8c65e7d7-a6b2-45cf-b566-2be588cee9a0
+Name: 倫敦人美食園
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.londonermacao.com/macau-restaurants/chelsea-garden.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942933Z
+
+[Merchant: G012]
+ID: 1ec57927-fa2a-4cef-a4c9-cbfbdaa59b9f
+Name: 嬅
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.studiocity-macau.com/en/dining/diva
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942939Z
+
+[Merchant: G006]
+ID: 7d46d400-e079-4465-893e-017fdda3d944
+Name: 澳門巴黎人
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.parisianmacao.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942945Z
+
+[Merchant: G005]
+ID: 111da6e1-edbd-4803-b924-a6ae11920695
+Name: 澳葡茶餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.942950Z
+
+[Merchant: G009]
+ID: 8c70df9a-24b1-44b4-99ec-fd6d100324d8
+Name: The Manor
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.marriott.com/en-us/hotels/mfmxr-the-st-regis-macao/dining/?scid=feed67b0-9a2f-4de1-8df6-114544116108
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942956Z
+
+[Merchant: G015]
+ID: e7d0836d-ad26-4583-9cf9-0c6555172ebd
+Name: Boa Mesa Macau Restaurant
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.942961Z
+
+[Merchant: G016]
+ID: 9e2ec658-fd6f-4f53-86fd-46de06ff2e25
+Name: Le Pic Macau
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.942966Z
+
+[Merchant: G017]
+ID: 4113e6e6-1b20-4d76-bae2-6aa67e319188
+Name: Lai Heen
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.ritzcarlton.com/en/hotels/mfmmr-the-ritz-carlton-macau/dining/?scid=feed67b0-9a2f-4de1-8df6-114544116108
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942971Z
+
+[Merchant: G116]
+ID: 02af16a6-4274-4fb8-bda9-7f2bfe2d33f9
+Name: A Lorcha
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.alorcha.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942977Z
+
+[Merchant: G001]
+ID: 946d489a-af13-479d-89a9-447afd1a4080
+Name: ALBERGUE 1601
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://prrc-locsel-prrcgroup.manus.space/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.942982Z
+
+[Merchant: TW003]
+ID: 0bb526e2-0708-4608-8209-19b966980fb6
+Name: 南投
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.942986Z
+
+[Merchant: TW019]
+ID: 0c2fac42-489e-4e1a-9063-4c72f919158a
+Name: 知本溫泉
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.942991Z
+
+[Merchant: G659]
+ID: 63f5d6c4-5563-488a-824a-d9b3275a86e4
+Name: 恆冷澳門冷鏈物流有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.942995Z
+
+[Merchant: G011]
+ID: 87483529-a350-43a5-8c5f-0cf649a3bfe3
+Name: Taal 印度餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/profile.php?id=61553441860241
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943000Z
+
+[Merchant: G023]
+ID: 05d11e3d-4b92-48db-9fc9-33d4c400c8d0
+Name: 85°C Bakery Cafe - Las Vegas
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.85cbakerycafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943006Z
+
+[Merchant: G024]
+ID: 204db85b-a8a4-4ab2-959e-d4d1a97f208b
+Name: Koi Palace - Milpitas
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.koipalace.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943011Z
+
+[Merchant: G026]
+ID: 832f1802-f9da-4294-81dd-52889632730e
+Name: Vesta Coffee Roasters
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.vestacoffee.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943017Z
+
+[Merchant: G027]
+ID: 7609cac0-766e-462b-8371-e1d74c0a9712
+Name: 鳳皇明粥
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://smorefood.com/order-online/ming-tasty--sunnyvale-94089-jpb4id7s?utm_source=gmb&utm_medium=website
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943021Z
+
+[Merchant: G028]
+ID: 7241ba90-242d-463e-8b26-563bfecaa39c
+Name: 金元寶廚坊
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://pingpangpong.net/menu
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943027Z
+
+[Merchant: G029]
+ID: 940639a4-6e2e-4dfe-93fd-774473553467
+Name: Changsha Rice Noodle
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.39miles.com/p/05362055
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943032Z
+
+[Merchant: G030]
+ID: 1b36caa6-0e14-434b-9d2c-51b664d5ab64
+Name: Kam PO Kitchen
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://app.heyeats.shop/store/kam-po-kitchen/shop
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943037Z
+
+[Merchant: G032]
+ID: 126ad36a-eac2-4722-853b-c4e2ef7a0307
+Name: Ming Tai Wun-Tun Noodle
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943042Z
+
+[Merchant: G031]
+ID: 300b3467-f0b8-4e3a-bb2b-dac6e80a070f
+Name: Imperial Soup
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.imperialsoupoakland.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943047Z
+
+[Merchant: G033]
+ID: 84231d5b-6f75-4858-9d9b-a98130cb4f17
+Name: 八十五度烘培蛋糕店
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.85cbakerycafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943052Z
+
+[Merchant: G034]
+ID: 8c67468b-002f-45d4-9b3c-3ca38a23276e
+Name: Genting Palace
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.rwlasvegas.com/dining/genting-palace/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943058Z
+
+[Merchant: G036]
+ID: b2ef5f6e-b3ef-46e9-bb5a-f9e497968055
+Name: Hong Kong Cafe
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.hkcafeca.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943063Z
+
+[Merchant: G035]
+ID: 14dfb196-5074-4711-9f2c-16cc4ce36764
+Name: Koi Palace Contempo
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://koipalacecontempo.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943068Z
+
+[Merchant: G039]
+ID: e2d60903-9f03-4caf-b155-82b502ebd801
+Name: Ruby King Bakery Café
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.rubykingbakery.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943073Z
+
+[Merchant: G037]
+ID: 945631bb-e46c-481a-b816-9de877bcc396
+Name: Jasmine
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://bellagio.mgmresorts.com/en/restaurants/jasmine.html?ecid=GMB
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943078Z
+
+[Merchant: G043]
+ID: 5191075b-1185-4b61-a760-a62fa6646ddb
+Name: Shooting Star Cafe
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.shootingstarhkcafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943083Z
+
+[Merchant: G025]
+ID: 3888d0e4-a210-4d94-9254-afd2ba6dfba4
+Name: Cantoo Latin Asian Rotisserie
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://cantoosf.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943090Z
+
+[Merchant: G038]
+ID: 42f52ce1-1683-458f-b755-f36a8a1e9f64
+Name: Jin Gege & Yao Yao
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943095Z
+
+[Merchant: G042]
+ID: efca39a4-8e86-47e6-a3a9-7ec39515f84b
+Name: Empress M
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://empressm.us/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943100Z
+
+[Merchant: G040]
+ID: a8ddff50-fe2c-4ed5-90da-684fc3661936
+Name: Red 8
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.wynnlasvegas.com/dining/casual-dining/red-8
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943105Z
+
+[Merchant: G048]
+ID: c81600cb-2346-4d38-99b9-1f0866a7801e
+Name: Broadway Dim Sum Cafe
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.broadwaydimsumcafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943110Z
+
+[Merchant: G049]
+ID: 12f2ae92-0cc4-47df-869f-84fbaf4317fe
+Name: Hong's Kitchen
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943115Z
+
+[Merchant: G050]
+ID: b607bb89-c855-4280-8253-05c57bea6d6e
+Name: Wei’s Cafe (Jo Jo's Cafe)
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.jojoscafe-sf.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943120Z
+
+[Merchant: G051]
+ID: f9bfdc47-1c95-42d9-a11e-f658a5deaaa8
+Name: Cafe New Honolulu
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943124Z
+
+[Merchant: G055]
+ID: 53d03835-104e-4b74-873a-d6461ffe8735
+Name: Mango Medley (Judah)
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.mangomedley-judah.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943130Z
+
+[Merchant: G054]
+ID: d87e2212-9d1c-47b0-afcc-d813681f7ae9
+Name: Jinweide Lanzhou Hand-Pulled noodle House
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.wenoodles.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943136Z
+
+[Merchant: G060]
+ID: 9ee79002-51a9-4034-ac47-81c1202de526
+Name: Jade Fountain Café
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943140Z
+
+[Merchant: G062]
+ID: b177f14b-af42-4a5d-ae6b-00ffd0ff7df2
+Name: 鯉魚門
+Category: 1ac516a4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.koipalace.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943145Z
+
+[Merchant: G063]
+ID: 4b399a44-043c-4125-aea9-2390a80c707e
+Name: Venus Cafe - San Francisco
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://venuscafesf.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943150Z
+
+[Merchant: G061]
+ID: 415762eb-5882-44f4-b00d-f05c68d67fca
+Name: Taste of Asia - Suncoast Hotel Las Vegas
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://tasteofasialv.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943155Z
+
+[Merchant: G065]
+ID: 8c0c5e94-966c-481b-9b73-871e8f75f532
+Name: Asian Pearl Seafood Restaurant
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://asianpearl.yolasite.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943159Z
+
+[Merchant: G067]
+ID: b9ca2d0b-3017-4c66-84c9-8fab9258605c
+Name: Sweet Indulgence
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://sweetindulgence.net/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943164Z
+
+[Merchant: G064]
+ID: e9bb5b6b-3b4b-4560-8fe0-7c577b8e6b04
+Name: Daimo Chinese Restaurant
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://daimousa.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943170Z
+
+[Merchant: G066]
+ID: 3d6edb07-6bcc-45de-83a4-207a46a9bdaa
+Name: Silver Chopsticks | Chinese & Phở Restaurant
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.silverchopsticksrestaurant.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943175Z
+
+[Merchant: G052]
+ID: 26b52bbd-0ef2-495b-b271-5ee67d6c6c88
+Name: 靚粥一世
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943180Z
+
+[Merchant: G057]
+ID: ec6601f3-af3c-4e6b-9c90-35aa0ceef22c
+Name: C&M Bistro
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/CM-Bistro-1752937688282147
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943185Z
+
+[Merchant: G068]
+ID: 42ab4ece-878c-42db-99f0-27710387e290
+Name: 鴻圖海鮮酒家
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hungtossf.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943190Z
+
+[Merchant: G056]
+ID: 1c7c94aa-81eb-427e-a0f1-de1911a868f3
+Name: Hong Kong Snack House
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hongkongsnackhouse.site/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943195Z
+
+[Merchant: G053]
+ID: 8d1c61a7-92e9-4b46-b55a-ebe284d03d31
+Name: Chef's Wok
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.chefswokalameda.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943200Z
+
+[Merchant: G058]
+ID: 646b21a0-0ad9-4b57-8c7a-c308f7505fc2
+Name: S & E Cafe
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.sandecafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943205Z
+
+[Merchant: G046]
+ID: b1c15de4-425f-46d9-8bec-aa5b5c9cb9af
+Name: 富華軒
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943209Z
+
+[Merchant: G059]
+ID: 8d075827-e8b0-4c85-abe9-deac5680b477
+Name: Renee's Place
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.reneesplacerestaurant.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943215Z
+
+[Merchant: G080]
+ID: a5dc1a43-945c-42bd-9d34-3374c861b636
+Name: 淮揚曉宴
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.9
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.londonermacao.com/macau-restaurants/huaiyang-garden.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943221Z
+
+[Merchant: G184]
+ID: f45b34dc-9fc0-4f88-b13b-d282f236eac0
+Name: 豪華別墅
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943225Z
+
+[Merchant: G678]
+ID: d5b1df9c-3e08-4b81-a748-98f19859baf0
+Name: 水岸療癒水療中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943230Z
+
+[Merchant: G403]
+ID: 843470f4-3e91-47e9-bc58-c348c84bf850
+Name: McDonald's (Rua do Campo)
+Category: 2390e8ea
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.mcdonalds.com.hk/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943234Z
+
+[Merchant: G078]
+ID: f86230fa-43cf-49ec-9547-f65936c395d2
+Name: Robuchon au Dôme
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.grandlisboa.com/en/restaurants-n-bars/robuchon-au-dome
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943239Z
+
+[Merchant: G082]
+ID: 80a9ab40-05d4-4001-ae82-2129f1bbfe77
+Name: Encanto Macau / 葡頌苑
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943245Z
+
+[Merchant: G084]
+ID: 1475352f-564e-4efb-9857-7fe41e848495
+Name: Portucau 澳葡坊
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://prrc-locsel-prrcgroup.manus.space/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943250Z
+
+[Merchant: G092]
+ID: aea61782-c98c-4c78-871a-4d3cc22eaec8
+Name: Tenmasa
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.altiramacau.com/tc/dining/Tenmasa#All
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943255Z
+
+[Merchant: G086]
+ID: 98493561-cd30-4777-931b-19aaf08ab03d
+Name: 當奧豐素1890
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.grandlisboapalace.com/en/restaurants-n-bars/don-alfonso-1890
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943261Z
+
+[Merchant: G070]
+ID: aa94f0cf-c60d-4c75-a0db-dee8f5a4e36b
+Name: New Hong Kong Wok
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://newhongkongwoksc.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943265Z
+
+[Merchant: G074]
+ID: 48a0c169-d83b-406d-878a-dc1bd3201a6e
+Name: Far East Cafe
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.fareastcafesac.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943270Z
+
+[Merchant: G072]
+ID: b3b4c326-1ebd-46cb-87e3-f46cd6b7046a
+Name: 祥興
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.cheunghing3938.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943275Z
+
+[Merchant: G073]
+ID: 1be63dd5-f73e-40e8-bddf-74f1358de6b8
+Name: Sum Dim Sum
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.sumdimsumsf.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943280Z
+
+[Merchant: G087]
+ID: 1d1fce14-e2b2-4d09-b473-3ee77301dd2f
+Name: Macao Trading Company
+Category: 562597ee
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.macaonyc.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943285Z
+
+[Merchant: G089]
+ID: 7344b900-a164-409b-a49b-ec0c5d40635b
+Name: Dim Sum Sam
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://dimsumsam.us/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943290Z
+
+[Merchant: G076]
+ID: f10d680a-df2f-4287-a6fc-f3b1e26bea39
+Name: Yummy BBQ Kitchen
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943294Z
+
+[Merchant: G071]
+ID: 7e3515f6-1339-4b34-b055-fe7209142022
+Name: Da Fei Ge Restaurant
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://da-fei-ge-restaurant.francoscafe.net/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943299Z
+
+[Merchant: G090]
+ID: e1ac0d8e-dbd1-4a7b-af0e-71975983c49e
+Name: Cafe le Majestik
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://cafelemajestikweb.wixsite.com/website-1
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943304Z
+
+[Merchant: G088]
+ID: bb2a5d46-989d-4477-bc0e-7f2f5ed85eb7
+Name: 澳門街
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.goldenhorserestaurant.net/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943309Z
+
+[Merchant: G091]
+ID: a7f7b791-e6cb-4153-b7bc-1baa5f2a8ab1
+Name: Macau Kitchen
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943314Z
+
+[Merchant: G077]
+ID: d27760b6-437a-4773-99b9-d2a3c540583b
+Name: S & T Hong Kong Seafood Restaurant
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://sthongkongseafood.com/?
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943318Z
+
+[Merchant: G113]
+ID: 9d24f54a-dc71-470d-afca-1f4c08ee89bb
+Name: Guincho a Galera 景濤葡國餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hotelisboa.com/dining/guincho-a-galera/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943324Z
+
+[Merchant: G106]
+ID: b988ca9b-21ab-4be1-99ea-99d36cab09c5
+Name: Sushi Kinetsu
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.cityofdreamsmacau.com/tc/dine/asian/sushi-kinetsu
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943338Z
+
+[Merchant: G096]
+ID: f39196e0-352f-4e38-b6df-f4109358c8a4
+Name: Zhu Guang Yu (Wynn Macau)
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.wynnresortsmacau.com/en/wynn-macau
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943347Z
+
+[Merchant: G102]
+ID: bec6008a-2887-430c-bc44-d38660061027
+Name: 鮨川日本料理
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.themacauroosevelt.com/#/zh-TW/page/5dbde157-c523-49f2-a1c7-5bbc6df43261
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943353Z
+
+[Merchant: G098]
+ID: 4fc0c568-4a80-4f11-8a52-09d251150559
+Name: Wabi-Sabi 和陽小日
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/wabisabimacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943361Z
+
+[Merchant: G315]
+ID: 1458eff8-fedf-452a-9139-e89f5608c183
+Name: 三巴門美食
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943366Z
+
+[Merchant: G101]
+ID: cfd064e6-2d04-4c0c-b895-d8d7e56d7fa7
+Name: 匠膳·日式居酒屋
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://facebook.com/izakayaCheongSin
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943372Z
+
+[Merchant: G103]
+ID: e247a915-610d-4117-bf67-44c7b8a611f0
+Name: Hiro by Hiroshi Kagata
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.venetianmacao.com/restaurants/signature/hiro.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943380Z
+
+[Merchant: G097]
+ID: bd778c5e-fa7b-4d36-9c2d-86025859fd1e
+Name: 新故里日本料理
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.hotelisboa.com/dining/new-furusato
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943386Z
+
+[Merchant: G105]
+ID: 31aabe36-ebd9-4804-883f-4f06868aad04
+Name: 秋澗AkinoOgawa
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943393Z
+
+[Merchant: G107]
+ID: 2fc93ad9-4349-40c9-bebd-c37dd11cb761
+Name: 萬日本料理
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943398Z
+
+[Merchant: G115]
+ID: 503671b4-6201-4846-9545-d797ae475cb6
+Name: 葡國美食天地
+Category: 1612ee7e
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://apetisqueira.com/en/home/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943420Z
+
+[Merchant: G104]
+ID: fe597e37-014f-4f86-bb49-1360a392f747
+Name: 瑞兆
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.grandlisboapalace.com/en/restaurants-n-bars/zuicho
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943426Z
+
+[Merchant: G111]
+ID: d7f79c2f-1ca2-4920-ae7e-40ce595370af
+Name: 蓮
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.9
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943433Z
+
+[Merchant: G112]
+ID: 4dfd0c51-efb2-41b0-be97-733be2b24282
+Name: Portugália 葡多利正宗葡國菜
+Category: 1612ee7e
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.portugalia.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943438Z
+
+[Merchant: G108]
+ID: 3b4edb5a-42ed-422e-9f40-108f0dc47b3d
+Name: 江戶日本料理 (威尼斯人店)
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.venetianmacao.com/restaurants/japanese/edo.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943444Z
+
+[Merchant: G110]
+ID: f6072ba3-7e9b-465d-b1d1-b232f21aa828
+Name: 鮨吉祥 宮川(澳門 )
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.galaxymacau.com/dining/restaurants/sushi-kissho-miyakawa/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943449Z
+
+[Merchant: G099]
+ID: 6d2d08b3-b30f-4b4b-8b8b-52ef0760364c
+Name: 山里
+Category: 6de2af3b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.galaxymacau.com/dining/restaurants/yamazato/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943457Z
+
+[Merchant: G094]
+ID: 228af93e-2aad-42a4-b03f-018cbedf56d4
+Name: 品吉吉日本綜合料理
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943461Z
+
+[Merchant: G114]
+ID: a3d402b6-970f-43c0-8904-8d49e433e1ab
+Name: AMÁLIA PORTUGUESE RESTAURANT | 葡悅正宗葡國菜
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943466Z
+
+[Merchant: G134]
+ID: f462bd42-073d-4d67-9f87-faa0e5fa2297
+Name: 杜卡斯餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.cityofdreamsmacau.com/en/dine/international/alain-ducasse-at-morpheus?utm_source=Google&utm_medium=GMB
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943472Z
+
+[Merchant: G122]
+ID: 93a9a656-bc77-4f67-87c7-2639388e6623
+Name: O Santos
+Category: 1612ee7e
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/profile.php?id=100050233856007&mibextid=ZbWKwL
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943480Z
+
+[Merchant: G130]
+ID: 6005aa0d-bc03-4dac-a632-b86ac37b92d2
+Name: 風味居
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.starworldmacau.com/zh-hant/restaurant/feng-wei-ju/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943485Z
+
+[Merchant: G132]
+ID: 98f17b73-ba9a-4722-8e34-4508abe26bb8
+Name: 永翠宮
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.wynnresortsmacau.com/en/wynn-palace/dining/lakeview-palace?utm_source=googlemap&utm_medium=referral
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943493Z
+
+[Merchant: G120]
+ID: 325a06f9-246b-430a-a43a-5aebbb2d78b0
+Name: Dragon Portuguese Cuisine
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/Dragon.Portuguese.Cuisine
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943498Z
+
+[Merchant: G119]
+ID: dcd92d59-8847-430a-a9fc-2bb690083e4a
+Name: 公雞葡國餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.galomacau.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943506Z
+
+[Merchant: G135]
+ID: dba15d2e-2ab4-4e2a-bb75-4fa77a3543fe
+Name: 玥龍軒
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.studiocity-macau.com/en/dining/pearl-dragon
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943511Z
+
+[Merchant: G137]
+ID: 9b901bc3-c174-427c-a587-d16b40289429
+Name: Lung Wah Tea House
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943518Z
+
+[Merchant: G139]
+ID: 3fbe2d78-cb78-451a-8825-a8217f287526
+Name: 榮記豆腐麵食
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943526Z
+
+[Merchant: G125]
+ID: ca5060f5-964e-4993-b52b-6ec599d2f73a
+Name: 新口岸葡國餐
+Category: 1612ee7e
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.portoexterior.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943532Z
+
+[Merchant: G121]
+ID: f1524e92-1607-4e52-ad96-46b8123e8fb6
+Name: Janela Cafe Macau 百葉葡國菜
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.janelacafe.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943537Z
+
+[Merchant: G123]
+ID: ea6f562f-116e-4aee-9d2f-b66c716e1bfd
+Name: 官景正宗葡萄牙餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943547Z
+
+[Merchant: G126]
+ID: 8b87faea-cef1-452c-96ee-e14d6ec6ad73
+Name: 波爾圖葡國餐
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943553Z
+
+[Merchant: G316]
+ID: 26541985-6475-4e4e-a968-01ca152e3110
+Name: 梁太小食店
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943558Z
+
+[Merchant: G128]
+ID: 34388586-c896-4a65-980d-22933f3cd027
+Name: 花道葡萄牙餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.hotelroyal.com.mo/dining/fado
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943563Z
+
+[Merchant: G131]
+ID: 0853e756-08e2-401a-9ce6-c07d631ad701
+Name: 帝影樓
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.altiramacau.com/en/dining/detail/15/Ying.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943569Z
+
+[Merchant: G136]
+ID: 709b4f64-d9d1-43b0-8f55-3360122c843f
+Name: 六記粥麵
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943575Z
+
+[Merchant: G127]
+ID: 1b065729-44c0-47dd-a16f-b7b3ccaea686
+Name: 馬德拉葡國餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943580Z
+
+[Merchant: G124]
+ID: dfa648ca-66a0-4e4f-93a2-e365a82235bd
+Name: 鑽葡咖啡美食（大三巴店）
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943587Z
+
+[Merchant: G133]
+ID: 4fca2918-2d49-4cc5-96d0-c4a7c603e18c
+Name: 澳門旅遊大學教學餐廳
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www2.utm.edu.mo/RESTAURANT
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943593Z
+
+[Merchant: G021]
+ID: 40aa57ca-04cf-4823-8200-f86613a8c9f4
+Name: 湘粵情 Jade Xiang Yue
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://jadexiangyue.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943600Z
+
+[Merchant: G044]
+ID: fdde94b6-5e70-4d77-a66e-540444307be0
+Name: Taste of Original
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://tasteoforiginalgo.site/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943605Z
+
+[Merchant: G069]
+ID: 75040f26-6c2a-4b52-b0f4-cc29670a881b
+Name: 京都食府
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://boilingbeijingtogo.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943612Z
+
+[Merchant: G150]
+ID: c53af85f-6abf-4817-b27b-bb8a6a59f6b5
+Name: 澳門上葡京綜合度假村
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.grandlisboapalace.com/en
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943618Z
+
+[Merchant: G146]
+ID: 3011f16f-97d8-439a-8c52-59a265d6b50c
+Name: 君怡酒店
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.grandview-hotel.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943625Z
+
+[Merchant: G143]
+ID: 24ffdcc4-56f7-44ab-86e5-e4e6903061dd
+Name: 澳門葡京人
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.lisboetamacau.com/zh-hant/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943630Z
+
+[Merchant: G159]
+ID: a13b6028-0d45-466f-8646-be7fdb26863a
+Name: 維多利亞酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943635Z
+
+[Merchant: G154]
+ID: 1851ff7d-bc7f-41e0-8607-6bbd1ee3eef1
+Name: Belive Andmore 彼寓旅居
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.beliveandmore.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943642Z
+
+[Merchant: G149]
+ID: 93942637-82eb-4991-9e15-b57288477a29
+Name: 鷺環海天度假酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.grandcoloaneresort.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943649Z
+
+[Merchant: G147]
+ID: 24ad80fa-996b-4012-b3f7-6ab426a715b5
+Name: 勵庭海景酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943655Z
+
+[Merchant: HK003]
+ID: 1670a1fb-61e3-419e-b1fe-7e6c17d76538
+Name: 清水灣
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943660Z
+
+[Merchant: G151]
+ID: fd214fa9-bbec-498b-8701-70bcbae3bd2e
+Name: 澳門新濠影滙W酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.marriott.com/en-us/hotels/mfmwh-w-macau-studio-city/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943665Z
+
+[Merchant: G155]
+ID: 3eb0421a-b1e2-4ce8-9749-4f31cc5e379d
+Name: 皇庭海景酒店
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.pousadamarinainfante.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943672Z
+
+[Merchant: G144]
+ID: 26c7caa1-1a19-4197-8db7-19a2731ccb4d
+Name: 澳門皇都酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.hotelroyal.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943677Z
+
+[Merchant: G157]
+ID: 67cbbeaa-d94d-4d29-be62-20608a2d815e
+Name: 澳門盛世酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://macau.innhotel.com/zh-hant/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943682Z
+
+[Merchant: G148]
+ID: f9484dd4-d8b9-47ee-9055-1bc3c12788ce
+Name: 假期酒店
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://holidayhotelmacau.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943689Z
+
+[Merchant: G153]
+ID: 531b7820-111f-46a3-8a00-35f3926811e4
+Name: 麗景灣藝術酒店
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.regencyarthotel.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943694Z
+
+[Merchant: G142]
+ID: 063387c0-a184-408f-ad4f-9811ba762ce1
+Name: 葡京人酒店-歐舒丹主題住宿
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943701Z
+
+[Merchant: G152]
+ID: 3360a504-a395-4c49-9971-567e7431dfb0
+Name: 新東方置地酒店
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.landmarkhotel.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.943705Z
+
+[Merchant: G158]
+ID: 319515fc-6540-42a2-9639-ee0bd5520d60
+Name: Hotel Caravel 卡爾酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.caravelhotelmacau.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943710Z
+
+[Merchant: G160]
+ID: 21fdf575-0c76-4afa-9ad8-4315ad1403ae
+Name: 澳門威尼斯人
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.venetianmacao.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943717Z
+
+[Merchant: G141]
+ID: d4727730-8ab6-42cb-9016-d003380986e2
+Name: 澳門新濠影滙
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.studiocity-macau.com/?utm_source=google_GMB&utm_medium=organic&utm_campaign=GMB
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943723Z
+
+[Merchant: MO-AUTO-11695-01]
+ID: dd5257cc-34b9-41c5-8f55-173fd10cf444
+Name: 海景VIEW+日料專區
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943729Z
+
+[Merchant: G083]
+ID: bc126051-fffb-4b42-a943-153895b7a1fb
+Name: 希雅度葡國餐廳
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.londonermacao.com/macau-restaurants/chiado.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943735Z
+
+[Merchant: G166]
+ID: be9188c1-779b-4f26-8167-c87d1e02adbf
+Name: 永利皇宮
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.wynnpalace.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943740Z
+
+[Merchant: G181]
+ID: 04af9a4b-71ad-4db2-9550-3469901eab54
+Name: Vila Ka Meng
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943747Z
+
+[Merchant: G172]
+ID: 56fbb2a1-f1b8-408a-b2d3-e48fca1689f0
+Name: 萊斯酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.rockshotel.com.mo/tc/default.aspx
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943752Z
+
+[Merchant: G178]
+ID: fd6c9f87-3211-4f2e-9e49-276f9c8d1e67
+Name: 蓮居 House of Lotus
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943756Z
+
+[Merchant: G162]
+ID: c34fadf5-35be-4eaf-bf0e-fec74f6fd7ea
+Name: 美獅美高梅
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.mgm.mo/en/cotai
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943762Z
+
+[Merchant: G169]
+ID: 99594ec1-2029-43eb-990e-9c830b934083
+Name: 竹灣酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.hotelpcoloane.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943769Z
+
+[Merchant: G177]
+ID: cf95e6ba-0ed5-49c1-b893-a1818a5adfa3
+Name: 澳門四季酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.fourseasons.com/macau/?utm_source=google&utm_medium=organicsearch&utm_campaign=tor-mac-hre-mid-seo-na&utm_content=na-na&utm_term=na
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943777Z
+
+[Merchant: G171]
+ID: da823d7b-71ca-40ee-b9f7-7af1e4d52b83
+Name: 澳門JW萬豪酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.marriott.com/en-us/hotels/mfmjw-jw-marriott-hotel-macau/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943783Z
+
+[Merchant: G179]
+ID: e3fd4231-c401-4a1b-8349-503ca9edd358
+Name: 綠悠旅舍
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.greeneryinn.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943788Z
+
+[Merchant: G165]
+ID: dde0e212-b7c9-407d-8d14-740a6742fe87
+Name: 新濠鋒酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.altiramacau.com/?utm_source=google_GMB&utm_medium=organic&utm_campaign=GMB
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943795Z
+
+[Merchant: G1016]
+ID: 8ea88d0a-d4e6-4727-90ec-1b38d6b3a717
+Name: 澳門國際博覽會有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943800Z
+
+[Merchant: G416]
+ID: d9d5abc7-12a1-438f-adae-9541e5a25835
+Name: 澳門格蘭披治大賽車籌備委員會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943804Z
+
+[Merchant: G176]
+ID: 41f4fc7c-92e6-4815-ae85-1df966654ff4
+Name: 英皇娛樂酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://grandemperor.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943811Z
+
+[Merchant: G180]
+ID: 68e084e0-f6ef-472a-9c98-928b1d05214b
+Name: 葡京酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://hotelisboa.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943819Z
+
+[Merchant: G170]
+ID: 3e4eb530-922b-4337-b918-4ad2a71d5f15
+Name: 澳門悦榕庄
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://all.accor.com/lien_externe.svlt?goto=fiche_hotel&code_hotel=B1U0&merchantid=seo-maps-MO-B1U0&sourceid=aw-cen&utm_medium=seo%20maps&utm_source=google%20Maps&utm_campaign=seo%20maps
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943825Z
+
+[Merchant: G182]
+ID: 20f10c2f-191a-48a0-a42f-54dd81fa6643
+Name: 新東方商務賓館南座
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943831Z
+
+[Merchant: G168]
+ID: daad47e2-6b01-4569-92b0-f773b8fecae6
+Name: 澳門雅辰酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://artyzengrandlapamacau.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943836Z
+
+[Merchant: G173]
+ID: fc0001db-627d-42d5-a27c-df7ef834019f
+Name: The Grand Suites at Four Seasons
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.fourseasons.com/grandsuitesmacau/?utm_source=google&utm_medium=organicsearch&utm_campaign=tor-mca-hre-mid-seo-na&utm_content=na-na&utm_term=na
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943842Z
+
+[Merchant: G203]
+ID: c269d01c-1e50-48bb-b4c4-8b45d1034e58
+Name: 普濟禪院
+Category: d993cfc2
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943850Z
+
+[Merchant: G191]
+ID: c4c89165-b45e-489e-86da-2ab58d8e41c0
+Name: 澳門百老匯
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.broadwaymacau.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943855Z
+
+[Merchant: G196]
+ID: ec8cdb96-ac1a-412f-8f12-28041fefe46f
+Name: 蓮峯廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943862Z
+
+[Merchant: G202]
+ID: cff81527-9f65-4b6c-83ff-1e828397737b
+Name: 北帝廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.macautemple.com/?mod=temples&id=109&lang=en
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943867Z
+
+[Merchant: G206]
+ID: 7a33883d-f1ed-4dc5-b2ca-cdb9f63ed883
+Name: 三街會館（關帝廟）
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.wh.mo/pt/site/detail/13
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943873Z
+
+[Merchant: G197]
+ID: 4fa3fcfa-2270-459f-82e7-0c0e17fe4b5c
+Name: 譚公廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943880Z
+
+[Merchant: G195]
+ID: 5397b65a-a92f-4ed6-9616-8ff6e160ac0b
+Name: 媽閣廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.wh.mo/cn/site/detail/1
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943885Z
+
+[Merchant: G190]
+ID: 4e3091b4-7054-4625-836c-5303d70bdc2f
+Name: 澳門維景酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943889Z
+
+[Merchant: G186]
+ID: 6d81d5e3-4e83-4c4e-891f-8d02f82b49f9
+Name: 港灣大酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943893Z
+
+[Merchant: G192]
+ID: 97c9f75e-67d0-4950-85c9-e56ad3a170ca
+Name: 萬事發酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943900Z
+
+[Merchant: G201]
+ID: 47827cc1-597f-4a62-ae9a-97a398223b22
+Name: 路環天后古廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943905Z
+
+[Merchant: G209]
+ID: 48c0949e-76f8-40ad-863e-09d0fbf56361
+Name: 九澳觀音廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943910Z
+
+[Merchant: G199]
+ID: 444471ea-cbec-462d-8b2e-a6c8623d015a
+Name: 觀音古廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943917Z
+
+[Merchant: G194]
+ID: 0d0e5db1-3bba-4e15-a6b3-405e711905f1
+Name: 澳門博物館
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.macaumuseum.gov.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943923Z
+
+[Merchant: G208]
+ID: 1f85d320-87da-4413-80bc-3f5290fcddf0
+Name: 蓮溪廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://zh.macaotourism.gov.mo/sightseeing/sightseeing_detail.php?c=4&id=48
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943928Z
+
+[Merchant: G205]
+ID: 2731c45a-ed61-4a11-af87-233c4d70186c
+Name: 醫靈廟 (嘉善堂)
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943934Z
+
+[Merchant: G198]
+ID: 4cc53508-79de-449e-8e7d-97b00a6d4958
+Name: 包公廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943939Z
+
+[Merchant: G204]
+ID: 316f9d59-c34c-4179-a3ab-55d0b9af90e0
+Name: 康真君廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943944Z
+
+[Merchant: G207]
+ID: 0cc5a468-5632-435f-877d-9e257ee53384
+Name: 沙梨頭土地廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943948Z
+
+[Merchant: G210]
+ID: 253c2cff-f602-46cd-86ef-8feb6f9ca6cd
+Name: 天后廟
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943952Z
+
+[Merchant: G193]
+ID: 80610ad0-457a-4f5e-8005-d7ce7bb0654d
+Name: 新麗華酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.hotelsintra.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943957Z
+
+[Merchant: G317]
+ID: 7ffa3721-9a78-4e5f-907c-e55b0f3c0c28
+Name: 榮暉咖啡美食
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943962Z
+
+[Merchant: G200]
+ID: 260717d9-e651-428c-98ab-5bda1036ecc0
+Name: 大三巴哪吒廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943966Z
+
+[Merchant: G211]
+ID: aed6bfdf-5dfb-40f3-8b6d-c04ff586ff64
+Name: 澳門氹仔關帝殿天后宮
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943971Z
+
+[Merchant: G226]
+ID: af64ae56-5a70-420c-9412-58279f9b67de
+Name: 大炮台公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943975Z
+
+[Merchant: G218]
+ID: dab84cff-284a-4c69-952d-1ea07a0842e1
+Name: 望廈山市政公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943982Z
+
+[Merchant: G215]
+ID: f07b868a-f006-4b3f-8dea-60ff866f09a4
+Name: 燒灰爐公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.943987Z
+
+[Merchant: G229]
+ID: 933d5bce-d5ec-4ab2-a6fe-8c82a572fba3
+Name: 澳門回歸紀念公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.943992Z
+
+[Merchant: G213]
+ID: adea1067-3546-416b-bf77-a721a1ac2474
+Name: 觀音古廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.culturalheritage.mo/cn/detail/57/1
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.943997Z
+
+[Merchant: G1086]
+ID: aeb9146b-a315-4fd4-bfff-3b166366ad54
+Name: 澳門消防局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944003Z
+
+[Merchant: G232]
+ID: 8822e355-a11d-4272-ab0c-a7830cd71ad1
+Name: 水塘公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944008Z
+
+[Merchant: G235]
+ID: f923d521-532e-4ed3-aa52-d2706b924ba6
+Name: 澳門旅遊塔
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.macautower.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944013Z
+
+[Merchant: G214]
+ID: aea687fc-605a-4a2b-b971-33a3e6fdc7be
+Name: 哪吒古廟
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944018Z
+
+[Merchant: G217]
+ID: 74f3c662-18dc-4876-a836-f1efcf098330
+Name: 氹仔中央公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944026Z
+
+[Merchant: G236]
+ID: f227e608-a294-4087-ba62-6dcd0a99f8e4
+Name: 議事亭前地
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.culturalheritage.mo/en/detail/hrtID55
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944031Z
+
+[Merchant: G220]
+ID: 6c1a899f-a75a-4a93-a029-fc20bedd0bb4
+Name: 宋玉生公園.
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944036Z
+
+[Merchant: G233]
+ID: 3d607740-0027-4303-b190-d4c269afa34f
+Name: 澳門ikun集合公園2.5
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944041Z
+
+[Merchant: G227]
+ID: 604c1bcf-5857-479a-8acc-a7470e8b9e56
+Name: 二龍喉公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944048Z
+
+[Merchant: G223]
+ID: 677839e0-7020-400a-bdf2-cd2468a61e86
+Name: 盧廉若公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944052Z
+
+[Merchant: G341]
+ID: 5539654e-61dc-4ebe-adba-b820abe3bcbd
+Name: Fuoco Pastry
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/FuocoPastry/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944058Z
+
+[Merchant: G234]
+ID: 9d78a1b1-8611-4a7d-823d-646ba228b465
+Name: 棕櫚公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944064Z
+
+[Merchant: G219]
+ID: 2e1bc024-788b-400a-8b9d-f074d90f6461
+Name: 紀念孫中山市政公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944069Z
+
+[Merchant: G228]
+ID: 6ce5aa14-f7d7-4c72-8d10-5fd31cd11c48
+Name: 路環山頂公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944074Z
+
+[Merchant: G230]
+ID: 393dc90e-d0e9-4d16-88cb-fea1fa751b02
+Name: 白鴿巢公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944079Z
+
+[Merchant: G222]
+ID: 514bb892-f0f3-4c10-b74e-98fe57654e62
+Name: 大潭山郊野公園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944083Z
+
+[Merchant: G237]
+ID: 88d22036-f5cb-479c-b3bd-5dc23f7a56b4
+Name: 大炮台
+Category: d993cfc2
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944088Z
+
+[Merchant: G231]
+ID: a49bb259-72b0-4298-aed6-0b42ae78a1ce
+Name: 林茂兒童遊樂場
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944092Z
+
+[Merchant: G225]
+ID: 9cc2db08-c780-4d34-b661-46eafb4886e6
+Name: 觀音像海濱休憩區
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944098Z
+
+[Merchant: G246]
+ID: f51eec85-9aff-44f7-91de-d419888d36e8
+Name: 澳門大賽車博物館
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://mgpm.macaotourism.gov.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944104Z
+
+[Merchant: G251]
+ID: af032c49-5fa3-4c62-941d-661c85c754c7
+Name: 西灣湖廣場
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944108Z
+
+[Merchant: G499]
+ID: cf8ef2a5-6abb-4b8f-9847-ed51d643e0f5
+Name: 澳門國際貿易展覽有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944113Z
+
+[Merchant: G248]
+ID: 6f86a822-b978-46df-9bdb-aa4d4e67a2e7
+Name: 澳門長樓斜巷
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944117Z
+
+[Merchant: G318]
+ID: e8ea95af-deb0-4be0-ad3c-ac98c0267240
+Name: 黃枝記粥麵
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.yp.mo/wongchikei
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944122Z
+
+[Merchant: G260]
+ID: 3d0e5998-97b5-4175-81b3-f2ce57d412a3
+Name: 迪斐世 澳門新濠天地店
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.dfs.com/en/macau/stores/dfs-macau-city-of-dreams?utm_source=google-maps&utm_medium=organic
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944130Z
+
+[Merchant: G249]
+ID: 3766c618-ebe0-4726-9aeb-50076807abfe
+Name: 舊城牆遺址
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944135Z
+
+[Merchant: G242]
+ID: b947bc52-c935-4cd2-b47d-414598b586ca
+Name: 九澳燈塔
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944139Z
+
+[Merchant: G252]
+ID: 89148db7-413f-4847-8c28-f68f47c564f1
+Name: 加思欄花園
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944144Z
+
+[Merchant: G250]
+ID: 5a8c6b15-1dc0-45bc-aecf-15430f22c480
+Name: 澳門美麗溼地
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944148Z
+
+[Merchant: G256]
+ID: b3916c23-74ae-4066-a2e7-ba0f38edf2f1
+Name: DFM澳門免税
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944155Z
+
+[Merchant: G244]
+ID: 48766ed6-07b0-41b5-bf26-d50ce8fff285
+Name: 澳門半島
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944160Z
+
+[Merchant: G245]
+ID: ffd2949d-be05-4fff-9820-2a8bd45423ff
+Name: Macau Crazy Hall Slope Alley
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944165Z
+
+[Merchant: G258]
+ID: ba03974e-02ce-415c-bb46-b247f8521390
+Name: DFS Macau, Galaxy (Beauty)
+Category: dc368bbd
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.dfs.com/en/macau/stores/t-galleria-beauty-by-dfs-macau-galaxy-macau?cid=seo-yextgo-yext
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944172Z
+
+[Merchant: G243]
+ID: 112d0a4c-9c3e-4f64-b18b-0a8bfe0b6172
+Name: 百老匯大街
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.broadwaymacau.com.mo/broadway-food-street/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944178Z
+
+[Merchant: G254]
+ID: 760b70b5-a620-4f7d-8a0d-0e5b39fdaeae
+Name: 威尼斯人娛樂場 泰
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.venetianmacao.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944185Z
+
+[Merchant: G241]
+ID: 301dd89a-143e-470b-9452-6c8bc23c9f90
+Name: 澳門漁人碼頭
+Category: 1ac516a4
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.fishermanswharf.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944191Z
+
+[Merchant: G262]
+ID: 02104393-5c02-4a11-913a-69cb8f304d23
+Name: cdf澳门上葡京店
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944198Z
+
+[Merchant: G253]
+ID: 7c95bff9-4fae-4715-ba9c-80996fce0cb0
+Name: 佐治･歐華利塑像
+Category: d993cfc2
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944203Z
+
+[Merchant: G255]
+ID: 17d34c9a-2dca-4983-bd40-2804422a654d
+Name: 免稅商店
+Category: 7292955f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944207Z
+
+[Merchant: G282]
+ID: c41ffed7-da86-4c59-87b9-559e27ca3df9
+Name: 便民藥房 噴水池店
+Category: e04ba131
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.popular.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944212Z
+
+[Merchant: G276]
+ID: dab4519d-f79e-46dd-9dd9-a2c23aaf6298
+Name: 康保藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.mlocal.biz/biz/4f3db50b2a00c261540005a8
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944217Z
+
+[Merchant: G274]
+ID: df02c116-20cf-488b-8a52-9bc1a0ca0a89
+Name: 康滿藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://yp.mo/business/%E5%BA%B7%E6%BB%BF%E8%97%A5%E6%88%BF.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944222Z
+
+[Merchant: G275]
+ID: 128a74fc-3618-4783-a624-93bddea4ed70
+Name: 新永利藥房
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://yp.mo/business/%E6%96%B0%E6%B0%B8%E5%88%A9%E8%97%A5%E6%88%BF.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944229Z
+
+[Merchant: G286]
+ID: 56eeb162-0f1a-48e8-9aaf-ed21fc82c657
+Name: 巴黎人購物中心
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://parisianmacao.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944235Z
+
+[Merchant: G280]
+ID: 8867ebcc-b053-4da6-a464-33257c6ea234
+Name: 寶健藥房(廈門街店)
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944241Z
+
+[Merchant: G266]
+ID: 3825b06c-7df5-496a-b855-e64be649d505
+Name: 澳門便民藥房
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944246Z
+
+[Merchant: G265]
+ID: b9515451-338b-4eb8-83c4-cce91092f406
+Name: 統計暨普查局
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.dsec.gov.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944251Z
+
+[Merchant: G281]
+ID: 51a5d7df-7113-4f61-bd50-dc914124752d
+Name: 運通藥房
+Category: e04ba131
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944255Z
+
+[Merchant: G270]
+ID: 5ae25987-4f48-41ae-a5f7-2fedeec7d709
+Name: 便民藥房 黑沙環店
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.popular.com.mo/pwen/stores.php
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944260Z
+
+[Merchant: G277]
+ID: 483603bc-1164-4fff-ac7e-a7e5344c7ddf
+Name: 利民大藥行
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944266Z
+
+[Merchant: G273]
+ID: 037c9a59-6192-4876-9ab9-7248df0f653d
+Name: 聯大藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://i.yp.mo/luentai/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944271Z
+
+[Merchant: G279]
+ID: 1ccfa1fd-2074-4479-8ee6-629764d5e3da
+Name: 隆泰藥房
+Category: e04ba131
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.ltpharm.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944277Z
+
+[Merchant: G283]
+ID: 4f2f62ce-cef5-496a-abaf-fb698844edd6
+Name: 愛勤藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.mlocal.biz/biz/4efde3566f52730c6b000db8
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944284Z
+
+[Merchant: G271]
+ID: 466e7499-5f75-4d11-82d4-9f986d49167f
+Name: 萬輝大藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.mlocal.biz/biz/4ce2d4aa87819e5f11550000
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944289Z
+
+[Merchant: G269]
+ID: 908b4e32-a07b-44da-8e70-2c1ce8e79620
+Name: 慈博大药房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944296Z
+
+[Merchant: G284]
+ID: fc4bee35-1376-4d6f-b785-2f91873b6913
+Name: 永春藥房（金苑店）
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944300Z
+
+[Merchant: G285]
+ID: 029bf1c6-350b-470d-88a1-03ed083f5ab1
+Name: 長春閣 (分行)
+Category: e04ba131
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944307Z
+
+[Merchant: G272]
+ID: 009ad6bc-0857-4e18-b6b9-ec7175e8448a
+Name: 忠誠藥房
+Category: e04ba131
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944311Z
+
+[Merchant: G291]
+ID: f57a919c-aea9-49ae-be35-c4381df477c0
+Name: 星皓廣場
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.nova.mo/mainpage
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944317Z
+
+[Merchant: G008]
+ID: c14d12fe-e017-4702-ad54-11c1672e7708
+Name: 百福小廚 ( 雄昌店 )
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944322Z
+
+[Merchant: G290]
+ID: 5d5c7dbf-9c48-4bde-8425-34672ffe1645
+Name: 壹號廣場
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.onecentralmall.com.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944327Z
+
+[Merchant: G295]
+ID: 34fd2141-b575-436f-9325-8f3cea63f45c
+Name: R Mall
+Category: cbcd0e4b
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/rviewmacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944334Z
+
+[Merchant: G307]
+ID: a9e61aad-a8f3-47da-b45a-7d215a1dd113
+Name: 誠昌飯店
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://sengcheong.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944339Z
+
+[Merchant: G289]
+ID: afaed352-630b-4ef8-ba41-4353b466cb13
+Name: 澳門廣場
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944343Z
+
+[Merchant: G299]
+ID: c4722330-53c6-4af4-8ebb-5da834c00804
+Name: 信達城
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://sunstarmark.com/city.htm
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944351Z
+
+[Merchant: G311]
+ID: da399696-4948-45ec-87c7-ec64443f05ac
+Name: 一哥美食 - 水蟹粥
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944356Z
+
+[Merchant: G288]
+ID: 342240c2-5282-4b0e-8d8a-7c203034db15
+Name: 澳門倫敦人購物中心
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.londonermacao.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944361Z
+
+[Merchant: G302]
+ID: 16291ed9-182d-4f5f-8af2-bc89bbd08b47
+Name: Cunha Bazaar
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944366Z
+
+[Merchant: G300]
+ID: dee90739-14ba-4bce-9c6f-6f2f97349a4e
+Name: Patio de Chon Sau
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944371Z
+
+[Merchant: G303]
+ID: a7a5b32f-2a77-40b3-b0d4-17442e39ecf2
+Name: HARNN MACAO
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944375Z
+
+[Merchant: G293]
+ID: 0b2e15e6-9107-4258-b65a-90b58e6fc2a3
+Name: 新八佰伴
+Category: cbcd0e4b
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.newyaohan.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944380Z
+
+[Merchant: G330]
+ID: d1479bbc-58d6-46b8-a8e4-90b22dc7003c
+Name: 杏香園
+Category: d621eca5
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944387Z
+
+[Merchant: G335]
+ID: da3fde26-83f2-4517-baa0-929b4e8bfa35
+Name: Golden Hall Dessert 金滿堂甜品
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944392Z
+
+[Merchant: G321]
+ID: 854eeff1-27a4-45b7-a2c0-47ef77750e56
+Name: 藍點小食
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944399Z
+
+[Merchant: G338]
+ID: 94e2d519-38a3-4bec-9e2d-8fdd3c813426
+Name: 楊枝金撈 (沙梨頭總店)
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://goldenmixdesserts.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944405Z
+
+[Merchant: MC-CAFE-99356-04]
+ID: 4128dbc1-a48e-4fce-9081-1b34728330b1
+Name: 檸檬車露茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944410Z
+
+[Merchant: G324]
+ID: 9d07d3ac-b0a0-4b13-9810-41a90112cfc7
+Name: 樂軒華粵菜餐廳
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.ponte16.com.mo/tc/dining/cantoneserestaurant
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944414Z
+
+[Merchant: G322]
+ID: a166f8cb-4d21-425b-a3af-d5b1e74a4233
+Name: 滄洲咖啡小食
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944422Z
+
+[Merchant: G333]
+ID: 1012e503-640e-4227-861f-636a1dc83184
+Name: 手作食糖
+Category: d621eca5
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.9
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944427Z
+
+[Merchant: G138]
+ID: ce3878e9-b905-4925-b095-acf95fc2e810
+Name: Zi Yat Heen
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.ziyatheen.com/?utm_source=google&utm_medium=organicsearch&utm_campaign=tor-mac-fab-mid-seo-na&utm_content=na-na&utm_term=na
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944432Z
+
+[Merchant: G337]
+ID: 873b9cf0-6000-4de0-a103-343941656f96
+Name: 順念糖水
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944437Z
+
+[Merchant: G329]
+ID: 220b9522-1e50-4c29-8ae2-1e826b989f68
+Name: 山海堂
+Category: d621eca5
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944442Z
+
+[Merchant: G323]
+ID: 4e7ca2a6-be5f-4457-b803-823aa5fdd7a2
+Name: 北方館
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://hk.venetianmacao.com/restaurants/signature/north.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944447Z
+
+[Merchant: G352]
+ID: 98b71259-6385-4c2f-87d0-dea5ad4d47b9
+Name: 旺德福
+Category: 741da6ab
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://wonderfulhotpot.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944454Z
+
+[Merchant: G342]
+ID: 75cfe947-ab57-4a19-a871-6a19d3f7f5d4
+Name: 打鐵豆花
+Category: d621eca5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944459Z
+
+[Merchant: G351]
+ID: 601c0f65-4321-4018-aeac-fbeb5c8ca6b9
+Name: 協成海鮮火鍋倫敦人店
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944467Z
+
+[Merchant: G344]
+ID: 7fe8544e-fd2f-4738-b494-e802beed3062
+Name: Mimas dessert
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://instagram.com/mimas.dessert
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944472Z
+
+[Merchant: G346]
+ID: 8bbac067-a075-4c23-a393-09e48495ef2e
+Name: 禮記雪糕飲冰專家
+Category: 62d35b80
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://laikei-icecream.com/contact/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944479Z
+
+[Merchant: G363]
+ID: 8907d729-c8f7-463a-a572-9b6aa4e5c2b7
+Name: 悅緣四季 椰子雞海鮮火煱
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944484Z
+
+[Merchant: G362]
+ID: 81ab0723-ff4c-4ba8-9a17-0617cd075f24
+Name: Hip Seng Seafood Hot Pot Restaurant City of Dreams
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/hipseng.hotpot/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944489Z
+
+[Merchant: G357]
+ID: 39656eb3-13ea-4c1d-a506-de62c4056848
+Name: 海底撈 澳門威尼斯人店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://hk.venetianmacao.com/restaurants/haidilao.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944497Z
+
+[Merchant: G359]
+ID: ee4b161e-1a2b-4eb7-869c-e49101be80a9
+Name: 永明食店（明記火鍋）Ming Kee Hotpot
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944502Z
+
+[Merchant: G356]
+ID: 96d374b7-edb8-417a-98a3-da7413fe8415
+Name: 協成海鮮火鍋（新濠影滙店）
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.studiocity-macau.com/en/dining/hip-seng-seafood-and-hotpot-restaurant
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944510Z
+
+[Merchant: G360]
+ID: 183beff2-d611-4ec8-a355-92f29fe2f21e
+Name: 海棠火鍋美食
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944517Z
+
+[Merchant: G367]
+ID: 2fd3aa11-711b-4ae9-a734-69ea3a323de0
+Name: 協成海鮮火鍋飯店（新馬路店）
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944522Z
+
+[Merchant: G361]
+ID: 6c5d800e-6c82-4fae-84ce-7ac8370ae7e1
+Name: 漁王世家海鮮火鍋NEPTUNE SEAFOOD HOT POT
+Category: 9b35ae15
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.grandlisboapalace.com/en/restaurants-n-bars/neptune-seafood-hot-pot
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944527Z
+
+[Merchant: G345]
+ID: 2b8732f3-aedb-498c-bbea-5703c360cc06
+Name: 雍記甜品
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944532Z
+
+[Merchant: G347]
+ID: 996c4f6e-7a70-469f-a36b-e40ed1b881d8
+Name: 洪馨記椰子雪糕
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.yp.mo/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944537Z
+
+[Merchant: G353]
+ID: 56060797-2117-41fc-832a-e97e20e4bf4e
+Name: 濠鍋 - Hotpot
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944544Z
+
+[Merchant: G358]
+ID: 67070487-9c64-407c-8948-0155fbbab75f
+Name: 新一魚湯米線雞煲火鍋
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/people/%E6%96%B0%E4%B8%80%E9%9B%9E%E7%85%B2%E7%81%AB%E9%8D%8B/100063753930839/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944550Z
+
+[Merchant: G350]
+ID: 396af6e9-3aa7-4ea5-8435-50edf86f1552
+Name: Hip Seng Seafood Hot Pot Galaxy Macau Branch
+Category: 741da6ab
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.galaxymacau.com/dining/restaurants/hip-seng-seafood-hot-pot-restaurant/?noRedirect=1
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944657Z
+
+[Merchant: G348]
+ID: 5ebf8839-de65-4b08-b199-c88ce05140cf
+Name: 安德魯餅店 路環本店
+Category: 5a0d4580
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.lordstow.com/macau-outlets/?lang=zh-hant
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944664Z
+
+[Merchant: G349]
+ID: 744650b4-9b96-45c8-9aa7-3d908062b517
+Name: 大豐滿（百老匯店）
+Category: 741da6ab
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944670Z
+
+[Merchant: G386]
+ID: d09fef6c-d8b4-4a99-b27e-07f5faed7179
+Name: 西灣安記(氹仔)
+Category: 2390e8ea
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/onkei1954/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944675Z
+
+[Merchant: G372]
+ID: dfd4d196-03a8-49bd-a4df-29fb7c02b896
+Name: 快樂蜂
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.3
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/jollibeemacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944681Z
+
+[Merchant: G383]
+ID: f2b3e6a2-91b2-439c-be7b-9618c4aea417
+Name: 肯德基
+Category: 2390e8ea
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944688Z
+
+[Merchant: G370]
+ID: fac7214a-de57-44ed-b5a8-bdff0b1b99a6
+Name: 勝利茶餐室
+Category: 7c8da92f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944692Z
+
+[Merchant: G369]
+ID: c9ea0839-a0bd-4e68-837c-e3edf71e9d90
+Name: 聯德快餐
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944696Z
+
+[Merchant: G354]
+ID: 9620924c-c37b-47f4-a3ec-c5edb7d3346f
+Name: 協成海鮮火鍋（大中華店）
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.jinyuexuan.com/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944702Z
+
+[Merchant: G368]
+ID: d6ccc057-5c4b-407f-b794-2c27590ddd4a
+Name: 四季轩重庆老火锅
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944707Z
+
+[Merchant: G379]
+ID: 59413eaa-4ec1-4707-9541-90b9f3c88976
+Name: 新鴻發美食 (嘉野度將軍街)
+Category: cbcd0e4b
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.viviyu.com/archives/9418
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944712Z
+
+[Merchant: G375]
+ID: 4e6b7999-556d-490b-9bd4-f4e238316eb9
+Name: Food Deli 遊食堂
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.1
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944720Z
+
+[Merchant: G385]
+ID: 80acbbb1-da89-4b8c-9678-39130dd70c53
+Name: 隆都小食
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944727Z
+
+[Merchant: G378]
+ID: 58a926fc-326c-4e6f-b081-28a1ae9badcf
+Name: 大發來茶餐廳 高樓街店
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944732Z
+
+[Merchant: G387]
+ID: 734f404a-263a-47ac-b3e2-793903ed78e0
+Name: 美富快餐提督店
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944737Z
+
+[Merchant: G374]
+ID: 9122522a-812f-433e-acae-f551dbc73b52
+Name: 新鴻發咖啡美食
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.2
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944741Z
+
+[Merchant: G991]
+ID: a6a52f25-a6d1-40ba-a84b-71e9ad5479d9
+Name: 盛世地產代理有限公司
+Category: 61307f0c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944746Z
+
+[Merchant: G990]
+ID: 829f8537-c077-466a-bfee-280403bc937b
+Name: 建材行有限公司
+Category: f54d5724
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944750Z
+
+[Merchant: G384]
+ID: 9a71912f-9c64-44ea-9251-7c28715fb9dc
+Name: 快樂蜂 氹仔店
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/jollibeemacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944755Z
+
+[Merchant: G380]
+ID: 756ab8b9-a702-494a-a48e-2d7bf1c9f8f5
+Name: 華人冰室
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944759Z
+
+[Merchant: G371]
+ID: fa8ced70-425b-45b2-9468-768789e32ff7
+Name: 小熊貓
+Category: 2390e8ea
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944763Z
+
+[Merchant: G373]
+ID: 0c6dffd1-1541-4878-a435-71fde08daa7f
+Name: Big Momma's Macau
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944768Z
+
+[Merchant: G381]
+ID: 46af4826-d2dc-4424-adcc-134849f97b94
+Name: Estabelecimento de Comidas Leng Kei's
+Category: 7c8da92f
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944773Z
+
+[Merchant: G382]
+ID: a2a13e89-0e78-4237-af30-79c3a10369ce
+Name: 煮閣
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944777Z
+
+[Merchant: G388]
+ID: cf4b094e-809b-4d05-9c4a-bc1fbcd9342b
+Name: 志龍燒味
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:5.0
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944784Z
+
+[Merchant: G377]
+ID: 684cd1e0-75dc-449c-a2e7-405ff0dc8ed9
+Name: 快樂蜂（黑沙環店）
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/jollibeemacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944790Z
+
+[Merchant: G366]
+ID: 1e0c05de-20f3-4858-a6c9-53d0f42f6a64
+Name: 川流八味
+Category: 741da6ab
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.944797Z
+
+[Merchant: G410]
+ID: e6e85158-87aa-4d4f-813e-2f7e4ed826aa
+Name: 皇宮卡拉OK
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944801Z
+
+[Merchant: S004]
+ID: 6167bacd-8389-41e2-8e16-8259d126a7f3
+Name: After School Coffee
+Category: 62d35b80
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://inari-kira-isla.github.io/after-school-coffee/
+
+source-confidence: 0.05
+verified-at: 2026-04-01T02:08:13.944806Z
+
+[Merchant: G399]
+ID: d2c999a7-e4dc-4191-8b76-2842c24d9af5
+Name: 麥當勞 (栢威店)
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944811Z
+
+[Merchant: G365]
+ID: f8b6d35f-d9c4-479a-b3a1-3da1237a1f8e
+Name: 海底撈火鍋
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/HaidilaoMacao/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944817Z
+
+[Merchant: G404]
+ID: 663f2e22-ed3d-4c8d-98f8-28870362be25
+Name: 麥當勞 (威尼斯人店)
+Category: 1d888c78
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944824Z
+
+[Merchant: G396]
+ID: f87e19a3-9890-4c56-b4e0-be0fd6253fe1
+Name: Dino Burger
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://instagram.com/dinoburgermacau?utm_medium=copy_link
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944829Z
+
+[Merchant: G402]
+ID: 27976085-6038-4a21-a0a2-66c2b87b6ebe
+Name: 麥當勞 (外港碼頭店)
+Category: cbcd0e4b
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944836Z
+
+[Merchant: G408]
+ID: 52925c43-6477-4bdb-a9fc-b2f62d9425d6
+Name: 麥當勞 (金融中心店)
+Category: cbcd0e4b
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944841Z
+
+[Merchant: G409]
+ID: 4b1b11c5-3da0-4b13-9458-c3faad6c1238
+Name: 星夜酒吧
+Category: 562597ee
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944847Z
+
+[Merchant: G411]
+ID: ffb07e09-40ed-40b3-b045-69a4570c0d3d
+Name: 極光夜店
+Category: 4591ff86
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944851Z
+
+[Merchant: G412]
+ID: ce27f344-5f07-4baa-bec7-cec3c4914d20
+Name: 雲端酒廊
+Category: cf2fd3ae
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944855Z
+
+[Merchant: MC-TECH-91108-05]
+ID: 7ecb7b65-c438-46b8-9805-8891cf82f687
+Name: 澳门智慧城市联盟
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944859Z
+
+[Merchant: G397]
+ID: 0465b78a-e003-4022-ac10-57a260f66069
+Name: Shake Shack (澳門倫敦人)
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.shakeshack.com.hk/tc/index.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944864Z
+
+[Merchant: G398]
+ID: 9685ccc0-7b7c-4996-b87b-14b47e49a05d
+Name: Five Guys (澳門威尼斯人店)
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.fiveguys.mo/?y_source=1_NzU5NDMzMTctNzE1LWxvY2F0aW9uLndlYnNpdGU%3D
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944873Z
+
+[Merchant: G393]
+ID: 93bb023a-9413-4f2c-8498-112b0f8471a9
+Name: mezza9
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.cityofdreamsmacau.com/en/dine/international/mezza9-macau
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944879Z
+
+[Merchant: G395]
+ID: 5f620654-dd30-4e68-ae7d-32ad25572b60
+Name: Retro Tavern 復刻小館
+Category: 62d35b80
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.8
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/profile.php?id=100091368716482
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944884Z
+
+[Merchant: G400]
+ID: 1f9e5d15-4558-4f68-913f-39056acb5bc3
+Name: Venetian Macao Food Court
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944891Z
+
+[Merchant: G413]
+ID: 1b5f07b4-7558-4dc0-9a8f-2e35d94b438c
+Name: 幻彩表演秀
+Category: c681388f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944895Z
+
+[Merchant: G405]
+ID: 3a55166c-376f-41da-80fb-64daa8738233
+Name: 麥當勞 (凱泉灣店)
+Category: 2390e8ea
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.0
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.944900Z
+
+[Merchant: G407]
+ID: da95fa1f-1e55-4f3f-90d6-87329f56fabb
+Name: McDonald's at Camoes
+Category: 2390e8ea
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.facebook.com/McDMacau/
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.09
+verified-at: 2026-04-01T02:08:13.944907Z
+
+[Merchant: G422]
+ID: 95462e76-b7c1-47e9-8f16-97190b7f5cac
+Name: 岐關車路有限公司
+Category: fbda50e8
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944912Z
+
+[Merchant: G426]
+ID: fba3f964-7e5a-4733-af66-55879b916128
+Name: 海泓冷鏈物流有限公司
+Category: 48f4fc40
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944916Z
+
+[Merchant: G419]
+ID: 2d89f229-40e0-4b14-9708-cb264d1f1c46
+Name: 噴射飛航
+Category: b42a9fcb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944923Z
+
+[Merchant: G882]
+ID: ad503193-db58-4f9d-87a7-a2a4768a83e7
+Name: 氹仔經濟旅舍
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944929Z
+
+[Merchant: G423]
+ID: c83fb314-6291-4c4b-9eb9-2fc47c991156
+Name: 金光飛航
+Category: b42a9fcb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944933Z
+
+[Merchant: G425]
+ID: 52604447-96cb-4a03-b803-a40c5fde3607
+Name: 恆豐食品批發有限公司
+Category: 6f24b8b3
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944937Z
+
+[Merchant: G432]
+ID: 3f3b2e4f-bd1e-4f1d-a5c3-f5a297c167f9
+Name: 童心幼兒園
+Category: 3b5ae336
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944941Z
+
+[Merchant: MC-PROF-002]
+ID: 904c54ed-0e57-4b3e-8dab-a8e85fa8534f
+Name: 黃顯輝律師事務所
+Category: 9bd46fb7
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944944Z
+
+[Merchant: G428]
+ID: e913165a-42c9-4f6d-992c-ab50abf52763
+Name: 速食派送有限公司
+Category: ebef11b5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944948Z
+
+[Merchant: G1033]
+ID: f3dce057-c1ac-425a-9709-820dde5f6d6a
+Name: 澳門人壽保險股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944952Z
+
+[Merchant: G418]
+ID: bf8114c0-3c9b-4ec5-af4a-5b8f79a5114a
+Name: 澳門品牌策劃推廣協會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944956Z
+
+[Merchant: G427]
+ID: f1bac79f-77c2-4a72-a81f-dd7ea0b7ae80
+Name: 澳門肉食供應有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944959Z
+
+[Merchant: G429]
+ID: b1acc610-6954-4b71-85ca-1c0d4ec1cfe7
+Name: 澳門英語學院
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944963Z
+
+[Merchant: G430]
+ID: dc6981b8-0adf-4471-ae79-91ae682603c0
+Name: 澳門國際學校
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944967Z
+
+[Merchant: G431]
+ID: d528dfa7-6dae-4345-b3bb-2a20eeaf1eda
+Name: 澳門職業培訓中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944971Z
+
+[Merchant: G417]
+ID: c7aa9024-9ca3-444e-a40d-07cb8815a555
+Name: 澳門國際煙花比賽匯演組委會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944975Z
+
+[Merchant: G420]
+ID: 00e350f4-dabd-41c6-8734-6136cef6f0f9
+Name: 澳門國際機場
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944978Z
+
+[Merchant: G421]
+ID: 8cffb710-1586-4ae3-b7e6-9bf013971970
+Name: 澳門輕軌股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944982Z
+
+[Merchant: G424]
+ID: db31a906-2a2b-42cf-98e7-14b1501a66b0
+Name: 澳門海產進口有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944986Z
+
+[Merchant: G433]
+ID: f6c61240-7a1d-4ed6-ab64-e337a9cdec79
+Name: 卓越教育補習中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944990Z
+
+[Merchant: MC-WEST-7130-02]
+ID: 39b2f8ad-a4e9-4ca1-a313-6fca7cda6740
+Name: 歐陸風情餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.944994Z
+
+[Merchant: G436]
+ID: a70c617c-fcb7-44a6-aa01-8969cc78347c
+Name: 澳門環球證券投資有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945001Z
+
+[Merchant: G437]
+ID: 32822727-4eaf-4c88-892a-a7b0462eed62
+Name: 澳門華信信貸有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945007Z
+
+[Merchant: G434]
+ID: d3c4d30a-1e9a-471e-af4c-c230830778f9
+Name: 澳門國際商業銀行
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945011Z
+
+[Merchant: G1018]
+ID: d8a3a5b4-8101-4801-adad-61373de7a2eb
+Name: 金光渡輪有限公司
+Category: b42a9fcb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945015Z
+
+[Merchant: MC-DESS-6402-01]
+ID: c2cf3f95-7373-4e3c-83a4-d60e44090722
+Name: 星月甜品坊
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945019Z
+
+[Merchant: MC-JAPA-4824-11]
+ID: 679b1677-3517-434d-8ced-bfaa9611a22c
+Name: 秋田居食屋
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945023Z
+
+[Merchant: MC-FAST-2096-12]
+ID: 8373af0c-04f7-4ab7-80f8-9f0b45cca212
+Name: 新昌記粥麵
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945027Z
+
+[Merchant: MC-FAST-2096-04]
+ID: 7912b0cf-1308-42a4-a2b8-55b48bcf0c1c
+Name: 永樂快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945031Z
+
+[Merchant: MC-RELI-94040-04]
+ID: 5918c667-f2e4-40f7-bb0d-2037fbd567b4
+Name: 路環聖方濟各教堂
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945035Z
+
+[Merchant: MC-NON--8493-01]
+ID: 6cb972e8-a822-4bf5-9c97-81560d9a93b3
+Name: 星光音樂酒廊
+Category: bc975d15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945039Z
+
+[Merchant: MC-BAKE-7723-01]
+ID: ce7c9fd3-9dc6-42f0-929d-b8f5bd3804f5
+Name: 葡式蛋撻專門店
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945043Z
+
+[Merchant: MC-CHIN-3220-07]
+ID: a3437e21-6539-4e8f-a214-d21a8a3af771
+Name: 金鳳凰粵菜館
+Category: 7c8da92f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945047Z
+
+[Merchant: MC-CHIN-3220-15]
+ID: 41379aaf-a61f-40b2-aa7f-8fba1dec4a98
+Name: 江南春
+Category: 7c8da92f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945050Z
+
+[Merchant: MC-SHOP-6858-02]
+ID: 1a180bc5-8fb5-47ff-bdbf-d09c838f9fd5
+Name: 銀河購物中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945054Z
+
+[Merchant: MC-PROF-003]
+ID: 5213d1a1-835a-419c-9c88-45982a310148
+Name: 澳門測量師公會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945058Z
+
+[Merchant: MC-VIP--93029-03]
+ID: 3858a732-121b-43b5-891f-c6d6c9151772
+Name: 金沙中國貴賓廳
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945061Z
+
+[Merchant: MC-JAPA-4824-03]
+ID: 1ac3f523-619e-406a-ae31-1381e22f39fa
+Name: 博多拉麵館
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945070Z
+
+[Merchant: G079]
+ID: 4abda91a-4ff6-4e24-b1e4-20c23a963e06
+Name: La Chine
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.5
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.parisianmacao.com/macau-restaurants/la-chine.html
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945076Z
+
+[Merchant: MC-REST-1104-06]
+ID: 5c8b1ff9-a8e9-4aaa-8f16-b999698dbb2d
+Name: 盛記白粥
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945081Z
+
+[Merchant: MC-JAPA-5094-07]
+ID: 6c5cb143-0733-48a2-87c0-ae8a0c2a3f10
+Name: 築地海鮮丼
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945085Z
+
+[Merchant: MC-WEST-96102-03]
+ID: 37472483-0efa-4dc6-ac91-40a03cad974c
+Name: 御花園葡國餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945091Z
+
+[Merchant: MC-DESS-6402-09]
+ID: 61fa6b09-589a-4c4f-9611-684407caf47a
+Name: 花園茶座
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945095Z
+
+[Merchant: MC-TECH-91533-06]
+ID: 8fee56d9-e6f6-46bb-912f-9a568eb97d33
+Name: 澳門大數據分析有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945099Z
+
+[Merchant: MC-HOTP-4224-08]
+ID: fd5ec91e-d279-49be-b6b4-3affcb985b08
+Name: 路環海景火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945103Z
+
+[Merchant: G463]
+ID: 0ddabd09-be30-42cc-8ef1-58b13ef263a7
+Name: 信興建築材料有限公司
+Category: f54d5724
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945107Z
+
+[Merchant: G442]
+ID: 4a80fc7b-40f7-49f6-9bb3-1d558ab11fbf
+Name: 星際貴賓會
+Category: 67cee495
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945111Z
+
+[Merchant: G450]
+ID: dcc2b1c5-5542-48cb-a76d-521e9acfcd97
+Name: 仁心中醫診所
+Category: 0855860d
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945115Z
+
+[Merchant: G462]
+ID: 0f30557c-7639-41f8-9104-42825ef80f9c
+Name: 雅居裝修設計工程有限公司
+Category: df78ff39
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945119Z
+
+[Merchant: G449]
+ID: 1e59bebf-7c86-4826-9132-cd97f8c16e03
+Name: 御SPA養生會館
+Category: dc368bbd
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945122Z
+
+[Merchant: G448]
+ID: c006c0d8-335e-4d90-b6d9-5f9421d6b791
+Name: 澳門名車薈
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945126Z
+
+[Merchant: G447]
+ID: 1b591eb0-792c-4328-866a-cde4173e9c0d
+Name: 皇家水療會館
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945130Z
+
+[Merchant: G452]
+ID: 055d0fdf-82f2-4d39-9c6e-4404dc88d64e
+Name: 逸康醫療中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945133Z
+
+[Merchant: G445]
+ID: bc2500e8-1aae-4b6d-bdad-6695f3df9dd6
+Name: 澳門半島精品
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945137Z
+
+[Merchant: G443]
+ID: 200b3361-f2e8-455d-bc28-5844e30c48d7
+Name: 澳門誠信貨幣兌換有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945143Z
+
+[Merchant: G444]
+ID: c039bc0e-f620-4367-8276-97808a164dcc
+Name: 澳門金至尊珠寶
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945147Z
+
+[Merchant: G441]
+ID: 3a0bec4f-e72e-406a-b191-011445f8eaea
+Name: 永利澳門
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945153Z
+
+[Merchant: G451]
+ID: 71ef8e0f-9794-4d35-b041-72b1e0394786
+Name: 金峰健身中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945157Z
+
+[Merchant: G457]
+ID: e73e388c-f544-4d51-b42c-c5b7acf7e3c6
+Name: 澳門環球翻譯有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945161Z
+
+[Merchant: G460]
+ID: bc3261ba-efe9-42e2-b5cf-ba5252cb6673
+Name: 銀河地產發展有限公司
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945164Z
+
+[Merchant: G459]
+ID: 322994e0-e009-434a-838b-2c2d02a570a7
+Name: 澳門置業顧問有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945168Z
+
+[Merchant: G464]
+ID: 705f0166-bcad-47ba-8c51-6614eeb90100
+Name: 澳門世界遺產管理有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945172Z
+
+[Merchant: G455]
+ID: 65b8b2e5-337e-4813-8f9d-6a050a95beac
+Name: 畢馬威會計師事務所澳門分行
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945175Z
+
+[Merchant: G454]
+ID: b897b713-7305-46ae-bcd1-4fea4a651448
+Name: 澳門法律事務所有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945179Z
+
+[Merchant: G458]
+ID: 6fa33cec-eff1-4581-b67f-9d24ed09f631
+Name: 創智科技服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945182Z
+
+[Merchant: G453]
+ID: 18ef24b9-c18b-4d44-b5d2-8436c395429e
+Name: 靚妍美容中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945186Z
+
+[Merchant: G468]
+ID: 49425bbf-ec37-4e68-8d10-042e287b0e80
+Name: 澳門歷史城區活化有限公司
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945190Z
+
+[Merchant: MC-TECH-91533-07]
+ID: 50f8e0eb-1b25-4c1b-b826-ba0273d3b1de
+Name: 澳門物聯網創新科技有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945194Z
+
+[Merchant: G456]
+ID: 1313e0d8-8feb-4934-84f7-6e6e8a051caa
+Name: 麥肯錫澳門顧問有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945198Z
+
+[Merchant: G470]
+ID: c63c7cbd-c357-477e-91fb-b0099a7eb11c
+Name: 澳廣視股份有限公司
+Category: 3ece51e8
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945202Z
+
+[Merchant: G471]
+ID: 83e9d596-9782-4061-ab53-a6ac950adeb1
+Name: 愛瞞傳媒
+Category: 09aa8200
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945205Z
+
+[Merchant: G473]
+ID: f903bf02-703e-4ea0-a3f2-442a02b2406a
+Name: 雅圖印刷有限公司
+Category: 54707ee0
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945209Z
+
+[Merchant: G1026]
+ID: fd76a036-738b-4f68-b063-9303b4d3178f
+Name: 澳門英語中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945215Z
+
+[Merchant: MC-FAST-2096-13]
+ID: e8d303e4-c3f8-4bd1-87b7-36511e1f130c
+Name: 星巴克咖啡
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945220Z
+
+[Merchant: MC-PROF-004]
+ID: 247ee218-8653-4b39-b9cb-d917f6ae3bd8
+Name: 德勤諮詢服務有限公司
+Category: 9bd46fb7
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945223Z
+
+[Merchant: MC-REST-1104-15]
+ID: 5eb39040-f988-42b9-aa1e-14f2835b87c3
+Name: 路環安德魯餅店
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945227Z
+
+[Merchant: MC-FAST-2096-05]
+ID: 78ee9209-077a-4aac-834c-d835ac221d22
+Name: 大家樂
+Category: 2390e8ea
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945231Z
+
+[Merchant: MC-PHAR-9085-01]
+ID: 39b2d1ae-0c6b-4597-8e90-c329d501c5d0
+Name: 康健藥房
+Category: b4f96142
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945235Z
+
+[Merchant: G467]
+ID: 61fd3714-02ed-41c3-abd4-4306b9aac828
+Name: 澳門傳統建築保育基金會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945241Z
+
+[Merchant: G466]
+ID: 00ec650b-0b74-4968-adc2-d2b5db30521c
+Name: 澳門文化遺產旅遊發展有限公司
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945245Z
+
+[Merchant: MC-JAPA-4824-04]
+ID: e0fe1ad8-032b-4885-9a87-6535b84f62e0
+Name: 和風居酒屋
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945249Z
+
+[Merchant: MC-INCU-91226-04]
+ID: 37780884-7ff5-4775-9717-93d2e1ba1d9a
+Name: 粵澳跨境合作區創業基地
+Category: 1c2d2d9a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945252Z
+
+[Merchant: MC-CHIN-3220-08]
+ID: b37de816-2e4c-486a-a96b-27c7f2f9d330
+Name: 九龍城茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945256Z
+
+[Merchant: MC-JAPA-4824-12]
+ID: ac40fc49-ddf1-4744-accd-69c99e7478ef
+Name: 仙台牛舌專門店
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945260Z
+
+[Merchant: G118]
+ID: 45f57db7-676f-4262-b636-787345c3e83c
+Name: 葡萄牙鱈魚屋
+Category: 1612ee7e
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.9
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.instagram.com/macalhau.macau?igsh=bmZhdzhhdWg2OTBt
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945266Z
+
+[Merchant: MC-HOTP-4224-09]
+ID: f5a5ef4d-641f-412b-9d73-e02cb158b75e
+Name: 永利宮廷火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945270Z
+
+[Merchant: G1074]
+ID: bdad2455-5aeb-45a0-8ac3-e109080620ff
+Name: 澳門日報
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945274Z
+
+[Merchant: MC-REST-1104-07]
+ID: 70106ece-1a7f-454c-88a3-2ac7fe76491a
+Name: 公雞葡國餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945279Z
+
+[Merchant: MC-TECH-91533-08]
+ID: 4420db4a-07ee-437c-a96b-20e7ccc26f86
+Name: 澳門智能客服系統有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945282Z
+
+[Merchant: MC-VIP--93029-04]
+ID: 88b078eb-a744-4dbe-a956-eed70cda4296
+Name: 永利貴賓廳
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945286Z
+
+[Merchant: MC-WEST-96102-04]
+ID: 7e2ac432-4ec8-4343-909d-d9919eb94ca7
+Name: 小飛象葡國餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945290Z
+
+[Merchant: MC-RELI-94040-05]
+ID: c57d9d1b-4492-4072-a60c-a4833f67a102
+Name: 蓮峰廟
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945294Z
+
+[Merchant: G483]
+ID: 16ccb3b7-2e70-4ab2-877e-c7381685040f
+Name: 交通事務局
+Category: 8d97200d
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945298Z
+
+[Merchant: MO-AUTO-11698-01]
+ID: 6b910ede-7450-40b8-8fd6-63b374648f3d
+Name: 全澳最長肉類切割站
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945301Z
+
+[Merchant: G482]
+ID: 5a671050-b50a-4d0b-b56f-0ae67b1a216b
+Name: 澳門消防局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945305Z
+
+[Merchant: G490]
+ID: 2e7f1555-bad0-4623-9952-8c81f7595c01
+Name: 悅唱KTV
+Category: beba963c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945309Z
+
+[Merchant: G480]
+ID: 382a750a-619b-410e-8176-044d9d32c975
+Name: 治安警察局
+Category: 267e61f0
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945313Z
+
+[Merchant: G472]
+ID: 6589a806-933a-4241-abde-cb77fc399ae2
+Name: 盛世廣告傳媒有限公司
+Category: 1427e545
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945316Z
+
+[Merchant: G492]
+ID: 301847e1-f77c-4ecd-bb1d-b070a768a239
+Name: 雲頂酒廊
+Category: cf2fd3ae
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945320Z
+
+[Merchant: G493]
+ID: ee045e02-7376-47d1-bf72-84d67aa1d3f7
+Name: 魔幻之夜表演秀
+Category: c681388f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945324Z
+
+[Merchant: G495]
+ID: 4d19ffa6-39b3-436c-8a8d-205ff2553efe
+Name: 尊貴名人會所
+Category: 67cee495
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945328Z
+
+[Merchant: MC-DENT-001]
+ID: 386787eb-1b15-4c64-9632-d4483485fdde
+Name: 仁伯爵综合医院口腔科
+Category: 317112e5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945337Z
+
+[Merchant: MC-FASH-9500-09]
+ID: 2b9b07fc-3308-420f-90a4-6fdd493f79ed
+Name: 綠茵時裝
+Category: 0af3ee4c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945344Z
+
+[Merchant: G498]
+ID: e038fc3f-451b-469f-808e-fc958f63aa95
+Name: 澳門威尼斯人會議展覽中心
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945348Z
+
+[Merchant: G1017]
+ID: 37e906b2-f30a-4ac4-8bf6-82ad786f98bc
+Name: 澳門節慶活動策劃有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945352Z
+
+[Merchant: G488]
+ID: 5ba213e8-089b-438b-9af7-e93a1073827c
+Name: 黑沙海灘休憩區
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945356Z
+
+[Merchant: G501]
+ID: 38c0b92b-ec9d-4fbe-973c-b5ad9bc7e6c4
+Name: 澳門金光渡輪有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945360Z
+
+[Merchant: G477]
+ID: ec3f5ce1-8e91-4932-8c47-20ca91a54b70
+Name: 澳門科技園區發展有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945366Z
+
+[Merchant: G1037]
+ID: 8feb3a8c-8d09-46a1-801a-b505e0ea4b91
+Name: 澳門誠信會計師事務所有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945370Z
+
+[Merchant: G485]
+ID: a2140abe-bfd7-453e-b79f-ae18ed627880
+Name: 澳門中華總商會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945374Z
+
+[Merchant: G497]
+ID: 26900b6f-0bcf-4892-80dc-7344fc65aad9
+Name: 澳門探索樂園
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945378Z
+
+[Merchant: G479]
+ID: 24dd50bd-8946-4ee0-a15d-f2be6c39d64e
+Name: 澳門特別行政區政府總部
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945382Z
+
+[Merchant: G478]
+ID: 94fc1bcc-0bc6-487e-b242-5b32fbd006c6
+Name: 氹仔創新科技中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945385Z
+
+[Merchant: G496]
+ID: b4307532-8dac-4a1d-a2ee-317ed022eb0c
+Name: 威尼斯人劇院
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945389Z
+
+[Merchant: G486]
+ID: fb5d3de1-c26d-4d79-8874-5dec4dbbf9cc
+Name: 澳門中央圖書館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945393Z
+
+[Merchant: G476]
+ID: 1a4cfc6a-a31c-4d0c-aa41-576a348bb4b9
+Name: 銀河數據科技有限公司
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945396Z
+
+[Merchant: G474]
+ID: 90bfe773-8332-4107-9214-d347fccf5255
+Name: 澳門青年創業孵化中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945400Z
+
+[Merchant: G487]
+ID: a5aa5dbc-8b81-4aec-af3c-cff7f38dbaa9
+Name: 澳門奧林匹克體育中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945404Z
+
+[Merchant: MC-REST-1104-08]
+ID: 7747304d-7ab8-4e22-9385-aa2a67be43ed
+Name: 義順牛奶公司
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945408Z
+
+[Merchant: MC-FAST-2096-06]
+ID: 32bb3db8-6b76-4e27-a5cd-64b63af0c25f
+Name: 麥當勞
+Category: 2390e8ea
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945411Z
+
+[Merchant: G1054]
+ID: bf849e29-8ab2-4756-a519-30e26a0f39a4
+Name: 澳門新世紀律師事務所
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945415Z
+
+[Merchant: G1045]
+ID: bc770569-6cfd-4115-a2e6-8966f3f81ca5
+Name: 華麗世家
+Category: 1d1a9381
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945419Z
+
+[Merchant: G1048]
+ID: bf8e3d9d-1013-418f-951c-a936f012e610
+Name: 康和堂中醫診所
+Category: 0855860d
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945423Z
+
+[Merchant: G1060]
+ID: 276c4921-6828-4155-9575-ae788d3e1f5f
+Name: 恆美裝修工程
+Category: df78ff39
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945429Z
+
+[Merchant: MC-VIP--93029-05]
+ID: eef9194e-9262-4b98-9d2b-77c2ad51a0b4
+Name: 銀河貴賓廳
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945433Z
+
+[Merchant: MC-DENT-002]
+ID: 2025d5e7-516e-4662-b555-2b765af2a246
+Name: 镜湖医院牙科门诊
+Category: 317112e5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945437Z
+
+[Merchant: MC-PRIM-001]
+ID: f310778d-7102-462c-b4c5-8323ae62f543
+Name: 鏡平學校
+Category: 9fcb3076
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945441Z
+
+[Merchant: MC-HIST-9989-04]
+ID: 1e56ce66-91d8-4053-8f61-098786cf9d55
+Name: 舊法院大樓
+Category: 80c4d2b7
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945445Z
+
+[Merchant: MC-WEST-7360-01]
+ID: e600b701-5661-4616-9173-afe513c7388e
+Name: 船屋
+Category: 2c8b7375
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945449Z
+
+[Merchant: MO-AUTO-12726-01]
+ID: 4c027197-0ee9-4ce4-b37e-c2da2909226c
+Name: 新馬路一帶：餐酒館與老城夜色
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945453Z
+
+[Merchant: G1057]
+ID: 28768af5-db28-4813-a977-12b26cc98eb4
+Name: 澳門置業有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945457Z
+
+[Merchant: G502]
+ID: 0b56f859-260d-4113-b239-fdebbc30b7a1
+Name: 澳門的士股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945460Z
+
+[Merchant: MC-TOUR-3639-09]
+ID: c44b06b8-6faa-431f-be47-685f730dc9f6
+Name: 澳門葡萄酒博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945464Z
+
+[Merchant: G508]
+ID: aa979572-b9d4-4929-822e-e2f5ee2968a6
+Name: 澳門冷鏈物流有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945468Z
+
+[Merchant: G189]
+ID: 1d3c2b34-638b-40a6-970e-929ac0a0e73b
+Name: Crowne Plaza Macau by IHG
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.ihg.com/crowneplaza/hotels/us/en/macau/mfmcp/hoteldetail?cm_mmc=GoogleMaps-_-CP-_-MO-_-MFMCP
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945474Z
+
+[Merchant: MC-ASSO-94306-01]
+ID: 38681d42-c03f-4d9a-b77a-f389b8a44d94
+Name: 澳門同善堂
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945479Z
+
+[Merchant: MC-TOUR-3639-01]
+ID: e6831056-0eea-4481-b8e3-3c97c344b8a2
+Name: 澳門觀光塔旅遊服務中心
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945483Z
+
+[Merchant: G1063]
+ID: bcc743be-213b-4e1b-8af6-6f0a9e31fd48
+Name: 金濠商業地產
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945487Z
+
+[Merchant: MC-UNIV-91874-01]
+ID: 75fefada-c844-4671-a5a5-61c28535ffd6
+Name: 澳門大學智慧城市物聯網國家重點實驗室
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945491Z
+
+[Merchant: MC-PRIM-005]
+ID: 88b290e8-d77c-4567-8e7d-896c4d74f7b2
+Name: 氹仔舊城區學校
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945495Z
+
+[Merchant: MC-STRE-96354-02]
+ID: e4eb0319-f7b4-4cd9-ad3a-db42f4d0ff26
+Name: 恆友魚蛋
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945499Z
+
+[Merchant: G1040]
+ID: 2cd90f1d-7102-4538-acf1-de6a243bab86
+Name: 御膳房
+Category: dc3bedc5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945506Z
+
+[Merchant: G1055]
+ID: 9f7eb9c3-6b85-47b9-b9e6-b34d38b039a1
+Name: 環球澳門會計師事務所
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945510Z
+
+[Merchant: MC-HOTE-1484-01]
+ID: 84387856-f05f-4d42-a480-52cb21fde1ad
+Name: 澳門銀河酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945521Z
+
+[Merchant: G1064]
+ID: 6bc1a7cf-abe9-4973-a270-bb55b34ea569
+Name: 怡人物業管理
+Category: 9c2ab260
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945525Z
+
+[Merchant: G509]
+ID: 4fc412b6-24a3-44cd-ae5c-5b0234a12845
+Name: 澳門新鮮蔬果批發有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945532Z
+
+[Merchant: MC-PRIM-002]
+ID: ad6e4333-8131-4ac2-ab11-b8628aa00f4e
+Name: 菜農子弟學校
+Category: 9fcb3076
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945536Z
+
+[Merchant: MC-INCU-91226-06]
+ID: 8714f11f-6b12-4e16-aaa4-c08772ac3066
+Name: Parafuturo de Macau
+Category: 1c2d2d9a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945539Z
+
+[Merchant: MC-TOUR-3639-02]
+ID: c1b839d3-c82c-43d1-bc20-6f010a0faa41
+Name: 永利皇宮纜車
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945543Z
+
+[Merchant: MC-DENT-003]
+ID: ab3d98ae-1d21-417a-b620-b1fb03e5b088
+Name: 科大医院牙科中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945547Z
+
+[Merchant: G1058]
+ID: dd4ce921-b672-4b43-b0f2-3b80ba8d5263
+Name: 盛世商業地產顧問
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945551Z
+
+[Merchant: G1061]
+ID: 8d78ceb4-86c5-4924-9487-0a9106bc8e54
+Name: 建材實業有限公司
+Category: f54d5724
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945554Z
+
+[Merchant: G1046]
+ID: 0f0e2cba-f600-4a55-b0a0-10b40f3dd1e5
+Name: 海天宴會廳
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945558Z
+
+[Merchant: MC-RESO-10321-04]
+ID: 7f9e7039-050f-41ce-89fa-61cb2e64e32b
+Name: 永利皇宮
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945562Z
+
+[Merchant: MC-HOTE-1484-09]
+ID: 8b56195f-de86-4b71-b990-4ccdd904d5f1
+Name: 澳門四季酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945566Z
+
+[Merchant: G1039]
+ID: bd97a6ab-65e4-4ae0-bf2c-2722b32cba2b
+Name: 奢華時尚廊
+Category: 1d1a9381
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945569Z
+
+[Merchant: MC-FAST-2096-07]
+ID: 0ada7aa2-0d73-4c2d-9bea-e4b7f16e9070
+Name: 翠華餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945573Z
+
+[Merchant: MC-FAST-2096-15]
+ID: 967c112d-37a4-4427-be79-3dfca7606589
+Name: 澳門茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945577Z
+
+[Merchant: G145]
+ID: b1e06c82-1e7b-4c78-a575-714e19d2a56a
+Name: 澳門十六浦索菲特酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://all.accor.com/lien_externe.svlt?goto=fiche_hotel&code_hotel=6480&merchantid=seo-maps-FR-6480&sourceid=aw-cen&utm_medium=seo%20maps&utm_source=google%20Maps&utm_campaign=seo%20maps
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945582Z
+
+[Merchant: MC-ASSO-94306-02]
+ID: 91313308-92b1-4a62-b3a0-e2bb9d53a39a
+Name: 澳門鏡湖醫院慈善會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945588Z
+
+[Merchant: MC-VIP--93029-06]
+ID: 3ec13d99-8830-4f36-b238-301bc30fb174
+Name: 新濠博亞貴賓廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945592Z
+
+[Merchant: MC-TOUR-3639-10]
+ID: 80bdb8ca-56df-45f6-ad74-2db6150074b6
+Name: 澳門茶文化館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945596Z
+
+[Merchant: MC-RETA-9411-07]
+ID: d6494351-5959-4fc5-a001-9190408b0bdc
+Name: 雅緻家居
+Category: ab002945
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945603Z
+
+[Merchant: G1047]
+ID: ba339133-2b7b-47a0-b0e7-5b1f2b325e61
+Name: 静逸水療會所
+Category: a678b86b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945607Z
+
+[Merchant: MC-STRE-96354-03]
+ID: 9f8c03c8-4c4b-4e86-947b-950c84bb1927
+Name: 添發碗仔翅
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945611Z
+
+[Merchant: G1056]
+ID: 904f0ba4-f3c9-4d2a-8a31-b6e3b73612e5
+Name: 創智商務顧問有限公司
+Category: 2bab9c2a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945616Z
+
+[Merchant: MC-HOTE-1484-10]
+ID: 4e37d56b-9376-4614-b330-93a3698585b6
+Name: 澳門康萊德酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945620Z
+
+[Merchant: G1062]
+ID: ff893e33-4c76-43b6-a274-a2db602dce4f
+Name: 鴻圖置業顧問
+Category: 61307f0c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945624Z
+
+[Merchant: MC-TOUR-3639-03]
+ID: 34da682f-ea3e-4acd-a203-32faec5610c4
+Name: 澳門漁人碼頭主題公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945628Z
+
+[Merchant: MC-HOTE-1484-02]
+ID: f75e55b5-f3b5-4aec-886d-6266f0505c03
+Name: 澳門威尼斯人
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945634Z
+
+[Merchant: MC-TOUR-3639-11]
+ID: 758e9f56-26a8-4ebb-a3ca-fcdbf8a429bd
+Name: 澳門大熊貓館
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945638Z
+
+[Merchant: MC-VIP--93029-07]
+ID: 6071aced-59b7-47df-a1c5-4d00ac3563ef
+Name: 美高梅貴賓廳
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945642Z
+
+[Merchant: MC-PRIM-003]
+ID: 3755ad25-9fb8-4897-93b7-cae494e6e20f
+Name: 工人小學
+Category: 9fcb3076
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945647Z
+
+[Merchant: MC-DENT-004]
+ID: 9d42f908-6ee5-4c54-8415-ac1a20aab20d
+Name: 路环卫生中心牙科
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945650Z
+
+[Merchant: G1053]
+ID: 41786bb1-95f1-4740-9b79-71c5b718d293
+Name: 仁濟藥房
+Category: b4f96142
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945654Z
+
+[Merchant: MC-JAPA-4824-05]
+ID: 1556f7f8-8358-4812-870c-ede84add2ea3
+Name: 金澤日本料理
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945658Z
+
+[Merchant: G505]
+ID: 21a5deb6-755b-42f9-b5a0-fb3c0fcdc4ba
+Name: 澳門海產進口有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945662Z
+
+[Merchant: G504]
+ID: b6cf8882-6f92-4ba1-be50-48cef9e42dcd
+Name: 澳門公共巴士股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945666Z
+
+[Merchant: MC-FAST-2096-09]
+ID: eebabcf3-3ea9-45e4-98c5-573495191748
+Name: 譚仔三哥米線
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945670Z
+
+[Merchant: MC-HOTP-4494-01]
+ID: ea3cf1d6-b094-490a-a2f6-9c1fd7348398
+Name: 川香滿堂火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945680Z
+
+[Merchant: MC-UNIV-91874-03]
+ID: 475217b0-8390-429c-92ff-4d7ecaa2b632
+Name: 澳門科技大學月球與行星科學國家重點實驗室
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945692Z
+
+[Merchant: G1050]
+ID: 68846f4e-3b20-4a3f-86fc-0954743f2d9f
+Name: 動力健身中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945696Z
+
+[Merchant: MC-ASSO-94306-03]
+ID: 6567c3bb-0e1d-4abc-8f10-d2ef38a24be1
+Name: 澳門青年聯合會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945703Z
+
+[Merchant: G1034]
+ID: 31345066-ba8b-4248-aa43-25fb64f580fc
+Name: 澳門通股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945707Z
+
+[Merchant: G1059]
+ID: d10d8523-35f5-4a46-acbd-5af6c4d7daba
+Name: 澳門物业管理有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945711Z
+
+[Merchant: G526]
+ID: 70377957-be44-4da9-8614-161411acd3e7
+Name: 智匯創新顧問有限公司
+Category: 2bab9c2a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945715Z
+
+[Merchant: G528]
+ID: 5cc1ec9a-03c2-4aea-a790-af05e368f6cf
+Name: 商用不動產發展股份有限公司
+Category: a94865d8
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945720Z
+
+[Merchant: G530]
+ID: 55542a46-1de5-4f6b-a41d-2f352002e64f
+Name: 星級裝修設計工程有限公司
+Category: df78ff39
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945724Z
+
+[Merchant: G516]
+ID: 35d2c7a4-bfac-4a9a-95af-aff6acdf219c
+Name: 萬寶龍澳門專門店
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945728Z
+
+[Merchant: G520]
+ID: 63401a10-ea6b-4517-ab30-1b5b95599303
+Name: 德安中醫診所
+Category: 0855860d
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945732Z
+
+[Merchant: G524]
+ID: f12c1aa9-b632-4db6-8128-d862ccae1bf8
+Name: 恆信律師事務所
+Category: d87ecbc6
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945735Z
+
+[Merchant: G525]
+ID: edfd7800-72c1-4b7e-9c55-41839a9a5767
+Name: 致同澳門會計師事務所有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945740Z
+
+[Merchant: G517]
+ID: 7ed5e049-a85a-42dc-b603-70675580558a
+Name: 路易威登澳門銀河店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945744Z
+
+[Merchant: G1068]
+ID: a7081b6b-20af-4ff1-97a3-e5e2dc884288
+Name: 澳門大三巴遺址管理處
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945747Z
+
+[Merchant: G522]
+ID: a1885d26-031e-4f01-8f88-849491028965
+Name: 仁安綜合醫療中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945754Z
+
+[Merchant: G536]
+ID: 3a3f06ea-ae6d-4d03-b29b-10f606245d7a
+Name: 澳門廣播電視股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945758Z
+
+[Merchant: G518]
+ID: 3d28cd7b-155a-44d7-ac3c-fdeeaaaaaa1c
+Name: 天巢法國餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945762Z
+
+[Merchant: G167]
+ID: b80a8caa-ccef-4ce4-ab49-f9dbbe77428f
+Name: 澳門文華東方酒店
+Category: 1d888c78
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.6
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|https://www.mandarinoriental.com/en/macau/one-central?src=loc.yext.momac.ggl
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945767Z
+
+[Merchant: G1065]
+ID: 61cb2e5a-daf5-4c40-a371-2a2885b3558a
+Name: 澳門世界文化遺產監測中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945772Z
+
+[Merchant: G515]
+ID: ad488541-a961-41f3-b5c4-e544e10fb8d8
+Name: 澳門通達支付服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945776Z
+
+[Merchant: G531]
+ID: 699bd918-328a-4fa5-a6ee-6632770d21ad
+Name: 澳門世界遺產保護有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945780Z
+
+[Merchant: G523]
+ID: 9029b87f-6350-412c-8697-e3668cb6d2bf
+Name: 優越健身會所
+Category: 5acba202
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945784Z
+
+[Merchant: G537]
+ID: e48a1d9d-4152-4d38-9551-3988e1505adf
+Name: 微澳傳媒
+Category: 09aa8200
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945787Z
+
+[Merchant: G529]
+ID: 3f068139-7f88-4377-94cd-fe96f3cc7be6
+Name: 澳門物业管理有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945794Z
+
+[Merchant: G1071]
+ID: f48de22b-99b0-4927-bfe7-7dcbfde254ef
+Name: 澳門路環荔枝碗船廠活化中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945798Z
+
+[Merchant: G521]
+ID: b854fd64-dfe9-46bb-a2b6-de55500ef4ba
+Name: 悅榕養生水療中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945802Z
+
+[Merchant: G519]
+ID: a3b186f3-76de-4387-9f7d-a79a3a85551a
+Name: 法拉利澳門展示廳
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945806Z
+
+[Merchant: G514]
+ID: aaa9e565-7fde-4382-915f-4093561a5c62
+Name: 澳門環球保險有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945810Z
+
+[Merchant: G534]
+ID: 4f317ab6-36d8-47e0-9639-884b7f1da95f
+Name: 澳門傳統工藝修復坊
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945814Z
+
+[Merchant: HK007]
+ID: 18d47ac9-30f0-4ae8-8444-a9ad6953d41d
+Name: 維多利亞港
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945821Z
+
+[Merchant: MC-PRIM-004]
+ID: 4f16c49e-122c-4ac3-ac40-3b25aff93dbf
+Name: 沙梨頭浸信學校
+Category: 9fcb3076
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945825Z
+
+[Merchant: MC-MUSE-001]
+ID: 1d7078e9-4203-4fce-bdb5-ef171d205a1d
+Name: 澳門科學館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945829Z
+
+[Merchant: MC-STRE-96354-04]
+ID: f54bc442-a5c1-4fc2-8bc2-926224c7dbe3
+Name: 榮記牛雜
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945833Z
+
+[Merchant: G1070]
+ID: 93851eef-e80b-404e-812a-b8bb9dfef2d6
+Name: 澳門氹仔舊城區文化推廣協會
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945837Z
+
+[Merchant: MC-FAST-2375-09]
+ID: 05f36fb2-0862-4853-9199-f146eb737c73
+Name: 港式茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945841Z
+
+[Merchant: G545]
+ID: 6dc9a222-eab8-47ab-9dd1-566e4b192e9c
+Name: 澳門消防局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945845Z
+
+[Merchant: G1073]
+ID: 0b444115-5693-4fdc-84b5-41ec40c5192e
+Name: 澳門世界遺產旅遊推廣協會
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945849Z
+
+[Merchant: MC-MUSE-10941-01]
+ID: c8d0a3eb-973b-48c8-aa1e-4050455ad4d7
+Name: 澳門錢幣博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945854Z
+
+[Merchant: G1082]
+ID: d1d26dd6-5001-4b6f-acde-d0c89e54c10a
+Name: 澳門青年創業孵化中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945858Z
+
+[Merchant: G546]
+ID: 94f6bef4-e8a6-4bc3-94d8-2fe464cb0988
+Name: 澳門衛生局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945862Z
+
+[Merchant: MC-DENT-005]
+ID: 90db90a8-f64d-4ca5-8da9-d8e817c0df66
+Name: 维健牙科中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945866Z
+
+[Merchant: MC-HOTE-1484-11]
+ID: 4698fd01-fbac-41d2-ba69-d86d33a42518
+Name: 澳門喜來登酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945869Z
+
+[Merchant: MC-UNIV-91874-04]
+ID: 4500f920-144a-4498-b3b2-0388d6b1f9c1
+Name: 澳門理工大學人工智能實驗室
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945873Z
+
+[Merchant: G539]
+ID: ab7976aa-52ba-4dec-b40d-8ab5ba723776
+Name: 澳門創新科技有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945877Z
+
+[Merchant: MC-FAST-2375-01]
+ID: 332f4c2c-82cc-4a98-b6fd-449f1e3cf9ab
+Name: 金城茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945881Z
+
+[Merchant: MC-MUSE-005]
+ID: 16b178a3-8301-45af-8f4b-643719c718c6
+Name: 澳門林則徐紀念館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945885Z
+
+[Merchant: G1067]
+ID: 229b9a14-bfcb-4ca9-b08c-8abd533ffb5e
+Name: 澳門文化遺產保護協會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945889Z
+
+[Merchant: MC-HOTE-1484-03]
+ID: ad42cee7-a70d-40a7-b448-a32d588cf400
+Name: 新葡京酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945892Z
+
+[Merchant: MC-VIP--93029-08]
+ID: 684ad724-8952-4d3b-9945-cf44489cc5ac
+Name: 威尼斯人貴賓廳
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945896Z
+
+[Merchant: MC-TOUR-3639-04]
+ID: 1827817e-0d6d-4f32-ad70-f1c014b95945
+Name: 龍環葡韻住宅式博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945902Z
+
+[Merchant: G547]
+ID: e36c7e9e-3693-44b6-b500-56593f2afc2e
+Name: 望德聖母堂
+Category: ece34d21
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945907Z
+
+[Merchant: G548]
+ID: 5008179c-2c0c-4f20-8f70-45f83283980b
+Name: 氹仔市政圖書館
+Category: ade2cd0f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945911Z
+
+[Merchant: G557]
+ID: cef9dceb-9c1b-45b3-a244-ade8a6851558
+Name: 星際貴賓會
+Category: 67cee495
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945915Z
+
+[Merchant: G489]
+ID: 99d904c5-f2a3-472f-b7b9-35a18ceea847
+Name: 星夜酒吧
+Category: 562597ee
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945919Z
+
+[Merchant: G216]
+ID: f93a0bd4-84e9-4893-87ac-4dc9556c2119
+Name: 觀音像海濱休憩區
+Category: fb2b0236
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.7
+
+source-confidence: 0.30
+verified-at: 2026-04-01T02:08:13.945923Z
+
+[Merchant: G560]
+ID: 995e9746-9c5c-483d-a45f-83ea1ca73d25
+Name: 十六浦動感影院
+Category: bc975d15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945928Z
+
+[Merchant: G566]
+ID: f5dfa0ac-0bd0-4226-8e85-0522aff4a346
+Name: 金光飛航
+Category: b42a9fcb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945935Z
+
+[Merchant: G549]
+ID: 47529533-3559-4da3-a41a-1beb42787c1a
+Name: 澳門綜合體育館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945939Z
+
+[Merchant: G438]
+ID: 0015cc99-1529-4e96-b488-50a7256ebd66
+Name: 澳門威尼斯人
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945943Z
+
+[Merchant: G1072]
+ID: 115094ea-9942-4e97-a1b6-3a946d1d3b5f
+Name: 澳門議事亭前地管理處
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945947Z
+
+[Merchant: G533]
+ID: 8c28d560-75b9-4962-b241-5bd2fd059e5e
+Name: 澳門文化遺產旅遊發展有限公司
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945951Z
+
+[Merchant: G541]
+ID: ea365916-0bae-423d-9519-7be9806da0e3
+Name: 數碼港灣有限公司
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945955Z
+
+[Merchant: G553]
+ID: 3120740a-09fb-4664-b2e0-b21f92eedab1
+Name: 璀璨夜總會
+Category: 4591ff86
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945958Z
+
+[Merchant: G554]
+ID: 216cb93d-a471-4a90-a673-0b377fa137a5
+Name: 雲頂酒廊
+Category: cf2fd3ae
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945962Z
+
+[Merchant: G555]
+ID: 54f18b47-d0b1-48e0-b3ef-fc9ea01fb026
+Name: 悅心水療會所
+Category: 3d8f2f2e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945968Z
+
+[Merchant: G563]
+ID: 53f7c86a-8b32-424f-b451-feb8eb24146f
+Name: 澳門啤酒節籌備委員會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945972Z
+
+[Merchant: G1069]
+ID: adeb0c4a-65ef-437f-a93a-88f690854d51
+Name: 澳門鄭家大屋文化發展有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945976Z
+
+[Merchant: G564]
+ID: 93f6f8c8-5ba6-48a5-95d8-03712a977eaa
+Name: 澳門國際馬拉松組委會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945980Z
+
+[Merchant: G544]
+ID: 2a8d3024-3378-4314-8c5c-cf124cf3722d
+Name: 澳門治安警察局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945984Z
+
+[Merchant: G568]
+ID: c7382da2-a2c5-46f0-b279-f03ec0b0402c
+Name: 澳門輕軌股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945988Z
+
+[Merchant: G175]
+ID: d812cbba-0f75-4890-a10f-21038ffff082
+Name: 新濠天地
+Category: 9b35ae15
+
+# ⭐ Authority-Verified Sources
+source-authority: google-maps|verified|rating:4.4
+
+# 🏢 Merchant-Claimed Sources
+source-merchant: official-website|http://www.cityofdreamsmacau.com/?utm_source=google_GMB&utm_medium=organic&utm_campaign=GMB
+source-merchant: claimed-business|google-business-profile|verified
+
+source-confidence: 0.39
+verified-at: 2026-04-01T02:08:13.945993Z
+
+[Merchant: G552]
+ID: 97f02da0-3469-48b1-a3f6-50b70d6026fb
+Name: 金聲KTV娛樂城
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.945998Z
+
+[Merchant: G543]
+ID: 65eb644a-c351-454d-be77-6bf2843c31a7
+Name: 澳門海關
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946002Z
+
+[Merchant: G558]
+ID: 7af88fa9-453f-4748-bcf2-2ce6d2df9b07
+Name: 新濠影匯
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946006Z
+
+[Merchant: G561]
+ID: 5f319cc8-6736-4fe8-bbc0-b86e1ae41f7e
+Name: 銀河國際會議中心
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946010Z
+
+[Merchant: G562]
+ID: 81e0b9f5-602e-486f-807b-85013e03ac28
+Name: 澳門國際貿易展覽有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946014Z
+
+[Merchant: G1075]
+ID: d0578841-1ecf-4429-b29f-620153165684
+Name: 澳廣視股份有限公司
+Category: 3ece51e8
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946020Z
+
+[Merchant: G1078]
+ID: e322c3c4-b35e-4602-904f-1dff69f13612
+Name: 永昌印刷有限公司
+Category: 54707ee0
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946025Z
+
+[Merchant: G1093]
+ID: 0db202e0-3991-4956-9e39-5a1b7dec684b
+Name: 望德堂區圖書館
+Category: ade2cd0f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946029Z
+
+[Merchant: MC-NIGH-11401-03]
+ID: b304de57-110a-41fc-84fd-b731c32d361f
+Name: 皇朝夜總會
+Category: 4591ff86
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946033Z
+
+[Merchant: MC-NOTA-001]
+ID: d28ca5d0-070b-4f95-b18b-1988dfd63d64
+Name: 黃顯輝律師樓私人公證員
+Category: 7414a6c5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946037Z
+
+[Merchant: G569]
+ID: f7d1081f-f660-4e31-95a2-af8dc0754320
+Name: 港珠澳大橋穿梭巴士
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946041Z
+
+[Merchant: MC-MUSE-003]
+ID: 8bee49ba-7bf0-41f8-ae0f-00cf0ad11f04
+Name: 葡萄酒博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946045Z
+
+[Merchant: G1087]
+ID: 99857286-efcc-4207-a2a8-c259e79cd343
+Name: 澳門衛生局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946048Z
+
+[Merchant: MC-FAST-2375-10]
+ID: c725b6e5-8d20-4128-857c-06efc8cd15b6
+Name: 東南亞快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946052Z
+
+[Merchant: G1090]
+ID: 0a154adc-ae99-4a51-ba89-314d46070ffb
+Name: 澳門經濟局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946056Z
+
+[Merchant: G1084]
+ID: a1857f5c-59c6-4f40-8865-e2cba0e70e7f
+Name: 澳門海關
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946060Z
+
+[Merchant: MC-NON--93313-09]
+ID: 9efac71b-e974-41ff-b18d-a61b017cf69a
+Name: 龍環葡韻住宅式博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946064Z
+
+[Merchant: MC-HOTE-1484-04]
+ID: 27da4aa1-2d5d-41c3-b502-f26d6d691daa
+Name: 澳門美高梅
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946068Z
+
+[Merchant: MC-JAPA-5094-08]
+ID: 2ef77ffd-2b6a-437f-b188-41b8a7f99175
+Name: 博多拉麵館
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946072Z
+
+[Merchant: MC-JAPA-4824-14]
+ID: addf0286-432e-45ce-aba6-fafd812fd324
+Name: 廣島燒肉店
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946075Z
+
+[Merchant: MC-DESS-6402-02]
+ID: 7549cea1-122c-4251-b7fd-5744809e35e6
+Name: 蓮花糖水店
+Category: d621eca5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946079Z
+
+[Merchant: MC-HOTE-1484-12]
+ID: 3ea337df-b9cf-4320-aa51-7f8e1db73306
+Name: 澳門JW萬豪酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946085Z
+
+[Merchant: MC-TOUR-3639-05]
+ID: 4846538b-089c-471a-9db4-65cc7ea5e54a
+Name: 路環聖方濟各聖堂
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946089Z
+
+[Merchant: MC-FAST-2375-02]
+ID: d531afc4-6500-4142-b55e-a3f80eb4094d
+Name: 順心粥麵店
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946094Z
+
+[Merchant: MC-HOTP-4494-02]
+ID: f034a4fe-b668-4649-ac90-ddd133d44eea
+Name: 鼎豐火鍋世家
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946097Z
+
+[Merchant: MC-TOUR-3639-13]
+ID: c96fece4-238a-479c-9ca5-bd322b73851a
+Name: 議事亭前地旅遊資訊中心
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946101Z
+
+[Merchant: MC-PARK-99228-01]
+ID: e8318b7a-014a-453b-95cb-d483c143c5ee
+Name: 白鴿巢公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946105Z
+
+[Merchant: MC-NON--93313-01]
+ID: db63776b-e612-4d1b-9b04-47c2f347ed10
+Name: 新濠影滙水上樂園
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946109Z
+
+[Merchant: MC-JAPA-4824-06]
+ID: d6caed93-11da-4bbc-940c-a06640029b9f
+Name: 鳥取燒鳥專門店
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946124Z
+
+[Merchant: HK006]
+ID: 2078dd71-b203-4e74-ac47-8b202394b85f
+Name: 翠華餐廳
+Category: unknown
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946129Z
+
+[Merchant: MC-UNIV-91874-02]
+ID: 22d1b6ee-0350-431c-9fe9-e303ebe7d2fa
+Name: 中藥質量研究國家重點實驗室
+Category: 0211d30c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946133Z
+
+[Merchant: G580]
+ID: 3760df67-6dd1-480b-bf28-c5710a0e9274
+Name: 澳門旅遊學院
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946140Z
+
+[Merchant: G573]
+ID: a036fc80-16bf-4895-9faa-ebf2d194af37
+Name: 恒溫冷鏈物流有限公司
+Category: 48f4fc40
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946145Z
+
+[Merchant: G581]
+ID: 9eb88a98-a760-41a2-a8e2-cfe53993019d
+Name: 澳門大西洋商業銀行
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946149Z
+
+[Merchant: G575]
+ID: 2a4b09b3-53c1-4df0-811d-9959722fd18b
+Name: 聯鑫肉類供應有限公司
+Category: 4ca6d74a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946153Z
+
+[Merchant: G578]
+ID: 4dbe27ff-1816-4266-9553-77dcf51a93d7
+Name: 童話世界幼兒園
+Category: 3b5ae336
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946156Z
+
+[Merchant: G1031]
+ID: b4196f2b-c576-4e87-8e91-595caa05f628
+Name: 澳門大學
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946160Z
+
+[Merchant: G1076]
+ID: d89c50fa-a2d3-49a0-b974-5d6adfda9a29
+Name: 論盡媒體
+Category: 09aa8200
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946164Z
+
+[Merchant: G585]
+ID: 6d68d294-5836-488d-8e90-5fb6733db4d9
+Name: 澳門恆信金融服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946168Z
+
+[Merchant: G587]
+ID: bbbefc65-c667-4ba3-968e-8aa428ab7ab1
+Name: 都薈時裝
+Category: 1d1a9381
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946176Z
+
+[Merchant: G594]
+ID: 945c9e9d-06b5-46ee-941a-7573895a8d6d
+Name: 金沙健身會所
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946181Z
+
+[Merchant: G597]
+ID: 94d90629-edfa-4dd0-b726-8e6ea29859c3
+Name: 澳門恆信會計師事務所有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946187Z
+
+[Merchant: G583]
+ID: 79465c4f-a187-4c70-b7c7-bebe9b6cf782
+Name: 澳門華鑫證券投資股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946191Z
+
+[Merchant: G595]
+ID: 4d855def-9e24-4c2e-8260-e7509b432fc4
+Name: 平安大藥房
+Category: b4f96142
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946195Z
+
+[Merchant: G579]
+ID: 9c0dfe61-3bca-400e-987d-4afea2da6a87
+Name: 環球語言中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946199Z
+
+[Merchant: G574]
+ID: 96eb77f9-290b-4df1-9eee-f56af37bc5bf
+Name: 澳門食品加工股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946202Z
+
+[Merchant: G1091]
+ID: 171bed7f-afd5-41c4-aafb-9c513bde0e19
+Name: 澳門高等教育局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946206Z
+
+[Merchant: G572]
+ID: 95df3263-97e4-4ce6-a294-6bed5d549650
+Name: 海之味海產有限公司
+Category: 9e6105ce
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946210Z
+
+[Merchant: G588]
+ID: 5109b006-872c-44d3-9294-d421a37fff1d
+Name: 御膳樓
+Category: dc3bedc5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946214Z
+
+[Merchant: G589]
+ID: 5199bc72-0a1e-4043-8c72-37fa0920d53a
+Name: 靜謐水療
+Category: a678b86b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946218Z
+
+[Merchant: G1094]
+ID: e35a597e-4230-4df8-be3b-b14e7462c1c5
+Name: 氹仔體育館
+Category: 7f718302
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946221Z
+
+[Merchant: G590]
+ID: 8727804b-4031-473d-8267-404472d320fd
+Name: 澳門奔馳名車匯
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946225Z
+
+[Merchant: G586]
+ID: 6524f9e1-55b3-4a29-9331-09cefa1d1ed2
+Name: 澳門珠寶廊
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946229Z
+
+[Merchant: G1083]
+ID: b7182f2d-211d-4b4b-bc73-f7f25258cd2c
+Name: 澳門數碼港有限公司
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946232Z
+
+[Merchant: G593]
+ID: edb575bb-3e58-4baa-83ac-1f53baffbfc9
+Name: 雪肌美容中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946236Z
+
+[Merchant: G596]
+ID: f0383b02-112c-4d69-b417-6366da525bbb
+Name: 澳門凱旋律師事務所
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946240Z
+
+[Merchant: G592]
+ID: b94db008-9ef7-4e3b-a2ff-4f32ac908812
+Name: 澳門悅榕水療中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946244Z
+
+[Merchant: G602]
+ID: 98adc8fc-d692-499d-afa5-64fb3737d369
+Name: 金光商用物业投資有限公司
+Category: a94865d8
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946248Z
+
+[Merchant: G601]
+ID: 50a3f1e7-5df4-4a4d-8f4c-23cb6b31745a
+Name: 恆生地產代理有限公司
+Category: 61307f0c
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946252Z
+
+[Merchant: MC-INCU-91226-03]
+ID: e65d4935-7f73-4415-9dd5-d7106deaae46
+Name: 中銀創業加速器
+Category: 1c2d2d9a
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946260Z
+
+[Merchant: G605]
+ID: ddcef5fc-df9d-4618-88fd-de30b3dae9e6
+Name: 昌盛建材貿易有限公司
+Category: f54d5724
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946264Z
+
+[Merchant: G1077]
+ID: 2cb6d405-5c89-4e76-b7cc-b2e6f8103243
+Name: 麥思創意廣告有限公司
+Category: 1427e545
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946268Z
+
+[Merchant: MC-HOTE-1484-13]
+ID: 537ac37b-865e-49c2-9ce1-84a394506c1b
+Name: 澳門麗思卡爾頓酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946271Z
+
+[Merchant: MC-KIND-12449-04]
+ID: 664151df-e251-4d0c-8ab6-b6bd34b18fe9
+Name: 氹仔中央幼稚園
+Category: 3b5ae336
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946277Z
+
+[Merchant: MC-PARK-99228-02]
+ID: 9e586c21-002e-42a9-8922-e07ea4a657f1
+Name: 盧廉若公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946282Z
+
+[Merchant: MC-SPA--19564-01]
+ID: 6ef652cc-4fda-4eb8-813b-8bfa80098c33
+Name: 御龍溫泉水療中心
+Category: dc368bbd
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946286Z
+
+[Merchant: MC-HOTE-1484-05]
+ID: d4c55a83-fdae-443c-bc26-f79649e4bbc4
+Name: 永利澳門酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946289Z
+
+[Merchant: G1095]
+ID: b3370f72-5d4b-4653-b43e-24b9dd6645e0
+Name: 紅街市
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946293Z
+
+[Merchant: MC-NON--93313-10]
+ID: 59ec8c66-981e-4950-94b8-80495724083f
+Name: 澳門大賽車博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946297Z
+
+[Merchant: MC-LIBR-94554-01]
+ID: 8dfc429c-a340-4ee4-bd00-fad651a4c34d
+Name: 澳門中央圖書館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946302Z
+
+[Merchant: G1081]
+ID: 1093ac63-d1a4-4d5d-86f4-c039536be281
+Name: 澳門科技大學資訊科技實驗室
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946306Z
+
+[Merchant: MC-NON--93313-02]
+ID: 04af79f2-87f2-417d-a2ce-ab5eaf5a380d
+Name: teamLab超自然空間
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946309Z
+
+[Merchant: MC-MUSE-004]
+ID: 90c932df-5da5-47ec-8674-a6bd9e20b94e
+Name: 通訊博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946314Z
+
+[Merchant: MC-FAST-2375-11]
+ID: 3dcc613c-0053-43c8-86d1-165d3895202e
+Name: 金山茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946318Z
+
+[Merchant: G599]
+ID: 7c6f020e-2b27-4f57-9a1f-b378d8fd2e98
+Name: 澳門人力資源管理服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946323Z
+
+[Merchant: G600]
+ID: 024f72a9-fa77-46b1-8c8d-076589ac2c14
+Name: 澳門資訊科技服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946327Z
+
+[Merchant: MC-NOTA-002]
+ID: 9de19dcb-ea76-4eb1-9ec2-06567569b4a9
+Name: 澳門公證服務中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946331Z
+
+[Merchant: MC-UNIV-91874-06]
+ID: 45be4265-05ee-43cd-81e8-3e8061c41dd0
+Name: 澳門大學模擬與混合信號超大規模集成電路國家重點實驗室
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946336Z
+
+[Merchant: MC-FAST-2375-03]
+ID: bda1e670-cc91-45ba-af02-426d11e66958
+Name: 明記快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946340Z
+
+[Merchant: MC-BAKE-001]
+ID: d661f778-83dc-4616-bc70-529e0dc20341
+Name: 晃記餅家
+Category: 5a0d4580
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946343Z
+
+[Merchant: MC-NOTA-003]
+ID: 6b08fe91-ef12-470a-9dd9-8270ecc133a7
+Name: 崔銘文私人公證員事務所
+Category: 7414a6c5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946348Z
+
+[Merchant: MC-DESS-6402-03]
+ID: 8f20d66b-f61e-4be1-828c-790f459f5c0b
+Name: 甜蜜時光
+Category: d621eca5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946357Z
+
+[Merchant: MC-LIBR-94554-02]
+ID: 4f2ff54c-238e-4cef-944b-cc8d0e3b6142
+Name: 何東圖書館
+Category: ade2cd0f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946362Z
+
+[Merchant: MC-JEWE-12763-03]
+ID: cfbf1bee-ad05-41c4-958e-92d366ce8ab9
+Name: 华贵钟表珠宝有限公司
+Category: d86a7f97
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946367Z
+
+[Merchant: MC-SEAF-17713-01]
+ID: 33e5a9c8-13d8-455c-a83e-f56716b3b88b
+Name: 海盈海產有限公司
+Category: 9e6105ce
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946371Z
+
+[Merchant: MC-HOTE-1484-06]
+ID: 3b7484f3-5014-483b-aa85-9a1ec0ba66c9
+Name: 星際酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946375Z
+
+[Merchant: MC-ECOM-92073-01]
+ID: d8fc3d34-609a-4b74-80f9-bb6c26d2a79c
+Name: MPay澳門錢包
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946379Z
+
+[Merchant: MC-TOUR-3639-15]
+ID: c223ca50-c197-417d-a978-cf85b8adc8ff
+Name: 路環十字花園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946384Z
+
+[Merchant: MC-ONLI-18495-02]
+ID: 80ccdc3f-1260-4332-88e9-2ea206759b20
+Name: 澳門數位創意傳媒
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946388Z
+
+[Merchant: MC-JAPA-4824-15]
+ID: cafa7633-1435-4a6d-9e07-bc47efbfae19
+Name: 沖繩風味料理
+Category: 6de2af3b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946391Z
+
+[Merchant: MC-STRE-5756-01]
+ID: 2ff3628a-fe8e-4111-9192-9b560c598faa
+Name: 祥記豬扒包
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946395Z
+
+[Merchant: MC-STRE-5756-09]
+ID: 619e849e-20f3-4200-a9ea-c79d361573d7
+Name: 傳統車仔麵
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946402Z
+
+[Merchant: MC-NON--93313-11]
+ID: 872a752e-f9ed-4d90-9ac6-c19a3a5e664d
+Name: 路環市區文化館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946406Z
+
+[Merchant: MC-NON--93313-03]
+ID: 1984040b-e09f-470a-a056-eadc4f72ad64
+Name: 澳門旅遊塔
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946410Z
+
+[Merchant: MC-FAST-2375-04]
+ID: 1c9ad975-663d-4ad2-a7fd-219e6e5f4133
+Name: 新興燒腊快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946414Z
+
+[Merchant: MC-DESS-6402-11]
+ID: a2eecb38-1f6a-46a5-8a74-eadf2963226b
+Name: 夢幻甜品
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946418Z
+
+[Merchant: MC-JAPA-4824-07]
+ID: 45c5717c-a0d1-4078-8159-26fba47ac74f
+Name: 富山日式料亭
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946422Z
+
+[Merchant: MC-HOTE-1484-14]
+ID: de63532e-b4f6-4b4f-94e4-6430ad88777f
+Name: 澳門十六浦索菲特酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946425Z
+
+[Merchant: MC-FAST-2375-12]
+ID: f793cbcc-7900-44e3-a342-2d531b5dfa31
+Name: 新好彩快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946429Z
+
+[Merchant: MC-DESS-6402-13]
+ID: a4de6b55-7b34-42ef-95bf-10951aad44c9
+Name: 紫荊甜品店
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946433Z
+
+[Merchant: MC-HOTP-4494-03]
+ID: 80aed45c-9150-4e1c-b932-f4c5baccaed7
+Name: 漁人碼頭海鮮火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946437Z
+
+[Merchant: G604]
+ID: 8eed4c11-83bb-48c3-a825-aef4b248b00b
+Name: 雅居裝修設計有限公司
+Category: df78ff39
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946443Z
+
+[Merchant: MC-DESI-001]
+ID: cfe29db6-d940-4068-96d8-1301edd236ee
+Name: 晴天视觉设计有限公司
+Category: 5bd8ac3e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946447Z
+
+[Merchant: G619]
+ID: c1f74868-ef7f-46fd-b977-b25a2537f7c1
+Name: 澳門大學智慧城市與物聯網實驗室
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946451Z
+
+[Merchant: G625]
+ID: f3f48b08-202f-45b6-8508-edbc986e3999
+Name: 澳門統計暨普查局
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946456Z
+
+[Merchant: G620]
+ID: 80c98351-cb7e-4fc2-bc3d-5c8811e54d51
+Name: 跨境電商解決方案(澳門)有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946459Z
+
+[Merchant: G628]
+ID: e05c101d-a9de-4cc3-b3be-6d5f45132c54
+Name: 氹仔中央公園
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946463Z
+
+[Merchant: G630]
+ID: d90614ac-8077-4d81-a838-1c1dfdc9bf7c
+Name: 澳門工人體育館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946467Z
+
+[Merchant: G608]
+ID: 220d8759-f1ff-402a-a5b2-41ad40bcece7
+Name: 澳門文化遺產旅遊發展有限公司
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946475Z
+
+[Merchant: MC-BAKE-002]
+ID: 9322ce7b-44dc-4e87-9d0b-642ce0dbe301
+Name: 禮記餅家
+Category: 5a0d4580
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946480Z
+
+[Merchant: G610]
+ID: e9b51a08-afa4-453e-a34b-1b4e1d99528b
+Name: 澳門古蹟保育顧問有限公司
+Category: d993cfc2
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946483Z
+
+[Merchant: G624]
+ID: db1b64e5-5435-41d0-b833-11e9c2e1f445
+Name: 仁伯爵綜合醫院
+Category: e98f7e1f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946487Z
+
+[Merchant: G626]
+ID: f24af2a4-5854-4ce1-9c9e-54a4b4ac5647
+Name: 聖老愣佐堂
+Category: ece34d21
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946491Z
+
+[Merchant: G607]
+ID: 0cd15ad9-6d1f-4644-9e2b-2dad2e9cf4a6
+Name: 澳門歷史建築修復工程公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946494Z
+
+[Merchant: G629]
+ID: 5143de0e-f2f2-4107-a576-4cf52f5b1b8a
+Name: 路環圖書館
+Category: ade2cd0f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946498Z
+
+[Merchant: G613]
+ID: 245ec58b-ced8-4dc6-bcac-0d23c150207b
+Name: 澳門線上資訊網
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946504Z
+
+[Merchant: G632]
+ID: f6e5781d-a4f2-4c33-8861-7361a8692117
+Name: 星光酒廊
+Category: cf2fd3ae
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946509Z
+
+[Merchant: G612]
+ID: cbca1421-f358-4596-a15a-6f46a59c03b9
+Name: 澳門廣播電視台
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946513Z
+
+[Merchant: MC-LIBR-94554-03]
+ID: 00825f62-ed2f-455d-b754-076b8c86ad87
+Name: 氹仔圖書館
+Category: ade2cd0f
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946517Z
+
+[Merchant: G611]
+ID: 6ee733a4-ebcb-49ae-9c26-f65d60ca3b1f
+Name: 澳門新聞報
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946520Z
+
+[Merchant: G614]
+ID: 07be1964-3d6e-4b16-b86a-46327f7b5869
+Name: 創意廣告製作有限公司
+Category: 1427e545
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946524Z
+
+[Merchant: G615]
+ID: b5542a95-a045-4f26-8aba-1122359f1123
+Name: 精美印刷有限公司
+Category: 54707ee0
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946528Z
+
+[Merchant: G1085]
+ID: 6a7655e1-0a86-4e05-b862-d795a0aeaecb
+Name: 治安警察局
+Category: d79bb0c0
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946532Z
+
+[Merchant: G609]
+ID: 8e8df442-18f0-4263-8e14-5a8bc4c53a67
+Name: 澳門傳統文化體驗館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946535Z
+
+[Merchant: G627]
+ID: 0a144108-e021-4449-99d8-bbdf11a74b35
+Name: 澳門街坊會聯合總會
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946539Z
+
+[Merchant: G631]
+ID: c68d8595-23c9-46f7-b6f5-b7472127e6d3
+Name: 皇冠夜總會
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946545Z
+
+[Merchant: MC-DESI-002]
+ID: ec7f6d30-165b-401e-a49a-abde7c23125a
+Name: 筑空间室内设计事务所
+Category: 5bd8ac3e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946549Z
+
+[Merchant: MC-TRAN-99290-02]
+ID: 2493a123-6e8b-4697-bee3-ae61e15901b0
+Name: 信達法律翻譯事務所
+Category: 5ed9d5e7
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946553Z
+
+[Merchant: MC-STRE-5756-02]
+ID: 314c059b-5836-45e4-ba5b-c84c756b0c8e
+Name: 阿婆雞蛋仔
+Category: a1cc95cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946557Z
+
+[Merchant: MC-BAKE-003]
+ID: 6cff29c6-9ee9-44f6-b11f-5acab79f7595
+Name: 蘭香閣
+Category: 5a0d4580
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946561Z
+
+[Merchant: MC-NON--93313-04]
+ID: 429aaa4b-ad9f-4b78-bbb6-dec8868fc83f
+Name: 影匯之星摩天輪
+Category: bc975d15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946565Z
+
+[Merchant: MC-TOUR-3639-08]
+ID: e179d5a4-5867-46b7-8a54-df7b3c591522
+Name: 新濠影滙8字摩天輪
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946568Z
+
+[Merchant: G640]
+ID: 439ea0c2-dd8c-4e28-86f6-21c6dad584ce
+Name: 海岸線博彩會館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946572Z
+
+[Merchant: MC-HOTP-4494-04]
+ID: c83ab025-909f-4134-bd0d-e92f3c4640a1
+Name: 雲南過橋米線火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946576Z
+
+[Merchant: MC-DESS-6402-04]
+ID: 630807ff-3844-426f-8bb4-669f6c0f4b5d
+Name: 港澳茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946584Z
+
+[Merchant: MC-NON--93313-12]
+ID: 97ac9714-2d11-4681-9074-236a4360beac
+Name: 黑沙海灘休閒中心
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946589Z
+
+[Merchant: MC-JAPA-4824-08]
+ID: 28af86a5-e36e-4dc0-9621-c04949582df2
+Name: 千葉手作壽司
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946593Z
+
+[Merchant: G634]
+ID: 87513e47-db9a-41c8-8139-e1be9269eb9b
+Name: 水晶宮酒吧
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946597Z
+
+[Merchant: MC-FAST-2375-13]
+ID: 646a2be3-089c-4f4c-a77d-ae468de7c7c8
+Name: 滿記粥粉麵
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946601Z
+
+[Merchant: MC-FAST-2375-05]
+ID: 02f3ea06-86a5-44a6-8352-04c6556c4976
+Name: 富豪茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946604Z
+
+[Merchant: G643]
+ID: adb6ff23-760a-4d58-b7dd-61bc2f22df35
+Name: 銀河會議展覽中心
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946608Z
+
+[Merchant: MC-ECOM-92073-02]
+ID: 4ab362d5-2622-47cf-b6ec-7e0ee99763f2
+Name: 澳門通MacauPass
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946612Z
+
+[Merchant: G654]
+ID: 75d10761-7e9e-4189-b25c-091438e22560
+Name: 赫茲租車澳門有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946616Z
+
+[Merchant: G633]
+ID: b773b36e-b42e-455f-bd3e-34d9efb53f8f
+Name: 紅磨坊卡拉OK
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946620Z
+
+[Merchant: MC-STRE-5756-10]
+ID: 5143cb0a-d7bd-433d-b55d-cd9e814001ad
+Name: 路環小食亭
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946623Z
+
+[Merchant: G646]
+ID: dbaa7c6f-8edd-4f0c-a804-7bbe5402e146
+Name: 澳門光影節組委會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946627Z
+
+[Merchant: MC-HOTE-1484-08]
+ID: a8210bd7-16fa-4a74-bf8b-52fa8357e224
+Name: 澳門瑞吉酒店
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946631Z
+
+[Merchant: MC-REAL-14469-04]
+ID: 77758df8-540b-4f54-9ab5-28c5ab84d68a
+Name: 美高梅房屋中介
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946635Z
+
+[Merchant: MC-DESS-6402-12]
+ID: 98efd54e-54af-405e-b5a5-59a661c9c491
+Name: 陽光茶餐廳
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946638Z
+
+[Merchant: MC-ECOM-92073-03]
+ID: 378442d5-a106-40e4-8aec-487da0598006
+Name: 中小企電商平台
+Category: e77914cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946642Z
+
+[Merchant: MC-FAST-2375-14]
+ID: 4e5ed4fe-136b-4c1b-b7a9-03715db38df8
+Name: 興記燒味快餐
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946648Z
+
+[Merchant: MC-PHOT-94845-02]
+ID: 3c973fa2-c65a-4373-885f-3e088c06c9c8
+Name: 夢想婚紗攝影工作室
+Category: c4a1ab3e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946652Z
+
+[Merchant: MC-STRE-5756-03]
+ID: 0f950112-1533-478b-a2a4-495d66343f97
+Name: 老字號魚蛋粉
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946656Z
+
+[Merchant: MC-STRE-5756-11]
+ID: dcc9bed8-1c77-4df4-938d-a1fbcd3968a9
+Name: 金記腸粉
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946660Z
+
+[Merchant: G641]
+ID: 4e19e538-6665-43a9-bc29-3829b892f730
+Name: 文化娛樂廣場
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946664Z
+
+[Merchant: MC-NON--93313-05]
+ID: fe8bd100-c789-46d1-8eac-0ad12f2bb25b
+Name: 澳門科學館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946667Z
+
+[Merchant: G645]
+ID: d734e906-5228-4c34-8da0-8027f89b3c95
+Name: 澳門國際珠寶玉石展覽會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946671Z
+
+[Merchant: MC-JAPA-4824-13]
+ID: 6849c1ce-8348-4e73-924c-678b1176a582
+Name: 長崎和食堂
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946675Z
+
+[Merchant: MC-INSU-16037-01]
+ID: 50d15163-36db-43e2-965d-0866a4b52534
+Name: 友邦保險（澳門）有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946679Z
+
+[Merchant: MC-DESI-003]
+ID: e2e4190b-966d-49a1-a6c4-31442dd95ca7
+Name: 澳门平面创作室
+Category: 5bd8ac3e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946683Z
+
+[Merchant: G647]
+ID: 3debdaeb-6cdc-429b-8659-cd6451bcb444
+Name: 澳門格蘭披治大賽車組織委員會
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946687Z
+
+[Merchant: MC-FAST-2375-06]
+ID: a1cb2d93-dcc9-4c51-9737-c39526bf9d8c
+Name: 永利快餐店
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946690Z
+
+[Merchant: MC-TRAN-99290-03]
+ID: ca451c18-f29a-4f2b-bc5c-6b2f77664323
+Name: 環球技術翻譯中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946694Z
+
+[Merchant: G639]
+ID: a3c552de-b6c4-4435-8d5d-f188ee8a1b1d
+Name: 澳門樂園綜合娛樂場
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946698Z
+
+[Merchant: MC-HOTP-4494-05]
+ID: aa43553d-6b34-429f-b5eb-05b88740efe0
+Name: 皇朝養生火鍋
+Category: 9b35ae15
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946704Z
+
+[Merchant: MC-DESS-6402-05]
+ID: 0af3426d-4ea5-4a24-b9aa-257fcdd5457d
+Name: 雲朵甜品屋
+Category: 62d35b80
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946708Z
+
+[Merchant: G642]
+ID: 67811cb1-81bd-44ca-872d-d27bb7c66c14
+Name: 高士德休閒會所
+Category: fb2b0236
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946714Z
+
+[Merchant: MC-TOUR-3639-12]
+ID: 9fac5789-de58-4c62-a406-50455580be11
+Name: 澳門海事博物館
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946718Z
+
+[Merchant: G638]
+ID: 8591a05e-b00b-4282-a04d-aed067cb6714
+Name: 皇家VIP貴賓會
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946722Z
+
+[Merchant: G656]
+ID: e3fef5a0-d62c-4e07-92c5-49675edda026
+Name: 海之味海產進口有限公司
+Category: 9e6105ce
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946727Z
+
+[Merchant: G658]
+ID: 41b37854-8e49-4658-b8d3-ed516a596282
+Name: 新鮮田園蔬果有限公司
+Category: dd47e9fe
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946730Z
+
+[Merchant: G663]
+ID: 0a693139-1864-4191-9f40-be787966fad0
+Name: 小太陽幼稚園
+Category: 3b5ae336
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946734Z
+
+[Merchant: G668]
+ID: 7d1267e6-b27a-4875-8a8c-191f528e89fc
+Name: 華澳證券投資有限公司
+Category: c6e95f34
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946738Z
+
+[Merchant: G672]
+ID: 04b5e9c6-264c-417a-a966-d4df81e6eb0d
+Name: 御璽珠寶
+Category: d86a7f97
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946742Z
+
+[Merchant: G674]
+ID: 78fcdb79-faf5-43c0-9960-452618bb23de
+Name: 御膳房
+Category: dc3bedc5
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946749Z
+
+[Merchant: G675]
+ID: 6c454592-5eb1-486b-b4a4-77a22d810d7b
+Name: 靜謐天地水療
+Category: a678b86b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946753Z
+
+[Merchant: G676]
+ID: 1e46d1dc-0fd8-4b14-b386-0af83f2788f5
+Name: 馳名家車
+Category: 9b9c8e04
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946757Z
+
+[Merchant: G673]
+ID: 7e3bd240-b6ef-42b3-a622-4c0a03f362c9
+Name: 名品薈
+Category: 1d1a9381
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946763Z
+
+[Merchant: G669]
+ID: df85495a-f322-489b-88f3-b6d0fb137420
+Name: 澳門信貸財務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946767Z
+
+[Merchant: G677]
+ID: 59741100-4ef9-4929-8b0b-692cf7bb02bf
+Name: 和正堂中醫診所
+Category: 0855860d
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946771Z
+
+[Merchant: G660]
+ID: a8b1bb46-0961-44ca-af51-df55c1a37b54
+Name: 澳門國際語言中心
+Category: cbcd0e4b
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946774Z
+
+[Merchant: G665]
+ID: 8b5d0717-29e0-4adc-98ee-5dca90bbbd47
+Name: 澳門人文學院
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946779Z
+
+[Merchant: G666]
+ID: 08cf5736-ce74-42b9-8cbc-c8cded88f9e2
+Name: 澳門大西洋銀行
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946782Z
+
+[Merchant: G667]
+ID: 6a77b894-60e3-4b6b-8903-dcc70ddb79b9
+Name: 澳門保險有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946786Z
+
+[Merchant: G664]
+ID: 8a4d8f46-2983-4484-bab9-11255b47b82f
+Name: 澳門明德中學
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946790Z
+
+[Merchant: G648]
+ID: 1d3ac52b-f68f-43db-91bd-ffeebec876c4
+Name: 澳門環球會展服務有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946794Z
+
+[Merchant: G671]
+ID: b53ac97e-c071-41ce-ada5-fe4a1ccbb95d
+Name: 德勤會計師事務所澳門分所
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946800Z
+
+[Merchant: G670]
+ID: f9d3fa1c-e557-4540-9214-dc5e15eff908
+Name: 易付澳門科技有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946804Z
+
+[Merchant: MC-RESO-005]
+ID: 70469515-46ca-4732-90dd-e59c9f094733
+Name: 澳門銀河三期
+Category: 1d888c78
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946807Z
+
+[Merchant: G661]
+ID: 17844697-b31d-4a16-948c-eec5a84b9a18
+Name: 澳門科技職業培訓學院
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946811Z
+
+[Merchant: G652]
+ID: f54cfa99-9e3a-460f-b635-3a8ada72b00b
+Name: 澳門新福利公共巴士股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946815Z
+
+[Merchant: G650]
+ID: b7cf7d53-d98e-48e1-97fa-8cca70616059
+Name: 澳門輕軌股份有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946819Z
+
+[Merchant: G657]
+ID: 087cebdd-137d-41e2-9404-51f4533b1717
+Name: 澳門肉類供應鏈有限公司
+Category: 1ac516a4
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946823Z
+
+[Merchant: MC-DESI-004]
+ID: 6c771659-3bb4-4a62-94ba-0ae82c45abf9
+Name: 原象品牌策划有限公司
+Category: 5bd8ac3e
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946827Z
+
+[Merchant: G681]
+ID: 924f4121-3b43-45bd-ac2a-6ac48ee1dd23
+Name: 仁康藥房
+Category: b4f96142
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946830Z
+
+[Merchant: MC-ECOM-92073-04]
+ID: 32ac97f3-1c54-48ba-89e4-0d231b95d4db
+Name: 跨境電商物流
+Category: e77914cb
+
+source-confidence: 0.00
+verified-at: 2026-04-01T02:08:13.946834Z
+
+
+# 📊 Statistics
+# Total: 790
+# With Google verification: 256
+# With merchant website: 199
+# Average confidence: 0.11
