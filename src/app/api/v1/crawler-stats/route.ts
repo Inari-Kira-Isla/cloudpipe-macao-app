@@ -65,8 +65,25 @@ export async function GET(request: NextRequest) {
     switch (view) {
       // ── Pre-computed views (instant, no heavy queries) ──────────────────
       case 'summary': {
-        const cached = await readCache('crawler-stats-summary-30')
+        const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
+          // If days=1 (today), return the today sub-object formatted as summary
+          if (days <= 1 && cached.today) {
+            const t = cached.today
+            return NextResponse.json({
+              period: { since: t.date + 'T00:00:00Z', days: 1 },
+              total_visits: t.total_visits || 0,
+              unique_bots: t.unique_bots || 0,
+              unique_sessions: 0,
+              bots: t.bots || {},
+              top_pages: {},
+              industries: t.industries || {},
+              page_types: t.page_types || {},
+              sites: t.sites || {},
+            }, {
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'PRECOMPUTED-TODAY' },
+            })
+          }
           return NextResponse.json(cached, {
             headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
           })
