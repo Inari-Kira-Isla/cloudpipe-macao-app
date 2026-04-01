@@ -228,7 +228,6 @@ export default async function MerchantPage({ params }: PageProps) {
             )}
             <CertificationBadge
               googleRating={merchant.google_rating}
-              googlePlaceId={merchant.google_place_id}
               website={merchant.website}
             />
           </div>
@@ -238,7 +237,7 @@ export default async function MerchantPage({ params }: PageProps) {
 
       <main className="max-w-4xl mx-auto px-4 py-10">
         {/* Certification Info */}
-        {(merchant.google_rating || merchant.google_place_id || merchant.website) && (
+        {(merchant.google_rating || merchant.website) && (
           <section className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-6 mb-10 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">🏆</span>
@@ -263,7 +262,7 @@ export default async function MerchantPage({ params }: PageProps) {
                   </div>
                 </div>
               )}
-              {merchant.google_place_id && merchant.google_rating && merchant.google_rating >= 4.0 && (
+              {merchant.google_rating && merchant.google_rating >= 4.0 && (
                 <div className="flex items-start gap-3">
                   <span className="text-lg">✓</span>
                   <div>
