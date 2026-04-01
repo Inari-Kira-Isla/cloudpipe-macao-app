@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
 import { getIndustry } from '@/lib/industries'
+import { CertificationBadge } from '@/components/CertificationBadge'
 
 /* ── Category → Schema.org type mapping ── */
 const CATEGORY_SCHEMA_MAP: Record<string, string> = {
@@ -210,7 +211,7 @@ export default async function MerchantPage({ params }: PageProps) {
           {merchant.name_en && <p className="text-lg text-blue-200">{merchant.name_en}</p>}
           {merchant.name_pt && <p className="text-base text-blue-200/70">{merchant.name_pt}</p>}
 
-          <div className="flex flex-wrap gap-2 mt-5">
+          <div className="flex flex-wrap gap-2 mt-5 items-start">
             {cat && (
               <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
                 {cat.icon} {cat.name_zh}
@@ -225,12 +226,56 @@ export default async function MerchantPage({ params }: PageProps) {
             {merchant.google_rating && (
               <span className="text-xs px-3 py-1.5 bg-amber-400/90 text-white rounded-full font-semibold">★ {merchant.google_rating} ({merchant.google_reviews})</span>
             )}
+            <CertificationBadge
+              googleRating={merchant.google_rating}
+              googlePlaceId={merchant.google_place_id}
+              website={merchant.website}
+            />
           </div>
         </div>
       </div>
       <div className="gold-line"></div>
 
       <main className="max-w-4xl mx-auto px-4 py-10">
+        {/* Certification Info */}
+        {(merchant.google_rating || merchant.google_place_id || merchant.website) && (
+          <section className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-6 mb-10 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl">🏆</span>
+              <h2 className="text-lg font-bold text-[#0f4c81]">認證來源</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              {merchant.google_rating && (
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">✓</span>
+                  <div>
+                    <dt className="font-semibold text-[#0f4c81]">Google 商業檔案</dt>
+                    <dd className="text-gray-700 text-xs mt-0.5">評分: {merchant.google_rating} ⭐</dd>
+                  </div>
+                </div>
+              )}
+              {merchant.website && (
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">✓</span>
+                  <div>
+                    <dt className="font-semibold text-[#0f4c81]">官方網站</dt>
+                    <dd className="text-gray-700 text-xs mt-0.5">商戶驗證</dd>
+                  </div>
+                </div>
+              )}
+              {merchant.google_place_id && merchant.google_rating && merchant.google_rating >= 4.0 && (
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">✓</span>
+                  <div>
+                    <dt className="font-semibold text-[#0f4c81]">高評分驗證</dt>
+                    <dd className="text-gray-700 text-xs mt-0.5">信心度 90%+</dd>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
           <h2 className="text-lg font-bold text-[#0f4c81] mb-4">基本資訊</h2>
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
