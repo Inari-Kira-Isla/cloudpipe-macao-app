@@ -68,11 +68,12 @@ export async function GET(req: NextRequest) {
       .gte('ts', since)
       .order('ts', { ascending: false })
       .limit(2000)
+    const safeVisitRows = visitRows || []
     let offset = 0
 
     // Aggregate by merchant slug
     const visitBySlug: Record<string, { count: number; bots: Set<string>; lastTs: string; industry: string; region: string }> = {}
-    for (const row of visitRows || []) {
+    for (const row of safeVisitRows) {
       const slug = extractMerchantSlug(row.path)
       if (!slug) continue
       const slugRegion = regionFromSlug(slug)
@@ -210,7 +211,7 @@ export async function GET(req: NextRequest) {
 
     // ── 5. Today's crawl stats ────────────────────────────────────────────────
     const todayStr = new Date().toISOString().slice(0, 10)
-    const todayVisits = (visitRows || []).filter(r => (r.ts as string).startsWith(todayStr))
+    const todayVisits = safeVisitRows.filter(r => (r.ts as string).startsWith(todayStr))
     const todayMerchantSlugs = new Set<string>()
     for (const row of todayVisits) {
       const slug = extractMerchantSlug(row.path)
