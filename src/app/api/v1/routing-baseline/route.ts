@@ -69,18 +69,14 @@ export async function GET() {
     const catMap: Record<string, string> = {}
     for (const c of (cats || [])) catMap[c.id] = c.slug
 
-    // ── 2. Fetch all live merchants ──────────────────────────────────────────
-    const merchants: any[] = []
-    let offset = 0
-    while (true) {
-      const { data } = await supabase.from('merchants')
-        .select('slug,name_zh,name_en,category_id,schema_type,google_reviews,google_rating,is_owned,district')
-        .eq('status', 'live').range(offset, offset + 999)
-      if (!data?.length) break
-      merchants.push(...data)
-      if (data.length < 1000) break
-      offset += 1000
-    }
+    // ── 2. Fetch live merchants (top 1000 by reviews to avoid timeout) ─────
+    const { data: merchants_raw } = await supabase.from('merchants')
+      .select('slug,name_zh,name_en,category_id,schema_type,google_reviews,google_rating,is_owned,district')
+      .eq('status', 'live').order('google_reviews', { ascending: false, nullsFirst: false }).limit(1000)
+    const merchants = merchants_raw || []
+    // Also get total count for stats
+    const { count: totalMerchantCount } = await supabase.from('merchants')
+      .select('*', { count: 'exact', head: true }).eq('status', 'live')
 
     // ── 3. Score merchants ───────────────────────────────────────────────────
     const merchantScores: Record<string, {
@@ -129,19 +125,11 @@ export async function GET() {
       merchantsByIndustry[m.industry] = (merchantsByIndustry[m.industry] || 0) + 1
     }
 
-    // ── 4. Classify insights ─────────────────────────────────────────────────
-    const insights: any[] = []
-    offset = 0
-    while (true) {
-      const { data } = await supabase.from('insights')
-        .select('slug,title,body_html,related_merchant_slugs,tags')
-        .eq('status', 'published').eq('lang', 'zh')
-        .range(offset, offset + 999)
-      if (!data?.length) break
-      insights.push(...data)
-      if (data.length < 1000) break
-      offset += 1000
-    }
+    // ── 4. Classify insights (limit 1000, skip body_html to reduce payload) ─
+    const { data: insights_raw } = await supabase.from('insights')
+      .select('slug,title,related_merchant_slugs,tags')
+      .eq('status', 'published').eq('lang', 'zh').limit(1000)
+    const insights = (insights_raw || []).map((ins: any) => ({ ...ins, body_html: '' }))
 
     let tierA = 0, tierB = 0, tierC = 0, tierD = 0
     const industryTiers: Record<string, { a: number; b: number; c: number; d: number }> = {}
@@ -226,7 +214,7 @@ export async function GET() {
       // Merchant scoring
       topMerchants,
       merchantsByIndustry,
-      totalMerchants: Object.keys(merchantScores).length,
+      totalMerchants: totalMerchantCount || Object.keys(merchantScores).length,
       merchantsWithReviews: Object.values(merchantScores).filter(m => m.reviews > 0).length,
       // Crawler baseline
       merchantVisits: {
