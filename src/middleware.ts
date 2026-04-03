@@ -276,26 +276,28 @@ async function hashIP(ip: string): Promise<string> {
 
 /** Extract page type and segments from path */
 function parsePath(path: string): { pageType: string; industry: string | null; category: string | null } {
-  if (path === '/macao' || path === '/macao/') return { pageType: 'home', industry: null, category: null }
-  if (path.includes('/llms-txt')) return { pageType: 'llms-txt', industry: null, category: null }
-  if (path.includes('/api/')) return { pageType: 'api', industry: null, category: null }
-  if (path === '/sitemap.xml') return { pageType: 'sitemap', industry: null, category: null }
-  if (path === '/robots.txt') return { pageType: 'robots', industry: null, category: null }
+  // All cloudpipe-macao-app pages have industry='澳門商戶百科'
+  const MACAO_INDUSTRY = '澳門商戶百科'
 
-  // Insights section (must be checked before generic segment matching)
-  // Keep industry: 'insights' so AEO monitor's industries['insights'] counter stays populated
-  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: 'insights', category: null }
-  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: 'insights', category: null }
+  if (path === '/macao' || path === '/macao/') return { pageType: 'home', industry: MACAO_INDUSTRY, category: null }
+  if (path.includes('/llms-txt')) return { pageType: 'llms-txt', industry: MACAO_INDUSTRY, category: null }
+  if (path.includes('/api/')) return { pageType: 'api', industry: MACAO_INDUSTRY, category: null }
+  if (path === '/sitemap.xml') return { pageType: 'sitemap', industry: MACAO_INDUSTRY, category: null }
+  if (path === '/robots.txt') return { pageType: 'robots', industry: MACAO_INDUSTRY, category: null }
+
+  // Insights section
+  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: MACAO_INDUSTRY, category: null }
+  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: MACAO_INDUSTRY, category: null }
 
   // Crawler dashboard (internal, skip)
-  if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: null, category: null }
+  if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 
   const segments = path.replace(/^\/macao\//, '').replace(/\/$/, '').split('/')
-  if (segments.length === 1) return { pageType: 'industry', industry: segments[0], category: null }
-  if (segments.length === 2) return { pageType: 'category', industry: segments[0], category: segments[1] }
-  if (segments.length >= 3) return { pageType: 'merchant', industry: segments[0], category: segments[1] }
+  if (segments.length === 1) return { pageType: 'industry', industry: MACAO_INDUSTRY, category: null }
+  if (segments.length === 2) return { pageType: 'category', industry: MACAO_INDUSTRY, category: null }
+  if (segments.length >= 3) return { pageType: 'merchant', industry: MACAO_INDUSTRY, category: null }
 
-  return { pageType: 'other', industry: null, category: null }
+  return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 }
 
 /** Detect AI bot from User-Agent string */
