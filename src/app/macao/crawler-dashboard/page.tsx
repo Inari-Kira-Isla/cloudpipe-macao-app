@@ -280,6 +280,31 @@ export default function CrawlerDashboard() {
             ))}
           </div>
 
+          {/* Traffic Analysis: LLM vs Organic */}
+          {(() => {
+            const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu'])
+            const llmVisits = Object.entries(summary.bots || {}).reduce((sum, [bot, info]) => {
+              return sum + (llmBots.has(info.owner) ? info.count : 0)
+            }, 0)
+            const organicVisits = (summary.total_visits || 0) - llmVisits
+            const llmPct = summary.total_visits > 0 ? ((llmVisits / summary.total_visits) * 100).toFixed(1) : 0
+            const organicPct = summary.total_visits > 0 ? ((organicVisits / summary.total_visits) * 100).toFixed(1) : 0
+            return (
+              <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9' }}>
+                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Referral</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#1976d2' }}>{llmPct}%</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits} / {summary.total_visits} visits</div>
+                </div>
+                <div style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784' }}>
+                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 Organic Traffic</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{organicPct}%</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{organicVisits} / {summary.total_visits} visits</div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
             {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery'] as const).map(t => (
