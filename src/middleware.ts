@@ -333,60 +333,99 @@ export async function middleware(request: NextRequest) {
   const ua = request.headers.get('user-agent') || ''
   const bot = detectBot(ua)
 
-  if (!bot) return response // Not an AI bot, skip
-
   // Skip logging paths with /null slug (bad data, wastes crawler budget)
   if (request.nextUrl.pathname.includes('/null')) return response
 
-  // Non-blocking: fire and forget the log insertion
+  // Log both bot and real user visits (non-blocking)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!supabaseUrl || !serviceKey) return response
-
-  try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')
-      || '0.0.0.0'
-    const ipHash = await hashIP(ip)
-    const path = request.nextUrl.pathname
-    const referer = request.headers.get('referer') || null
-    const { pageType, industry, category } = parsePath(path)
-
-    // Session ID: group requests from same bot + IP within same day
-    const dateStr = new Date().toISOString().slice(0, 10)
-    const sessionId = `${ipHash}-${bot.name}-${dateStr}`
-
-    const row = {
-      bot_name: bot.name,
-      bot_owner: bot.owner,
-      path,
-      referer,
-      ip_hash: ipHash,
-      session_id: sessionId,
-      ua_raw: ua.slice(0, 500),
-      site: 'cloudpipe-macao-app',
-      industry,
-      category,
-      page_type: pageType,
-    }
-
-    // Fire-and-forget: don't await, don't block the response
-    fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
-      method: 'POST',
-      headers: {
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify(row),
-    }).catch(() => {}) // Silently ignore errors
-
-  } catch {
-    // Never block the response
+  if (supabaseUrl && serviceKey) {
+    logVisit(request, bot, supabaseUrl, serviceKey)
   }
 
   return response
+
+  // === Helper function (defined after main logic) ===
+  async function logVisit(
+    request: NextRequest,
+    bot: { name: string; source: string } | null,
+    supabaseUrl: string,
+    serviceKey: string
+  ) {
+    try {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || request.headers.get('x-real-ip')
+        || '0.0.0.0'
+      const ipHash = await hashIP(ip)
+      const path = request.nextUrl.pathname
+      const referer = request.headers.get('referer') || null
+      const { pageType, industry, category } = parsePath(path)
+
+      // Session ID: group requests from same IP + day
+      const dateStr = new Date().toISOString().slice(0, 10)
+      const sessionId = bot
+        ? `${ipHash}-${bot.name}-${dateStr}`
+        : `${ipHash}-user-${dateStr}`
+
+      const row = {
+        ip_hash: ipHash,
+        bot_name: bot?.name || null,
+        bot_source: bot?.source || null,
+        path,
+        referer,
+        referer_domain: referer ? new URL(referer).hostname : null,
+        page_type: pageType,
+        industry,
+        category,
+        device_type: detectDeviceType(ua),
+        utm_source: request.nextUrl.searchParams.get('utm_source'),
+        utm_medium: request.nextUrl.searchParams.get('utm_medium'),
+        utm_campaign: request.nextUrl.searchParams.get('utm_campaign'),
+        utm_content: request.nextUrl.searchParams.get('utm_content'),
+        utm_term: request.nextUrl.searchParams.get('utm_term'),
+        is_bot: !!bot,
+        session_id: sessionId,
+        created_at: new Date().toISOString(),
+      }
+
+      // Use appropriate table based on visitor type
+      const tableName = bot ? 'crawler_visits' : 'user_visits'
+
+      // Insert to Supabase (fire and forget)
+      const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceKey}`,
+          'apikey': serviceKey,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(row),
+      })
+
+      if (!response.ok) {
+        console.error(`Failed to log ${tableName}:`, response.status)
+      }
+    } catch (error) {
+      // Silently fail - don't block request on logging error
+      console.error('Visit logging error:', error)
+    }
+  }
+}
+
+// === Helper Functions ===
+
+/**
+ * Detect device type from User-Agent
+ */
+function detectDeviceType(ua: string): 'mobile' | 'tablet' | 'desktop' {
+  const lowerUA = ua.toLowerCase()
+  if (/mobile|android|iphone|ipod/.test(lowerUA)) {
+    return 'mobile'
+  } else if (/ipad|tablet|android/.test(lowerUA)) {
+    return 'tablet'
+  }
+  return 'desktop'
 }
 
 export const config = {
