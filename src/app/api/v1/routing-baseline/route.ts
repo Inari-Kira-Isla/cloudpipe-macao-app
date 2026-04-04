@@ -182,41 +182,7 @@ export async function GET() {
       industryTiers[ind][tier.toLowerCase() as 'a' | 'b' | 'c' | 'd']++
     }
 
-    // ── 5. Crawler visits baseline ────────────────────────────────────────────
-    const { data: merchantVisitRows } = await supabase
-      .from('crawler_visits')
-      .select('path,bot_name,bot_owner,ts')
-      .eq('page_type', 'merchant')
-      .order('ts', { ascending: false })
-      .limit(200)
-
-    const { data: catVisitRows } = await supabase
-      .from('crawler_visits')
-      .select('path,bot_name,industry,ts')
-      .eq('page_type', 'category')
-      .order('ts', { ascending: false })
-      .limit(200)
-
-    // Unique merchant slugs visited (valid ones only)
-    const visitedMerchants = new Set(
-      (merchantVisitRows || [])
-        .map((r: any) => (r.path as string).split('/').pop())
-        .filter((s: string | undefined) => s && s !== 'null' && !s?.startsWith('place-'))
-    )
-
-    // Bot breakdown for merchant visits
-    const merchantVisitsByBot: Record<string, number> = {}
-    for (const r of (merchantVisitRows || [])) {
-      const k = (r.bot_owner as string) || (r.bot_name as string) || 'unknown'
-      merchantVisitsByBot[k] = (merchantVisitsByBot[k] || 0) + 1
-    }
-
-    // Category visits by industry
-    const catVisitsByIndustry: Record<string, number> = {}
-    for (const r of (catVisitRows || [])) {
-      const k = (r.industry as string) || 'other'
-      catVisitsByIndustry[k] = (catVisitsByIndustry[k] || 0) + 1
-    }
+    // ── 5. (Removed) Crawler visits baseline is now protected and not exposed in API response ────
 
     const result = {
       updatedAt: new Date().toISOString(),
@@ -229,22 +195,6 @@ export async function GET() {
       merchantsByIndustry,
       totalMerchants: totalMerchantCount || Object.keys(merchantScores).length,
       merchantsWithReviews: Object.values(merchantScores).filter(m => m.reviews > 0).length,
-      // Crawler baseline
-      merchantVisits: {
-        total: (merchantVisitRows || []).length,
-        uniqueSlugs: visitedMerchants.size,
-        byBot: merchantVisitsByBot,
-        recentPaths: (merchantVisitRows || []).slice(0, 10).map((r: any) => ({
-          path: r.path, bot: r.bot_name, ts: r.ts
-        })),
-      },
-      categoryVisits: {
-        total: (catVisitRows || []).length,
-        byIndustry: catVisitsByIndustry,
-        recentPaths: (catVisitRows || []).slice(0, 10).map((r: any) => ({
-          path: r.path, bot: r.bot_name, industry: r.industry, ts: r.ts
-        })),
-      },
     }
 
     _cache = { data: result, ts: Date.now() }
