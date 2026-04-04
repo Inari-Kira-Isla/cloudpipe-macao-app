@@ -168,6 +168,9 @@ export default function CrawlerDashboard() {
 
   const [error, setError] = useState<string | null>(null)
 
+  // Google Sheet 連結（從環境變量讀取，或使用預設值）
+  const googleSheetUrl = process.env.NEXT_PUBLIC_CRAWLER_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
+
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
     try {
       const res = await fetch(url)
@@ -233,8 +236,45 @@ export default function CrawlerDashboard() {
     <PasswordGate>
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>AI 爬蟲追蹤 Dashboard</h1>
-        <p style={{ color: '#666', margin: '4px 0 0', fontSize: 14 }}>即時監控 AI 搜索引擎爬蟲訪問數據</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>AI 爬蟲追蹤 Dashboard</h1>
+            <p style={{ color: '#666', margin: '4px 0 0', fontSize: 14 }}>即時監控 AI 搜索引擎爬蟲訪問數據</p>
+          </div>
+          <a
+            href={googleSheetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              background: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontSize: 13,
+              textDecoration: 'none',
+              color: '#333',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f5f5f5'
+              e.currentTarget.style.borderColor = '#999'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff'
+              e.currentTarget.style.borderColor = '#ddd'
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+            </svg>
+            Google Sheet 數據
+          </a>
+        </div>
       </div>
 
       {/* Controls */}
