@@ -301,10 +301,10 @@ function parsePath(path: string): { pageType: string; industry: string | null; c
 }
 
 /** Detect AI bot from User-Agent string */
-function detectBot(ua: string): { name: string; owner: string } | null {
-  for (const [botUA, owner] of Object.entries(AI_BOTS)) {
+function detectBot(ua: string): { name: string; source: string } | null {
+  for (const [botUA, source] of Object.entries(AI_BOTS)) {
     if (ua.includes(botUA)) {
-      return { name: botUA, owner }
+      return { name: botUA, source }
     }
   }
   return null
