@@ -165,6 +165,7 @@ export default function CrawlerDashboard() {
   const [discoveryRegion, setDiscoveryRegion] = useState('')
   const [discoveryIndustry, setDiscoveryIndustry] = useState('')
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const [error, setError] = useState<string | null>(null)
 
@@ -173,7 +174,10 @@ export default function CrawlerDashboard() {
 
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
     try {
-      const res = await fetch(url)
+      const res = await fetch(url, {
+        cache: 'no-store',  // 強制不使用快取，每次都重新查詢
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      })
       if (!res.ok) return fallback
       const data = await res.json()
       if (data?.error) return fallback
@@ -195,6 +199,7 @@ export default function CrawlerDashboard() {
       setSessions(ses)
       setPages(pg)
       setSpiderWeb(sw)
+      setLastUpdated(new Date())  // 記錄更新時間
       if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
     } catch (e) {
       console.error(e)
@@ -203,7 +208,16 @@ export default function CrawlerDashboard() {
     setLoading(false)
   }, [days])
 
+  // 初次載入 + 當 days 改變時重新整理
   useEffect(() => { fetchData() }, [fetchData])
+
+  // 自動重新整理：每 30 秒查詢一次最新數據
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData()
+    }, 30000)  // 30 秒
+    return () => clearInterval(interval)
+  }, [fetchData])
 
   const loadRouting = async () => {
     if (routing) return
@@ -223,7 +237,10 @@ export default function CrawlerDashboard() {
 
   const loadJourney = async (sessionId: string) => {
     setJourneySession(sessionId)
-    const res = await fetch(`${API}&view=journey&session=${sessionId}`)
+    const res = await fetch(`${API}&view=journey&session=${sessionId}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+    })
     const data = await res.json()
     setJourney(data.journey || [])
   }
@@ -289,12 +306,25 @@ export default function CrawlerDashboard() {
             {d === 1 ? '今天' : `${d} 天`}
           </button>
         ))}
-        <button onClick={fetchData} style={{
-          padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd',
-          cursor: 'pointer', background: '#fff', fontSize: 13, marginLeft: 'auto',
-        }}>
-          刷新
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
+          {lastUpdated && (
+            <span style={{ fontSize: 12, color: '#999' }}>
+              最後更新：{lastUpdated.toLocaleString('zh-TW', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </span>
+          )}
+          <button onClick={fetchData} disabled={loading} style={{
+            padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd',
+            cursor: loading ? 'wait' : 'pointer', background: loading ? '#f5f5f5' : '#fff',
+            fontSize: 13, opacity: loading ? 0.6 : 1,
+            transition: 'all 0.2s', whiteSpace: 'nowrap'
+          }}>
+            {loading ? '⟳ 重新整理中...' : '⟳ 立即重新整理'}
+          </button>
+        </div>
       </div>
 
       {loading && <p style={{ textAlign: 'center', color: '#999' }}>載入中...</p>}
