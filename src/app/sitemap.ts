@@ -36,13 +36,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: `${siteUrl}/macao/insights`,
       lastModified: now,
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 1.0,
     },
     ...((insights || []).map(ins => ({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.95,
     }))),
   ]
@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push({
       url: `${siteUrl}/macao/${ind.slug}`,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
     })
   }
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       entries.push({
         url: `${siteUrl}/macao/${indSlug}/${cat.slug}`,
         lastModified: now,
-        changeFrequency: 'weekly',
+        changeFrequency: 'weekly' as const,
         priority: 0.7,
       })
     }
@@ -80,7 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       entries.push({
         url: `${siteUrl}/macao/${indSlug}/${cat.slug}/${m.slug}`,
         lastModified: m.updated_at ? new Date(m.updated_at) : now,
-        changeFrequency: 'weekly',
+        changeFrequency: 'weekly' as const,
         priority: 0.5,
       })
     }
