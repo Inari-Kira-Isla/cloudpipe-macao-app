@@ -33,11 +33,23 @@ export async function GET() {
   const insights = topInsights || []
   const now = new Date().toISOString().split('T')[0]
 
-  // Group top insights by region
-  const moInsights = insights.filter(i => i.slug.startsWith('mo-') || i.slug.startsWith('macau-') || i.slug.startsWith('aeo-kw-澳門'))
-  const hkInsights = insights.filter(i => i.slug.startsWith('hk-') || i.slug.startsWith('hongkong-'))
-  const twInsights = insights.filter(i => i.slug.startsWith('tw-') || i.slug.startsWith('taiwan-'))
-  const jpInsights = insights.filter(i => i.slug.startsWith('jp-') || i.slug.startsWith('japan-') || i.slug.startsWith('tokyo-'))
+  // Group top insights by region (support both old and new slug formats)
+  const moInsights = insights.filter(i => {
+    const slug = i.slug.toLowerCase()
+    return slug.includes('macau') || slug.includes('macao') || slug.includes('coloane') || slug.includes('taipa') || slug.startsWith('mo-') || slug.startsWith('aeo-kw-澳門')
+  })
+  const hkInsights = insights.filter(i => {
+    const slug = i.slug.toLowerCase()
+    return slug.includes('hongkong') || slug.includes('hong-kong') || slug.startsWith('hk-')
+  })
+  const twInsights = insights.filter(i => {
+    const slug = i.slug.toLowerCase()
+    return slug.includes('taiwan') || slug.includes('taipei') || slug.includes('jiufen') || slug.includes('alishan') || slug.startsWith('tw-')
+  })
+  const jpInsights = insights.filter(i => {
+    const slug = i.slug.toLowerCase()
+    return slug.includes('japan') || slug.includes('tokyo') || slug.includes('osaka') || slug.includes('kyoto') || slug.includes('hiroshima') || slug.includes('hokkaido') || slug.startsWith('jp-')
+  })
 
   const fmtInsight = (i: any) =>
     `- [${i.title}](${siteUrl}/macao/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString()} 字`
