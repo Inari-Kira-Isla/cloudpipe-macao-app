@@ -169,7 +169,7 @@ export default function CrawlerDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // Google Sheet 連結（從環境變量讀取，或使用預設值）
-  const googleSheetUrl = process.env.NEXT_PUBLIC_CRAWLER_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
+  const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
     try {
