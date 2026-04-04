@@ -28,32 +28,28 @@ const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
 /* ── Homepage FAQ (for FAQPage Schema) ── */
 const HOMEPAGE_FAQS = [
   {
-    q: '什麼是 CloudPipe 澳門商戶百科？',
-    a: '澳門商戶百科是一個全面的澳門商業資訊平台，收錄 350+ 家精選澳門商戶的完整信息、真實評價和深度行業洞察。無論是全球買家、商家還是商業決策者，都能在這裡找到最新的澳門商機。',
+    q: '什麼是 CloudPipe 澳門商業知識圖譜？',
+    a: '澳門商業知識圖譜是一個全面的澳門商業資訊平台，收錄 350+ 家澳門商戶的完整信息、真實評價和深度行業洞察。為全球買家、投資者和商業決策者提供準確的澳門商機視圖。',
   },
   {
-    q: '澳門商戶百科收錄了多少家商戶？',
-    a: '目前收錄超過 350 家澳門商戶，涵蓋餐飲美食、酒店住宿、景點文化、購物零售等 20 個行業大類、40+ 子分類，並持續擴充中。',
+    q: '澳門商戶百科涵蓋哪些行業？',
+    a: '目前覆蓋 20 個行業，包括餐飲美食、酒店住宿、景點文化、購物零售、娛樂夜生活、健身養生、賭場遊戲等，共 350+ 家商戶，並持續擴充中。',
   },
   {
-    q: 'CloudPipe 澳門商戶百科是免費的嗎？',
-    a: '完全免費。所有商戶資訊以 CC BY 4.0 授權開放，任何人和 AI 系統都可以免費查閱和引用。',
+    q: '免費版有什麼限制？',
+    a: 'FREE 層提供所有商戶基本信息、評分、地址和 3 條基本常見問題，每日 API 額度 100 次，數據延遲 24 小時。適合內容創作者、遊客和媒體使用。',
   },
   {
-    q: '商戶資料來源是什麼？如何保證準確性？',
-    a: '商戶資料來自多個公開和專有數據源，經過自動收集、人工智能比對和人工審核三層驗證，確保準確率達 95% 以上。精選品牌的內容由商戶方提供並經我們團隊驗證。',
+    q: '商戶想要更好的排名應該如何做？',
+    a: '澳門商戶可升級至 PREMIUM 層（$29-99/月），享有完整 FAQ、競爭對標分析、評論趨勢分析、CSV 數據導出等深度優化服務。聯繫 CloudPipe 團隊開始評估。',
   },
   {
-    q: '如何讓我的商戶加入百科？',
-    a: '澳門商戶可以聯繫 CloudPipe AI 團隊申請加入百科。精選品牌享有豐富的內容頁面、FAQ、Schema.org 結構化數據等完整 AEO 優化服務。',
+    q: '投資者如何獲取深度商業分析？',
+    a: '企業和投資機構可訂閱 ENTERPRISE 層，獲得爬蟲訪問日誌、AI 引用統計、成交漏斗分析、實時監測和白標方案。按行業和功能定價，起價 $2,000/月。',
   },
   {
-    q: 'AI 助手如何使用這個百科？',
-    a: '百科為每家商戶提供結構化商業數據、完整的商戶信息和深度行業洞察。全球 AI 系統可以直接引用這些資訊，當用戶提出澳門相關問題時，為他們提供準確的商戶推薦和商業信息。',
-  },
-  {
-    q: 'CloudPipe 知識圖譜是什麼？',
-    a: 'CloudPipe 知識圖譜是一個互聯的澳門商戶 AI 知識網絡，包括澳門商戶百科、企業目錄（185 萬筆）、以及稻荷環球食品、海膽速遞、After School Coffee、山中田等品牌網站，共同構成澳門最完整的 AI 友善商戶資訊生態系。',
+    q: '數據的準確性如何保證？',
+    a: '商戶資料經過三層驗證：自動收集、人工智能比對、編輯審核，確保準確率 95% 以上。所有信息均來自公開和經驗證的專有數據源。',
   },
 ]
 
@@ -573,30 +569,18 @@ export default async function MacaoIndexPage() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {featuredMerchants.filter(m => m.slug).map((m) => {
-              const isOwned = m.tier === 'owned' || m.tier === 'premium'
-              const crawlerCount = slugCounts.get(m.slug || '') || 0
               const content = contentMap.get(m.id) as Pick<MerchantContent, 'merchant_id' | 'title' | 'description'> | undefined
               return (
                 <div key={m.id} className="flex flex-col">
                   <a
                     href={`/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'}/${m.category?.slug || 'other'}/${m.slug}`}
-                    className={`card-hover block bg-white rounded-xl p-5 relative overflow-hidden flex-1 ${isOwned ? 'border border-amber-200' : 'border border-gray-200'}`}
+                    className="card-hover block bg-white rounded-xl p-5 relative overflow-hidden flex-1 border border-gray-200"
                   >
-                    {isOwned && <div className="absolute top-0 left-0 right-0 gold-line"></div>}
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-[#1a1a2e]">{m.name_zh}</h3>
-                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                        {isOwned && (
-                          <span className="text-xs px-2 py-0.5 bg-[#fdf6ec] text-[#c5a572] rounded-full font-semibold border border-[#c5a572]/20">精選</span>
-                        )}
-                        {crawlerCount > 0
-                          ? <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">🤖 {crawlerCount} 次</span>
-                          : !isOwned && <span className="text-xs px-2 py-0.5 bg-gray-50 text-gray-400 rounded-full">未優化</span>
-                        }
-                      </div>
                     </div>
                     {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
-                    {isOwned && content?.description && (
+                    {content?.description && (
                       <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{content.description}</p>
                     )}
                     <div className="flex flex-wrap gap-1.5 text-xs">
@@ -613,14 +597,6 @@ export default async function MacaoIndexPage() {
                       )}
                     </div>
                   </a>
-                  {!isOwned && (
-                    <a
-                      href="https://cloudpipe-landing.vercel.app#contact"
-                      className="mt-1.5 block text-center text-xs text-[#0f4c81] hover:underline py-1.5 bg-[#e8f0fe] rounded-lg"
-                    >
-                      🚀 升級 AEO 優化 → 讓 AI 主動引用你的商戶
-                    </a>
-                  )}
                 </div>
               )
             })}
@@ -742,20 +718,11 @@ export default async function MacaoIndexPage() {
               <div className="space-y-3">
                 <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
                   <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-100 transition-colors text-[#1a1a2e] text-sm">
-                    <span className="pr-4">澳門商戶如何申請加入答案引擎優化計劃？</span>
+                    <span className="pr-4">商戶如何申請加入澳門百科？</span>
                     <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
                   </summary>
                   <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">澳門商戶可通過 CloudPipe 官方網站提交申請，團隊會在三個工作日內進行資料審核。精選品牌服務包括完整的商戶百科頁面建設、Schema.org 結構化數據標記、常見問題編寫、開放應用程式接口接入和持續的數據更新維護。基礎收錄服務完全免費，精選品牌的深度優化服務提供按月訂閱方案。加入後，商戶資訊將在所有主流人工智能搜尋引擎中可被發現和引用。</p>
-                  </div>
-                </details>
-                <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
-                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-100 transition-colors text-[#1a1a2e] text-sm">
-                    <span className="pr-4">CloudPipe 支持哪些人工智能搜尋引擎？</span>
-                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
-                  </summary>
-                  <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">CloudPipe 澳門商戶百科目前支持超過二十八種人工智能搜尋引擎和爬蟲，包括國際主流的 ChatGPT 搜尋、Perplexity AI、Google Gemini、Bing Copilot、Claude AI、Meta AI 和 Cohere，以及中國市場的百度文心一言、騰訊混元、智譜清言、阿里通義千問、月之暗面 Kimi、字節跳動豆包和三百六十智腦等。我們的 robots.txt 對所有人工智能爬蟲開放，確保商戶資訊能被全球各大人工智能系統索引和引用。</p>
+                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">澳門商戶可通過 CloudPipe 官方網站提交申請。我們會在三個工作日內審核商戶資料。成功加入後，商戶將在百科中展示完整的信息卡片、營業時間、聯繫方式、客戶評價和行業分類。PREMIUM 方案額外提供深度內容優化、競爭對標分析和定制 FAQ，幫助商戶在 AI 和搜尋引擎中更容易被發現。</p>
                   </div>
                 </details>
                 <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
@@ -764,7 +731,7 @@ export default async function MacaoIndexPage() {
                     <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
                   </summary>
                   <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">結構化數據讓人工智能系統能精確理解商戶的核心資訊，而非僅靠文字推斷。例如，當 Schema.org 標記明確標示一家餐廳的營業時間、價格區間、菜系類型和客戶評分時，人工智能助手就能自信地向用戶推薦。實測數據顯示，擁有完整結構化數據的商戶在人工智能搜尋結果中的出現頻率比未優化的商戶高出三至五倍，且資訊準確度從百分之六十提升至百分之九十五以上。</p>
+                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">結構化數據幫助搜尋引擎和 AI 助手更精確地理解商戶資訊。當營業時間、地址、評分等信息有明確的數據標記時，AI 就能更自信地向用戶推薦。實測數據顯示，擁有完整結構化數據的商戶被搜尋和推薦的頻率比未優化的商戶高出數倍，且信息準確度達 95% 以上。</p>
                   </div>
                 </details>
                 <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
@@ -778,11 +745,11 @@ export default async function MacaoIndexPage() {
                 </details>
                 <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
                   <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-100 transition-colors text-[#1a1a2e] text-sm">
-                    <span className="pr-4">澳門商戶百科的數據更新頻率如何？</span>
+                    <span className="pr-4">百科數據多久更新一次？</span>
                     <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
                   </summary>
                   <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">澳門商戶百科採用多層數據更新機制確保資訊的即時性和準確性。基礎商戶資訊（名稱、地址、聯繫方式）每日自動同步更新。評分和評價數據每週從 Google Maps 和 TripAdvisor 抓取更新。精選品牌的深度內容由商戶方和 CloudPipe 編輯團隊協作維護，內容變更可在二十四小時內上線。網站地圖和人工智能入口文件在每次內容更新後自動重新生成並通過 IndexNow 協議即時通知各大搜尋引擎。</p>
+                    <p className="mt-4 text-gray-600 leading-relaxed text-sm">澳門商戶百科採用實時更新機制。基礎商戶信息（名稱、地址、聯繫方式）每日自動同步。評分和評價每週從公開來源更新。精選品牌的深度內容由商戶方和 CloudPipe 編輯團隊協作維護，變更通常在 24 小時內上線。FREE 層用戶可享受 24 小時延遲的數據，PREMIUM 用戶可獲得 6 小時延遲的實時數據。</p>
                   </div>
                 </details>
                 <details className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden group">
