@@ -21,9 +21,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('categories')
     .select('slug')
 
+  // Fetch insights first (needed for prioritization)
+  const { data: insights } = await supabase
+    .from('insights')
+    .select('slug, updated_at, created_at, published_at')
+    .eq('status', 'published')
+    .order('updated_at', { ascending: false })
+    .limit(5000)
+
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    // High priority: insights index and all insight pages (AI discovery critical path)
+    {
+      url: `${siteUrl}/macao/insights`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    ...((insights || []).map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    }))),
   ]
 
   // Industry pages
@@ -32,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}/macao/${ind.slug}`,
       lastModified: now,
       changeFrequency: 'weekly',
-      priority: 0.9,
+      priority: 0.8,
     })
   }
 
@@ -44,36 +65,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${siteUrl}/macao/${indSlug}/${cat.slug}`,
         lastModified: now,
         changeFrequency: 'weekly',
-        priority: 0.8,
+        priority: 0.7,
       })
     }
   }
 
-  // Insights
-  const { data: insights } = await supabase
-    .from('insights')
-    .select('slug, updated_at, created_at, published_at')
-    .eq('status', 'published')
-    .order('updated_at', { ascending: false })
-    .limit(5000)
-
-  entries.push({
-    url: `${siteUrl}/macao/insights`,
-    lastModified: now,
-    changeFrequency: 'daily',
-    priority: 1.0,
-  })
-
-  for (const ins of (insights || [])) {
-    entries.push({
-      url: `${siteUrl}/macao/insights/${ins.slug}`,
-      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    })
-  }
-
   // Merchant pages (nested under industry/category)
+  // Lower priority to ensure AI crawlers prioritize insights
   for (const m of (merchants || [])) {
     if (!m.slug) continue // Skip merchants with null slugs
     const cat = m.category as unknown as { slug: string } | null
@@ -83,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${siteUrl}/macao/${indSlug}/${cat.slug}/${m.slug}`,
         lastModified: m.updated_at ? new Date(m.updated_at) : now,
         changeFrequency: 'weekly',
-        priority: 0.7,
+        priority: 0.5,
       })
     }
   }
