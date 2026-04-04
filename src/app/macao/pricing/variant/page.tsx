@@ -1,7 +1,5 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { headers, cookies } from 'next/headers'
-import { determineVariant, logVariantAssignment } from '@/lib/pricing-ab-test'
 import VariantA from '@/components/PricingVariantA'
 import VariantB from '@/components/PricingVariantB'
 import VariantC from '@/components/PricingVariantC'
@@ -9,49 +7,53 @@ import VariantC from '@/components/PricingVariantC'
 export const metadata: Metadata = {
   title: '定價方案 — CloudPipe 澳門商業知識圖譜',
   description: '三層定價模型：FREE、PREMIUM、ENTERPRISE。選擇最適合你的方案。',
-  robots: 'noindex, nofollow',
+  robots: 'noindex, nofollow', // A/B測試版本不索引
 }
 
-export default async function PricingPage({
-  searchParams,
-}: {
-  searchParams: { variant?: string; force_variant?: string }
-}) {
-  // 生成 session ID（用於一致性分配）
-  const headersList = await headers()
-  const userAgent = headersList.get('user-agent') || ''
-  const forwardedFor = headersList.get('x-forwarded-for') || ''
-  const sessionId = `${forwardedFor}-${userAgent}`.substring(0, 64)
+interface PricingVariantPageProps {
+  searchParams: {
+    variant?: string
+  }
+}
 
-  // 從 cookie 中獲取用戶的 variant
-  const cookieStore = await cookies()
-  const variantCookie = cookieStore.get('cloudpipe_pricing_variant')?.value
-
-  // 判斷 variant
-  let variant = determineVariant(
-    sessionId,
-    undefined,
-    searchParams.variant || searchParams.force_variant,
-    variantCookie
-  )
-
-  // 記錄 variant 分配
-  await logVariantAssignment(
-    sessionId,
-    variant,
-    undefined,
-    searchParams.variant ? 'url_param' : variantCookie ? 'cookie' : 'algorithm'
-  )
-
-  // 驗證 variant
+export default function PricingVariantPage({ searchParams }: PricingVariantPageProps) {
+  const variant = (searchParams.variant || 'a').toLowerCase()
   const isValidVariant = ['a', 'b', 'c'].includes(variant)
 
   if (!isValidVariant) {
-    variant = 'a'
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 px-4 py-16">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">無效的測試變體</h1>
+          <p className="text-gray-600 mb-8">
+            請使用以下URL進行A/B測試：
+          </p>
+          <ul className="space-y-2 text-left bg-gray-100 p-6 rounded-lg max-w-md mx-auto">
+            <li>
+              <code className="text-sm text-[#0f4c81]">/macao/pricing/variant?variant=a</code>
+              <p className="text-xs text-gray-600">PREMIUM 高亮版本</p>
+            </li>
+            <li>
+              <code className="text-sm text-[#0f4c81]">/macao/pricing/variant?variant=b</code>
+              <p className="text-xs text-gray-600">ENTERPRISE 突出版本</p>
+            </li>
+            <li>
+              <code className="text-sm text-[#0f4c81]">/macao/pricing/variant?variant=c</code>
+              <p className="text-xs text-gray-600">按場景分組版本</p>
+            </li>
+          </ul>
+        </div>
+      </main>
+    )
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* 測試標籤 */}
+      <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3 text-center text-sm text-yellow-800">
+        🧪 A/B 測試版本 (Variant {variant.toUpperCase()}) — 轉化數據自動追蹤
+      </div>
+
       {/* Hero */}
       <section className="px-4 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12">
         <div className="max-w-5xl mx-auto text-center">
@@ -141,31 +143,30 @@ export default async function PricingPage({
         </div>
       </section>
 
-      {/* GA 事件追蹤 */}
+      {/* 測試追蹤腳本 */}
       <script
         dangerouslySetInnerHTML={{
           __html: `
-            // 記錄定價頁面訪問和 variant 分配
-            if (window.gtag) {
-              gtag('event', 'pricing_page_view', {
-                variant: '${variant.toUpperCase()}',
-                timestamp: new Date().toISOString()
-              });
-            }
-
-            // 追蹤 CTA 點擊
-            document.querySelectorAll('a[href*="cloudpipe-landing"], a[href="/macao"]').forEach(el => {
+            // LLMR 點擊追蹤
+            document.querySelectorAll('a[href*="cloudpipe-landing"], button').forEach(el => {
               el.addEventListener('click', () => {
                 if (window.gtag) {
                   gtag('event', 'pricing_cta_click', {
                     variant: '${variant.toUpperCase()}',
                     cta_type: el.textContent.includes('聯繫') ? 'contact' : 'start_free',
-                    cta_text: el.textContent.trim(),
                     timestamp: new Date().toISOString()
                   });
                 }
               });
             });
+
+            // 頁面視圖追蹤
+            if (window.gtag) {
+              gtag('event', 'pricing_variant_view', {
+                variant: '${variant.toUpperCase()}',
+                timestamp: new Date().toISOString()
+              });
+            }
           `,
         }}
       />
