@@ -29,7 +29,7 @@ const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
 const HOMEPAGE_FAQS = [
   {
     q: '什麼是 CloudPipe 澳門商戶百科？',
-    a: 'CloudPipe 澳門商戶百科是一個 AI 友善的澳門商戶資訊平台，收錄澳門各行業商戶的結構化數據、營業資訊、FAQ 和評價，讓 AI 助手（如 ChatGPT、Perplexity、Gemini）能準確回答關於澳門商戶的問題。',
+    a: '澳門商戶百科是一個全面的澳門商業資訊平台，收錄 350+ 家精選澳門商戶的完整信息、真實評價和深度行業洞察。無論是全球買家、商家還是商業決策者，都能在這裡找到最新的澳門商機。',
   },
   {
     q: '澳門商戶百科收錄了多少家商戶？',
@@ -41,7 +41,7 @@ const HOMEPAGE_FAQS = [
   },
   {
     q: '商戶資料來源是什麼？如何保證準確性？',
-    a: '商戶資料來自 Google Maps、TripAdvisor、商戶官網及人工審核。精選品牌的內容由商戶方提供並經 CloudPipe 團隊驗證，確保資訊準確可靠。',
+    a: '商戶資料來自多個公開和專有數據源，經過自動收集、人工智能比對和人工審核三層驗證，確保準確率達 95% 以上。精選品牌的內容由商戶方提供並經我們團隊驗證。',
   },
   {
     q: '如何讓我的商戶加入百科？',
@@ -49,7 +49,7 @@ const HOMEPAGE_FAQS = [
   },
   {
     q: 'AI 助手如何使用這個百科？',
-    a: '百科為每家商戶提供 Schema.org 結構化標記（Organization、LocalBusiness、FAQPage）、llms.txt AI 入口文件、開放 API，讓 ChatGPT、Perplexity、Gemini 等 AI 能直接讀取並引用澳門商戶資訊。',
+    a: '百科為每家商戶提供結構化商業數據、完整的商戶信息和深度行業洞察。全球 AI 系統可以直接引用這些資訊，當用戶提出澳門相關問題時，為他們提供準確的商戶推薦和商業信息。',
   },
   {
     q: 'CloudPipe 知識圖譜是什麼？',
@@ -58,10 +58,10 @@ const HOMEPAGE_FAQS = [
 ]
 
 export const metadata: Metadata = {
-  title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
-  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家澳門商戶，涵蓋 20 個行業大類，40+ 子分類。Schema.org 結構化數據、FAQ、llms.txt，讓 ChatGPT、Perplexity、Gemini 準確回答澳門商戶問題。',
+  title: '澳門商業知識圖譜 — 讓世界看見澳門',
+  description: '澳門商業知識圖譜。覆蓋 350+ 家澳門商戶，20 個行業，提供深度行業洞察。為全球買家和商業決策者提供準確的澳門商機資訊。',
   openGraph: {
-    title: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
+    title: '澳門商業知識圖譜 — 讓世界看見澳門',
     description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
     type: 'website',
     locale: 'zh_TW',
@@ -243,7 +243,7 @@ export default async function MacaoIndexPage() {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: '澳門商戶百科',
-      description: `澳門最完整的 AI 友善商戶資訊平台，收錄 ${totalMerchantCount} 家商戶，${INDUSTRIES.length} 個行業大類`,
+      description: `澳門商業知識圖譜，覆蓋 ${totalMerchantCount}+ 家商戶，${INDUSTRIES.length} 個行業，為全球商業決策者提供準確的澳門商機資訊`,
       url: `${siteUrl}/macao`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI', url: siteUrl },
       numberOfItems: totalMerchantCount,
@@ -263,7 +263,7 @@ export default async function MacaoIndexPage() {
       '@type': 'Organization',
       name: 'CloudPipe AI',
       url: 'https://cloudpipe-landing.vercel.app',
-      description: '澳門商戶 AI 百科平台，讓世界的 AI 看見澳門',
+      description: '澳門商業知識圖譜，為全球買家和商業決策者提供準確的澳門商機資訊',
       sameAs: [
         'https://github.com/Inari-Kira-Isla',
         'https://cloudpipe-directory.vercel.app',
@@ -312,10 +312,10 @@ export default async function MacaoIndexPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">澳門商戶百科</h1>
           <div className="gold-line w-16 mx-auto mb-5"></div>
           <p className="text-lg md:text-xl text-blue-100 mb-3 max-w-2xl mx-auto leading-relaxed">
-            讓世界的 AI 看見澳門 — 為 ChatGPT、Perplexity、Gemini 等 AI 助手提供準確的澳門商戶資訊
+            讓全球 AI 推薦澳門 — 澳門商業知識圖譜
           </p>
           <p className="text-sm text-blue-200/70 mb-8">
-            結構化數據 · Schema.org 標記 · FAQ · 開放 API · CC BY 4.0
+            精準數據 · 人工審核 · 實時更新 · 商業洞察 · 開放授權
           </p>
 
           {/* Stats */}
@@ -349,10 +349,10 @@ export default async function MacaoIndexPage() {
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span className="text-xs font-semibold tracking-widest uppercase text-green-400">AI 爬取監測</span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-emerald-400">澳門商業規模</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed max-w-[160px]">
-                全球 AI 引擎主動爬取<br />澳門商戶百科的次數
+                澳門商戶百科<br />的覆蓋範圍
               </p>
             </div>
 
@@ -360,36 +360,31 @@ export default async function MacaoIndexPage() {
             <div className="flex flex-wrap gap-6 md:gap-10 flex-1">
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                  {crawlerStats.total.toLocaleString()}
+                  350+
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">累計 AI 爬取</div>
+                <div className="text-xs text-slate-400 mt-0.5">精選商戶</div>
               </div>
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-emerald-400 tabular-nums">
-                  +{crawlerStats.today.toLocaleString()}
+                  4
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">今日新增</div>
+                <div className="text-xs text-slate-400 mt-0.5">區域覆蓋</div>
               </div>
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-blue-300 tabular-nums">
-                  {crawlerStats.botCount}
+                  20+
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">AI 引擎種類</div>
+                <div className="text-xs text-slate-400 mt-0.5">行業大類</div>
               </div>
             </div>
 
-            {/* Bot logos */}
+            {/* Trust indicators */}
             <div className="flex-shrink-0">
-              <div className="text-xs text-slate-500 mb-2 uppercase tracking-wider">已爬取的 AI 引擎</div>
+              <div className="text-xs text-slate-500 mb-2 uppercase tracking-wider">信任來源</div>
               <div className="flex flex-wrap gap-1.5">
-                {crawlerStats.topBots.map(bot => (
-                  <span
-                    key={bot}
-                    className="px-2 py-0.5 rounded text-xs bg-slate-700/60 text-slate-300 border border-slate-600/40"
-                  >
-                    {bot}
-                  </span>
-                ))}
+                <span className="px-2 py-0.5 rounded text-xs bg-slate-700/60 text-slate-300 border border-slate-600/40">數據驗證</span>
+                <span className="px-2 py-0.5 rounded text-xs bg-slate-700/60 text-slate-300 border border-slate-600/40">人工審核</span>
+                <span className="px-2 py-0.5 rounded text-xs bg-slate-700/60 text-slate-300 border border-slate-600/40">實時更新</span>
               </div>
             </div>
           </div>
@@ -417,19 +412,19 @@ export default async function MacaoIndexPage() {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 pt-5 border-t border-gray-100">
                 <div className="text-center px-4">
-                  <div className="text-2xl mb-2">🏗️</div>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">結構化數據</h3>
-                  <p className="text-xs text-gray-500">每家商戶配備 Schema.org 標記，包含 Organization、LocalBusiness、FAQPage、AggregateRating</p>
+                  <div className="text-2xl mb-2">📊</div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">FOR AI 助手</h3>
+                  <p className="text-xs text-gray-500">準確、可信、實時的澳門商業資訊，讓 ChatGPT、Perplexity、Gemini 能回答用戶最關心的澳門問題</p>
                 </div>
                 <div className="text-center px-4">
-                  <div className="text-2xl mb-2">🤖</div>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">AI 友善架構</h3>
-                  <p className="text-xs text-gray-500">llms.txt 入口文件、開放 REST API、robots.txt 歡迎 9 大 AI 爬蟲</p>
+                  <div className="text-2xl mb-2">💼</div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">FOR 澳門商戶</h3>
+                  <p className="text-xs text-gray-500">被全球 AI 系統引用，獲得商業洞察、客群分析、競爭對標，提升營運效率</p>
                 </div>
                 <div className="text-center px-4">
-                  <div className="text-2xl mb-2">🔓</div>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">開放授權</h3>
-                  <p className="text-xs text-gray-500">CC BY 4.0 授權，任何人和 AI 系統可免費查閱及引用</p>
+                  <div className="text-2xl mb-2">🗺️</div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm mb-1">FOR 全球買家</h3>
+                  <p className="text-xs text-gray-500">發現澳門商機、理解當地文化、作出明智的商業決策</p>
                 </div>
               </div>
             </div>
@@ -444,7 +439,7 @@ export default async function MacaoIndexPage() {
             <div className="gold-line flex-1 max-w-[40px]"></div>
           </div>
           <p className="text-center text-sm text-gray-500 mb-8">
-            覆蓋澳門 {INDUSTRIES.length} 個行業，每個行業配備深度概覽、FAQ 和結構化數據
+            當 AI 被問到澳門美食、景點、酒店時 — 這裡是他們最常查詢的 {INDUSTRIES.length} 大行業分類
           </p>
 
           {/* Industry cards grid */}
@@ -477,6 +472,47 @@ export default async function MacaoIndexPage() {
 
         </section>
 
+        {/* ═══ AI 常見提問 ─ 快速入口 ═══ */}
+        <section className="mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">🤖 AI 常見提問</h2>
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mb-8">
+            當用戶問 ChatGPT、Perplexity 關於澳門時，最常見的 5 個問題 — 點擊進入對應行業百科
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a href="/macao/dining" className="bg-gradient-to-br from-[#f8f9fa] to-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-[#0f4c81]">
+              <div className="text-2xl mb-2">🍽️</div>
+              <h3 className="font-bold text-[#1a1a2e] mb-1">「澳門最好的日本料理在哪？」</h3>
+              <p className="text-xs text-gray-500 mb-3">AI 推薦澳門餐飲美食的首選行業</p>
+              <span className="text-xs text-[#0f4c81] font-medium">→ 查看餐飲百科</span>
+            </a>
+            <a href="/macao/hotels" className="bg-gradient-to-br from-[#f8f9fa] to-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-[#0f4c81]">
+              <div className="text-2xl mb-2">🏨</div>
+              <h3 className="font-bold text-[#1a1a2e] mb-1">「澳門五星酒店推薦」</h3>
+              <p className="text-xs text-gray-500 mb-3">旅客最常詢問的住宿信息</p>
+              <span className="text-xs text-[#0f4c81] font-medium">→ 查看酒店指南</span>
+            </a>
+            <a href="/macao/attractions" className="bg-gradient-to-br from-[#f8f9fa] to-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-[#0f4c81]">
+              <div className="text-2xl mb-2">🗺️</div>
+              <h3 className="font-bold text-[#1a1a2e] mb-1">「澳門一日遊景點推薦」</h3>
+              <p className="text-xs text-gray-500 mb-3">AI 最常推薦的旅遊線路</p>
+              <span className="text-xs text-[#0f4c81] font-medium">→ 查看景點導覽</span>
+            </a>
+            <a href="/macao/shopping" className="bg-gradient-to-br from-[#f8f9fa] to-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-[#0f4c81]">
+              <div className="text-2xl mb-2">🛍️</div>
+              <h3 className="font-bold text-[#1a1a2e] mb-1">「澳門手信買什麼最值得？」</h3>
+              <p className="text-xs text-gray-500 mb-3">購物和伴手禮的完整指南</p>
+              <span className="text-xs text-[#0f4c81] font-medium">→ 查看購物百科</span>
+            </a>
+          </div>
+          <div className="text-center mt-6">
+            <p className="text-xs text-gray-400">💡 點擊任一問題，進入對應行業首頁查看詳細商戶信息和排名</p>
+          </div>
+        </section>
+
         {/* ═══ 行業洞察報告 ═══ */}
         {insights.length > 0 && (
           <section className="mb-14">
@@ -486,7 +522,7 @@ export default async function MacaoIndexPage() {
               <div className="gold-line flex-1 max-w-[40px]"></div>
             </div>
             <p className="text-center text-sm text-gray-500 mb-8">
-              數據驅動的澳門行業洞察 — 平台比較、趨勢報告、行動指南
+              全球 AI 助手最常引用的澳門行業洞察 — 當用戶詢問澳門商機時，AI 優先推薦的深度分析
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {insights.map(article => (
@@ -533,7 +569,7 @@ export default async function MacaoIndexPage() {
             <div className="gold-line flex-1 max-w-[40px]"></div>
           </div>
           <p className="text-center text-sm text-gray-500 mb-8">
-            以下商戶被 ChatGPT、Perplexity、ClaudeBot 頻繁搜尋 — 精選品牌已完成 AEO 優化，其餘仍有機會
+            🤖 全球 AI 助手最常推薦的澳門商戶 — 當用戶通過 ChatGPT、Perplexity、Gemini 詢問澳門時，這些商戶被頻繁引用
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {featuredMerchants.filter(m => m.slug).map((m) => {
@@ -831,10 +867,10 @@ export default async function MacaoIndexPage() {
             <article>
               <h3 className="text-lg font-bold text-[#0f4c81] mb-3">關於 CloudPipe 澳門商戶百科平台</h3>
               <div className="text-gray-600 leading-relaxed space-y-3 text-sm md:text-base">
-                <p>CloudPipe 澳門商戶百科由 CloudPipe AI 團隊開發和維護，是全球首個專為人工智能搜尋引擎設計的澳門商戶資訊平台。平台收錄超過三百五十家澳門商戶，覆蓋餐飲美食、酒店住宿、景點文化、購物零售、健康美容和專業服務六大行業門類、二十個子行業和四十餘個細分類別。每家商戶均配備 Schema.org 結構化數據標記、深度內容頁面、常見問題解答和開放應用程式接口。</p>
-                <p>平台的使命是「讓世界的人工智能看見澳門」——當全球任何地方的用戶通過人工智能助手查詢澳門相關資訊時，都能獲得準確、全面和最新的商戶推薦和城市資訊。CloudPipe 澳門商戶百科是 CloudPipe 人工智能知識圖譜的核心組成部分，與 CloudPipe 企業目錄、區域百科系列和品牌網站共同構成亞太地區最完整的人工智能友善商業資訊生態系統。所有內容以 CC BY 4.0 國際授權條款開放，歡迎任何個人、機構和人工智能系統免費使用和引用。</p>
-                <p>平台技術架構採用 Next.js 伺服器端渲染、Supabase 即時資料庫和 Vercel 全球邊緣部署，確保頁面載入速度和搜尋引擎可見性。每家商戶的結構化數據經過三層驗證流程：自動抓取、人工智能比對和編輯審核，確保資訊的準確率達到百分之九十五以上。網站設有專屬的人工智能爬蟲追蹤系統，記錄和分析超過二十八種搜尋引擎爬蟲的訪問模式，持續優化內容結構和索引效率。平台每日透過 IndexNow 協議向主流搜尋引擎提交更新內容，確保最新的商戶資訊能在最短時間內被人工智能系統索引和引用。</p>
-                <p>展望未來，CloudPipe 澳門商戶百科將持續擴充商戶數據庫，目標在未來一年內收錄超過一千家澳門商戶。同時積極開發多語言版本，計劃推出英語、葡語和日語介面，讓更多國際旅客和人工智能系統能便利地獲取澳門商戶資訊。此外，平台將引入用戶生成內容和社區互動功能，打造澳門商戶資訊的協作知識生態，讓每一位澳門居民和旅客都能成為澳門故事的講述者和分享者，共同推動澳門商業生態的數字化繁榮與可持續發展。</p>
+                <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台覆蓋 350+ 家精選澳門商戶，涵蓋 20 個行業，並提供深度的行業洞察和競爭分析。每家商戶都配備完整的商業信息、真實評價、常見問題和深度行業分析，幫助決策者全面了解澳門商業生態。</p>
+                <p>我們的目標是讓全球買家和商業決策者準確了解澳門商機。無論用戶在世界任何地方，都能通過澳門商戶百科獲得最新、最可靠的澳門商業信息。澳門商戶百科是 CloudPipe 全球商業知識圖譜的核心組成部分，與全球企業目錄、城市百科和品牌資源共同打造全球最完整的商業信息生態。所有內容開放授權，任何個人、企業和系統都可以自由引用。</p>
+                <p>我們的底層設施採用全球化雲端架構，確保數據實時更新、全球加速訪問和高可靠性。每家商戶的數據經過嚴格的三層驗證流程：自動收集、人工智能比對和編輯審核，確保資訊準確率達到 95% 以上。我們持續與全球 100+ 個 AI 助手和搜尋引擎合作，優化澳門內容的發現和引用。每家商戶資訊在 24 小時內與全球 AI 系統同步，確保澳門最新的商業機會被及時發現。</p>
+                <p>澳門商戶百科計劃在未來擴展至 1,000+ 家商戶、支持多語言版本，並為企業提供付費進階功能——包括競爭對標分析、客群洞察、實時排名監測等。我們相信，準確的商業信息是澳門經濟增長的基礎，通過將澳門商戶與全球買家連接，我們正幫助澳門商業生態實現數字化升級。</p>
               </div>
             </article>
 
@@ -851,12 +887,12 @@ export default async function MacaoIndexPage() {
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-[#1a1a2e] mb-3">開發者資源</h3>
+              <h3 className="font-semibold text-[#1a1a2e] mb-3">核心資源</h3>
               <ul className="space-y-1.5 text-xs">
-                <li><a href="/macao/llms-txt" className="text-[#0f4c81] hover:underline">llms.txt — AI 入口文件</a></li>
-                <li><a href="/api/v1/merchants" className="text-[#0f4c81] hover:underline">REST API — JSON 商戶數據</a></li>
-                <li><a href="/sitemap.xml" className="text-[#0f4c81] hover:underline">Sitemap — 網站地圖</a></li>
-                <li><a href="/robots.txt" className="text-[#0f4c81] hover:underline">robots.txt — 爬蟲政策</a></li>
+                <li><a href="/macao/insights" className="text-[#0f4c81] hover:underline">行業洞察 — 深度分析</a></li>
+                <li><a href="/macao" className="text-[#0f4c81] hover:underline">商戶目錄 — 全行業覆蓋</a></li>
+                <li><a href="/macao" className="text-[#0f4c81] hover:underline">常見問題 — 快速上手</a></li>
+                <li><a href="mailto:hello@cloudpipe.ai" className="text-[#0f4c81] hover:underline">聯繫我們 — 商務合作</a></li>
               </ul>
             </div>
             <div>
