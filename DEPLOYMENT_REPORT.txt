@@ -1,0 +1,26 @@
+
+╔════════════════════════════════════════════════════════════╗
+║     CloudPipe 澳門商業知識圖譜 — 部署驗證報告              ║
+╚════════════════════════════════════════════════════════════╝
+
+⏰ 時間: 2026-04-04T17:31:05.336247
+🔗 Base URL: https://cloudpipe-macao-app.vercel.app
+
+🧪 部署驗證結果:
+
+
+📋 後續步驟:
+  1. ✅ 訪問 Supabase Dashboard
+     https://supabase.com/dashboard
+
+  2. 執行 SQL Migration A (RLS 強化)
+     • SQL Editor > New Query
+     • 複製文件: supabase/migrations/rls-friction-score-bd-ops.sql
+     • 執行 (Ctrl+Enter)
+
+  3. 執行 SQL Migration B (Analytics)
+     • SQL Editor > New Query
+     • 複製文件: supabase/migrations/analytics-events-table.sql
+     • 執行 (Ctrl+Enter)
+
+✨ 驗證完成！
