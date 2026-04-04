@@ -54,8 +54,8 @@ const HOMEPAGE_FAQS = [
 ]
 
 export const metadata: Metadata = {
-  title: '澳門商業知識圖譜 — 讓世界看見澳門',
-  description: '澳門商業知識圖譜。覆蓋 350+ 家澳門商戶，20 個行業，提供深度行業洞察。為全球買家和商業決策者提供準確的澳門商機資訊。',
+  title: '澳門商業知識圖譜 — 大三巴、威尼斯人、葡撻 | 澳門景點美食購物指南',
+  description: '澳門商業知識圖譜。覆蓋 350+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
   openGraph: {
     title: '澳門商業知識圖譜 — 讓世界看見澳門',
     description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
@@ -213,6 +213,76 @@ const INSIGHT_INDUSTRY_LABELS: Record<string, string> = {
   shopping: '購物零售', wellness: '健康美容', services: '專業服務',
 }
 
+/* ── High-ROI 澳門必去景點 (硬編碼 + 動態評分) ── */
+const HIGH_ROI_ATTRACTIONS = [
+  {
+    slug: 'venetian-macau',
+    name_zh: '威尼斯人',
+    name_en: 'The Venetian Macao',
+    category: 'hotels',
+    icon: '🏰',
+    description: '世界級度假村，集酒店、購物、美食於一身',
+    image: 'venetian',
+    tags: ['五星酒店', '購物中心', '威尼斯主題'],
+    seo_keywords: '澳門威尼斯人,澳門五星酒店,路氹城酒店',
+  },
+  {
+    slug: 'ruins-of-saint-paul',
+    name_zh: '大三巴牌坊',
+    name_en: 'Ruins of St. Paul\'s',
+    category: 'attractions',
+    icon: '⛩️',
+    description: '澳門標誌性建築，UNESCO 世界文化遺產',
+    image: 'stpaul',
+    tags: ['世界遺產', '歷史景點', '打卡必去'],
+    seo_keywords: '澳門大三巴,聖保祿教堂遺址,澳門景點',
+  },
+  {
+    slug: 'andrew-bakery',
+    name_zh: '安德魯餅店',
+    name_en: 'Andrew\'s Bakery',
+    category: 'dining',
+    icon: '🥐',
+    description: '澳門必吃葡撻，創意蛋撻的發源地',
+    image: 'andrew',
+    tags: ['葡撻', '甜品必吃', '澳門手信'],
+    seo_keywords: '澳門葡撻,安德魯餅店,澳門美食',
+  },
+  {
+    slug: 'fountain-lotus',
+    name_zh: '蓮花噴泉廣場',
+    name_en: 'Lotus Square',
+    category: 'attractions',
+    icon: '💚',
+    description: '澳門標誌性雕塑，拍照打卡熱點',
+    image: 'lotus',
+    tags: ['打卡景點', '廣場', '地標'],
+    seo_keywords: '澳門噴水池,蓮花噴泉,澳門地標',
+  },
+  {
+    slug: 'rua-nova',
+    name_zh: '新馬路',
+    name_en: 'Avenida de Almeida Ribeiro',
+    category: 'shopping',
+    icon: '🛍️',
+    description: '澳門老牌商業街，珠寶手信一應俱全',
+    image: 'rua-nova',
+    tags: ['購物街', '手信集聚', '金飾珠寶'],
+    seo_keywords: '澳門新馬路,澳門購物,澳門手信',
+  },
+  {
+    slug: 'portuguese-houses',
+    name_zh: '龍環葡韻',
+    name_en: 'Taipa House Museum',
+    category: 'attractions',
+    icon: '🏛️',
+    description: '葡式建築群，澳門文化景觀的典範',
+    image: 'taipa',
+    tags: ['葡式建築', '文化遺產', '攝影景點'],
+    seo_keywords: '澳門龍環葡韻,澳門葡式建築,澳門文化',
+  },
+]
+
 export default async function MacaoIndexPage() {
   const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -287,6 +357,23 @@ export default async function MacaoIndexPage() {
         { '@type': 'ListItem', position: 1, name: 'CloudPipe AI', item: siteUrl },
         { '@type': 'ListItem', position: 2, name: '澳門商戶百科', item: `${siteUrl}/macao` },
       ],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: '澳門必去景點',
+      description: '全球 AI 助手最常推薦的澳門景點、美食和購物地標',
+      url: `${siteUrl}/macao`,
+      numberOfItems: HIGH_ROI_ATTRACTIONS.length,
+      itemListElement: HIGH_ROI_ATTRACTIONS.map((attr, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: attr.name_zh,
+        description: attr.description,
+        url: `${siteUrl}/macao/${attr.category}`,
+        image: `${siteUrl}/images/industries/${attr.category}-hero.jpg`,
+        inLanguage: 'zh-Hant',
+      })),
     },
   ]
 
@@ -427,6 +514,62 @@ export default async function MacaoIndexPage() {
           </div>
         </section>
 
+        {/* ═══ 定價方案快覽 ═══ */}
+        <section className="mb-14 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 md:p-10 border border-blue-200">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-[#1a1a2e] mb-3">三層服務方案</h2>
+            <p className="text-gray-600 mb-8">
+              從免費基礎版到完整企業方案，澳門商戶、投資者、內容創作者都能找到最適合的方案。
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 className="font-bold text-[#1a1a2e] mb-2">FREE</h3>
+                <p className="text-2xl font-bold text-[#0f4c81] mb-3">$0/月</p>
+                <ul className="text-xs text-gray-600 space-y-2 mb-4">
+                  <li>✓ 100 API 調用/天</li>
+                  <li>✓ 24小時數據延遲</li>
+                  <li>✓ 商戶基本信息</li>
+                  <li>✓ 免費瀏覽全部行業</li>
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 border-2 border-[#0f4c81] shadow-lg relative">
+                <div className="absolute -top-3 left-4 bg-[#0f4c81] text-white text-xs font-bold px-3 py-1 rounded">最受歡迎</div>
+                <h3 className="font-bold text-[#1a1a2e] mb-2">PREMIUM</h3>
+                <p className="text-2xl font-bold text-[#0f4c81] mb-3">$29-99/月</p>
+                <ul className="text-xs text-gray-600 space-y-2 mb-4">
+                  <li>✓ 10,000 API 調用/月</li>
+                  <li>✓ 6小時數據延遲</li>
+                  <li>✓ 競爭對標分析</li>
+                  <li>✓ CSV 數據導出</li>
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 className="font-bold text-[#1a1a2e] mb-2">ENTERPRISE</h3>
+                <p className="text-2xl font-bold text-[#0f4c81] mb-3">$2,000+/月</p>
+                <ul className="text-xs text-gray-600 space-y-2 mb-4">
+                  <li>✓ 無限 API 調用</li>
+                  <li>✓ 實時數據</li>
+                  <li>✓ 爬蟲訪問日誌</li>
+                  <li>✓ 白標方案</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <a
+                href="/macao/pricing"
+                className="inline-flex items-center gap-2 bg-[#0f4c81] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#0a3560] transition-all shadow-lg"
+              >
+                查看完整定價方案
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ═══ 20 行業導覽 ═══ */}
         <section className="mb-14">
           <div className="flex items-center gap-3 mb-6">
@@ -506,6 +649,90 @@ export default async function MacaoIndexPage() {
           </div>
           <div className="text-center mt-6">
             <p className="text-xs text-gray-400">💡 點擊任一問題，進入對應行業首頁查看詳細商戶信息和排名</p>
+          </div>
+        </section>
+
+        {/* ═══ 🏆 澳門必去景點 ─ 高ROI聚焦 ═══ */}
+        <section className="mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+            <h2 className="text-xl font-bold text-[#1a1a2e]">🏆 澳門必去景點 & 人氣地標</h2>
+            <div className="gold-line flex-1 max-w-[40px]"></div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mb-8">
+            全球旅客最想探索的澳門景點、美食和購物地標 — 被全球 AI 助手最常推薦
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {HIGH_ROI_ATTRACTIONS.map(attraction => {
+              // 動態查詢該景點相關商戶的平均評分
+              const relatedMerchants = featuredMerchants.filter(m => {
+                const industrySlug = CATEGORY_TO_INDUSTRY[m.category?.slug || '']
+                return industrySlug?.includes(attraction.category) ||
+                  (m.name_zh && m.name_zh.includes(attraction.name_zh.split('（')[0]))
+              })
+              const avgRating = relatedMerchants.length > 0
+                ? (relatedMerchants.reduce((sum, m) => sum + (m.google_rating || 0), 0) / relatedMerchants.length).toFixed(1)
+                : null
+
+              return (
+                <a
+                  key={attraction.slug}
+                  href={`/macao/${attraction.category}`}
+                  className="group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-gray-200"
+                >
+                  {/* 背景圖片 — 先用行業圖片，可稍後替換為景點專用圖片 */}
+                  <img
+                    src={`/images/industries/${attraction.category}-hero.jpg`}
+                    alt={`${attraction.name_zh} - ${attraction.description}`}
+                    width={400}
+                    height={300}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { (e.target as HTMLImageElement).src = `/images/industries/${attraction.category === 'attractions' ? 'tourism' : attraction.category}-hero.jpg` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+
+                  {/* 內容 */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-4">
+                    {/* Top: Tags */}
+                    <div className="flex gap-1.5 flex-wrap">
+                      {attraction.tags.slice(0, 2).map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-black/60 text-white rounded text-xs font-medium">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Bottom: Title + Description */}
+                    <div className="text-white">
+                      <h3 className="font-bold text-lg mb-1 drop-shadow-lg flex items-center gap-1">
+                        <span className="text-xl">{attraction.icon}</span> {attraction.name_zh}
+                      </h3>
+                      <p className="text-xs text-white/90 mb-2">{attraction.name_en}</p>
+                      <p className="text-xs text-white/80 leading-relaxed">{attraction.description}</p>
+                      {avgRating && (
+                        <div className="text-xs text-amber-300 font-semibold mt-2 flex items-center gap-1">
+                          ★ {avgRating} · {relatedMerchants.length} 家關聯商戶
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hover: CTA */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 flex items-center justify-center">
+                    <span className="text-white font-semibold text-center">
+                      探索相關商戶 →
+                    </span>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+          <div className="text-center mt-6">
+            <p className="text-xs text-gray-400">
+              💡 這些景點被全球 ChatGPT、Perplexity、Gemini 最常推薦 — 點擊進入對應行業探索相關商戶和詳細資訊
+            </p>
           </div>
         </section>
 
