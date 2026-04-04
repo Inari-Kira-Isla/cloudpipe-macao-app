@@ -1074,6 +1074,58 @@ export default async function MacaoIndexPage() {
           </div>
         </section>
 
+        {/* ═══ 商戶故事 ═══ */}
+        <section className="mb-14 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 md:p-10 border border-blue-200">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#1a1a2e] mb-3">澳門商戶成功故事</h2>
+            <p className="text-gray-600">
+              看見澳門企業如何通過 CloudPipe 被全球 AI 發現，實現業務增長。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <a
+              href="/macao/case-studies#inari-global-foods"
+              className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all cursor-pointer"
+            >
+              <h3 className="font-bold text-[#1a1a2e] mb-1">稻荷環球食品</h3>
+              <p className="text-xs text-gray-600 mb-3">日本海膽 + 冷鏈溯源</p>
+              <div className="text-xl font-bold text-[#0f4c81] mb-1">+340%</div>
+              <div className="text-xs text-gray-600">AI 引用增長</div>
+            </a>
+
+            <a
+              href="/macao/case-studies#after-school-coffee"
+              className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all cursor-pointer"
+            >
+              <h3 className="font-bold text-[#1a1a2e] mb-1">After School Coffee</h3>
+              <p className="text-xs text-gray-600 mb-3">5分鐘快速補給點</p>
+              <div className="text-xl font-bold text-[#0f4c81] mb-1">+320</div>
+              <div className="text-xs text-gray-600">每月新客</div>
+            </a>
+
+            <a
+              href="/macao/case-studies#mind-cafe"
+              className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all cursor-pointer"
+            >
+              <h3 className="font-bold text-[#1a1a2e] mb-1">Mind Cafe</h3>
+              <p className="text-xs text-gray-600 mb-3">文創社區工作空間</p>
+              <div className="text-xl font-bold text-[#0f4c81] mb-1">+185</div>
+              <div className="text-xs text-gray-600">每月工作者</div>
+            </a>
+          </div>
+
+          <div className="text-center">
+            <a
+              href="/macao/case-studies"
+              className="inline-flex items-center gap-2 bg-[#0f4c81] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#0a3560] transition-all"
+            >
+              查看全部商戶故事
+              →
+            </a>
+          </div>
+        </section>
+
         {/* ═══ Footer ═══ */}
         <footer className="border-t border-gray-200 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-gray-500">
@@ -1088,8 +1140,8 @@ export default async function MacaoIndexPage() {
               <ul className="space-y-1.5 text-xs">
                 <li><a href="/macao/insights" className="text-[#0f4c81] hover:underline">行業洞察 — 深度分析</a></li>
                 <li><a href="/macao" className="text-[#0f4c81] hover:underline">商戶目錄 — 全行業覆蓋</a></li>
-                <li><a href="/macao" className="text-[#0f4c81] hover:underline">常見問題 — 快速上手</a></li>
-                <li><a href="mailto:hello@cloudpipe.ai" className="text-[#0f4c81] hover:underline">聯繫我們 — 商務合作</a></li>
+                <li><a href="/macao/case-studies" className="text-[#0f4c81] hover:underline">商戶故事 — 成功案例</a></li>
+                <li><a href="/macao/pricing" className="text-[#0f4c81] hover:underline">定價方案 — 按需升級</a></li>
               </ul>
             </div>
             <div>

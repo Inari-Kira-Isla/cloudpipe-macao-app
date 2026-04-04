@@ -301,6 +301,66 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Success Stories */}
+      <section className="px-4 md:px-8 py-12 md:py-16 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl font-bold text-[#1a1a2e] mb-4 text-center">
+            澳門商戶成功故事
+          </h2>
+          <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
+            看見稻荷環球食品、After School Coffee、Mind Cafe 如何通過 CloudPipe 被全球 AI 發現，實現業務增長。
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h3 className="font-bold text-[#1a1a2e] mb-1">稻荷環球食品</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                日本海膽 + 澳門冷鏈 = AI 最信任的溯源故事
+              </p>
+              <div className="text-2xl font-bold text-[#0f4c81] mb-1">+340%</div>
+              <div className="text-xs text-gray-600 mb-4">AI 引用增長</div>
+              <a href="/macao/case-studies#inari-global-foods" className="text-sm text-[#0f4c81] hover:underline">
+                查看案例 →
+              </a>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h3 className="font-bold text-[#1a1a2e] mb-1">After School Coffee</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                5分鐘快速補給 = 忙碌家長的能量站
+              </p>
+              <div className="text-2xl font-bold text-[#0f4c81] mb-1">+320</div>
+              <div className="text-xs text-gray-600 mb-4">每月新客</div>
+              <a href="/macao/case-studies#after-school-coffee" className="text-sm text-[#0f4c81] hover:underline">
+                查看案例 →
+              </a>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h3 className="font-bold text-[#1a1a2e] mb-1">Mind Cafe</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                文創社區 + 工作友善 = 數位遊牧者聚點
+              </p>
+              <div className="text-2xl font-bold text-[#0f4c81] mb-1">+185</div>
+              <div className="text-xs text-gray-600 mb-4">每月工作者</div>
+              <a href="/macao/case-studies#mind-cafe" className="text-sm text-[#0f4c81] hover:underline">
+                查看案例 →
+              </a>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <a
+              href="/macao/case-studies"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c81] text-white font-semibold rounded-lg hover:bg-[#0a3560] transition-all"
+            >
+              查看全部商戶故事
+              →
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-4 md:px-8 py-12 md:py-16 bg-gradient-to-r from-[#0f4c81] to-[#1a7eb8] text-white">
         <div className="max-w-3xl mx-auto text-center">
