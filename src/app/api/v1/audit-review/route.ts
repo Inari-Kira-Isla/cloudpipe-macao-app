@@ -7,7 +7,7 @@ const supabase = createClient(
 )
 
 // Simple auth: use a shared secret in query param
-const REVIEW_SECRET = process.env.AUDIT_REVIEW_SECRET || 'cloudpipe-audit-2026'
+const REVIEW_SECRET = process.env.AUDIT_REVIEW_SECRET
 
 /**
  * GET /api/v1/audit-review — Fetch pending reviews from Supabase
@@ -19,6 +19,9 @@ const REVIEW_SECRET = process.env.AUDIT_REVIEW_SECRET || 'cloudpipe-audit-2026'
  */
 
 export async function GET(req: NextRequest) {
+  if (!REVIEW_SECRET) {
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
   const secret = req.nextUrl.searchParams.get('secret')
   if (secret !== REVIEW_SECRET) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
@@ -43,6 +46,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!REVIEW_SECRET) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
     const body = await req.json()
     const { secret, item_id, action, target_slug, reviewer } = body
 

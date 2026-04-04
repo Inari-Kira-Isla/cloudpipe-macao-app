@@ -71,7 +71,7 @@ export async function GET() {
 
     // ── 2. Fetch live merchants (top 1000 by reviews to avoid timeout) ─────
     const { data: merchants_raw } = await supabase.from('merchants')
-      .select('slug,name_zh,name_en,category_id,schema_type,google_reviews,google_rating,is_owned,district')
+      .select('slug,name_zh,name_en,category_id,schema_type,google_reviews,google_rating,district')
       .eq('status', 'live').order('google_reviews', { ascending: false, nullsFirst: false }).limit(1000)
     const merchants = merchants_raw || []
     // Also get total count for stats
@@ -97,9 +97,8 @@ export async function GET() {
       const rating  = m.google_rating  || 0
       const baseScore = reviews > 0 ? (reviews * rating / 5) : 0
       const schemaScore = SCHEMA_IMPORTANCE[m.schema_type] || 10
-      const ownedBonus = m.is_owned ? 100 : 0
       const w = INDUSTRY_WEIGHT[industry] || 0.01
-      const score = (baseScore + schemaScore + ownedBonus) * w
+      const score = (baseScore + schemaScore) * w
 
       merchantScores[slug] = {
         name_zh: m.name_zh || '', name_en: m.name_en || '',
