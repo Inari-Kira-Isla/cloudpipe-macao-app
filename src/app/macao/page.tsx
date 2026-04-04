@@ -674,31 +674,34 @@ export default async function MacaoIndexPage() {
                 ? (relatedMerchants.reduce((sum, m) => sum + (m.google_rating || 0), 0) / relatedMerchants.length).toFixed(1)
                 : null
 
+              // Emoji 背景色映射
+              const emojiBackgrounds: Record<string, string> = {
+                'venetian-macau': 'from-purple-600 to-purple-800',
+                'ruins-of-saint-paul': 'from-amber-600 to-amber-800',
+                'andrew-bakery': 'from-yellow-500 to-orange-600',
+                'fountain-lotus': 'from-green-600 to-emerald-800',
+                'rua-nova': 'from-pink-600 to-rose-800',
+                'portuguese-houses': 'from-red-600 to-red-800',
+              }
+
               return (
                 <a
                   key={attraction.slug}
                   href={`/macao/${attraction.category}`}
-                  className="group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-gray-200"
+                  className={`group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-gray-200 bg-gradient-to-br ${emojiBackgrounds[attraction.slug] || 'from-gray-600 to-gray-800'}`}
                 >
-                  {/* 背景圖片 — 先用行業圖片，可稍後替換為景點專用圖片 */}
-                  <img
-                    src={`/images/industries/${attraction.category}-hero.jpg`}
-                    alt={`${attraction.name_zh} - ${attraction.description}`}
-                    width={400}
-                    height={300}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => { (e.target as HTMLImageElement).src = `/images/industries/${attraction.category === 'attractions' ? 'tourism' : attraction.category}-hero.jpg` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+                  {/* Emoji 背景 + 漸層遮罩 */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-15 text-9xl pointer-events-none">
+                    {attraction.icon}
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
 
                   {/* 內容 */}
                   <div className="absolute inset-0 flex flex-col justify-between p-4">
                     {/* Top: Tags */}
                     <div className="flex gap-1.5 flex-wrap">
                       {attraction.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-black/60 text-white rounded text-xs font-medium">
+                        <span key={tag} className="px-2 py-0.5 bg-white/20 text-white rounded text-xs font-medium backdrop-blur-sm">
                           {tag}
                         </span>
                       ))}
@@ -707,10 +710,10 @@ export default async function MacaoIndexPage() {
                     {/* Bottom: Title + Description */}
                     <div className="text-white">
                       <h3 className="font-bold text-lg mb-1 drop-shadow-lg flex items-center gap-1">
-                        <span className="text-xl">{attraction.icon}</span> {attraction.name_zh}
+                        <span className="text-2xl">{attraction.icon}</span> {attraction.name_zh}
                       </h3>
                       <p className="text-xs text-white/90 mb-2">{attraction.name_en}</p>
-                      <p className="text-xs text-white/80 leading-relaxed">{attraction.description}</p>
+                      <p className="text-xs text-white/85 leading-relaxed">{attraction.description}</p>
                       {avgRating && (
                         <div className="text-xs text-amber-300 font-semibold mt-2 flex items-center gap-1">
                           ★ {avgRating} · {relatedMerchants.length} 家關聯商戶
