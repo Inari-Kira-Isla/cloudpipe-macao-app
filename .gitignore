@@ -40,3 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 llms.txt
+
+# Secrets (DO NOT COMMIT)
+credentials.json
+.env.local
+.env.production
+*.key
+*.pem
+scripts/*.env
