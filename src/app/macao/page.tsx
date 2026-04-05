@@ -81,6 +81,15 @@ interface InsightSummary {
 }
 
 async function getData() {
+  // Skip Supabase queries during build (causes timeout) — ISR will load data on first request
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return {
+      categories: [], groupedCounts: new Map(), totalMerchantCount: 0,
+      featuredMerchants: [], slugCounts: new Map(), contentMap: new Map(),
+      insights: [], crawlerStats: { totalVisits: 0, todayVisits: 0, topBots: [] },
+    }
+  }
+
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
