@@ -3,9 +3,19 @@ import { createClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
 
+// 8-second query timeout — prevents connections from hanging indefinitely
+// and exhausting the PostgreSQL connection pool
+const QUERY_TIMEOUT_MS = 8000
+
+function withTimeout(fetchFn: typeof fetch): typeof fetch {
+  return (url, options) =>
+    fetchFn(url, { ...options, signal: AbortSignal.timeout(QUERY_TIMEOUT_MS) })
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { global: { fetch: withTimeout(fetch) } }
 )
 
 const CORS = { 'Access-Control-Allow-Origin': '*' }
@@ -126,56 +136,43 @@ export async function GET(request: NextRequest) {
         break
       }
 
-      // ── Live aggregated summary — for precompute script (bypasses local Supabase key issue) ───
+      // ── Live aggregated summary — single indexed RPC call instead of 6 parallel full scans ───
       case 'live-summary': {
         const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
-        const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
-        const [
-          { data: botData },
-          { count: totalCount },
-          { count: todayCount },
-          { data: siteData },
-          { data: industryData },
-          { data: dailyData },
-        ] = await Promise.all([
-          supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-          supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
-          supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
-          supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-          supabase.from('crawler_visits').select('industry').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-          supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
-        ])
-        // Aggregate bots
-        const bots: Record<string, { count: number; owner: string }> = {}
-        for (const r of botData || []) {
-          const bn = r.bot_name || 'Unknown'
-          if (!bots[bn]) bots[bn] = { count: 0, owner: r.bot_owner || '' }
-          bots[bn].count++
-        }
-        // Aggregate sites (sampled — most recent 5000 rows)
-        const sites: Record<string, number> = {}
-        for (const r of siteData || []) {
-          const s = r.site || 'cloudpipe-macao-app'
-          sites[s] = (sites[s] || 0) + 1
-        }
-        const site_sample_total = (siteData || []).length  // denominator for ratio
-        // Aggregate industries
-        const industries: Record<string, number> = {}
-        for (const r of industryData || []) { if (r.industry) industries[r.industry] = (industries[r.industry] || 0) + 1 }
-        // Daily breakdown (most recent 10000 rows, reversed to ascending order)
-        const dailyMap: Record<string, number> = {}
-        for (const r of dailyData || []) { const d = (r.ts || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1 }
-        result = {
-          period: { since: since30, days: 30 },
-          total_visits: totalCount || 0,
-          today_visits: todayCount || 0,
-          unique_bots: Object.keys(bots).length,
-          bots,
-          sites,
-          site_sample_total,
-          industries,
-          daily: dailyMap,
-          generated_at: new Date().toISOString(),
+
+        // Use get_crawler_summary SQL function (1 indexed scan vs 6 full table scans)
+        // Falls back to lightweight count-only if function not yet deployed
+        const { data: rpcData, error: rpcError } = await supabase
+          .rpc('get_crawler_summary', { since_ts: since30 })
+
+        if (!rpcError && rpcData) {
+          result = {
+            period: { since: since30, days: 30 },
+            total_visits: rpcData.total_visits || 0,
+            today_visits: rpcData.today_visits || 0,
+            unique_bots: rpcData.unique_bots || 0,
+            bots: rpcData.bots || {},
+            sites: rpcData.sites || {},
+            daily: rpcData.daily || {},
+            generated_at: rpcData.generated_at || new Date().toISOString(),
+          }
+        } else {
+          // Fallback: count only (no full scan, safe even on large tables)
+          const { count } = await supabase
+            .from('crawler_visits')
+            .select('*', { count: 'exact', head: true })
+            .gte('ts', since30)
+          result = {
+            period: { since: since30, days: 30 },
+            total_visits: count || 0,
+            today_visits: 0,
+            unique_bots: 0,
+            bots: {},
+            sites: {},
+            daily: {},
+            generated_at: new Date().toISOString(),
+            note: 'Partial data — run migration crawler_visits_indexes_and_retention.sql to enable full summary',
+          }
         }
         break
       }
