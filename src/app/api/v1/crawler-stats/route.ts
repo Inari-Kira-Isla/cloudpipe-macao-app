@@ -275,7 +275,7 @@ export async function GET(request: NextRequest) {
 
       default:
         return NextResponse.json(
-          { error: 'Invalid view. Use: summary, bots, pages, sessions, journey, spider-web, daily' },
+          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, journey, spider-web, daily' },
           { status: 400 }
         )
     }
