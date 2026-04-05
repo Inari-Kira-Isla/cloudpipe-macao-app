@@ -126,6 +126,55 @@ export async function GET(request: NextRequest) {
         break
       }
 
+      // ── Live aggregated summary — for precompute script (bypasses local Supabase key issue) ───
+      case 'live-summary': {
+        const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
+        const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+        const [
+          { data: botData },
+          { count: totalCount },
+          { count: todayCount },
+          { data: siteData },
+          { data: industryData },
+          { data: dailyData },
+        ] = await Promise.all([
+          supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).limit(5000),
+          supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
+          supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
+          supabase.from('crawler_visits').select('site').gte('ts', since30).limit(5000),
+          supabase.from('crawler_visits').select('industry').gte('ts', since30).limit(5000),
+          supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: true }).limit(10000),
+        ])
+        // Aggregate bots
+        const bots: Record<string, { count: number; owner: string }> = {}
+        for (const r of botData || []) {
+          const bn = r.bot_name || 'Unknown'
+          if (!bots[bn]) bots[bn] = { count: 0, owner: r.bot_owner || '' }
+          bots[bn].count++
+        }
+        // Aggregate sites
+        const sites: Record<string, number> = {}
+        for (const r of siteData || []) { sites[r.site || 'cloudpipe-macao-app'] = (sites[r.site] || 0) + 1 }
+        // Aggregate industries
+        const industries: Record<string, number> = {}
+        for (const r of industryData || []) { if (r.industry) industries[r.industry] = (industries[r.industry] || 0) + 1 }
+        // Daily breakdown
+        const dailyMap: Record<string, number> = {}
+        for (const r of dailyData || []) { const d = (r.ts || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1 }
+        result = {
+          period: { since: since30, days: 30 },
+          total_visits: totalCount || 0,
+          today_visits: todayCount || 0,
+          unique_bots: Object.keys(bots).length,
+          bots,
+          sites,
+          industries,
+          daily: dailyMap,
+          generated_at: new Date().toISOString(),
+        }
+        break
+      }
+
       // ── Lightweight live queries (small result sets, no timeout risk) ───
       case 'bots': {
         let query = supabase

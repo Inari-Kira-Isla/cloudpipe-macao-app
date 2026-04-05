@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300 // 5-min ISR cache — prevents per-request Supabase hammering
 
 /* ── Category enrichment (icons + descriptions for SEO) ── */
 const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
@@ -102,7 +102,8 @@ async function getData() {
     // Slim query for all merchants — only for category counts in industry section
     supabase.from('merchants')
       .select('id, slug, tier, category:categories(slug)')
-      .eq('status', 'live'),
+      .eq('status', 'live')
+      .limit(5000),
     // Full data for owned/premium (精選品牌)
     supabase.from('merchants')
       .select('*, category:categories(slug, name_zh, icon)')
@@ -117,7 +118,7 @@ async function getData() {
       .not('google_rating', 'is', null)
       .order('google_rating', { ascending: false })
       .limit(30),
-    supabase.from('merchant_content').select('merchant_id, title, description').not('title', 'is', null),
+    supabase.from('merchant_content').select('merchant_id, title, description').not('title', 'is', null).limit(500),
     supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
     // Count only — for schema + hero stat (no payload)
     supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
@@ -128,19 +129,21 @@ async function getData() {
       .eq('page_type', 'merchant')
       .gte('ts', thirtyDaysAgo)
       .limit(500),
-    // Total AI visits (all time)
+    // Total AI visits (past 30 days — full table scan on all-time was causing timeout)
     supabase.from('crawler_visits')
       .select('*', { count: 'exact', head: true })
-      .eq('site', 'cloudpipe-macao-app'),
+      .eq('site', 'cloudpipe-macao-app')
+      .gte('ts', thirtyDaysAgo),
     // Today's AI visits
     supabase.from('crawler_visits')
       .select('*', { count: 'exact', head: true })
       .eq('site', 'cloudpipe-macao-app')
       .gte('ts', todayStr),
-    // Bot breakdown — top bots
+    // Bot breakdown — top bots (past 30 days only)
     supabase.from('crawler_visits')
       .select('bot_name, bot_owner')
       .eq('site', 'cloudpipe-macao-app')
+      .gte('ts', thirtyDaysAgo)
       .limit(2000),
   ])
 
