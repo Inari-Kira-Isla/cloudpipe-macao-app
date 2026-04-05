@@ -5,7 +5,9 @@ import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/typ
 import { getIndustry } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
 
+// ✅ ISR: 按需生成，不緩存（動態內容）
 export const revalidate = 0
+export const dynamicParams = true
 
 /* ── Category → Schema.org type mapping ── */
 const CATEGORY_SCHEMA_MAP: Record<string, string> = {
@@ -88,6 +90,10 @@ async function getMerchant(slug: string, industrySlug: string) {
     insights,
     relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
   }
+}
+
+export async function generateStaticParams() {
+  return [] // ISR on-demand only
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

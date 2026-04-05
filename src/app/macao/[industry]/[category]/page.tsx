@@ -5,6 +5,10 @@ import type { Category, Merchant } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 
+// ✅ ISR: 按需生成，緩存 30 分鐘
+export const revalidate = 1800
+export const dynamicParams = true
+
 interface PageProps {
   params: Promise<{ industry: string; category: string }>
 }
@@ -48,6 +52,10 @@ async function getData(industrySlug: string, categorySlug: string) {
     insights: insights || [],
     siblingCategories: (siblingCategories || []) as { slug: string; name_zh: string; icon?: string }[],
   }
+}
+
+export async function generateStaticParams() {
+  return [] // ISR on-demand only
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
