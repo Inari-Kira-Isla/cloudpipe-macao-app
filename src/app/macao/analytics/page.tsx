@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { createServiceClient } from '@/lib/supabase'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Analytics — CloudPipe 澳門商業知識圖譜',
   description: 'LLMC (AI引用) / LLMR (點擊) / LLMCF (轉化) 儀表板 — 實時監控轉化漏斗',
