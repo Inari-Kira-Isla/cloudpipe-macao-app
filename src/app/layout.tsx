@@ -75,6 +75,10 @@ export default function RootLayout({
         <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
         <link rel="alternate" type="text/plain" title="LLMs.txt" href={`${siteUrl}/macao/llms-txt`} />
         <link rel="alternate" type="text/plain" hrefLang="en" title="LLMs.txt (English)" href={`${siteUrl}/llms-en`} />
+        {/* RSS Feed Discovery for AI crawlers */}
+        <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析 RSS" href={`${siteUrl}/feed.xml`} />
+        <link rel="alternate" type="application/rss+xml" title="CloudPipe Macao Insights RSS" hrefLang="en" href={`${siteUrl}/feed.xml`} />
+        {/* Ecosystem Links */}
         <link rel="alternate" href="https://cloudpipe-landing.vercel.app" title="CloudPipe AI" />
         <link rel="alternate" href="https://cloudpipe-directory.vercel.app" title="CloudPipe 企業目錄" />
         <link rel="alternate" href="https://inari-kira-isla.github.io/inari-global-foods" title="稻荷環球食品" />

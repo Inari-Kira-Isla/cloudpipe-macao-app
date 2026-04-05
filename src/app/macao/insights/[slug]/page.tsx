@@ -462,6 +462,8 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      {/* RSS Feed Discovery */}
+      <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析" href={`${siteUrl}/feed.xml`} />
       {/* hreflang */}
       {availableLangs.map(al => (
         <link key={al} rel="alternate" hrefLang={LANG_CONFIG[al].hreflang} href={`${siteUrl}${langUrl(al)}`} />

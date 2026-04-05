@@ -148,6 +148,8 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      {/* RSS Feed Discovery for AI crawlers */}
+      <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析 RSS" href={`${siteUrl}/feed.xml`} />
 
       <div className="hero-gradient text-white">
         <div className="max-w-5xl mx-auto px-4 py-14 md:py-18 text-center">
