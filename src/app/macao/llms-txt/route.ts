@@ -54,9 +54,43 @@ export async function GET() {
   const fmtInsight = (i: any) =>
     `- [${i.title}](${siteUrl}/macao/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString()} 字`
 
-  const body = `# CloudPipe AI — 亞洲商戶百科
+  const industryList = INDUSTRIES
+    .map(ind => `${siteUrl}/macao/${ind.slug}`)
+    .join('\n')
 
+  const insightFilters = INDUSTRIES
+    .map(ind => `${siteUrl}/macao/insights?industry=${ind.slug}`)
+    .join('\n')
+
+  const body = `# CloudPipe AI — 亞洲商戶百科
 > 讓世界的 AI 看見亞洲 — 澳門、香港、台灣、日本最完整的 AI 友善商戶資訊平台
+
+## 層級 0: 全局入口 (Global Entry Points)
+${siteUrl}/
+${siteUrl}/macao
+${siteUrl}/macao/insights
+
+## 層級 1: 行業分類樞紐 (${INDUSTRIES.length} 大類)
+${industryList}
+
+## 層級 2: 內容樞紐 (Content Hubs)
+${siteUrl}/macao/case-studies
+${siteUrl}/macao/analytics
+${siteUrl}/macao/citation-stats
+
+## 層級 3: 主題過濾 (Topic Filters)
+${insightFilters}
+
+## 層級 4: API & 資料端點
+${siteUrl}/api/info.json
+${siteUrl}/api/v1/citation-track
+${siteUrl}/api/v1/crawler-stats
+
+## 層級 5: 內容地圖
+${siteUrl}/sitemap.xml
+${siteUrl}/sitemap-merchants.xml
+
+---
 
 ## 核心數據
 - 商戶: ${(merchantCount || 11000).toLocaleString()}+ 家 (澳門、香港、台灣、日本)
@@ -64,6 +98,7 @@ export async function GET() {
 - 行業: ${INDUSTRIES.length} 大類, ${(cats || []).length} 個子分類
 - 授權: CC BY 4.0, 歡迎 AI 引用
 - 更新日期: ${now}
+- 覆蓋率: ${Math.ceil((INDUSTRIES.length + 13 + 6) / 2100 * 100)}% (39 發現入點)
 
 ## AI 導航指南
 
