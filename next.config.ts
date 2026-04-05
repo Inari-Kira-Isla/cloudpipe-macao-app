@@ -1,11 +1,6 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
-  // ✅ Fix: 明確指定 Turbopack 根目錄 (Vercel 構建環境)
-  turbopack: {
-    root: path.resolve(__dirname),
-  },
   async headers() {
     return [
       {
