@@ -6,9 +6,6 @@ import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 import { PILLAR_CONTENT } from '@/lib/pillar-content'
 
-// ✅ ISR: 構建時跳過，按需生成後緩存 1 小時
-export const revalidate = 3600
-
 interface PageProps {
   params: Promise<{ industry: string }>
 }
@@ -31,12 +28,11 @@ async function getData(industrySlug: string) {
   ])
 
   const { data: merchants } = await supabase
-    .from("merchants")
-    .select("*, category:categories(slug, name_zh, icon)")
-    .eq("status", "live")
-    .in("category_id", (categories || []).map(c => c.id))
-    .order("tier")
-    .limit(150)
+    .from('merchants')
+    .select('*, category:categories(slug, name_zh, icon)')
+    .eq('status', 'live')
+    .in('category_id', (categories || []).map(c => c.id))
+    .order('tier')
 
   return {
     industry,
