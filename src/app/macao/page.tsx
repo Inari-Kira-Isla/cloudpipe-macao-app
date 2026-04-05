@@ -123,29 +123,11 @@ async function getData() {
     supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
     // Count only — for schema + hero stat (no payload)
     supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
-    // AI crawler visits past 30 days — merchant pages only
-    supabase.from('crawler_visits')
-      .select('path')
-      .eq('site', 'cloudpipe-macao-app')
-      .eq('page_type', 'merchant')
-      .gte('ts', thirtyDaysAgo)
-      .limit(500),
-    // Total AI visits (past 30 days — full table scan on all-time was causing timeout)
-    supabase.from('crawler_visits')
-      .select('*', { count: 'exact', head: true })
-      .eq('site', 'cloudpipe-macao-app')
-      .gte('ts', thirtyDaysAgo),
-    // Today's AI visits
-    supabase.from('crawler_visits')
-      .select('*', { count: 'exact', head: true })
-      .eq('site', 'cloudpipe-macao-app')
-      .gte('ts', todayStr),
-    // Bot breakdown — top bots (past 30 days only)
-    supabase.from('crawler_visits')
-      .select('bot_name, bot_owner')
-      .eq('site', 'cloudpipe-macao-app')
-      .gte('ts', thirtyDaysAgo)
-      .limit(2000),
+    // Skip crawler_visits during build (causes timeout) — will be loaded on-demand via ISR
+    Promise.resolve({ data: [] }),
+    Promise.resolve({ count: 0 }),
+    Promise.resolve({ count: 0 }),
+    Promise.resolve({ data: [] }),
   ])
 
   // slug → crawler visit count (past 30 days)
