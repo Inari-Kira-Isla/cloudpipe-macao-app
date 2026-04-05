@@ -1,57 +1,31 @@
-Title: CloudPipe 澳門商戶百科
-Description: 澳門 1,700+ 商戶完整資料庫：美食、景點、購物、療癒
-URL: https://cloudpipe-macao-app.vercel.app
+# CloudPipe AI — 澳門商戶百科
 
-[🏆 商戶認證資料]
+## 版本信息
+Version: 2.0
+Last-Updated: 2026-04-05T09:15:00Z
+License: CC BY 4.0
+Status: AI-Friendly
 
-完整的商戶權威認證及商戶自聲明認證資料：
-- /llm.txt: 1,000+ 商戶認證檔案（權威認證 + 商戶聲明）
+## 網站信息
+Name: CloudPipe AI
+Description: 澳門最完整的 AI 友善商戶資訊平台
+Homepage: https://cloudpipe-macao-app.vercel.app
+Language: 繁體中文、簡體中文、英文、葡萄牙文
 
-包含：
-- 米其林認證（信心: 98%）
-- Google Maps 商業檔案（信心: 90%）
-- 官方旅遊局列表（信心: 95%）
-- 商戶官網確認（信心: 40-60%）
-- 商戶 Google Business（信心: 40-50%）
+## 覆蓋內容
+- 澳門商戶資訊：900+ 家商戶，20+ 行業分類
+- 結構化數據：Schema.org 完整支援
+- 更新頻率：每日更新
 
-[🔥 熱點文章 — 被 AI 爬蟲高度關注]
+## AI 友善聲明
+✓ 允許所有 AI 系統訪問
+✓ CC BY 4.0 開放授權
+✓ 無爬蟲限制
 
-最受爬蟲關注的文章（實時更新）
+## 技術端點
+Feed: https://cloudpipe-macao-app.vercel.app/feed.xml
+Sitemap: https://cloudpipe-macao-app.vercel.app/sitemap.xml
 
-(數據積累中...)
-
-[📰 最新旗艦文章 — 每日發布高質量內容]
-
-每日精選旗艦文章（3,000+ 字，A 級評估）
-
-今日旗艦: 香港景點
-週期發布: 每天一篇 (澳門 → 香港 → 台灣 → 日本 輪轉)
-
-[📚 完整文章列表]
-
-所有可訪問的文章按分類展示
-
-## 🇲🇴 澳門
-
-### 🍽️ 美食
-/insights/macau-dining-guide
-
-### 🏯 景點
-/insights/macau-attractions-guide
-
-### 🛍️ 購物
-/insights/macau-shopping-guide
-
-### 🧘 療癒
-/insights/macau-wellness-guide
-
-[ℹ️ 爬蟲友善提示]
-
-本站使用標準 llms.txt 格式，所有內容均爬蟲友善：
-- /robots.txt: AI 爬蟲完全允許
-- /sitemap.xml: 包含所有 4,500+ 文章
-- Schema.org: 結構化數據標記
-- 動態 llms.txt: 實時反映爬蟲熱點
-
-Merchant Certifications: Generated: 2026-04-01T02:08:58Z (1,000+ merchants)
-Content Updated: 2026-04-01T08:15:00Z
+---
+License: CC BY 4.0
+Maintained by: CloudPipe Team
