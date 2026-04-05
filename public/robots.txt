@@ -32,6 +32,10 @@ User-agent: cohere-ai
 Allow: /
 User-agent: Amazonbot
 Allow: /
+User-agent: DuckDuckBot
+Allow: /
+User-agent: Slurp
+Allow: /
 
 # === Chinese AI Crawlers ===
 User-agent: Baiduspider
@@ -64,7 +68,9 @@ User-agent: SenseChat
 Allow: /
 User-agent: XiaoIce
 Allow: /
+User-agent: QwenBot
+Allow: /
+User-agent: MoonshotBot
+Allow: /
 
-# Sitemaps for merchant discovery
 Sitemap: https://cloudpipe-macao-app.vercel.app/sitemap.xml
-Sitemap: https://cloudpipe-macao-app.vercel.app/sitemap-merchants.xml

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
+import { notifySitemaps } from '@/lib/notify-crawlers'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -7,6 +8,9 @@ export const maxDuration = 30
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET() {
+  // Non-blocking: notify crawlers of potential updates (fire and forget)
+  // This ensures Google/Bing/Yandex discover new content within <1 hour
+  notifySitemaps().catch(err => console.error('[llms-txt notify error]', err))
   // Parallel fetch: top insights + merchant count + categories
   const [{ data: topInsights }, { count: merchantCount }, { count: insightCount }, { data: cats }] = await Promise.all([
     supabase
