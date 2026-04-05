@@ -353,12 +353,16 @@ export default function CrawlerDashboard() {
           {/* Traffic Analysis: LLM vs Organic */}
           {(() => {
             const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu'])
-            const llmVisits = Object.entries(summary.bots || {}).reduce((sum, [bot, info]) => {
+            // bot counts come from a sample; compute ratio within sample, then scale to total
+            const botSampleTotal = Object.values(summary.bots || {}).reduce((s, info) => s + info.count, 0) || 1
+            const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
               return sum + (llmBots.has(info.owner) ? info.count : 0)
             }, 0)
+            const llmRatio = llmSampleCount / botSampleTotal
+            const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))
             const organicVisits = (summary.total_visits || 0) - llmVisits
-            const llmPct = summary.total_visits > 0 ? ((llmVisits / summary.total_visits) * 100).toFixed(1) : 0
-            const organicPct = summary.total_visits > 0 ? ((organicVisits / summary.total_visits) * 100).toFixed(1) : 0
+            const llmPct = (llmRatio * 100).toFixed(1)
+            const organicPct = ((1 - llmRatio) * 100).toFixed(1)
             return (
               <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9' }}>
