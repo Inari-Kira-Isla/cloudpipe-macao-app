@@ -138,12 +138,12 @@ export async function GET(request: NextRequest) {
           { data: industryData },
           { data: dailyData },
         ] = await Promise.all([
-          supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).limit(5000),
+          supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
           supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
           supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
-          supabase.from('crawler_visits').select('site').gte('ts', since30).limit(5000),
-          supabase.from('crawler_visits').select('industry').gte('ts', since30).limit(5000),
-          supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: true }).limit(10000),
+          supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
+          supabase.from('crawler_visits').select('industry').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
+          supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
         ])
         // Aggregate bots
         const bots: Record<string, { count: number; owner: string }> = {}
@@ -152,13 +152,17 @@ export async function GET(request: NextRequest) {
           if (!bots[bn]) bots[bn] = { count: 0, owner: r.bot_owner || '' }
           bots[bn].count++
         }
-        // Aggregate sites
+        // Aggregate sites (sampled — most recent 5000 rows)
         const sites: Record<string, number> = {}
-        for (const r of siteData || []) { sites[r.site || 'cloudpipe-macao-app'] = (sites[r.site] || 0) + 1 }
+        for (const r of siteData || []) {
+          const s = r.site || 'cloudpipe-macao-app'
+          sites[s] = (sites[s] || 0) + 1
+        }
+        const site_sample_total = (siteData || []).length  // denominator for ratio
         // Aggregate industries
         const industries: Record<string, number> = {}
         for (const r of industryData || []) { if (r.industry) industries[r.industry] = (industries[r.industry] || 0) + 1 }
-        // Daily breakdown
+        // Daily breakdown (most recent 10000 rows, reversed to ascending order)
         const dailyMap: Record<string, number> = {}
         for (const r of dailyData || []) { const d = (r.ts || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1 }
         result = {
@@ -168,6 +172,7 @@ export async function GET(request: NextRequest) {
           unique_bots: Object.keys(bots).length,
           bots,
           sites,
+          site_sample_total,
           industries,
           daily: dailyMap,
           generated_at: new Date().toISOString(),
