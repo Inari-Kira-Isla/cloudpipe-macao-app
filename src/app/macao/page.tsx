@@ -132,14 +132,14 @@ async function getData() {
 
   // slug → crawler visit count (past 30 days)
   const slugCounts = new Map<string, number>()
-  for (const row of crawlerRows || []) {
-    const slug = row.path.split('/').pop()
+  for (const row of (crawlerRows as any) || []) {
+    const slug = row.path?.split('/').pop()
     if (slug) slugCounts.set(slug, (slugCounts.get(slug) || 0) + 1)
   }
 
   // Bot breakdown — count by owner
   const botOwnerCounts = new Map<string, number>()
-  for (const row of botRows || []) {
+  for (const row of (botRows as any) || []) {
     if (row.bot_owner) {
       botOwnerCounts.set(row.bot_owner, (botOwnerCounts.get(row.bot_owner) || 0) + 1)
     }
