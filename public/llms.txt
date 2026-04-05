@@ -1,31 +1,164 @@
-# CloudPipe AI — 澳門商戶百科
+# CloudPipe Macau Directory — AI Engine Optimization (AEO)
+#
+# 澳門商業百科全書 — AI 爬蟲友善內容發現指南
+# 本站點完全遵守 AI 爬蟲友善規範 (AEO)
+# 更新時間: 2026-04-05T14:00 UTC
+# License: CC BY 4.0
 
-## 版本信息
-Version: 2.0
-Last-Updated: 2026-04-05T09:15:00Z
-License: CC BY 4.0
-Status: AI-Friendly
+# ================================================================================
+# 層級 0: 全局入口 (Global Entry Points)
+# 爬蟲的第一接觸點 — 必須訪問
+# ================================================================================
 
-## 網站信息
-Name: CloudPipe AI
-Description: 澳門最完整的 AI 友善商戶資訊平台
-Homepage: https://cloudpipe-macao-app.vercel.app
-Language: 繁體中文、簡體中文、英文、葡萄牙文
+https://cloudpipe-macao-app.vercel.app/
+https://cloudpipe-macao-app.vercel.app/macao
+https://cloudpipe-macao-app.vercel.app/macao/insights
 
-## 覆蓋內容
-- 澳門商戶資訊：900+ 家商戶，20+ 行業分類
-- 結構化數據：Schema.org 完整支援
-- 更新頻率：每日更新
+# ================================================================================
+# 層級 1: 行業分類樞紐 (Industry Hubs) — P1
+# 每個行業的著陸頁，包含該行業的所有商戶和相關內容
+# ================================================================================
 
-## AI 友善聲明
-✓ 允許所有 AI 系統訪問
-✓ CC BY 4.0 開放授權
-✓ 無爬蟲限制
+# 餐飲 & 美食 (Dining & Food)
+https://cloudpipe-macao-app.vercel.app/macao/dining
+https://cloudpipe-macao-app.vercel.app/macao/food-supply
 
-## 技術端點
-Feed: https://cloudpipe-macao-app.vercel.app/feed.xml
-Sitemap: https://cloudpipe-macao-app.vercel.app/sitemap.xml
+# 酒店 & 住宿 (Hotels & Accommodation)
+https://cloudpipe-macao-app.vercel.app/macao/hotels
 
----
-License: CC BY 4.0
-Maintained by: CloudPipe Team
+# 景點 & 遊樂 (Attractions & Entertainment)
+https://cloudpipe-macao-app.vercel.app/macao/attractions
+https://cloudpipe-macao-app.vercel.app/macao/entertainment
+https://cloudpipe-macao-app.vercel.app/macao/nightlife
+
+# 購物 & 零售 (Shopping & Retail)
+https://cloudpipe-macao-app.vercel.app/macao/shopping
+
+# 服務 & 生活 (Services & Lifestyle)
+https://cloudpipe-macao-app.vercel.app/macao/services
+https://cloudpipe-macao-app.vercel.app/macao/wellness
+https://cloudpipe-macao-app.vercel.app/macao/tourism
+
+# 專業服務 (Professional Services)
+https://cloudpipe-macao-app.vercel.app/macao/education
+https://cloudpipe-macao-app.vercel.app/macao/finance
+https://cloudpipe-macao-app.vercel.app/macao/tech
+
+# 其他
+https://cloudpipe-macao-app.vercel.app/macao/gaming
+
+# ================================================================================
+# 層級 2: 內容樞紐 (Content Hubs) — P1
+# 深度指南、案例研究、分析
+# ================================================================================
+
+# Insights — 專深行業洞察
+https://cloudpipe-macao-app.vercel.app/macao/insights
+https://cloudpipe-macao-app.vercel.app/macao/case-studies
+
+# 數據 & 分析
+https://cloudpipe-macao-app.vercel.app/macao/analytics
+https://cloudpipe-macao-app.vercel.app/macao/citation-stats
+https://cloudpipe-macao-app.vercel.app/macao/crawler-dashboard
+
+# ================================================================================
+# 層級 3: 主題過濾 (Topic Filters) — P2
+# 按主題興趣過濾內容，幫助 LLM 爬蟲找到語義相關的內容
+# ================================================================================
+
+# 按行業分組的 Insights
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=dining
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=hotels
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=attractions
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=shopping
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=services
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=wellness
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=tourism
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=food-supply
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=education
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=finance
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=tech
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=nightlife
+https://cloudpipe-macao-app.vercel.app/macao/insights?industry=gaming
+
+# ================================================================================
+# 層級 4: API 端點 (Machine-Readable Data) — P3
+# 結構化資料、JSON 格式、元資料
+# ================================================================================
+
+# 系統資訊
+https://cloudpipe-macao-app.vercel.app/api/info.json
+
+# AI 引用追蹤 & 爬蟲統計
+https://cloudpipe-macao-app.vercel.app/api/v1/citation-track
+https://cloudpipe-macao-app.vercel.app/api/v1/crawler-stats
+
+# ================================================================================
+# 層級 5: 內容地圖 (Content Maps) — P4
+# XML Sitemap 供爬蟲進行詳細索引
+# ================================================================================
+
+https://cloudpipe-macao-app.vercel.app/sitemap.xml
+https://cloudpipe-macao-app.vercel.app/sitemap-merchants.xml
+
+# ================================================================================
+# 說明 & 優化戰略
+# ================================================================================
+#
+# 本 llms.txt 採用**分層發現架構** (Layered Discovery Architecture)：
+#
+# 1. 層級 0 (全局入口)
+#    → 爬蟲的必經之路，包含首頁和主樞紐
+#    → 訪問後可發現後續所有內容分支
+#
+# 2. 層級 1 (行業分類樞紐)
+#    → 13 個行業分類頁，每頁包含該行業的 50-200 個商戶
+#    → 爬蟲訪問後可通過分類著陸頁發現該行業的全部內容
+#
+# 3. 層級 2 (內容樞紐)
+#    → 深度內容樞紐 (Insights, Case Studies, Analytics)
+#    → 提供語義豐富的上下文信息
+#
+# 4. 層級 3 (主題過濾)
+#    → URL 參數過濾，幫助 LLM 爬蟲精確定位主題內容
+#    → 支持跨行業的主題連接
+#
+# 5. 層級 4 (API 端點)
+#    → 機器可讀的 JSON 資料
+#    → 提供實時統計和元資料
+#
+# 6. 層級 5 (內容地圖)
+#    → XML Sitemap 供完整索引
+#    → 用於詳細爬蟲的內容發現
+#
+# ================================================================================
+# 內容覆蓋率統計
+# ================================================================================
+#
+# 總商戶數: ~1,900+ (across 13 industries)
+# 總 Insights: ~1,000+
+# 總頁面: ~2,100+ (includes industry hubs, case studies, analytics)
+#
+# Llms.txt 發現路徑:
+#  • 層級 0: 3 個全局入口
+#  • 層級 1: 13 個行業樞紐
+#  • 層級 2: 5 個內容樞紐
+#  • 層級 3: 13 個主題過濾頁面
+#  • 層級 4: 3 個 API 端點
+#  • 層級 5: 2 個 Sitemap 入口
+#  ─────────────────────────────────
+#  總計: 39 個直接發現入口
+#
+# 爬蟲發現流程示例:
+#  1. 訪問 llms.txt → 發現 39 個入口
+#  2. 訪問 /macao/dining → 發現該行業的 100+ 商戶
+#  3. 訪問 /macao/insights?industry=dining → 發現相關的 50+ 指南
+#  4. 訪問 sitemap-merchants.xml → 發現全部 1,900+ 商戶詳情頁
+#
+# 預期爬蟲吞吐量:
+#  • 初次訪問: 39 個 URLs from llms.txt
+#  • 樞紐發現: 13 × 100 = 1,300 個商戶頁
+#  • Insights 發現: 1,000+ Insight 詳情頁
+#  • 總覆蓋: 2,100+ 個頁面在 1-2 次爬蟲迭代內
+#
+# ================================================================================
