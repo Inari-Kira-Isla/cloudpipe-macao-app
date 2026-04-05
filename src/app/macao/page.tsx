@@ -4,6 +4,7 @@ import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 300 // 5-min ISR cache — prevents per-request Supabase hammering
+export const dynamicParams = true
 
 /* ── Category enrichment (icons + descriptions for SEO) ── */
 const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
@@ -286,6 +287,9 @@ const HIGH_ROI_ATTRACTIONS = [
   },
 ]
 
+export async function generateStaticParams() {
+  return []
+}
 export default async function MacaoIndexPage() {
   const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
