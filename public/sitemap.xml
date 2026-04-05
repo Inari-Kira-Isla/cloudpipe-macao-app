@@ -1,17 +1,336 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Static sitemap — last updated: 2026-04-05 -->
+<!-- Dynamic routes (insights, merchants) added by: npm run generate-sitemap -->
+<!-- Total static URLs: 137 (core + 20 industries + 113 categories) -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- 主站首頁 -->
+  <!-- ── 核心頁面 ── -->
   <url>
-    <loc>https://cloudpipe-macao-app.vercel.app</loc>
-    <lastmod>2026-03-31</lastmod>
-    <priority>0.9</priority>
+    <loc>https://cloudpipe-macao-app.vercel.app/</loc>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>daily</changefreq>
+    <priority>1.0</priority>
   </url>
-
-
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/insights</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/llms-txt</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
   <url>
     <loc>https://cloudpipe-macao-app.vercel.app/llms.txt</loc>
     <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
+
+  <!-- ── 行業頁面 (20) ── -->
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/dining</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/hotels</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/attractions</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/shopping</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/gaming</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/events</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/transport</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/education</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/finance</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/luxury</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/wellness</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/heritage</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/media</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/tech</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/government</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/community</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ── 分類頁面 — dining (13) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/restaurant</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/japanese</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/portuguese</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/cafe</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/bakery</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/chinese</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/western</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/tea-restaurant</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/hotpot</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/michelin</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/street-food</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/dessert</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/dining/fast-food</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── hotels (5) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/hotels/hotel</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/hotels/resort</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/hotels/budget-hotel</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/hotels/serviced-apartment</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/hotels/hostel</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── attractions (6) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/tourism</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/museum</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/temple</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/park</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/theme-park</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/attractions/landmark</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── shopping (8) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/retail</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/shopping-mall</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/duty-free</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/souvenir</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/fashion</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/electronics</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/supermarket</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/shopping/drugstore</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── nightlife (6) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/bar</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/ktv</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/nightclub</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/show</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/lounge</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/nightlife/spa-sauna</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── gaming (4) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/gaming/entertainment</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/gaming/casino</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/gaming/vip-gaming</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/gaming/non-gaming</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── events (5) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/events/convention-center</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/events/annual-event</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/events/trade-show</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/events/festival</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/events/sports-event</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── transport (8) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/ferry</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/airport</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/lrt</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/border-gate</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/bus</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/taxi</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/shuttle</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/transport/car-rental</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── food-supply (8) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/food-import</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/food-delivery</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/seafood-import</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/meat-supply</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/produce</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/beverage</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/cold-chain</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/food-supply/food-processing</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── education (8) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/education</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/university</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/secondary-school</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/primary-school</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/kindergarten</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/language-school</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/vocational</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/education/international-school</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── finance (7) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/bank</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/insurance</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/securities</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/finance-company</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/payment</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/money-exchange</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/finance/accounting-service</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── luxury (6) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/jewelry</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/luxury-fashion</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/fine-dining</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/luxury-spa</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/luxury-auto</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/luxury/art-auction</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── wellness (8) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/beauty</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/hospital</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/tcm</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/dental</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/spa</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/gym</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/pharmacy</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/wellness/clinic</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── professional-services (9) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/professional</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/law-firm</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/accounting-firm</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/translation</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/notary</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/consulting</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/hr</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/it-service</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/professional-services/design-agency</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── real-estate (5) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate/real-estate-agent</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate/commercial-property</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate/property-management</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate/renovation</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/real-estate/building-materials</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── heritage (3) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/heritage/world-heritage</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/heritage/historic-building</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/heritage/cultural-site</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── media (6) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/newspaper</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/tv-radio</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/online-media</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/advertising</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/printing</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/media/photography</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── tech (6) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/tech</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/tech-company</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/incubator</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/university-lab</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/ecommerce</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/tech/fintech</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── government (4) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/government/government-dept</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/government/public-service</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/government/border-immigration</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/government/emergency</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── community (7) ── -->
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/religious</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/association</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/library</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/sports-venue</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/park-leisure</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/market</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cloudpipe-macao-app.vercel.app/macao/community/post-office</loc><lastmod>2026-04-05</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- ── PLACEHOLDER: insights & merchants 由 npm run generate-sitemap 補充 ── -->
+  <!-- 執行後本文件將包含 >1000 insights + merchants 完整列表 -->
+
 </urlset>
