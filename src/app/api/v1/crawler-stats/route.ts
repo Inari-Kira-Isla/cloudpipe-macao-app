@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
         const { data: rpcData, error: rpcError } = await supabase
           .rpc('get_crawler_summary', { since_ts: since30 })
 
-        if (!rpcError && rpcData) {
+        if (!rpcError && rpcData && rpcData.total_visits > 0) {
           result = {
             period: { since: since30, days: 30 },
             total_visits: rpcData.total_visits || 0,
@@ -153,25 +153,49 @@ export async function GET(request: NextRequest) {
             unique_bots: rpcData.unique_bots || 0,
             bots: rpcData.bots || {},
             sites: rpcData.sites || {},
+            site_sample_total: rpcData.site_sample_total || 0,
             daily: rpcData.daily || {},
             generated_at: rpcData.generated_at || new Date().toISOString(),
           }
         } else {
-          // Fallback: count only (no full scan, safe even on large tables)
-          const { count } = await supabase
-            .from('crawler_visits')
-            .select('*', { count: 'exact', head: true })
-            .gte('ts', since30)
+          // Fallback: parallel lightweight queries (recent 5000 rows each)
+          const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+          const [
+            { data: botData },
+            { count: totalCount },
+            { count: todayCount },
+            { data: siteData },
+            { data: dailyData },
+          ] = await Promise.all([
+            supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
+            supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
+            supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
+            supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
+            supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
+          ])
+          const bots: Record<string, { count: number; owner: string }> = {}
+          for (const r of botData || []) {
+            const bn = r.bot_name || 'Unknown'
+            if (!bots[bn]) bots[bn] = { count: 0, owner: r.bot_owner || '' }
+            bots[bn].count++
+          }
+          const sites: Record<string, number> = {}
+          for (const r of siteData || []) {
+            const s = r.site || 'cloudpipe-macao-app'
+            sites[s] = (sites[s] || 0) + 1
+          }
+          const dailyMap: Record<string, number> = {}
+          for (const r of dailyData || []) { const d = (r.ts || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1 }
           result = {
             period: { since: since30, days: 30 },
-            total_visits: count || 0,
-            today_visits: 0,
-            unique_bots: 0,
-            bots: {},
-            sites: {},
-            daily: {},
+            total_visits: totalCount || 0,
+            today_visits: todayCount || 0,
+            unique_bots: Object.keys(bots).length,
+            bots,
+            sites,
+            site_sample_total: (siteData || []).length,
+            daily: dailyMap,
             generated_at: new Date().toISOString(),
-            note: 'Partial data — run migration crawler_visits_indexes_and_retention.sql to enable full summary',
           }
         }
         break
