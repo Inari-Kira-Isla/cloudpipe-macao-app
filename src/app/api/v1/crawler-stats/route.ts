@@ -79,21 +79,58 @@ export async function GET(request: NextRequest) {
       case 'summary': {
         const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
-          // If days=1 (today), return the today sub-object formatted as summary
-          if (days <= 1 && cached.today) {
-            const t = cached.today
+          // If days=1 (today), scale 30d data down proportionally
+          if (days <= 1) {
+            const todayVisits: number = cached.today_visits || 0
+            const totalVisits: number = cached.total_visits || 1
+            const ratio = todayVisits / totalVisits
+            // Scale bot counts
+            const todayBots: Record<string, { count: number; owner: string }> = {}
+            for (const [name, info] of Object.entries<{ count: number; owner: string }>(cached.bots || {})) {
+              const c = Math.round((info.count || 0) * ratio)
+              if (c > 0) todayBots[name] = { count: c, owner: info.owner }
+            }
+            // Scale industries
+            const todayIndustries: Record<string, number> = {}
+            for (const [ind, cnt] of Object.entries<number>(cached.industries || {})) {
+              const c = Math.round((cnt || 0) * ratio)
+              if (c > 0) todayIndustries[ind] = c
+            }
             return NextResponse.json({
-              period: { since: t.date + 'T00:00:00Z', days: 1 },
-              total_visits: t.total_visits || 0,
-              unique_bots: t.unique_bots || 0,
+              period: { since: new Date().toISOString().slice(0, 10) + 'T00:00:00Z', days: 1 },
+              total_visits: todayVisits,
+              today_visits: todayVisits,
+              unique_bots: cached.unique_bots || 0,
               unique_sessions: 0,
-              bots: t.bots || {},
+              bots: todayBots,
               top_pages: {},
-              industries: t.industries || {},
-              page_types: t.page_types || {},
-              sites: t.sites || {},
+              industries: todayIndustries,
+              page_types: {},
+              sites: cached.sites || {},
+              site_sample_total: cached.site_sample_total || 0,
             }, {
               headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'PRECOMPUTED-TODAY' },
+            })
+          }
+          // For days < 30, scale 30d data proportionally
+          if (days < 30) {
+            const ratio = days / 30
+            const scaledBots: Record<string, { count: number; owner: string }> = {}
+            for (const [name, info] of Object.entries<{ count: number; owner: string }>(cached.bots || {})) {
+              scaledBots[name] = { count: Math.round((info.count || 0) * ratio), owner: info.owner }
+            }
+            const scaledIndustries: Record<string, number> = {}
+            for (const [ind, cnt] of Object.entries<number>(cached.industries || {})) {
+              scaledIndustries[ind] = Math.round((cnt || 0) * ratio)
+            }
+            return NextResponse.json({
+              ...cached,
+              total_visits: Math.round((cached.total_visits || 0) * ratio),
+              bots: scaledBots,
+              industries: scaledIndustries,
+              period: { since, days },
+            }, {
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED-SCALED' },
             })
           }
           return NextResponse.json(cached, {
