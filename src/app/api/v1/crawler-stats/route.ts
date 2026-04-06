@@ -154,6 +154,7 @@ export async function GET(request: NextRequest) {
             bots: rpcData.bots || {},
             sites: rpcData.sites || {},
             site_sample_total: rpcData.site_sample_total || 0,
+            industries: rpcData.industries || {},
             daily: rpcData.daily || {},
             generated_at: rpcData.generated_at || new Date().toISOString(),
           }
