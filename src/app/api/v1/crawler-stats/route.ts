@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
               period: { since: new Date().toISOString().slice(0, 10) + 'T00:00:00Z', days: 1 },
               total_visits: todayVisits,
               today_visits: todayVisits,
-              unique_bots: cached.unique_bots || 0,
+              unique_bots: Object.keys(todayBots).length,
               unique_sessions: 0,
               bots: todayBots,
               top_pages: {},
