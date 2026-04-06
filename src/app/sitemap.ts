@@ -15,6 +15,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('merchants')
     .select('slug, updated_at, category:categories(slug)')
     .eq('status', 'live')
+    .not('slug', 'like', 'hk-%')
+    .not('slug', 'like', 'tw-%')
+    .not('slug', 'like', 'jp-%')
     .order('code')
 
   const { data: categories } = await supabase

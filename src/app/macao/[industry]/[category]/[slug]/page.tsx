@@ -51,7 +51,12 @@ interface PageProps {
 
 interface InsightLink { slug: string; title: string; read_time_minutes: number; tags: string[] }
 
+const NON_MACAO_PREFIXES = ['hk-', 'tw-', 'jp-', 'cn-']
+
 async function getMerchant(slug: string, industrySlug: string) {
+  // Block non-macao merchants from appearing under /macao/ paths
+  if (NON_MACAO_PREFIXES.some(p => slug.startsWith(p))) return null
+
   const { data: merchant } = await supabase
     .from('merchants')
     .select('*, category:categories(*)')
@@ -73,6 +78,7 @@ async function getMerchant(slug: string, industrySlug: string) {
     supabase.from('merchants').select('slug, name_zh, name_en, google_rating, district')
       .eq('category_id', merchant.category_id).eq('status', 'live')
       .neq('slug', slug).not('slug', 'is', null)
+      .not('slug', 'like', 'hk-%').not('slug', 'like', 'tw-%').not('slug', 'like', 'jp-%')
       .order('google_rating', { ascending: false, nullsFirst: false }).limit(4),
   ])
 

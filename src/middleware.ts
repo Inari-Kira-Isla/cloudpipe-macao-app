@@ -318,6 +318,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(newPath, request.url), 308)
   }
 
+  // 404: non-macao merchants (hk-/tw-/jp-) must not appear under /macao/ paths
+  const pathname = request.nextUrl.pathname
+  if (pathname.startsWith('/macao/') && pathname.split('/').length >= 5) {
+    const slug = pathname.split('/').pop() || ''
+    if (slug.startsWith('hk-') || slug.startsWith('tw-') || slug.startsWith('jp-')) {
+      return new NextResponse(null, { status: 404 })
+    }
+  }
+
   const response = NextResponse.next()
 
   // Set Content-Language header based on ?lang= parameter (for AI crawlers)
