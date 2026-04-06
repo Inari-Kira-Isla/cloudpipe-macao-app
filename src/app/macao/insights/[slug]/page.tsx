@@ -215,11 +215,6 @@ async function getFallbackMerchants(industries: string[]): Promise<RelatedMercha
   })) as RelatedMerchant[]
 }
 
-export async function generateStaticParams() {
-  // Return empty array — let ISR (revalidate=3600) handle on-demand generation.
-  // Fetching 5000+ slugs at build time causes Vercel build timeout.
-  return []
-}
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params
