@@ -162,6 +162,16 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: aiCrawlerDisallows,
       },
+      {
+        userAgent: 'QwenBot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
+        userAgent: 'MoonshotBot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
   }
