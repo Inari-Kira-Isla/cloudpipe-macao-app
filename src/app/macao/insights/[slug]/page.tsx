@@ -71,7 +71,7 @@ async function getInsight(slug: string, lang: Lang) {
     .eq('slug', slug)
     .eq('lang', lang)
     .eq('status', 'published')
-    .single()
+    .maybeSingle()
   return data as InsightArticle | null
 }
 
