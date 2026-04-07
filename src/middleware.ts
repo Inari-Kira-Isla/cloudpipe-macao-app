@@ -411,11 +411,12 @@ export async function middleware(request: NextRequest) {
       })
 
       if (!response.ok) {
-        console.error(`Failed to log ${tableName}:`, response.status)
+        const errText = await response.text().catch(() => '')
+        console.error(`Failed to log ${tableName}: HTTP ${response.status} — ${errText.slice(0, 200)}`)
+        console.error(`  supabaseUrl=${supabaseUrl?.slice(0,30)}, keyPrefix=${serviceKey?.slice(0,20)}...`)
       }
     } catch (error) {
-      // Silently fail - don't block request on logging error
-      console.error('Visit logging error:', error)
+      console.error('Visit logging error:', String(error).slice(0, 200))
     }
   }
 }
