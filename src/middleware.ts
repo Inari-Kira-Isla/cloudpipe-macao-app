@@ -348,11 +348,12 @@ export async function middleware(request: NextRequest) {
   // Skip logging paths with /null slug (bad data, wastes crawler budget)
   if (request.nextUrl.pathname.includes('/null')) return response
 
-  // Log both bot and real user visits (non-blocking)
+  // Log both bot and real user visits
+  // Must await — Edge Runtime cancels unawaited promises after response returns
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (supabaseUrl && serviceKey) {
-    logVisit(request, bot, supabaseUrl, serviceKey)
+    await logVisit(request, bot, supabaseUrl, serviceKey)
   }
 
   return response
