@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Revalidate by tag
+    // Revalidate by tag (Next.js 16 requires cache profile as 2nd arg)
     if (Array.isArray(tags)) {
       for (const t of tags) {
-        revalidateTag(t)
+        revalidateTag(t, 'default')
         revalidated.push(`tag:${t}`)
       }
     }
