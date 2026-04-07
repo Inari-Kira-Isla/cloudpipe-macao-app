@@ -398,13 +398,13 @@ export async function middleware(request: NextRequest) {
       const tableName = bot ? 'crawler_visits' : 'user_visits'
 
       // Insert to Supabase (fire and forget)
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || serviceKey
+      // Use service_role JWT for both apikey and Authorization (sb_* format keys don't work with PostgREST)
       const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${serviceKey}`,
-          'apikey': anonKey,
+          'apikey': serviceKey,
           'Prefer': 'return=minimal',
         },
         body: JSON.stringify(row),
