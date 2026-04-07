@@ -16,20 +16,17 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: '/macao/*/null',
-        crawlDelay: 2,
       },
       // International AI crawlers — limit access to sensitive data
       {
         userAgent: 'GPTBot',
         allow: '/',
         disallow: aiCrawlerDisallows,
-        crawlDelay: 2,
       },
       {
         userAgent: 'ChatGPT-User',
         allow: '/',
         disallow: aiCrawlerDisallows,
-        crawlDelay: 2,
       },
       {
         userAgent: 'Google-Extended',

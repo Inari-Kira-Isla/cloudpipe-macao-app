@@ -339,15 +339,8 @@ export async function middleware(request: NextRequest) {
     response.headers.set('Content-Language', 'zh-Hant')
   }
 
-  // Set Last-Modified header for content discovery signals
-  // Crawlers use this to determine if content needs re-crawling
-  const now = new Date()
-  response.headers.set('Last-Modified', now.toUTCString())
-
-  // Add Cache-Control for cache validation
-  // Allows crawlers to use conditional requests (If-Modified-Since)
-  response.headers.set('Cache-Control', 'public, max-age=3600, must-revalidate')
-  response.headers.set('ETag', `W/"${now.getTime()}"`)  // Weak ETag for cache validation
+  // Cache-Control for crawler-friendly caching
+  response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=43200')
 
   const ua = request.headers.get('user-agent') || ''
   const bot = detectBot(ua)
