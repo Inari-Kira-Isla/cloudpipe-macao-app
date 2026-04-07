@@ -382,34 +382,29 @@ export async function middleware(request: NextRequest) {
       const row = {
         ip_hash: ipHash,
         bot_name: bot?.name || null,
-        bot_source: bot?.source || null,
+        bot_owner: bot?.source || null,
         path,
         referer,
-        referer_domain: referer ? new URL(referer).hostname : null,
         page_type: pageType,
         industry,
         category,
-        device_type: detectDeviceType(ua),
-        utm_source: request.nextUrl.searchParams.get('utm_source'),
-        utm_medium: request.nextUrl.searchParams.get('utm_medium'),
-        utm_campaign: request.nextUrl.searchParams.get('utm_campaign'),
-        utm_content: request.nextUrl.searchParams.get('utm_content'),
-        utm_term: request.nextUrl.searchParams.get('utm_term'),
-        is_bot: !!bot,
         session_id: sessionId,
-        created_at: new Date().toISOString(),
+        site: 'cloudpipe-macao-app',
+        ua_raw: ua,
+        ts: new Date().toISOString(),
       }
 
       // Use appropriate table based on visitor type
       const tableName = bot ? 'crawler_visits' : 'user_visits'
 
       // Insert to Supabase (fire and forget)
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || serviceKey
       const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${serviceKey}`,
-          'apikey': serviceKey,
+          'apikey': anonKey,
           'Prefer': 'return=minimal',
         },
         body: JSON.stringify(row),
