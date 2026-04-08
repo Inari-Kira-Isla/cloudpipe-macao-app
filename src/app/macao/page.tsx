@@ -87,6 +87,7 @@ async function getData() {
       categories: [], groupedCounts: new Map(), totalMerchantCount: 0,
       featuredMerchants: [], slugCounts: new Map(), contentMap: new Map(),
       insights: [], crawlerStats: { totalVisits: 0, todayVisits: 0, topBots: [] },
+      todayCrawled: [],
     }
   }
 
@@ -138,6 +139,46 @@ async function getData() {
     Promise.resolve({ count: 0 }),
     Promise.resolve({ data: [] }),
   ])
+
+  // Today's crawled merchants — lightweight query for homepage "live" section
+  const todayStart = new Date()
+  todayStart.setUTCHours(0, 0, 0, 0)
+  let todayCrawled: { name_zh: string; name_en: string; slug: string; catSlug: string; catIcon: string; district: string; bot: string; ts: string }[] = []
+  if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    const { data: todayVisits } = await supabase
+      .from('crawler_visits')
+      .select('path, bot_name, ts')
+      .eq('page_type', 'merchant')
+      .gte('ts', todayStart.toISOString())
+      .order('ts', { ascending: false })
+      .limit(500)
+    // Extract unique slugs (latest visit per slug)
+    const slugVisitMap = new Map<string, { bot: string; ts: string }>()
+    for (const v of todayVisits || []) {
+      const slug = v.path?.split('/').pop()
+      if (slug && !slugVisitMap.has(slug)) {
+        slugVisitMap.set(slug, { bot: v.bot_name || '', ts: v.ts || '' })
+      }
+    }
+    if (slugVisitMap.size > 0) {
+      const { data: merchants } = await supabase
+        .from('merchants')
+        .select('slug, name_zh, name_en, district, category:categories(slug, icon)')
+        .in('slug', [...slugVisitMap.keys()])
+        .eq('status', 'live')
+        .limit(200)
+      todayCrawled = (merchants || []).map((m: any) => ({
+        name_zh: m.name_zh || m.slug,
+        name_en: m.name_en || '',
+        slug: m.slug,
+        catSlug: m.category?.slug || '',
+        catIcon: CATEGORY_META[m.category?.slug]?.icon || m.category?.icon || '📋',
+        district: m.district || '',
+        bot: slugVisitMap.get(m.slug)?.bot || '',
+        ts: slugVisitMap.get(m.slug)?.ts || '',
+      }))
+    }
+  }
 
   // slug → crawler visit count (past 30 days)
   const slugCounts = new Map<string, number>()
@@ -195,6 +236,7 @@ async function getData() {
       botCount: botOwnerCounts.size,
       topBots,
     },
+    todayCrawled,
   }
 }
 
@@ -282,7 +324,7 @@ export async function generateStaticParams() {
   return []
 }
 export default async function MacaoIndexPage() {
-  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats } = await getData()
+  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
@@ -471,6 +513,37 @@ export default async function MacaoIndexPage() {
           </div>
         </div>
       </div>
+
+      {/* ═══ 今日 AI 爬取商戶 ═══ */}
+      {todayCrawled.length > 0 && (
+        <div className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 py-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <h2 className="text-sm font-semibold text-gray-700">今日 AI 正在瀏覽的商戶</h2>
+              <span className="text-xs text-gray-400 ml-auto">{todayCrawled.length} 家商戶被爬取</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {todayCrawled.slice(0, 40).map((m) => (
+                <a
+                  key={m.slug}
+                  href={`/macao/${CATEGORY_TO_INDUSTRY[m.catSlug] || 'dining'}/${m.catSlug || 'other'}/${m.slug}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all text-xs group"
+                >
+                  <span>{m.catIcon}</span>
+                  <span className="font-medium text-gray-800 group-hover:text-blue-700">{m.name_zh}</span>
+                  {m.district && <span className="text-gray-400">{m.district}</span>}
+                </a>
+              ))}
+              {todayCrawled.length > 40 && (
+                <span className="inline-flex items-center px-3 py-1.5 text-xs text-gray-400">
+                  +{todayCrawled.length - 40} 更多
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-6xl mx-auto px-4 py-10">
 
