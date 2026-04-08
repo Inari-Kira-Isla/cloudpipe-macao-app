@@ -217,7 +217,8 @@ async function getFallbackMerchants(industries: string[]): Promise<RelatedMercha
 
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
   const { lang: langParam } = await searchParams
   const lang = parseLang(langParam)
   const lc = LANG_CONFIG[lang]
@@ -258,7 +259,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 
 export default async function InsightDetailPage({ params, searchParams }: PageProps) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
   const { lang: langParam } = await searchParams
   const lang = parseLang(langParam)
   const ui = UI_STRINGS[lang]
