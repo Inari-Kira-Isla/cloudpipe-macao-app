@@ -130,7 +130,7 @@ async function computeMerchantDiscovery(days: number) {
   }>(
     'merchants',
     'slug, name_zh, name_en, schema_type, category_id, district, status',
-    (q) => (q as any).in('status', ['live', 'archived']),
+    (q) => (q as any).in('status', ['live', 'landmark', 'archived']),
     30000
   )
   console.log(`[merchant-discovery] all merchants (live+archived): ${allMerchantsData.length}`)
