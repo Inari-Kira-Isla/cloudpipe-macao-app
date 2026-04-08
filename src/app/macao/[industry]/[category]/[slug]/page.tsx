@@ -126,6 +126,22 @@ function PriceLabel({ range }: { range: string }) {
   return <>{map[range] || range}</>
 }
 
+/* ── Tier badge ── */
+function TierBadge({ tier, isOwned }: { tier?: string; isOwned?: boolean }) {
+  if (isOwned) return (
+    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      自營品牌
+    </span>
+  )
+  if (tier === 'premium') return (
+    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-[#0f4c81] to-[#16213e] text-white shadow-sm">
+      Premium
+    </span>
+  )
+  return null
+}
+
 export default async function MerchantPage({ params }: PageProps) {
   const { industry: indSlug, category: catSlug, slug } = await params
   const data = await getMerchant(slug, indSlug)
@@ -137,9 +153,7 @@ export default async function MerchantPage({ params }: PageProps) {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
-  const sameAsUrls = [
-    merchant.website,
-  ].filter(Boolean) as string[]
+  const sameAsUrls = [merchant.website].filter(Boolean) as string[]
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -172,7 +186,7 @@ export default async function MerchantPage({ params }: PageProps) {
     ...(sameAsUrls.length > 0 && { sameAs: sameAsUrls }),
     speakable: {
       '@type': 'SpeakableSpecification',
-      cssSelector: ['h1', 'main section:first-child', '.prose'],
+      cssSelector: ['h1', '.answer-hub', 'main section:first-child'],
     },
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
   }
@@ -191,9 +205,11 @@ export default async function MerchantPage({ params }: PageProps) {
       { '@type': 'ListItem', position: 2, name: '澳門商戶百科', item: `${siteUrl}/macao` },
       ...(industry ? [{ '@type': 'ListItem', position: 3, name: industry.name_zh, item: `${siteUrl}/macao/${indSlug}` }] : []),
       ...(cat ? [{ '@type': 'ListItem', position: 4, name: cat.name_zh, item: `${siteUrl}/macao/${indSlug}/${catSlug}` }] : []),
-      { '@type': 'ListItem', position: 5, name: merchant.name_zh, item: `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}` },
+      { '@type': 'ListItem', position: 5, name: merchant.name_zh, item: pageUrl },
     ],
   }
+
+  const hasContactInfo = merchant.phone || merchant.email || merchant.website || merchant.address_zh
 
   return (
     <>
@@ -201,87 +217,191 @@ export default async function MerchantPage({ params }: PageProps) {
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
+      {/* ═══ Hero ═══ */}
       <div className="hero-gradient text-white">
-        <div className="max-w-4xl mx-auto px-4 py-10">
-          <nav className="text-sm text-blue-200/70 mb-4">
+        <div className="max-w-4xl mx-auto px-4 pt-8 pb-10">
+          {/* Breadcrumb */}
+          <nav className="text-sm text-blue-200/60 mb-6">
             <a href="/macao" className="hover:text-white transition-colors">澳門百科</a>
-            <span className="mx-2">/</span>
             {industry && (
               <>
+                <span className="mx-2 text-blue-200/30">/</span>
                 <a href={`/macao/${indSlug}`} className="hover:text-white transition-colors">{industry.name_zh}</a>
-                <span className="mx-2">/</span>
               </>
             )}
             {cat && (
               <>
+                <span className="mx-2 text-blue-200/30">/</span>
                 <a href={`/macao/${indSlug}/${cat.slug}`} className="hover:text-white transition-colors">{cat.name_zh}</a>
-                <span className="mx-2">/</span>
               </>
             )}
-            <span className="text-white">{merchant.name_zh}</span>
           </nav>
 
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{merchant.name_zh}</h1>
-          {merchant.name_en && <p className="text-lg text-blue-200">{merchant.name_en}</p>}
-          {merchant.name_pt && <p className="text-base text-blue-200/70">{merchant.name_pt}</p>}
+          {/* Title area */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <TierBadge tier={merchant.tier} isOwned={merchant.is_owned} />
+                <CertificationBadge googleRating={merchant.google_rating} website={merchant.website} />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-1 leading-tight">{merchant.name_zh}</h1>
+              {merchant.name_en && <p className="text-lg text-blue-200/80 font-light">{merchant.name_en}</p>}
+              {merchant.name_pt && <p className="text-base text-blue-200/50">{merchant.name_pt}</p>}
+            </div>
 
-          <div className="flex flex-wrap gap-2 mt-5 items-start">
+            {/* Rating card (right side on desktop) */}
+            {merchant.google_rating && (
+              <div className="flex-shrink-0 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-4 border border-white/15 text-center">
+                <div className="text-3xl font-bold text-amber-400">{merchant.google_rating}</div>
+                <div className="flex justify-center gap-0.5 my-1">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <span key={i} className={i <= Math.round(merchant.google_rating || 0) ? 'text-amber-400' : 'text-white/20'}>★</span>
+                  ))}
+                </div>
+                {merchant.google_reviews && (
+                  <div className="text-xs text-blue-200/60">{merchant.google_reviews} 則評價</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mt-5">
             {cat && (
-              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              <span className="text-xs px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/15">
                 {cat.icon} {cat.name_zh}
               </span>
             )}
             {merchant.district && (
-              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">{merchant.district}</span>
+              <span className="text-xs px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/15">
+                📍 {merchant.district}
+              </span>
             )}
             {merchant.price_range && (
-              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20"><PriceLabel range={merchant.price_range} /></span>
+              <span className="text-xs px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/15">
+                💰 <PriceLabel range={merchant.price_range} />
+              </span>
             )}
-            {merchant.google_rating && (
-              <span className="text-xs px-3 py-1.5 bg-amber-400/90 text-white rounded-full font-semibold">★ {merchant.google_rating} ({merchant.google_reviews})</span>
-            )}
-            <CertificationBadge
-              googleRating={merchant.google_rating}
-              website={merchant.website}
-            />
           </div>
         </div>
       </div>
       <div className="gold-line"></div>
 
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        {/* Certification Info */}
-        {(merchant.google_rating || merchant.website) && (
-          <section className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-6 mb-10 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xl">🏆</span>
-              <h2 className="text-lg font-bold text-[#0f4c81]">認證來源</h2>
+      <main className="max-w-4xl mx-auto px-4 py-12">
+
+        {/* ═══ Answer Hub 引言 ═══ */}
+        {content?.description && (
+          <section className="mb-12">
+            <div className="answer-hub bg-[#e8f0fe] border-l-4 border-[#0f4c81] rounded-r-xl px-6 py-5">
+              <p className="text-[#1a1a2e] leading-relaxed text-base md:text-lg" style={{ lineHeight: '1.85' }}>
+                {content.description}
+              </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              {merchant.google_rating && (
-                <div className="flex items-start gap-3">
-                  <span className="text-lg">✓</span>
-                  <div>
-                    <dt className="font-semibold text-[#0f4c81]">Google 商業檔案</dt>
-                    <dd className="text-gray-700 text-xs mt-0.5">評分: {merchant.google_rating} ⭐</dd>
+          </section>
+        )}
+
+        {/* ═══ 基本資訊 + 聯絡方式 ═══ */}
+        {hasContactInfo && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#c5a572] rounded-full inline-block"></span>
+              基本資訊
+            </h2>
+            <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              style={{ borderLeft: '3px solid #c5a572' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#e5e7eb]">
+                {merchant.address_zh && (
+                  <div className="flex items-start gap-3 p-5">
+                    <span className="text-lg mt-0.5 flex-shrink-0">📍</span>
+                    <div>
+                      <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">地址</dt>
+                      <dd className="text-[#1a1a2e] font-medium text-sm leading-relaxed">{merchant.address_zh}</dd>
+                      {merchant.address_en && <dd className="text-xs text-[#6b7280] mt-0.5">{merchant.address_en}</dd>}
+                    </div>
+                  </div>
+                )}
+                {merchant.phone && (
+                  <div className="flex items-start gap-3 p-5">
+                    <span className="text-lg mt-0.5 flex-shrink-0">📞</span>
+                    <div>
+                      <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">電話</dt>
+                      <dd>
+                        <a href={`tel:${merchant.phone}`} className="text-[#0f4c81] font-medium text-sm hover:underline">
+                          {merchant.phone}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                {merchant.website && (
+                  <div className="flex items-start gap-3 p-5">
+                    <span className="text-lg mt-0.5 flex-shrink-0">🌐</span>
+                    <div>
+                      <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">官方網站</dt>
+                      <dd>
+                        <a href={merchant.website} target="_blank" rel="noopener noreferrer"
+                          className="text-[#0f4c81] font-medium text-sm hover:underline break-all">
+                          {merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                {merchant.email && (
+                  <div className="flex items-start gap-3 p-5">
+                    <span className="text-lg mt-0.5 flex-shrink-0">✉️</span>
+                    <div>
+                      <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">電郵</dt>
+                      <dd>
+                        <a href={`mailto:${merchant.email}`} className="text-[#0f4c81] font-medium text-sm hover:underline">
+                          {merchant.email}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Opening hours row */}
+              {merchant.opening_hours && typeof merchant.opening_hours === 'object' && (
+                <div className="border-t border-[#e5e7eb] p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg mt-0.5 flex-shrink-0">🕐</span>
+                    <div className="flex-1">
+                      <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-2 font-medium">營業時間</dt>
+                      <dd className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        {Object.entries(merchant.opening_hours).map(([day, hours]) => (
+                          <div key={day} className="flex justify-between gap-2 px-3 py-1.5 bg-[#fafbfc] rounded-lg">
+                            <span className="text-[#6b7280] font-medium">{day}</span>
+                            <span className="text-[#1a1a2e]">{String(hours)}</span>
+                          </div>
+                        ))}
+                      </dd>
+                    </div>
                   </div>
                 </div>
               )}
-              {merchant.website && (
-                <div className="flex items-start gap-3">
-                  <span className="text-lg">✓</span>
-                  <div>
-                    <dt className="font-semibold text-[#0f4c81]">官方網站</dt>
-                    <dd className="text-gray-700 text-xs mt-0.5">商戶驗證</dd>
-                  </div>
-                </div>
-              )}
-              {merchant.google_rating && merchant.google_rating >= 4.0 && (
-                <div className="flex items-start gap-3">
-                  <span className="text-lg">✓</span>
-                  <div>
-                    <dt className="font-semibold text-[#0f4c81]">高評分驗證</dt>
-                    <dd className="text-gray-700 text-xs mt-0.5">信心度 90%+</dd>
+
+              {/* Certification row */}
+              {(merchant.google_rating || merchant.website) && (
+                <div className="border-t border-[#e5e7eb] bg-[#fafbfc] px-5 py-3">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-[#6b7280]">
+                    <span className="font-medium text-[#0f4c81] uppercase tracking-wider">認證來源</span>
+                    {merchant.google_rating && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-[#059669]">✓</span> Google 商業檔案 ({merchant.google_rating} ⭐)
+                      </span>
+                    )}
+                    {merchant.website && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-[#059669]">✓</span> 官方網站已驗證
+                      </span>
+                    )}
+                    {merchant.tripadvisor_rating && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-[#059669]">✓</span> TripAdvisor ({merchant.tripadvisor_rating})
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
@@ -289,57 +409,32 @@ export default async function MerchantPage({ params }: PageProps) {
           </section>
         )}
 
-        <section className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
-          <h2 className="text-lg font-bold text-[#0f4c81] mb-4">基本資訊</h2>
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
-            {merchant.address_zh && (
-              <div>
-                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">地址</dt>
-                <dd className="font-medium text-[#1a1a2e]">{merchant.address_zh}</dd>
-              </div>
-            )}
-            {merchant.phone && (
-              <div>
-                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">電話</dt>
-                <dd><a href={`tel:${merchant.phone}`} className="font-medium text-[#0f4c81] hover:underline">{merchant.phone}</a></dd>
-              </div>
-            )}
-            {merchant.website && (
-              <div>
-                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">網站</dt>
-                <dd><a href={merchant.website} target="_blank" rel="noopener" className="font-medium text-[#0f4c81] hover:underline">{merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 40)}</a></dd>
-              </div>
-            )}
-            {merchant.email && (
-              <div>
-                <dt className="text-gray-400 text-xs uppercase tracking-wider mb-1">電郵</dt>
-                <dd><a href={`mailto:${merchant.email}`} className="font-medium text-[#0f4c81] hover:underline">{merchant.email}</a></dd>
-              </div>
-            )}
-          </dl>
-        </section>
-
+        {/* ═══ 商戶內容 (body) ═══ */}
         {content?.body && (
-          <section className="prose max-w-none mb-10">
-            <div dangerouslySetInnerHTML={{ __html: content.body }} />
+          <section className="mb-12">
+            <div className="prose max-w-none prose-headings:text-[#1a1a2e] prose-headings:font-bold prose-p:text-[#1a1a2e] prose-p:leading-[1.85] prose-a:text-[#0f4c81] prose-a:no-underline hover:prose-a:underline prose-strong:text-[#1a1a2e] prose-table:text-sm prose-th:bg-[#fafbfc] prose-th:text-[#0f4c81] prose-th:font-semibold prose-td:border-[#e5e7eb]">
+              <div dangerouslySetInnerHTML={{ __html: content.body }} />
+            </div>
           </section>
         )}
 
+        {/* ═══ FAQ ═══ */}
         {faqs.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
               <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
               常見問題
             </h2>
             <div className="space-y-3">
-              {faqs.map((faq) => (
-                <details key={faq.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e]">
-                    <span className="pr-4">{faq.question}</span>
-                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
+              {faqs.map((faq, idx) => (
+                <details key={faq.id} className="group bg-white border border-[#e5e7eb] rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow"
+                  {...(idx === 0 ? { open: true } : {})}>
+                  <summary className="font-semibold cursor-pointer px-6 py-4 flex justify-between items-center hover:bg-[#fafbfc] transition-colors text-[#1a1a2e] text-sm md:text-base">
+                    <span className="pr-4 leading-relaxed">{faq.question}</span>
+                    <span className="text-[#0f4c81] text-xs group-open:rotate-180 transition-transform duration-300 flex-shrink-0 w-5 h-5 rounded-full bg-[#e8f0fe] flex items-center justify-center">▼</span>
                   </summary>
-                  <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</p>
+                  <div className="px-6 pb-5 border-t border-[#e5e7eb]">
+                    <p className="mt-4 text-[#6b7280] text-sm md:text-base" style={{ lineHeight: '1.85' }}>{faq.answer}</p>
                   </div>
                 </details>
               ))}
@@ -347,23 +442,23 @@ export default async function MerchantPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Related Insights */}
+        {/* ═══ 深度分析 ═══ */}
         {insights.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
               <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
               深度分析
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {insights.map(a => (
                 <a key={a.slug} href={`/macao/insights/${a.slug}`}
-                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 gold-line"></div>
-                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-2">{a.title}</h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span>{a.read_time_minutes} 分鐘</span>
+                  className="block bg-white border border-[#e5e7eb] rounded-xl p-5 relative overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_24px_-8px_rgba(15,76,129,0.15)] hover:-translate-y-0.5 transition-all duration-300">
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#c5a572] to-[#0f4c81]"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-snug mb-3">{a.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-[#6b7280]">
+                    <span className="px-2 py-0.5 bg-[#fafbfc] rounded text-[#6b7280]">{a.read_time_minutes} 分鐘</span>
                     {(a.tags || []).slice(0, 2).map(tag => (
-                      <span key={tag} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">{tag}</span>
+                      <span key={tag} className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded">{tag}</span>
                     ))}
                   </div>
                 </a>
@@ -372,53 +467,59 @@ export default async function MerchantPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Related merchants in same category */}
+        {/* ═══ 同類推薦 ═══ */}
         {relatedMerchants.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-xl font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
-              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#c5a572] rounded-full inline-block"></span>
               同類推薦
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {relatedMerchants.map(rm => (
                 <a key={rm.slug} href={`/macao/${indSlug}/${catSlug}/${rm.slug}`}
-                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4">
+                  className="block bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_24px_-8px_rgba(15,76,129,0.15)] hover:-translate-y-0.5 transition-all duration-300"
+                  style={{ borderLeft: '3px solid #c5a572' }}>
                   <h3 className="font-semibold text-[#1a1a2e] mb-1">{rm.name_zh}</h3>
-                  {rm.name_en && <p className="text-xs text-gray-400 mb-1">{rm.name_en}</p>}
+                  {rm.name_en && <p className="text-xs text-[#6b7280] mb-2">{rm.name_en}</p>}
                   <div className="flex gap-2 text-xs">
-                    {rm.google_rating && <span className="px-2 py-0.5 rating-badge rounded">★ {rm.google_rating}</span>}
-                    {rm.district && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{rm.district}</span>}
+                    {rm.google_rating && (
+                      <span className="px-2 py-0.5 rounded font-semibold text-white" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                        ★ {rm.google_rating}
+                      </span>
+                    )}
+                    {rm.district && <span className="px-2 py-0.5 bg-[#fafbfc] text-[#6b7280] rounded border border-[#e5e7eb]">{rm.district}</span>}
                   </div>
                 </a>
               ))}
             </div>
-            <p className="text-center mt-3">
-              <a href={`/macao/${indSlug}/${catSlug}`} className="text-sm text-[#0f4c81] hover:underline">
-                查看全部{cat?.name_zh || ''}商戶 →
+            <p className="text-center mt-5">
+              <a href={`/macao/${indSlug}/${catSlug}`} className="inline-flex items-center gap-1 text-sm text-[#0f4c81] hover:underline font-medium">
+                查看全部{cat?.name_zh || ''}商戶 <span className="text-xs">→</span>
               </a>
             </p>
           </section>
         )}
 
-        <footer className="border-t border-gray-200 pt-8 mt-10 text-sm text-gray-400">
-          <div className="flex flex-col md:flex-row justify-between gap-2">
+        {/* ═══ Footer ═══ */}
+        <footer className="border-t border-[#e5e7eb] pt-8 mt-12 text-sm text-[#6b7280]">
+          <div className="flex flex-col md:flex-row justify-between gap-4">
             <div>
-              <p>由 <a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a> 自動生成並人工審核</p>
-              <p className="mt-1">最後更新：{new Date(merchant.updated_at).toLocaleDateString('zh-TW')}</p>
+              <p>由 <a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline font-medium">CloudPipe AI</a> 自動生成並人工審核</p>
+              <p className="mt-1 text-xs text-[#6b7280]/70">最後更新：{new Date(merchant.updated_at).toLocaleDateString('zh-TW')}</p>
             </div>
-            <div className="text-right">
-              <a href={`/macao/${indSlug}/${catSlug}`} className="text-[#0f4c81] hover:underline">← 返回{cat?.name_zh || '分類'}</a>
-              <p className="mt-1">© 2026 CloudPipe · CC BY 4.0</p>
+            <div className="md:text-right">
+              <a href={`/macao/${indSlug}/${catSlug}`} className="text-[#0f4c81] hover:underline font-medium">← 返回{cat?.name_zh || '分類'}</a>
+              <p className="mt-1 text-xs text-[#6b7280]/70">&copy; 2026 CloudPipe &middot; CC BY 4.0</p>
             </div>
           </div>
-          <div className="text-center text-xs text-gray-300 mt-4">
+          <div className="text-center text-xs text-[#6b7280]/50 mt-6 pt-4 border-t border-[#e5e7eb]/50">
             <a href="https://cloudpipe-landing.vercel.app" className="hover:text-[#0f4c81]">CloudPipe AI</a>
-            <span className="mx-2">·</span>
+            <span className="mx-2">&middot;</span>
             <a href="https://cloudpipe-directory.vercel.app" className="hover:text-[#0f4c81]">企業目錄</a>
-            <span className="mx-2">·</span>
+            <span className="mx-2">&middot;</span>
             <a href="https://inari-kira-isla.github.io/Openclaw/" className="hover:text-[#0f4c81]">AI 學習寶庫</a>
-            <span className="mx-2">·</span>
-            <a href="https://inari-kira-isla.github.io/inari-web/" className="hover:text-[#0f4c81]">稻荷環球食品</a>
+            <span className="mx-2">&middot;</span>
+            <a href="https://inari-kira-isla.github.io/inari-global-foods/" className="hover:text-[#0f4c81]">稻荷環球食品</a>
           </div>
         </footer>
       </main>
