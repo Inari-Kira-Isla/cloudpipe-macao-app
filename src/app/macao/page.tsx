@@ -86,7 +86,7 @@ async function getData() {
     return {
       categories: [], groupedCounts: new Map(), totalMerchantCount: 0,
       featuredMerchants: [], slugCounts: new Map(), contentMap: new Map(),
-      insights: [], crawlerStats: { totalVisits: 0, todayVisits: 0, topBots: [] },
+      insights: [], crawlerStats: { total: 0, today: 0, botCount: 0, topBots: [] as string[] },
       todayCrawled: [],
     }
   }
@@ -133,11 +133,27 @@ async function getData() {
     supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
     // Count only — for schema + hero stat (no payload)
     supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
-    // Skip crawler_visits during build (causes timeout) — will be loaded on-demand via ISR
-    Promise.resolve({ data: [] }),
-    Promise.resolve({ count: 0 }),
-    Promise.resolve({ count: 0 }),
-    Promise.resolve({ data: [] }),
+    // Crawler visit data — merchant page paths (30d) for ranking + stats
+    supabase.from('crawler_visits')
+      .select('path')
+      .eq('page_type', 'merchant')
+      .gte('ts', thirtyDaysAgo)
+      .order('ts', { ascending: false })
+      .limit(3000),
+    // Total AI visits (30d)
+    supabase.from('crawler_visits')
+      .select('*', { count: 'exact', head: true })
+      .gte('ts', thirtyDaysAgo),
+    // Today AI visits
+    supabase.from('crawler_visits')
+      .select('*', { count: 'exact', head: true })
+      .gte('ts', todayStr),
+    // Bot breakdown (30d) — bot_owner for top bots display
+    supabase.from('crawler_visits')
+      .select('bot_owner')
+      .gte('ts', thirtyDaysAgo)
+      .not('bot_owner', 'is', null)
+      .limit(5000),
   ])
 
   // Today's crawled merchants — lightweight query for homepage "live" section
@@ -472,10 +488,10 @@ export default async function MacaoIndexPage() {
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span className="text-xs font-semibold tracking-widest uppercase text-emerald-400">澳門商業規模</span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-emerald-400">AI 爬取實況</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed max-w-[160px]">
-                澳門商戶百科<br />的覆蓋範圍
+                全球 AI 系統<br />正在讀取澳門商戶
               </p>
             </div>
 
@@ -483,21 +499,21 @@ export default async function MacaoIndexPage() {
             <div className="flex flex-wrap gap-6 md:gap-10 flex-1">
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                  350+
+                  {crawlerStats.total > 0 ? crawlerStats.total.toLocaleString() : '350+'}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">精選商戶</div>
+                <div className="text-xs text-slate-400 mt-0.5">{crawlerStats.total > 0 ? '30 天 AI 訪問' : '精選商戶'}</div>
               </div>
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-emerald-400 tabular-nums">
-                  4
+                  {crawlerStats.today > 0 ? crawlerStats.today.toLocaleString() : '4'}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">區域覆蓋</div>
+                <div className="text-xs text-slate-400 mt-0.5">{crawlerStats.today > 0 ? '今日 AI 訪問' : '區域覆蓋'}</div>
               </div>
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-blue-300 tabular-nums">
-                  20+
+                  {crawlerStats.botCount > 0 ? crawlerStats.botCount : '20+'}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">行業大類</div>
+                <div className="text-xs text-slate-400 mt-0.5">{crawlerStats.botCount > 0 ? '個 AI 系統' : '行業大類'}</div>
               </div>
             </div>
 
