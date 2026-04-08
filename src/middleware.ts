@@ -292,25 +292,21 @@ function parsePath(path: string): { pageType: string; industry: string | null; c
   if (path === '/sitemap.xml') return { pageType: 'sitemap', industry: MACAO_INDUSTRY, category: null }
   if (path === '/robots.txt') return { pageType: 'robots', industry: MACAO_INDUSTRY, category: null }
 
-  // Insights section — detect region from insight slug
-  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: MACAO_INDUSTRY, category: null }
+  // Insights section — unified as 'insights' industry (not region-based)
+  if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: 'insights', category: null }
   if (path.startsWith('/macao/insights/')) {
-    const slug = decodeURIComponent(path.split('/').pop() || '')
-    const { industry } = regionFromSlug(slug)
-    return { pageType: 'insight', industry, category: null }
+    return { pageType: 'insight', industry: 'insights', category: null }
   }
 
   // Crawler dashboard (internal, skip)
   if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 
-  // Merchant/category pages — detect region from last slug segment
+  // Merchant/category pages — use first path segment as industry (dining, attractions, hotels, etc.)
   const segments = path.replace(/^\/macao\//, '').replace(/\/$/, '').split('/')
-  const lastSlug = decodeURIComponent(segments[segments.length - 1] || '')
-  const { industry: slugIndustry } = regionFromSlug(lastSlug)
 
-  if (segments.length === 1) return { pageType: 'industry', industry: MACAO_INDUSTRY, category: null }
-  if (segments.length === 2) return { pageType: 'category', industry: MACAO_INDUSTRY, category: null }
-  if (segments.length >= 3) return { pageType: 'merchant', industry: slugIndustry, category: null }
+  if (segments.length === 1) return { pageType: 'industry', industry: segments[0] || MACAO_INDUSTRY, category: null }
+  if (segments.length === 2) return { pageType: 'category', industry: segments[0] || MACAO_INDUSTRY, category: segments[1] || null }
+  if (segments.length >= 3) return { pageType: 'merchant', industry: segments[0] || MACAO_INDUSTRY, category: segments[1] || null }
 
   return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 }

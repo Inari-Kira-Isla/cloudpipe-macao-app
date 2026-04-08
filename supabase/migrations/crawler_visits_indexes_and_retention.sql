@@ -69,16 +69,28 @@ BEGIN
         LIMIT 50
       ) b
     ),
+    'industries', (
+      SELECT json_object_agg(industry, cnt)
+      FROM (
+        SELECT COALESCE(NULLIF(industry, ''), 'unknown') as industry, COUNT(*) as cnt
+        FROM crawler_visits cv5
+        WHERE cv5.ts >= since_ts
+        GROUP BY 1
+        ORDER BY cnt DESC
+        LIMIT 50
+      ) ind
+    ),
     'sites', (
       SELECT json_object_agg(site, cnt)
       FROM (
-        SELECT COALESCE(site, 'cloudpipe-macao-app') as site, COUNT(*) as cnt
+        SELECT COALESCE(LOWER(site), 'cloudpipe-macao-app') as site, COUNT(*) as cnt
         FROM crawler_visits cv3
         WHERE cv3.ts >= since_ts
         GROUP BY 1
         ORDER BY cnt DESC
       ) s
     ),
+    'site_sample_total', COUNT(*),
     'daily', (
       SELECT json_object_agg(day, cnt)
       FROM (

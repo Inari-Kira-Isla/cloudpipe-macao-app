@@ -352,11 +352,12 @@ export default function CrawlerDashboard() {
 
           {/* Traffic Analysis: LLM vs Organic */}
           {(() => {
-            const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu'])
+            const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex'])
+            const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
             // bot counts come from a sample; compute ratio within sample, then scale to total
-            const botSampleTotal = Object.values(summary.bots || {}).reduce((s, info) => s + info.count, 0) || 1
+            const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info.owner) ? 0 : info.count), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
-              return sum + (llmBots.has(info.owner) ? info.count : 0)
+              return sum + (llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? info.count : 0)
             }, 0)
             const llmRatio = llmSampleCount / botSampleTotal
             const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))

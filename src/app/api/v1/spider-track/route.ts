@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { site, bot_name, path, referer, ua } = body
+    const { site: rawSite, bot_name, path, referer, ua } = body
+    const site = (rawSite || '').toLowerCase()
 
     // Validate required fields
     if (!site || !bot_name || !path) {
