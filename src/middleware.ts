@@ -274,9 +274,16 @@ async function hashIP(ip: string): Promise<string> {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
 }
 
+/** Detect region from slug prefix */
+function regionFromSlug(slug: string): { region: string; industry: string } {
+  if (slug.startsWith('hongkong-') || slug.startsWith('hk-')) return { region: 'hongkong', industry: '香港商戶百科' }
+  if (slug.startsWith('taiwan-') || slug.startsWith('tw-')) return { region: 'taiwan', industry: '台灣商戶百科' }
+  if (slug.startsWith('japan-') || slug.startsWith('jp-')) return { region: 'japan', industry: '日本商戶百科' }
+  return { region: 'macao', industry: '澳門商戶百科' }
+}
+
 /** Extract page type and segments from path */
 function parsePath(path: string): { pageType: string; industry: string | null; category: string | null } {
-  // All cloudpipe-macao-app pages have industry='澳門商戶百科'
   const MACAO_INDUSTRY = '澳門商戶百科'
 
   if (path === '/macao' || path === '/macao/') return { pageType: 'home', industry: MACAO_INDUSTRY, category: null }
@@ -285,17 +292,25 @@ function parsePath(path: string): { pageType: string; industry: string | null; c
   if (path === '/sitemap.xml') return { pageType: 'sitemap', industry: MACAO_INDUSTRY, category: null }
   if (path === '/robots.txt') return { pageType: 'robots', industry: MACAO_INDUSTRY, category: null }
 
-  // Insights section
+  // Insights section — detect region from insight slug
   if (path === '/macao/insights' || path === '/macao/insights/') return { pageType: 'insight-index', industry: MACAO_INDUSTRY, category: null }
-  if (path.startsWith('/macao/insights/')) return { pageType: 'insight', industry: MACAO_INDUSTRY, category: null }
+  if (path.startsWith('/macao/insights/')) {
+    const slug = decodeURIComponent(path.split('/').pop() || '')
+    const { industry } = regionFromSlug(slug)
+    return { pageType: 'insight', industry, category: null }
+  }
 
   // Crawler dashboard (internal, skip)
   if (path.startsWith('/macao/crawler-dashboard')) return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 
+  // Merchant/category pages — detect region from last slug segment
   const segments = path.replace(/^\/macao\//, '').replace(/\/$/, '').split('/')
+  const lastSlug = decodeURIComponent(segments[segments.length - 1] || '')
+  const { industry: slugIndustry } = regionFromSlug(lastSlug)
+
   if (segments.length === 1) return { pageType: 'industry', industry: MACAO_INDUSTRY, category: null }
   if (segments.length === 2) return { pageType: 'category', industry: MACAO_INDUSTRY, category: null }
-  if (segments.length >= 3) return { pageType: 'merchant', industry: MACAO_INDUSTRY, category: null }
+  if (segments.length >= 3) return { pageType: 'merchant', industry: slugIndustry, category: null }
 
   return { pageType: 'other', industry: MACAO_INDUSTRY, category: null }
 }
