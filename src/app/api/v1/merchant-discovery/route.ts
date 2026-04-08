@@ -22,6 +22,14 @@ function extractMerchantSlug(path: string): string | null {
   return null
 }
 
+/** Convert slug like "jp-nishiki-market-kyoto" → "Nishiki Market Kyoto" */
+function prettifySlug(slug: string): string {
+  return slug
+    .replace(/^(jp|hk|tw|macao)-/, '')  // strip region prefix
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+}
+
 function regionFromSlug(slug: string): string {
   if (slug.startsWith('hongkong-') || slug.startsWith('hk-')) return 'hongkong'
   if (slug.startsWith('taiwan-') || slug.startsWith('tw-')) return 'taiwan'
@@ -139,7 +147,7 @@ async function computeMerchantDiscovery(days: number) {
     const catSlug = m.category_id ? (catMap[m.category_id] || '') : ''
     const industry = SCHEMA_TO_IND[m.schema_type || ''] || visitBySlug[m.slug]?.industry || 'other'
     merchantNames[m.slug] = {
-      name_zh: m.name_zh || m.slug,
+      name_zh: m.name_zh || prettifySlug(m.slug),
       name_en: m.name_en || '',
       industry,
       district: m.district || '',
@@ -153,7 +161,7 @@ async function computeMerchantDiscovery(days: number) {
   for (const slug of allSlugs) {
     const v = visitBySlug[slug] || { count: 0, bots: new Set<string>(), lastTs: '', industry: 'other', region: regionFromSlug(slug) }
     const c = coverageBySlug[slug] || { insightCount: 0, totalWords: 0, sampleInsights: [] }
-    const name = merchantNames[slug] || { name_zh: slug, name_en: '', industry: v.industry, district: '', region: v.region }
+    const name = merchantNames[slug] || { name_zh: prettifySlug(slug), name_en: '', industry: v.industry, district: '', region: v.region }
     const botArr = [...v.bots]
     const readiness = calcReadiness(v.count, c.insightCount, c.totalWords, botArr.length)
     merchantList.push({
