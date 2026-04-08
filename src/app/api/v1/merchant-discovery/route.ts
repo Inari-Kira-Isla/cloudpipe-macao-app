@@ -124,16 +124,16 @@ async function computeMerchantDiscovery(days: number) {
     }
   }
 
-  // 3. All live merchants
+  // 3. All merchants (live + archived for name resolution)
   const allMerchantsData = await fetchAllPaginated<{
-    slug: string; name_zh: string | null; name_en: string | null; schema_type: string | null; category_id: number | null; district: string | null
+    slug: string; name_zh: string | null; name_en: string | null; schema_type: string | null; category_id: number | null; district: string | null; status: string | null
   }>(
     'merchants',
-    'slug, name_zh, name_en, schema_type, category_id, district',
-    (q) => (q as any).eq('status', 'live'),
-    20000
+    'slug, name_zh, name_en, schema_type, category_id, district, status',
+    (q) => (q as any).in('status', ['live', 'archived']),
+    30000
   )
-  console.log(`[merchant-discovery] all live merchants: ${allMerchantsData.length}`)
+  console.log(`[merchant-discovery] all merchants (live+archived): ${allMerchantsData.length}`)
 
   // Categories
   let catMap: Record<number, string> = {}
