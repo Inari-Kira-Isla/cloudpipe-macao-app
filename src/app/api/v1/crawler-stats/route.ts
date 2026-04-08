@@ -79,27 +79,34 @@ export async function GET(request: NextRequest) {
       case 'summary': {
         const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
-          // If days=1 (today), scale 30d data down proportionally
+          // If days<=1 (today), query Supabase directly for accurate bot counts
+          // (ratio-scaling from 30d cache rounds low-frequency bots like PerplexityBot to 0)
           if (days <= 1) {
-            const todayVisits: number = cached.today_visits || 0
-            const totalVisits: number = cached.total_visits || 1
-            const ratio = todayVisits / totalVisits
-            // Scale bot counts
+            const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+            const [
+              { data: botData },
+              { count: todayCount },
+              { data: indData },
+            ] = await Promise.all([
+              supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', todayStart).order('ts', { ascending: false }).limit(5000),
+              supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
+              supabase.from('crawler_visits').select('industry').gte('ts', todayStart).order('ts', { ascending: false }).limit(5000),
+            ])
             const todayBots: Record<string, { count: number; owner: string }> = {}
-            for (const [name, info] of Object.entries<{ count: number; owner: string }>(cached.bots || {})) {
-              const c = Math.round((info.count || 0) * ratio)
-              if (c > 0) todayBots[name] = { count: c, owner: info.owner }
+            for (const r of botData || []) {
+              const bn = r.bot_name || 'Unknown'
+              if (!todayBots[bn]) todayBots[bn] = { count: 0, owner: r.bot_owner || '' }
+              todayBots[bn].count++
             }
-            // Scale industries
             const todayIndustries: Record<string, number> = {}
-            for (const [ind, cnt] of Object.entries<number>(cached.industries || {})) {
-              const c = Math.round((cnt || 0) * ratio)
-              if (c > 0) todayIndustries[ind] = c
+            for (const r of indData || []) {
+              const ind = r.industry || 'unknown'
+              todayIndustries[ind] = (todayIndustries[ind] || 0) + 1
             }
             return NextResponse.json({
-              period: { since: new Date().toISOString().slice(0, 10) + 'T00:00:00Z', days: 1 },
-              total_visits: todayVisits,
-              today_visits: todayVisits,
+              period: { since: todayStart, days: 1 },
+              total_visits: todayCount || 0,
+              today_visits: todayCount || 0,
               unique_bots: Object.keys(todayBots).length,
               unique_sessions: 0,
               bots: todayBots,
@@ -109,7 +116,7 @@ export async function GET(request: NextRequest) {
               sites: cached.sites || {},
               site_sample_total: cached.site_sample_total || 0,
             }, {
-              headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'PRECOMPUTED-TODAY' },
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'LIVE-TODAY' },
             })
           }
           // For days < 30, scale 30d data proportionally
