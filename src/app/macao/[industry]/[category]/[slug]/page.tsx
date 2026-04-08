@@ -71,10 +71,12 @@ async function getMerchant(slug: string, industrySlug: string) {
     supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
-      .contains('related_merchant_slugs', [slug]).limit(3),
+      .contains('related_merchant_slugs', [slug])
+      .order('created_at', { ascending: false }).limit(6),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
-      .contains('related_industries', [industrySlug]).limit(3),
+      .contains('related_industries', [industrySlug])
+      .order('created_at', { ascending: false }).limit(3),
     supabase.from('merchants').select('slug, name_zh, name_en, google_rating, district')
       .eq('category_id', merchant.category_id).eq('status', 'live')
       .neq('slug', slug).not('slug', 'is', null)
@@ -86,7 +88,7 @@ async function getMerchant(slug: string, industrySlug: string) {
   const seen = new Set<string>()
   const insights: InsightLink[] = []
   for (const a of [...(directInsights || []), ...(industryInsights || [])]) {
-    if (!seen.has(a.slug) && insights.length < 3) { seen.add(a.slug); insights.push(a as InsightLink) }
+    if (!seen.has(a.slug) && insights.length < 6) { seen.add(a.slug); insights.push(a as InsightLink) }
   }
 
   return {
