@@ -79,29 +79,43 @@ export async function GET(request: NextRequest) {
       case 'summary': {
         const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
-          // If days<=1 (today), query Supabase directly for accurate bot counts
+          // If days<=1 (today), use RPC or direct query for accurate data
           // (ratio-scaling from 30d cache rounds low-frequency bots like PerplexityBot to 0)
           if (days <= 1) {
             const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+            // Try RPC first (gives proper industry breakdown from path parsing)
+            const { data: rpcData, error: rpcError } = await supabase
+              .rpc('get_crawler_summary', { since_ts: todayStart })
+            if (!rpcError && rpcData && rpcData.total_visits > 0) {
+              return NextResponse.json({
+                period: { since: todayStart, days: 1 },
+                total_visits: rpcData.total_visits || 0,
+                today_visits: rpcData.total_visits || 0,
+                unique_bots: rpcData.unique_bots || 0,
+                unique_sessions: 0,
+                bots: rpcData.bots || {},
+                top_pages: {},
+                industries: rpcData.industries || {},
+                page_types: {},
+                sites: rpcData.sites || {},
+                site_sample_total: rpcData.site_sample_total || 0,
+              }, {
+                headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'LIVE-TODAY-RPC' },
+              })
+            }
+            // Fallback: direct queries
             const [
               { data: botData },
               { count: todayCount },
-              { data: indData },
             ] = await Promise.all([
               supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', todayStart).order('ts', { ascending: false }).limit(5000),
               supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
-              supabase.from('crawler_visits').select('industry').gte('ts', todayStart).order('ts', { ascending: false }).limit(5000),
             ])
             const todayBots: Record<string, { count: number; owner: string }> = {}
             for (const r of botData || []) {
               const bn = r.bot_name || 'Unknown'
               if (!todayBots[bn]) todayBots[bn] = { count: 0, owner: r.bot_owner || '' }
               todayBots[bn].count++
-            }
-            const todayIndustries: Record<string, number> = {}
-            for (const r of indData || []) {
-              const ind = r.industry || 'unknown'
-              todayIndustries[ind] = (todayIndustries[ind] || 0) + 1
             }
             return NextResponse.json({
               period: { since: todayStart, days: 1 },
@@ -111,12 +125,12 @@ export async function GET(request: NextRequest) {
               unique_sessions: 0,
               bots: todayBots,
               top_pages: {},
-              industries: todayIndustries,
+              industries: {},
               page_types: {},
               sites: cached.sites || {},
               site_sample_total: cached.site_sample_total || 0,
             }, {
-              headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'LIVE-TODAY' },
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'LIVE-TODAY-FALLBACK' },
             })
           }
           // For days < 30, scale 30d data proportionally
