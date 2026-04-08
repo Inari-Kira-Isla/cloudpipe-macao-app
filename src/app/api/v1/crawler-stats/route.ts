@@ -214,23 +214,26 @@ export async function GET(request: NextRequest) {
             site_sample_total: rpcData.site_sample_total || 0,
             industries: rpcData.industries || {},
             daily: rpcData.daily || {},
+            daily_by_owner: rpcData.daily_by_owner || null,
             generated_at: rpcData.generated_at || new Date().toISOString(),
           }
-        } else {
-          // Fallback: parallel lightweight queries (recent 5000 rows each)
+        }
+
+        // Fallback: RPC failed, build from raw queries
+        if (!result) {
           const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
           const [
             { data: botData },
             { count: totalCount },
             { count: todayCount },
             { data: siteData },
-            { data: dailyData },
+            { data: dailyBotData },
           ] = await Promise.all([
             supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
             supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-            supabase.from('crawler_visits').select('ts').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
+            supabase.from('crawler_visits').select('ts, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
           ])
           const bots: Record<string, { count: number; owner: string }> = {}
           for (const r of botData || []) {
@@ -244,7 +247,15 @@ export async function GET(request: NextRequest) {
             sites[s] = (sites[s] || 0) + 1
           }
           const dailyMap: Record<string, number> = {}
-          for (const r of dailyData || []) { const d = (r.ts || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1 }
+          const dailyByOwner: Record<string, Record<string, number>> = {}
+          for (const r of dailyBotData || []) {
+            const d = (r.ts || '').slice(0, 10)
+            if (!d) continue
+            dailyMap[d] = (dailyMap[d] || 0) + 1
+            const owner = r.bot_owner || 'Unknown'
+            if (!dailyByOwner[d]) dailyByOwner[d] = {}
+            dailyByOwner[d][owner] = (dailyByOwner[d][owner] || 0) + 1
+          }
           result = {
             period: { since: since30, days: 30 },
             total_visits: totalCount || 0,
@@ -254,8 +265,28 @@ export async function GET(request: NextRequest) {
             sites,
             site_sample_total: (siteData || []).length,
             daily: dailyMap,
+            daily_by_owner: dailyByOwner,
             generated_at: new Date().toISOString(),
           }
+        }
+
+        // Supplement: if RPC result lacks daily_by_owner, fetch it separately
+        if (result && !(result as any).daily_by_owner) {
+          const { data: dboRows } = await supabase
+            .from('crawler_visits')
+            .select('ts, bot_owner')
+            .gte('ts', since30)
+            .order('ts', { ascending: false })
+            .limit(10000)
+          const dbo: Record<string, Record<string, number>> = {}
+          for (const r of dboRows || []) {
+            const d = (r.ts || '').slice(0, 10)
+            if (!d) continue
+            const owner = r.bot_owner || 'Unknown'
+            if (!dbo[d]) dbo[d] = {}
+            dbo[d][owner] = (dbo[d][owner] || 0) + 1
+          }
+          ;(result as any).daily_by_owner = dbo
         }
         break
       }
