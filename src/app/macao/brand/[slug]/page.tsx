@@ -6,10 +6,22 @@ import type { BrandVisibilityData } from '@/lib/brand-visibility'
 
 const PASSWORD = 'cloudpipe2026'
 
+interface CompetitorEntry {
+  slug: string; name: string; visits: number; percentage: number
+  rank: number; isBrand: boolean; label: string; rating?: number; reviews?: number
+}
+interface CitationData {
+  brand: string; brandRank: number; totalCompetitors: number
+  competitors: CompetitorEntry[]
+}
+
+const RANK_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
+
 export default function BrandPage({ params }: { params: { slug: string } }) {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState('')
   const [data, setData] = useState<BrandVisibilityData | null>(null)
+  const [citation, setCitation] = useState<CitationData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -19,10 +31,14 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
   useEffect(() => {
     if (!authed || !brandConfig) return
     setLoading(true)
-    fetch(`/api/v1/brand-visibility?slug=${slug}&days=30`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false) })
-      .catch(e => { setError(e.message); setLoading(false) })
+    Promise.all([
+      fetch(`/api/v1/brand-visibility?slug=${slug}&days=30`).then(r => r.json()),
+      fetch(`/api/v1/brand-citation?slug=${slug}&days=30`).then(r => r.json()).catch(() => null),
+    ]).then(([vis, cit]) => {
+      setData(vis)
+      if (cit && !cit.error) setCitation(cit)
+      setLoading(false)
+    }).catch(e => { setError(e.message); setLoading(false) })
   }, [authed, slug, brandConfig])
 
   if (!brandConfig) {
@@ -238,6 +254,96 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
             <strong>生態系運作機制:</strong> 每日 03:00 UTC 自動生成 5 篇品牌旗艦 Insight → 03:30 圖譜深化（Sections + FAQ + Answer Hub）→ 每週一雙向連結重建 → 每月計劃檢視 → AI Bot 自然爬取 → 引用率提升
           </div>
         </div>
+
+        {/* ═══ 同業競品比較 ═══ */}
+        {citation && citation.competitors && (
+          <>
+            {/* Competitor Bar Chart */}
+            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 24 }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>📊 同業競品比較</h2>
+              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>
+                你的 AI 能見度與同業被 AI 爬蟲訪問次數對比（真實數據，非模擬查詢）
+              </p>
+              {citation.competitors.map((comp, i) => {
+                const maxPct = citation.competitors[0]?.percentage || 1
+                return (
+                  <div key={i} style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ fontSize: 14 }}>
+                        <strong style={{ color: comp.isBrand ? '#8b5cf6' : '#1a1a2e' }}>
+                          {comp.name}
+                        </strong>
+                        {comp.rating && (
+                          <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 8 }}>
+                            ⭐ {comp.rating} ({comp.reviews})
+                          </span>
+                        )}
+                      </span>
+                      <span style={{ fontSize: 16, fontWeight: 700 }}>{comp.percentage}%</span>
+                    </div>
+                    <div style={{ background: '#f3f4f6', borderRadius: 6, height: 12, overflow: 'hidden' }}>
+                      <div style={{
+                        background: RANK_COLORS[i] || '#6b7280',
+                        borderRadius: 6, height: 12,
+                        width: `${(comp.percentage / maxPct) * 100}%`,
+                        transition: 'width 0.8s ease',
+                      }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Competition Ranking */}
+            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🏆 競爭態勢排名</h2>
+              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 4 }}>
+                依各競品被 AI 爬蟲訪問次數與覆蓋平台加權計算，排名越前代表 AI 更優先推薦
+              </p>
+              <p style={{ fontSize: 14, color: '#0f4c81', fontWeight: 600, marginBottom: 16 }}>
+                你的排名：第 {citation.brandRank} / {citation.totalCompetitors}
+              </p>
+              {citation.competitors.map((comp, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 0',
+                  borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none',
+                }}>
+                  <span style={{
+                    fontSize: 14, fontWeight: 600, color: '#9ca3af', width: 28,
+                  }}>#{comp.rank}</span>
+                  <span style={{
+                    fontSize: 14, fontWeight: comp.isBrand ? 700 : 400,
+                    color: comp.isBrand ? '#8b5cf6' : '#1a1a2e',
+                    flex: 1,
+                  }}>
+                    {comp.isBrand && '★ '}{comp.name}
+                  </span>
+                  {!comp.isBrand && (
+                    <span style={{
+                      fontSize: 11, padding: '2px 8px', borderRadius: 4,
+                      background: comp.label === '主要競爭者' ? '#fef3c7' : '#f3f4f6',
+                      color: comp.label === '主要競爭者' ? '#92400e' : '#6b7280',
+                      fontWeight: 500,
+                    }}>
+                      {comp.label}
+                    </span>
+                  )}
+                  <div style={{ width: 120, textAlign: 'right' }}>
+                    <div style={{ background: '#f3f4f6', borderRadius: 4, height: 8, marginBottom: 2 }}>
+                      <div style={{
+                        background: RANK_COLORS[i] || '#6b7280',
+                        borderRadius: 4, height: 8,
+                        width: `${comp.percentage}%`,
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{comp.percentage}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Insight Coverage */}
         <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
