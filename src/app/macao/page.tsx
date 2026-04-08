@@ -141,15 +141,15 @@ async function getData() {
   ])
 
   // Today's crawled merchants — lightweight query for homepage "live" section
-  const todayStart = new Date()
-  todayStart.setUTCHours(0, 0, 0, 0)
+  const crawlDayStart = new Date()
+  crawlDayStart.setUTCHours(0, 0, 0, 0)
   let todayCrawled: { name_zh: string; name_en: string; slug: string; catSlug: string; catIcon: string; district: string; bot: string; ts: string }[] = []
   if (process.env.NEXT_PHASE !== 'phase-production-build') {
     const { data: todayVisits } = await supabase
       .from('crawler_visits')
       .select('path, bot_name, ts')
       .eq('page_type', 'merchant')
-      .gte('ts', todayStart.toISOString())
+      .gte('ts', crawlDayStart.toISOString())
       .order('ts', { ascending: false })
       .limit(500)
     // Extract unique slugs (latest visit per slug)
