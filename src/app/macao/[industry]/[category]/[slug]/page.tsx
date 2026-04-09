@@ -4,10 +4,16 @@ import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
+import { VerificationBadge } from '@/components/VerificationBadge'
 
 // ✅ ISR: 按需生成，不緩存（動態內容）
 export const revalidate = 0
 export const dynamicParams = true
+
+/** 14 天內更新 = 核實過 */
+function isRecentlyVerified(updatedAt: string): boolean {
+  return new Date(updatedAt) > new Date(Date.now() - 14 * 86400000)
+}
 
 /* ── Category → Schema.org type mapping ── */
 const CATEGORY_SCHEMA_MAP: Record<string, string> = {
@@ -203,6 +209,25 @@ export default async function MerchantPage({ params }: PageProps) {
       cssSelector: ['h1', '.answer-hub', 'main section:first-child'],
     },
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    ...(merchant.updated_at && isRecentlyVerified(merchant.updated_at) && {
+      additionalProperty: [
+        {
+          '@type': 'PropertyValue',
+          name: 'dataVerificationStatus',
+          value: 'verified',
+        },
+        {
+          '@type': 'PropertyValue',
+          name: 'dateVerified',
+          value: merchant.updated_at,
+        },
+        {
+          '@type': 'PropertyValue',
+          name: 'verificationMethod',
+          value: 'Automated cross-reference: Google Maps, MGTO, OpenRice, TripAdvisor',
+        },
+      ],
+    }),
   }
 
   const faqSchema = faqs.length > 0 ? {
@@ -419,6 +444,9 @@ export default async function MerchantPage({ params }: PageProps) {
                   </div>
                 </div>
               )}
+
+              {/* Data verification row */}
+              <VerificationBadge updatedAt={merchant.updated_at} merchant={merchant} />
             </div>
           </section>
         )}
