@@ -233,7 +233,7 @@ export async function GET(request: NextRequest) {
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
             supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-            supabase.from('crawler_visits').select('ts, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(10000),
+            supabase.from('crawler_visits').select('ts, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(50000),
           ])
           const bots: Record<string, { count: number; owner: string }> = {}
           for (const r of botData || []) {
@@ -277,7 +277,7 @@ export async function GET(request: NextRequest) {
             .select('ts, bot_owner')
             .gte('ts', since30)
             .order('ts', { ascending: false })
-            .limit(10000)
+            .limit(50000)
           const dbo: Record<string, Record<string, number>> = {}
           for (const r of dboRows || []) {
             const d = (r.ts || '').slice(0, 10)
