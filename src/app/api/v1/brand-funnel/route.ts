@@ -72,26 +72,33 @@ export async function GET(request: NextRequest) {
       l2Pages[p] = (l2Pages[p] || 0) + 1
     }
 
-    // Layer 3: User visits from AI referrals (analytics_events table if exists)
-    // Try analytics_events for LLMR/LLMCF data
+    // Layer 3: User visits from AI referrals (analytics_events table)
     let l3AiReferrals = 0
     let l3WaClicks = 0
     let l3TotalVisits = 0
 
-    const { data: analyticsData } = await supabase
-      .from('analytics_events')
-      .select('event_type, properties')
-      .eq('site_slug', brand.tracker)
-      .gte('created_at', since)
-      .limit(1000)
+    const [{ data: arrivalData }, { data: conversionData }] = await Promise.all([
+      supabase.from('analytics_events')
+        .select('event_type, is_ai_generated, metadata')
+        .eq('merchant_slug', brand.slug)
+        .eq('event_type', 'arrival')
+        .gte('created_at', since)
+        .limit(1000),
+      supabase.from('analytics_events')
+        .select('event_type, conversion_type, metadata')
+        .eq('merchant_slug', brand.slug)
+        .eq('event_type', 'conversion')
+        .gte('created_at', since)
+        .limit(500),
+    ])
 
-    if (analyticsData && analyticsData.length > 0) {
-      for (const evt of analyticsData) {
-        l3TotalVisits++
-        const props = evt.properties || {}
-        if (props.ref_type?.startsWith('ai-')) l3AiReferrals++
-        if (evt.event_type === 'wa-click') l3WaClicks++
-      }
+    for (const evt of arrivalData || []) {
+      l3TotalVisits++
+      if (evt.is_ai_generated) l3AiReferrals++
+    }
+    for (const evt of conversionData || []) {
+      l3TotalVisits++
+      if (evt.conversion_type === 'whatsapp') l3WaClicks++
     }
 
     // Conversion metrics
