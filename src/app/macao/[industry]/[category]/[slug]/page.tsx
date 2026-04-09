@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
-import { getIndustry } from '@/lib/industries'
+import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
 
 // ✅ ISR: 按需生成，不緩存（動態內容）
@@ -66,7 +66,7 @@ async function getMerchant(slug: string, industrySlug: string) {
 
   if (!merchant) return null
 
-  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }] = await Promise.all([
+  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }, { data: brandEcosystem }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
     supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
@@ -82,6 +82,13 @@ async function getMerchant(slug: string, industrySlug: string) {
       .neq('slug', slug).not('slug', 'is', null)
       .not('slug', 'like', 'hk-%').not('slug', 'like', 'tw-%').not('slug', 'like', 'jp-%')
       .order('google_rating', { ascending: false, nullsFirst: false }).limit(4),
+    // Brand ecosystem: all owned/premium brands (for cross-linking)
+    supabase.from('merchants')
+      .select('slug, name_zh, name_en, district, tier, is_owned, category:categories(slug, name_zh, icon)')
+      .eq('status', 'live')
+      .or('is_owned.eq.true,tier.eq.owned,tier.eq.premium')
+      .neq('slug', slug)
+      .limit(10),
   ])
 
   // Merge: direct matches first, then industry matches (deduplicate)
@@ -97,6 +104,11 @@ async function getMerchant(slug: string, industrySlug: string) {
     faqs: (faqs || []) as MerchantFAQ[],
     insights,
     relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
+    brandEcosystem: ((brandEcosystem || []) as any[]).map((b: any) => ({
+      slug: b.slug, name_zh: b.name_zh, name_en: b.name_en, district: b.district,
+      tier: b.tier, is_owned: b.is_owned,
+      category: Array.isArray(b.category) ? b.category[0] : b.category,
+    })) as { slug: string; name_zh: string; name_en?: string; district?: string; tier?: string; is_owned?: boolean; category: { slug: string; name_zh: string; icon?: string } | null }[],
   }
 }
 
@@ -149,7 +161,7 @@ export default async function MerchantPage({ params }: PageProps) {
   const data = await getMerchant(slug, indSlug)
   if (!data) notFound()
 
-  const { merchant, content, faqs, insights, relatedMerchants } = data
+  const { merchant, content, faqs, insights, relatedMerchants, brandEcosystem } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -501,6 +513,72 @@ export default async function MerchantPage({ params }: PageProps) {
             </p>
           </section>
         )}
+
+        {/* ═══ 品牌生態 (Cross-link owned/premium brands) ═══ */}
+        {brandEcosystem.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
+              <span className="w-1 h-6 bg-gradient-to-b from-[#c5a572] to-[#0f4c81] rounded-full inline-block"></span>
+              CloudPipe 品牌生態
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {brandEcosystem.map(b => {
+                const bCatSlug = b.category?.slug || 'other'
+                const bIndSlug = CATEGORY_TO_INDUSTRY[bCatSlug] || 'services'
+                return (
+                  <a key={b.slug} href={`/macao/${bIndSlug}/${bCatSlug}/${b.slug}`}
+                    className="flex items-center gap-3 bg-gradient-to-r from-[#fafbfc] to-white border border-[#e5e7eb] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300"
+                    style={{ borderLeft: '3px solid #c5a572' }}>
+                    <span className="text-2xl flex-shrink-0">{b.category?.icon || '📋'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-[#1a1a2e] text-sm truncate">{b.name_zh}</h3>
+                        {b.is_owned && (
+                          <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-gradient-to-r from-amber-500 to-amber-600 text-white">自營</span>
+                        )}
+                      </div>
+                      {b.name_en && <p className="text-xs text-[#6b7280] truncate">{b.name_en}</p>}
+                      <p className="text-xs text-[#6b7280] mt-0.5">{b.category?.name_zh}{b.district ? ` · ${b.district}` : ''}</p>
+                    </div>
+                    <span className="text-[#0f4c81] text-sm flex-shrink-0">→</span>
+                  </a>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ 認領商戶 ═══ */}
+        <section className="mb-12">
+          {(merchant as any).claimed ? (
+            <div className="bg-gradient-to-r from-[#f0fdf4] to-[#ecfdf5] border border-[#bbf7d0] rounded-xl p-5 flex items-center gap-4">
+              <span className="text-2xl flex-shrink-0">✅</span>
+              <div>
+                <h3 className="font-semibold text-[#166534] text-sm">此商戶已認領</h3>
+                <p className="text-xs text-[#6b7280] mt-0.5">商戶資訊由認領者維護，確保資料準確且即時更新。</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-[#eff6ff] to-[#e8f0fe] border border-[#bfdbfe] rounded-xl p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[#1a1a2e] mb-1 flex items-center gap-2">
+                    <span className="text-xl">🏪</span>
+                    這是你的商戶嗎？
+                  </h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed">
+                    認領你的商戶頁面，獲得 AI 能見度分析、評論管理和資訊更新權限。免費認領，讓全球 AI 助手更準確地推薦你的品牌。
+                  </p>
+                </div>
+                <a href={`mailto:hello@cloudpipe.ai?subject=${encodeURIComponent('認領商戶：' + merchant.name_zh)}&body=${encodeURIComponent('商戶名稱：' + merchant.name_zh + '\n商戶頁面：' + pageUrl + '\n\n我是此商戶的擁有者/授權代表，希望認領此頁面。\n\n聯絡人姓名：\n職位：\n聯絡電話：')}`}
+                  className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c81] text-white text-sm font-semibold rounded-xl hover:bg-[#0d3f6d] hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                  免費認領此商戶
+                </a>
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* ═══ Footer ═══ */}
         <footer className="border-t border-[#e5e7eb] pt-8 mt-12 text-sm text-[#6b7280]">
