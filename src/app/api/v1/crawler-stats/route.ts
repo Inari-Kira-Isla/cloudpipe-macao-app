@@ -227,13 +227,11 @@ export async function GET(request: NextRequest) {
             { count: totalCount },
             { count: todayCount },
             { data: siteData },
-            { data: dailyBotData },
           ] = await Promise.all([
-            supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
+            supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(1000),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
-            supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(5000),
-            supabase.from('crawler_visits').select('ts, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(50000),
+            supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(1000),
           ])
           const bots: Record<string, { count: number; owner: string }> = {}
           for (const r of botData || []) {
@@ -246,15 +244,28 @@ export async function GET(request: NextRequest) {
             const s = r.site || 'cloudpipe-macao-app'
             sites[s] = (sites[s] || 0) + 1
           }
+          // Paginate to get ALL daily bot data (PostgREST default max=1000)
           const dailyMap: Record<string, number> = {}
           const dailyByOwner: Record<string, Record<string, number>> = {}
-          for (const r of dailyBotData || []) {
-            const d = (r.ts || '').slice(0, 10)
-            if (!d) continue
-            dailyMap[d] = (dailyMap[d] || 0) + 1
-            const owner = r.bot_owner || 'Unknown'
-            if (!dailyByOwner[d]) dailyByOwner[d] = {}
-            dailyByOwner[d][owner] = (dailyByOwner[d][owner] || 0) + 1
+          let dboOffset = 0
+          while (dboOffset < 60000) {
+            const { data: page } = await supabase
+              .from('crawler_visits')
+              .select('ts, bot_owner')
+              .gte('ts', since30)
+              .order('ts', { ascending: false })
+              .range(dboOffset, dboOffset + 999)
+            if (!page || page.length === 0) break
+            for (const r of page) {
+              const d = (r.ts || '').slice(0, 10)
+              if (!d) continue
+              dailyMap[d] = (dailyMap[d] || 0) + 1
+              const owner = r.bot_owner || 'Unknown'
+              if (!dailyByOwner[d]) dailyByOwner[d] = {}
+              dailyByOwner[d][owner] = (dailyByOwner[d][owner] || 0) + 1
+            }
+            if (page.length < 1000) break
+            dboOffset += 1000
           }
           result = {
             period: { since: since30, days: 30 },
@@ -270,21 +281,29 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Supplement: if RPC result lacks daily_by_owner, fetch it separately
+        // Supplement: if RPC result lacks daily_by_owner, fetch it via paginated queries
         if (result && !(result as any).daily_by_owner) {
-          const { data: dboRows } = await supabase
-            .from('crawler_visits')
-            .select('ts, bot_owner')
-            .gte('ts', since30)
-            .order('ts', { ascending: false })
-            .limit(50000)
           const dbo: Record<string, Record<string, number>> = {}
-          for (const r of dboRows || []) {
-            const d = (r.ts || '').slice(0, 10)
-            if (!d) continue
-            const owner = r.bot_owner || 'Unknown'
-            if (!dbo[d]) dbo[d] = {}
-            dbo[d][owner] = (dbo[d][owner] || 0) + 1
+          const pageSize = 1000
+          let offset = 0
+          const maxRows = 60000
+          while (offset < maxRows) {
+            const { data: page } = await supabase
+              .from('crawler_visits')
+              .select('ts, bot_owner')
+              .gte('ts', since30)
+              .order('ts', { ascending: false })
+              .range(offset, offset + pageSize - 1)
+            if (!page || page.length === 0) break
+            for (const r of page) {
+              const d = (r.ts || '').slice(0, 10)
+              if (!d) continue
+              const owner = r.bot_owner || 'Unknown'
+              if (!dbo[d]) dbo[d] = {}
+              dbo[d][owner] = (dbo[d][owner] || 0) + 1
+            }
+            if (page.length < pageSize) break
+            offset += pageSize
           }
           ;(result as any).daily_by_owner = dbo
         }
