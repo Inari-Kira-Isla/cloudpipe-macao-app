@@ -245,9 +245,9 @@ export default function CrawlerDashboard() {
     setJourney(data.journey || [])
   }
 
-  const maxBot = summary ? Math.max(...Object.values(summary.bots).map(b => b.count), 1) : 1
+  const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
-  const maxInd = summary ? Math.max(...Object.values(summary.industries).map(Number), 1) : 1
+  const maxInd = summary?.industries ? Math.max(...Object.values(summary.industries).map(Number).filter(n => !isNaN(n)), 1) : 1
 
   return (
     <PasswordGate>
@@ -355,9 +355,9 @@ export default function CrawlerDashboard() {
             const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex'])
             const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
             // bot counts come from a sample; compute ratio within sample, then scale to total
-            const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info.owner) ? 0 : info.count), 0) || 1
+            const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
-              return sum + (llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? info.count : 0)
+              return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
             }, 0)
             const llmRatio = llmSampleCount / botSampleTotal
             const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))
