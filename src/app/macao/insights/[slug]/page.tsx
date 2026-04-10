@@ -93,6 +93,7 @@ interface RelatedMerchant {
   district?: string
   google_rating?: number
   website?: string | null
+  certification_sources?: Array<{ name: string; shop_code?: string }> | null
   category: { slug: string; name_zh: string; icon?: string } | null
 }
 
@@ -101,7 +102,7 @@ async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> 
   if (!validSlugs.length) return []
   const { data } = await supabase
     .from('merchants')
-    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
+    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
     .in('slug', validSlugs)
     .eq('status', 'live')
   if (!data) return []
@@ -627,7 +628,14 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
                       data-target={m.slug}
                       data-source={slug}
                     >
-                      <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
+                        {m.certification_sources && m.certification_sources.length > 0 && (
+                          <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 bg-[#ecfdf5] text-[#059669] rounded font-medium whitespace-nowrap">
+                            ✓ {m.certification_sources[0].name === '澳門特色老店' ? '特色老店' : '誠信店'}
+                          </span>
+                        )}
+                      </div>
                       {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
                       <div className="flex flex-wrap gap-1.5 text-xs">
                         {m.category?.name_zh && (
