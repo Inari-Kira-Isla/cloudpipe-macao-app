@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
 import ComparisonTable from '../ComparisonTable'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { ClickTracker } from '@/components/ClickTracker'
 
 export const revalidate = 3600
 
@@ -455,6 +456,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <ClickTracker pageType="insight" pageSlug={slug} />
       {/* RSS Feed Discovery */}
       <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析" href={`${siteUrl}/feed.xml`} />
       {/* hreflang */}
@@ -621,6 +623,9 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
                     <a
                       href={`/macao/${indSlug}/${m.category?.slug || 'other'}/${m.slug}`}
                       className="card-hover block"
+                      data-track="merchant-click"
+                      data-target={m.slug}
+                      data-source={slug}
                     >
                       <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
                       {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
