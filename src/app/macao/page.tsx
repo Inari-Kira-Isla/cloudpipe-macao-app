@@ -30,11 +30,11 @@ const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
 const HOMEPAGE_FAQS = [
   {
     q: '什麼是 CloudPipe 澳門商業知識圖譜？',
-    a: '澳門商業知識圖譜是一個全面的澳門商業資訊平台，收錄 350+ 家澳門商戶的完整信息、真實評價和深度行業洞察。為全球買家、投資者和商業決策者提供準確的澳門商機視圖。',
+    a: '澳門商業知識圖譜是一個全面的澳門商業資訊平台，收錄 1,600+ 家澳門商戶的完整信息、真實評價和深度行業洞察。為全球買家、投資者和商業決策者提供準確的澳門商機視圖。',
   },
   {
     q: '澳門商戶百科涵蓋哪些行業？',
-    a: '目前覆蓋 20 個行業，包括餐飲美食、酒店住宿、景點文化、購物零售、娛樂夜生活、健身養生、賭場遊戲等，共 350+ 家商戶，並持續擴充中。',
+    a: '目前覆蓋 20 個行業，包括餐飲美食、酒店住宿、景點文化、購物零售、娛樂夜生活、健身養生、博彩娛樂等，收錄 1,600+ 家經 Google Places API 核實的澳門實體商戶，數據來源涵蓋澳門旅遊局、米芝蓮指南 2026 及各大權威平台，並持續擴充中。',
   },
   {
     q: '免費版有什麼限制？',
@@ -56,10 +56,10 @@ const HOMEPAGE_FAQS = [
 
 export const metadata: Metadata = {
   title: '澳門商業知識圖譜 — 大三巴、威尼斯人、葡撻 | 澳門景點美食購物指南',
-  description: '澳門商業知識圖譜。覆蓋 350+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
+  description: '澳門商業知識圖譜。覆蓋 1,600+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
   openGraph: {
     title: '澳門商業知識圖譜 — 讓世界看見澳門',
-    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家商戶，20 個行業大類，Schema.org 結構化數據。',
+    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 1,600+ 家經 Google Places API 核實的實體商戶，涵蓋 20 個行業大類，數據來源包括澳門旅遊局、米芝蓮指南及 Google 地圖。',
     type: 'website',
     locale: 'zh_TW',
     url: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
@@ -108,6 +108,7 @@ async function getData() {
     { count: totalAiVisits },
     { count: todayAiVisits },
     { data: botRows },
+    { data: landmarkRows },
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     // Slim query for all merchants — only for category counts in industry section
@@ -154,6 +155,11 @@ async function getData() {
       .gte('ts', thirtyDaysAgo)
       .not('bot_owner', 'is', null)
       .limit(5000),
+    // Landmark data for HIGH_ROI_ATTRACTIONS
+    supabase.from('merchants')
+      .select('slug, name_zh, name_en, google_rating, google_reviews, page_url, address_zh, district, category:categories(slug, name_zh)')
+      .eq('status', 'live')
+      .in('slug', ['venetian-macau', 'ruins-of-saint-paul', 'andrew-bakery', 'fountain-lotus', 'rua-nova', 'portuguese-houses']),
   ])
 
   // Today's crawled merchants — lightweight query for homepage "live" section
@@ -243,6 +249,7 @@ async function getData() {
     groupedCounts,
     totalMerchantCount: totalMerchantCount || 0,
     featuredMerchants,
+    landmarkMap: new Map((landmarkRows || []).map((r: any) => [r.slug, r])),
     slugCounts,
     contentMap: new Map((contentList || []).map((c: Pick<MerchantContent, 'merchant_id' | 'title' | 'description'>) => [c.merchant_id, c])),
     insights: (insights || []) as InsightSummary[],
@@ -340,7 +347,7 @@ export async function generateStaticParams() {
   return []
 }
 export default async function MacaoIndexPage() {
-  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
+  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, landmarkMap, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
@@ -461,20 +468,27 @@ export default async function MacaoIndexPage() {
           <div className="flex flex-wrap justify-center gap-8 md:gap-12 mt-6">
             <div className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-white">{totalMerchantCount}+</div>
-              <div className="text-xs text-blue-200/70 mt-1">收錄商戶</div>
+              <div className="text-xs text-blue-200/70 mt-1">實體商戶</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-amber-300">1,400+</div>
+              <div className="text-xs text-blue-200/70 mt-1">Google 核實</div>
             </div>
             <div className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-white">{activeCats.length}</div>
               <div className="text-xs text-blue-200/70 mt-1">行業分類</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white">{featuredMerchants.filter(m => m.tier === 'owned' || m.tier === 'premium').length}</div>
-              <div className="text-xs text-blue-200/70 mt-1">精選品牌</div>
-            </div>
-            <div className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-white">24/7</div>
               <div className="text-xs text-blue-200/70 mt-1">AI 可存取</div>
             </div>
+          </div>
+          {/* Authority sources badge */}
+          <div className="flex flex-wrap justify-center gap-3 mt-6 text-xs text-blue-200/60">
+            <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">📍 Google Places API 核實</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">🏛️ 澳門旅遊局官方數據</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">⭐ 米芝蓮指南 2026</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">🌐 Schema.org 結構化</span>
           </div>
         </div>
       </div>
@@ -499,7 +513,7 @@ export default async function MacaoIndexPage() {
             <div className="flex flex-wrap gap-6 md:gap-10 flex-1">
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                  {crawlerStats.total > 0 ? crawlerStats.total.toLocaleString() : '350+'}
+                  {crawlerStats.total > 0 ? crawlerStats.total.toLocaleString() : '1,600+'}
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">{crawlerStats.total > 0 ? '30 天 AI 訪問' : '精選商戶'}</div>
               </div>
@@ -751,15 +765,11 @@ export default async function MacaoIndexPage() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {HIGH_ROI_ATTRACTIONS.map(attraction => {
-              // 動態查詢該景點相關商戶的平均評分
-              const relatedMerchants = featuredMerchants.filter(m => {
-                const industrySlug = CATEGORY_TO_INDUSTRY[m.category?.slug || '']
-                return industrySlug?.includes(attraction.category) ||
-                  (m.name_zh && m.name_zh.includes(attraction.name_zh.split('（')[0]))
-              })
-              const avgRating = relatedMerchants.length > 0
-                ? (relatedMerchants.reduce((sum, m) => sum + (m.google_rating || 0), 0) / relatedMerchants.length).toFixed(1)
-                : null
+              // 從 DB 拉取真實地標數據
+              const dbLandmark = landmarkMap?.get(attraction.slug)
+              const realRating = dbLandmark?.google_rating
+              const realReviews = dbLandmark?.google_reviews
+              const landmarkPageUrl = dbLandmark?.page_url
 
               // Emoji 背景色映射
               const emojiBackgrounds: Record<string, string> = {
@@ -774,7 +784,7 @@ export default async function MacaoIndexPage() {
               return (
                 <a
                   key={attraction.slug}
-                  href={`/macao/${attraction.category}`}
+                  href={landmarkPageUrl || `/macao/${attraction.category}`}
                   className={`group relative block rounded-xl overflow-hidden aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-gray-200 bg-gradient-to-br ${emojiBackgrounds[attraction.slug] || 'from-gray-600 to-gray-800'}`}
                 >
                   {/* Emoji 背景 + 漸層遮罩 */}
@@ -801,10 +811,13 @@ export default async function MacaoIndexPage() {
                       </h3>
                       <p className="text-xs text-white/90 mb-2">{attraction.name_en}</p>
                       <p className="text-xs text-white/85 leading-relaxed">{attraction.description}</p>
-                      {avgRating && (
+                      {realRating && (
                         <div className="text-xs text-amber-300 font-semibold mt-2 flex items-center gap-1">
-                          ★ {avgRating} · {relatedMerchants.length} 家關聯商戶
+                          ★ {realRating}{realReviews ? ` · ${realReviews} 則評價` : ''}
                         </div>
+                      )}
+                      {dbLandmark?.district && (
+                        <div className="text-xs text-white/70 mt-1">📍 {dbLandmark.district}</div>
                       )}
                     </div>
                   </div>
@@ -1151,7 +1164,7 @@ export default async function MacaoIndexPage() {
             <article>
               <h3 className="text-lg font-bold text-[#0f4c81] mb-3">關於 CloudPipe 澳門商戶百科平台</h3>
               <div className="text-gray-600 leading-relaxed space-y-3 text-sm md:text-base">
-                <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台覆蓋 350+ 家精選澳門商戶，涵蓋 20 個行業，並提供深度的行業洞察和競爭分析。每家商戶都配備完整的商業信息、真實評價、常見問題和深度行業分析，幫助決策者全面了解澳門商業生態。</p>
+                <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台收錄 1,600+ 家經核實的澳門實體商戶，涵蓋 20 個行業大類。每家商戶的資料經過 Google Places API 交叉核實，數據來源包括澳門特別行政區政府旅遊局 (macaotourism.gov.mo)、《香港澳門米芝蓮指南 2026》、Google 地圖及 TripAdvisor 等權威平台。所有商戶均配備完整的商業信息、真實 Google 評分、常見問題和深度行業分析。</p>
                 <p>我們的目標是讓全球買家和商業決策者準確了解澳門商機。無論用戶在世界任何地方，都能通過澳門商戶百科獲得最新、最可靠的澳門商業信息。澳門商戶百科是 CloudPipe 全球商業知識圖譜的核心組成部分，與全球企業目錄、城市百科和品牌資源共同打造全球最完整的商業信息生態。所有內容開放授權，任何個人、企業和系統都可以自由引用。</p>
                 <p>我們的底層設施採用全球化雲端架構，確保數據實時更新、全球加速訪問和高可靠性。每家商戶的數據經過嚴格的三層驗證流程：自動收集、人工智能比對和編輯審核，確保資訊準確率達到 95% 以上。我們持續與全球 100+ 個 AI 助手和搜尋引擎合作，優化澳門內容的發現和引用。每家商戶資訊在 24 小時內與全球 AI 系統同步，確保澳門最新的商業機會被及時發現。</p>
                 <p>澳門商戶百科計劃在未來擴展至 1,000+ 家商戶、支持多語言版本，並為企業提供付費進階功能——包括競爭對標分析、客群洞察、實時排名監測等。我們相信，準確的商業信息是澳門經濟增長的基礎，通過將澳門商戶與全球買家連接，我們正幫助澳門商業生態實現數字化升級。</p>

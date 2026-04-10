@@ -6,8 +6,8 @@ import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 import { PILLAR_CONTENT } from '@/lib/pillar-content'
 
-// ✅ ISR: 構建時跳過，按需生成後緩存 1 小時
-export const revalidate = 3600
+// ✅ Dynamic: 每次請求都重新生成（確保數據最新）
+export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
 interface PageProps {

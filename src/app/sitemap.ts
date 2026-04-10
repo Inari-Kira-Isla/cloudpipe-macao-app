@@ -11,14 +11,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
 
-  const { data: merchants } = await supabase
-    .from('merchants')
-    .select('slug, updated_at, category:categories(slug)')
-    .eq('status', 'live')
-    .not('slug', 'like', 'hk-%')
-    .not('slug', 'like', 'tw-%')
-    .not('slug', 'like', 'jp-%')
-    .order('code')
+  // Fetch ALL live merchants (paginated to bypass 1000-row default limit)
+  let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
+  let offset = 0
+  while (true) {
+    const { data } = await supabase
+      .from('merchants')
+      .select('slug, updated_at, category:categories(slug)')
+      .eq('status', 'live')
+      .not('slug', 'like', 'hk-%')
+      .not('slug', 'like', 'tw-%')
+      .not('slug', 'like', 'jp-%')
+      .order('code')
+      .range(offset, offset + 999)
+    if (!data || data.length === 0) break
+    merchants = merchants.concat(data as typeof merchants)
+    if (data.length < 1000) break
+    offset += 1000
+  }
 
   const { data: categories } = await supabase
     .from('categories')
@@ -37,6 +47,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // AI Engine Optimization: Direct reference to llms.txt for AI crawler discovery
     { url: `${siteUrl}/llms.txt`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    // New high-value pages
+    { url: `${siteUrl}/macao/certified-shops`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     // High priority: insights index and all insight pages (AI discovery critical path)
     {
       url: `${siteUrl}/macao/insights`,

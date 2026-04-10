@@ -104,6 +104,8 @@ async function submitIndexNow(): Promise<SubmissionResult> {
     const urlsToIndex = [
       `${SITE_URL}/macao`,
       `${SITE_URL}/macao/insights`,
+      `${SITE_URL}/macao/certified-shops`,
+      `${SITE_URL}/macao/report`,
       `${SITE_URL}/llms.txt`,
       `${SITE_URL}/sitemap.xml`,
     ]

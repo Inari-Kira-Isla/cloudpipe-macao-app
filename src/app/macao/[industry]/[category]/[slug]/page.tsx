@@ -5,6 +5,7 @@ import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/typ
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
+import { ClickTracker } from '@/components/ClickTracker'
 
 // ✅ ISR: 按需生成，不緩存（動態內容）
 export const revalidate = 0
@@ -209,6 +210,19 @@ export default async function MerchantPage({ params }: PageProps) {
       cssSelector: ['h1', '.answer-hub', 'main section:first-child'],
     },
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    ...((merchant as any).certification_sources?.length > 0 && {
+      hasCredential: (merchant as any).certification_sources.map((cert: { name: string; shop_code?: string; url?: string }) => ({
+        '@type': 'EducationalOccupationalCredential',
+        credentialCategory: 'GovernmentCertification',
+        name: cert.name,
+        url: cert.url || 'https://www.consumer.gov.mo/shop/',
+        recognizedBy: {
+          '@type': 'GovernmentOrganization',
+          name: '澳門消費者委員會',
+          url: 'https://www.consumer.gov.mo',
+        },
+      })),
+    }),
     ...(merchant.updated_at && isRecentlyVerified(merchant.updated_at) && {
       additionalProperty: [
         {
@@ -224,7 +238,7 @@ export default async function MerchantPage({ params }: PageProps) {
         {
           '@type': 'PropertyValue',
           name: 'verificationMethod',
-          value: 'Automated cross-reference: Google Maps, MGTO, OpenRice, TripAdvisor',
+          value: 'Automated cross-reference: Google Maps, MGTO, Consumer Council, TripAdvisor',
         },
       ],
     }),
@@ -255,6 +269,7 @@ export default async function MerchantPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <ClickTracker pageType="merchant" pageSlug={slug} />
 
       {/* ═══ Hero ═══ */}
       <div className="hero-gradient text-white">
@@ -365,7 +380,8 @@ export default async function MerchantPage({ params }: PageProps) {
                     <div>
                       <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">電話</dt>
                       <dd>
-                        <a href={`tel:${merchant.phone}`} className="text-[#0f4c81] font-medium text-sm hover:underline">
+                        <a href={`tel:${merchant.phone}`} className="text-[#0f4c81] font-medium text-sm hover:underline"
+                          data-track="phone-click" data-target={merchant.phone}>
                           {merchant.phone}
                         </a>
                       </dd>
@@ -379,7 +395,8 @@ export default async function MerchantPage({ params }: PageProps) {
                       <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">官方網站</dt>
                       <dd>
                         <a href={merchant.website} target="_blank" rel="noopener noreferrer"
-                          className="text-[#0f4c81] font-medium text-sm hover:underline break-all">
+                          className="text-[#0f4c81] font-medium text-sm hover:underline break-all"
+                          data-track="website-click" data-target={merchant.website}>
                           {merchant.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                         </a>
                       </dd>
@@ -392,7 +409,8 @@ export default async function MerchantPage({ params }: PageProps) {
                     <div>
                       <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">電郵</dt>
                       <dd>
-                        <a href={`mailto:${merchant.email}`} className="text-[#0f4c81] font-medium text-sm hover:underline">
+                        <a href={`mailto:${merchant.email}`} className="text-[#0f4c81] font-medium text-sm hover:underline"
+                          data-track="email-click" data-target={merchant.email}>
                           {merchant.email}
                         </a>
                       </dd>
@@ -422,10 +440,22 @@ export default async function MerchantPage({ params }: PageProps) {
               )}
 
               {/* Certification row */}
-              {(merchant.google_rating || merchant.website) && (
+              {(merchant.google_rating || merchant.website || (merchant as any).certification_sources?.length > 0) && (
                 <div className="border-t border-[#e5e7eb] bg-[#fafbfc] px-5 py-3">
                   <div className="flex flex-wrap items-center gap-4 text-xs text-[#6b7280]">
                     <span className="font-medium text-[#0f4c81] uppercase tracking-wider">認證來源</span>
+                    {((merchant as any).certification_sources || []).map((cert: { name: string; shop_code?: string; url?: string }, i: number) => (
+                      <span key={i} className="flex items-center gap-1">
+                        <span className="text-[#059669] font-bold">✓</span>
+                        {cert.url ? (
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-[#059669] hover:underline font-medium">
+                            {cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}
+                          </a>
+                        ) : (
+                          <span className="text-[#059669] font-medium">{cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}</span>
+                        )}
+                      </span>
+                    ))}
                     {merchant.google_rating && (
                       <span className="flex items-center gap-1">
                         <span className="text-[#059669]">✓</span> Google 商業檔案 ({merchant.google_rating} ⭐)
@@ -494,6 +524,7 @@ export default async function MerchantPage({ params }: PageProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {insights.map(a => (
                 <a key={a.slug} href={`/macao/insights/${a.slug}`}
+                  data-track="insight-click" data-target={a.slug} data-source={slug}
                   className="block bg-white border border-[#e5e7eb] rounded-xl p-5 relative overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_24px_-8px_rgba(15,76,129,0.15)] hover:-translate-y-0.5 transition-all duration-300">
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#c5a572] to-[#0f4c81]"></div>
                   <h3 className="font-semibold text-[#1a1a2e] text-sm leading-snug mb-3">{a.title}</h3>
@@ -599,6 +630,7 @@ export default async function MerchantPage({ params }: PageProps) {
                   </p>
                 </div>
                 <a href={`mailto:hello@cloudpipe.ai?subject=${encodeURIComponent('認領商戶：' + merchant.name_zh)}&body=${encodeURIComponent('商戶名稱：' + merchant.name_zh + '\n商戶頁面：' + pageUrl + '\n\n我是此商戶的擁有者/授權代表，希望認領此頁面。\n\n聯絡人姓名：\n職位：\n聯絡電話：')}`}
+                  data-track="claim-click" data-target={slug}
                   className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c81] text-white text-sm font-semibold rounded-xl hover:bg-[#0d3f6d] hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                   免費認領此商戶

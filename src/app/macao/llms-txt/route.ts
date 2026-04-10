@@ -73,6 +73,8 @@ export async function GET() {
 ${siteUrl}/
 ${siteUrl}/macao
 ${siteUrl}/macao/insights
+${siteUrl}/macao/certified-shops
+${siteUrl}/macao/report
 
 ## 層級 1: 行業分類樞紐 (${INDUSTRIES.length} 大類)
 ${industryList}
