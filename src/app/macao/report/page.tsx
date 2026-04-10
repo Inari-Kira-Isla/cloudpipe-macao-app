@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { supabase } from '@/lib/supabase'
 
 export const revalidate = 3600 // re-generate every hour
 
@@ -44,10 +45,12 @@ interface DailyEntry {
 }
 
 export default async function ReportPage() {
-  const [summary, daily, spiderWeb] = await Promise.all([
+  const [summary, daily, spiderWeb, { count: totalLive }, { count: totalCertified }] = await Promise.all([
     fetchCache('crawler-stats-summary-30') as Promise<Summary | null>,
     fetchCache('crawler-stats-daily-30') as Promise<{ daily: DailyEntry[] } | null>,
     fetchCache('crawler-stats-spider-web-30'),
+    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
+    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live').not('certification_sources', 'is', null),
   ])
 
   if (!summary) {
@@ -262,6 +265,36 @@ export default async function ReportPage() {
                     )
                   })}
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Certification Coverage */}
+          {(totalLive ?? 0) > 0 && (
+            <section style={{ marginBottom: 40 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>官方認證覆蓋率</h2>
+              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+                澳門消費者委員會誠信店認證商戶佔百科收錄商戶的比例
+              </p>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, borderLeft: '4px solid #059669' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>{(totalCertified ?? 0).toLocaleString()}</div>
+                  <div style={{ fontSize: 11, color: '#6b7280' }}>認證商戶</div>
+                </div>
+                <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, borderLeft: '4px solid #0f4c81' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#0f4c81' }}>{(totalLive ?? 0).toLocaleString()}</div>
+                  <div style={{ fontSize: 11, color: '#6b7280' }}>總收錄商戶</div>
+                </div>
+                <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, borderLeft: '4px solid #059669' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>
+                    {((totalCertified ?? 0) / (totalLive || 1) * 100).toFixed(1)}%
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6b7280' }}>覆蓋率</div>
+                </div>
+              </div>
+              <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, fontSize: 13, color: '#6b7280', lineHeight: 1.8 }}>
+                <p>認證來源：<strong style={{ color: '#059669' }}>澳門消費者委員會</strong>（consumer.gov.mo）誠信店計劃 + <strong style={{ color: '#059669' }}>澳門特色老店</strong>（mcbrand.mo）文化認證。</p>
+                <p style={{ marginTop: 4 }}>認證商戶承諾參與消費爭議仲裁，為消費者提供額外保障。<a href="/macao/certified-shops" style={{ color: '#0f4c81' }}>查看完整認證商戶名單 →</a></p>
               </div>
             </section>
           )}
