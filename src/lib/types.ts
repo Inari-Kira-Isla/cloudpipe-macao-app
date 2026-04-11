@@ -30,7 +30,7 @@ export interface Merchant {
   google_reviews?: number
   tripadvisor_rating?: number
   tripadvisor_reviews?: number
-  tier: 'owned' | 'premium' | 'community' | 'basic' | 'draft'
+  tier: 'owned' | 'premium' | 'free'
   status: 'draft' | 'review' | 'live' | 'archived'
   is_owned: boolean
   page_url?: string

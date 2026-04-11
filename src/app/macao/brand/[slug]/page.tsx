@@ -33,6 +33,7 @@ const RANK_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef
 export default function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState('')
+  const [pwError, setPwError] = useState(false)
   const [data, setData] = useState<BrandVisibilityData | null>(null)
   const [citation, setCitation] = useState<CitationData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -40,7 +41,13 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   const [slug, setSlug] = useState<string | null>(null)
 
   useEffect(() => {
-    params.then(p => setSlug(p.slug))
+    params.then(p => {
+      const s = p.slug
+      setSlug(s)
+      if (typeof window !== 'undefined' && sessionStorage.getItem(`brand_auth_${s}`) === '1') {
+        setAuthed(true)
+      }
+    })
   }, [params])
 
   const brandConfig = slug ? BRAND_CONFIGS[slug] : null
@@ -96,13 +103,22 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
           <input
             type="password"
             value={pw}
-            onChange={e => setPw(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && pw === PASSWORD && setAuthed(true)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                if (pw === PASSWORD) { sessionStorage.setItem(`brand_auth_${slug}`, '1'); setAuthed(true) }
+                else setPwError(true)
+              }
+            }}
+            onChange={e => { setPw(e.target.value); setPwError(false) }}
             placeholder="Password"
-            style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid #e5e7eb', marginBottom: 12, fontSize: 16 }}
+            style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: `1px solid ${pwError ? '#ef4444' : '#e5e7eb'}`, marginBottom: pwError ? 6 : 12, fontSize: 16 }}
           />
+          {pwError && <p style={{ color: '#ef4444', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>密碼錯誤</p>}
           <button
-            onClick={() => pw === PASSWORD && setAuthed(true)}
+            onClick={() => {
+              if (pw === PASSWORD) { sessionStorage.setItem(`brand_auth_${slug}`, '1'); setAuthed(true) }
+              else setPwError(true)
+            }}
             style={{ width: '100%', padding: 12, borderRadius: 8, background: '#0f4c81', color: 'white', border: 'none', fontSize: 16, cursor: 'pointer' }}
           >
             Enter
@@ -537,12 +553,15 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 </tr>
               </thead>
               <tbody>
-                {insights.slice(0, 20).map((ins, i) => (
+                {[...insights].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || '')).slice(0, 20).map((ins, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '10px 12px', maxWidth: 400 }}>
                       <a href={`/macao/insights/${ins.slug}`} style={{ color: '#0f4c81', textDecoration: 'none' }}>
                         {ins.title?.slice(0, 60) || ins.slug.slice(0, 60)}
                       </a>
+                      {ins.publishedAt && new Date(ins.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
+                        <span style={{ marginLeft: 6, fontSize: 10, background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: 4, fontWeight: 600 }}>NEW</span>
+                      )}
                     </td>
                     <td style={{ textAlign: 'right', padding: '10px 12px', color: ins.wordCount >= 2000 ? '#059669' : '#d97706' }}>
                       {ins.wordCount.toLocaleString()}
