@@ -73,9 +73,10 @@ async function getMerchant(slug: string, industrySlug: string) {
 
   if (!merchant) return null
 
-  const [{ data: content }, { data: faqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }, { data: brandEcosystem }] = await Promise.all([
+  const [{ data: content }, { data: faqs }, { data: enFaqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }, { data: brandEcosystem }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
     supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
+    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'en').order('sort_order'),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
       .contains('related_merchant_slugs', [slug])
@@ -109,6 +110,7 @@ async function getMerchant(slug: string, industrySlug: string) {
     merchant: merchant as Merchant & { category: Category },
     content: content as MerchantContent | null,
     faqs: (faqs || []) as MerchantFAQ[],
+    enFaqs: (enFaqs || []) as MerchantFAQ[],
     insights,
     relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
     brandEcosystem: ((brandEcosystem || []) as any[]).map((b: any) => ({
@@ -168,7 +170,7 @@ export default async function MerchantPage({ params }: PageProps) {
   const data = await getMerchant(slug, indSlug)
   if (!data) notFound()
 
-  const { merchant, content, faqs, insights, relatedMerchants, brandEcosystem } = data
+  const { merchant, content, faqs, enFaqs, insights, relatedMerchants, brandEcosystem } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -244,10 +246,18 @@ export default async function MerchantPage({ params }: PageProps) {
     }),
   }
 
-  const faqSchema = faqs.length > 0 ? {
+  const faqSchema = (faqs.length > 0 || enFaqs.length > 0) ? {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
+    mainEntity: [...faqs, ...enFaqs].map(f => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.answer,
+        inLanguage: f.lang === 'en' ? 'en' : 'zh-TW',
+      },
+    })),
   } : null
 
   const breadcrumbSchema = {
@@ -507,9 +517,24 @@ export default async function MerchantPage({ params }: PageProps) {
                   </summary>
                   <div className="px-6 pb-5 border-t border-[#e5e7eb]">
                     <p className="mt-4 text-[#6b7280] text-sm md:text-base" style={{ lineHeight: '1.85' }}>{faq.answer}</p>
+                    {faq.related_insight_slug && (
+                      <p className="mt-3">
+                        <a href={`/macao/insights/${faq.related_insight_slug}`}
+                           className="inline-flex items-center gap-1.5 text-xs text-[#0f4c81] hover:underline font-medium">
+                          <span className="text-[#c5a572]">📖</span>
+                          深度分析：查看相關文章
+                        </a>
+                      </p>
+                    )}
                   </div>
                 </details>
               ))}
+            </div>
+            <div className="text-center mt-4">
+              <a href={`/macao/${indSlug}/${catSlug}/faqs`}
+                 className="text-sm text-[#0f4c81] hover:underline font-medium">
+                查看全部{cat?.name_zh || ''}常見問題 →
+              </a>
             </div>
           </section>
         )}

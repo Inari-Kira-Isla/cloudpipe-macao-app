@@ -15,16 +15,18 @@ CREATE TABLE IF NOT EXISTS ai_search_results (
   UNIQUE(brand_slug, platform, query, competitor_name, timestamp)
 );
 
-CREATE INDEX idx_ai_search_brand_slug ON ai_search_results(brand_slug);
-CREATE INDEX idx_ai_search_platform ON ai_search_results(platform);
-CREATE INDEX idx_ai_search_competitor ON ai_search_results(competitor_name);
-CREATE INDEX idx_ai_search_timestamp ON ai_search_results(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_ai_search_brand_slug ON ai_search_results(brand_slug);
+CREATE INDEX IF NOT EXISTS idx_ai_search_platform ON ai_search_results(platform);
+CREATE INDEX IF NOT EXISTS idx_ai_search_competitor ON ai_search_results(competitor_name);
+CREATE INDEX IF NOT EXISTS idx_ai_search_timestamp ON ai_search_results(timestamp DESC);
 
 -- Grant permissions
 ALTER TABLE ai_search_results ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access" ON ai_search_results
-  FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Allow public read access" ON ai_search_results FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Allow service role write access" ON ai_search_results
-  FOR INSERT WITH CHECK (true);
+DO $$ BEGIN
+  CREATE POLICY "Allow service role write access" ON ai_search_results FOR INSERT WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

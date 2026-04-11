@@ -62,6 +62,9 @@ export interface MerchantFAQ {
   question: string
   answer: string
   sort_order: number
+  template_id?: string
+  related_insight_slug?: string
+  faq_type?: string
 }
 
 export interface MerchantSource {
