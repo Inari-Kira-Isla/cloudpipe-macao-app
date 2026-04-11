@@ -31,6 +31,7 @@ interface FaqRow {
   sort_order: number
   faq_type?: string
   related_insight_slug?: string
+  template_id?: string | null
 }
 
 async function getData(industrySlug: string, categorySlug: string) {
@@ -54,14 +55,14 @@ async function getData(industrySlug: string, categorySlug: string) {
     .limit(100)
 
   if (mErr || !merchants || merchants.length === 0) {
-    return { industry, category: category as Category, merchants: [], faqsByMerchant: {}, totalFaqs: 0 }
+    return { industry, category: category as Category, merchants: [], faqsByMerchant: {}, featuredFaqsWithMerchant: [], totalFaqs: 0 }
   }
 
   const merchantIds = (merchants as MerchantRow[]).map(m => m.id)
 
   const { data: faqs } = await supabase
     .from('merchant_faqs')
-    .select('id, merchant_id, lang, question, answer, sort_order, faq_type, related_insight_slug')
+    .select('id, merchant_id, lang, question, answer, sort_order, faq_type, related_insight_slug, template_id')
     .in('merchant_id', merchantIds)
     .eq('lang', 'zh')
     .order('sort_order')
@@ -73,11 +74,38 @@ async function getData(industrySlug: string, categorySlug: string) {
     faqsByMerchant[faq.merchant_id].push(faq)
   }
 
+  // Compute featuredFaqs: one best FAQ per template_id (skip null template_id)
+  const merchantById: Record<string, MerchantRow> = {}
+  for (const m of merchants as MerchantRow[]) merchantById[m.id] = m
+
+  const specificityScore = (faq: FaqRow): number => {
+    const len = faq.answer.length
+    const hasDigit = /\d/.test(faq.answer) ? 20 : 0
+    const longBonus = len > 60 ? 10 : 0
+    return len + hasDigit + longBonus
+  }
+
+  const byTemplate: Record<string, FaqRow[]> = {}
+  for (const faq of (faqs || []) as FaqRow[]) {
+    if (!faq.template_id) continue
+    if (!byTemplate[faq.template_id]) byTemplate[faq.template_id] = []
+    byTemplate[faq.template_id].push(faq)
+  }
+
+  const featuredFaqsWithMerchant: Array<{ faq: FaqRow; merchantName: string }> = []
+  for (const templateFaqs of Object.values(byTemplate)) {
+    const best = templateFaqs.reduce((a, b) => specificityScore(a) >= specificityScore(b) ? a : b)
+    const merchant = merchantById[best.merchant_id]
+    featuredFaqsWithMerchant.push({ faq: best, merchantName: merchant?.name_zh ?? '' })
+    if (featuredFaqsWithMerchant.length >= 8) break
+  }
+
   return {
     industry,
     category: category as Category,
     merchants: merchants as MerchantRow[],
     faqsByMerchant,
+    featuredFaqsWithMerchant,
     totalFaqs: (faqs || []).length,
   }
 }
@@ -112,24 +140,41 @@ export default async function CategoryFaqsPage({ params }: PageProps) {
   const data = await getData(indSlug, catSlug)
   if (!data) notFound()
 
-  const { industry, category, merchants, faqsByMerchant, totalFaqs } = data
+  const { industry, category, merchants, faqsByMerchant, featuredFaqsWithMerchant, totalFaqs } = data
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   // Only include merchants that have at least one FAQ
   const merchantsWithFaqs = merchants.filter(m => (faqsByMerchant[m.id] || []).length > 0)
 
-  // FAQPage JSON-LD: all questions from all merchants
-  const allFaqEntities = merchantsWithFaqs.flatMap(m =>
-    (faqsByMerchant[m.id] || []).map(f => ({
-      '@type': 'Question',
-      name: `[${m.name_zh}] ${f.question}`,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: f.answer,
-        inLanguage: 'zh-TW',
-      },
-    }))
+  // FAQPage JSON-LD: featured FAQs first (canonical best answers), then merchant-specific ones
+  const featuredFaqIds = new Set(featuredFaqsWithMerchant.map(({ faq }) => faq.id))
+
+  const featuredFaqEntities = featuredFaqsWithMerchant.map(({ faq, merchantName }) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+      inLanguage: 'zh-TW',
+      author: { '@type': 'LocalBusiness', name: merchantName },
+    },
+  }))
+
+  const merchantFaqEntities = merchantsWithFaqs.flatMap(m =>
+    (faqsByMerchant[m.id] || [])
+      .filter(f => !featuredFaqIds.has(f.id))
+      .map(f => ({
+        '@type': 'Question',
+        name: `[${m.name_zh}] ${f.question}`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer,
+          inLanguage: 'zh-TW',
+        },
+      }))
   )
+
+  const allFaqEntities = [...featuredFaqEntities, ...merchantFaqEntities]
 
   const faqPageSchema = allFaqEntities.length > 0
     ? {
@@ -209,6 +254,33 @@ export default async function CategoryFaqsPage({ params }: PageProps) {
           </div>
         ) : (
           <>
+            {/* ═══ 精選問答 ═══ */}
+            {featuredFaqsWithMerchant.length > 0 && (
+              <section className="mb-12">
+                <h2 className="text-xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
+                  <span className="text-[#c5a572]">✦</span> {category.name_zh} 精選問答
+                  <span className="text-xs font-normal text-[#6b7280] ml-2">— 各問題最佳解答</span>
+                </h2>
+                <div className="space-y-2.5">
+                  {featuredFaqsWithMerchant.map(({ faq, merchantName }) => (
+                    <details key={`featured-${faq.id}`} className="group bg-gradient-to-r from-[#f8f9ff] to-white border border-[#0f4c81]/15 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                      <summary className="font-semibold cursor-pointer px-6 py-4 flex justify-between items-center hover:bg-[#f0f4ff] transition-colors text-[#1a1a2e] text-sm md:text-base">
+                        <span className="pr-4 leading-relaxed">{faq.question}</span>
+                        <span className="text-[#0f4c81] text-xs group-open:rotate-180 transition-transform duration-300 flex-shrink-0 w-5 h-5 rounded-full bg-[#e8f0fe] flex items-center justify-center">▼</span>
+                      </summary>
+                      <div className="px-6 pb-5 border-t border-[#0f4c81]/10">
+                        <p className="mt-4 text-[#374151] text-sm md:text-base" style={{ lineHeight: '1.85' }}>{faq.answer}</p>
+                        <p className="mt-2 text-xs text-[#6b7280]">來自：<a href={`/macao/${indSlug}/${catSlug}#merchant-${merchantName}`} className="text-[#0f4c81] hover:underline">{merchantName}</a></p>
+                        {faq.related_insight_slug && (
+                          <p className="mt-2"><a href={`/macao/insights/${faq.related_insight_slug}`} className="inline-flex items-center gap-1.5 text-xs text-[#0f4c81] hover:underline font-medium"><span className="text-[#c5a572]">📖</span>深度分析</a></p>
+                        )}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* ═══ FAQ sections per merchant ═══ */}
             <div className="space-y-10">
               {merchantsWithFaqs.map(merchant => {
