@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-sitemap",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/indexnow-notify",
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/aeo-monitor",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
