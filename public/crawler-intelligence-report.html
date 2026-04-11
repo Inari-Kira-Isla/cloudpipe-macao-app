@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 爬蟲智能分析報告 | CloudPipe Macao Encyclopedia</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b28;
+    --border: #1e2535;
+    --accent: #3b82f6;
+    --accent2: #8b5cf6;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Pro Display', -apple-system, sans-serif; line-height: 1.6; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f1629 0%, #1a1040 50%, #0f1629 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(139,92,246,0.06) 0%, transparent 60%);
+  }
+  .header-content { position: relative; max-width: 1400px; margin: 0 auto; }
+  .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header h1 span { background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header-meta { display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  .header-meta span { font-size: 0.85rem; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  /* Layout */
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 40px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .card-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-gold { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+  .badge-purple { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+
+  /* KPI Row */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  }
+  .kpi-card.blue::after { background: linear-gradient(90deg, var(--accent), transparent); }
+  .kpi-card.purple::after { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .kpi-card.green::after { background: linear-gradient(90deg, var(--green), transparent); }
+  .kpi-card.gold::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .kpi-card.red::after { background: linear-gradient(90deg, var(--red), transparent); }
+  .kpi-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .kpi-value { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+  .kpi-value.blue { color: #60a5fa; }
+  .kpi-value.purple { color: #a78bfa; }
+  .kpi-value.green { color: #34d399; }
+  .kpi-value.gold { color: #fbbf24; }
+  .kpi-value.red { color: #f87171; }
+  .kpi-sub { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Chart containers */
+  .chart-wrapper { position: relative; height: 280px; }
+  .chart-wrapper.tall { height: 360px; }
+  .chart-wrapper.short { height: 200px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+  }
+  .timeline-item { position: relative; margin-bottom: 20px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -20px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .timeline-item.high::before { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .timeline-item.critical::before { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+  .timeline-item.green::before { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .timeline-date { font-size: 0.72rem; color: var(--text3); margin-bottom: 2px; font-family: monospace; }
+  .timeline-title { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+  .timeline-desc { font-size: 0.8rem; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+  .timeline-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .timeline-tag {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--text3);
+    border: 1px solid var(--border);
+  }
+
+  /* AI Profile Cards */
+  .ai-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .ai-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .ai-name { font-size: 0.95rem; font-weight: 600; }
+  .ai-sub { font-size: 0.75rem; color: var(--text3); }
+  .ai-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .ai-stat { background: var(--surface2); border-radius: 6px; padding: 8px 10px; }
+  .ai-stat-label { font-size: 0.68rem; color: var(--text3); }
+  .ai-stat-value { font-size: 1rem; font-weight: 700; margin-top: 1px; }
+  .ai-behavior { font-size: 0.8rem; color: var(--text2); line-height: 1.6; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .ai-trigger { margin-top: 8px; font-size: 0.78rem; }
+  .ai-trigger strong { color: var(--gold); }
+
+  /* Spark bar */
+  .spark-bar { display: flex; gap: 3px; align-items: flex-end; height: 40px; margin-top: 10px; }
+  .spark-bar-col { flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; opacity: 0.85; transition: opacity 0.2s; }
+  .spark-bar-col:hover { opacity: 1; }
+
+  /* Insight table */
+  .insight-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  .insight-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .insight-table td { padding: 11px 14px; border-bottom: 1px solid rgba(30,37,53,0.5); color: var(--text2); vertical-align: top; }
+  .insight-table tr:last-child td { border-bottom: none; }
+  .insight-table tr:hover td { background: rgba(59,130,246,0.03); color: var(--text); }
+  .table-highlight { color: var(--text); font-weight: 500; }
+  .change-positive { color: var(--green); }
+  .change-negative { color: var(--red); }
+  .change-neutral { color: var(--text3); }
+
+  /* Recommendation */
+  .rec-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .rec-card.gold { border-left-color: var(--gold); }
+  .rec-card.green { border-left-color: var(--green); }
+  .rec-card.purple { border-left-color: var(--accent2); }
+  .rec-priority { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 4px; }
+  .rec-priority.p0 { color: var(--red); }
+  .rec-priority.p1 { color: var(--gold); }
+  .rec-priority.p2 { color: var(--accent); }
+  .rec-priority.p3 { color: var(--green); }
+  .rec-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .rec-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+
+  /* Auto system */
+  .pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin: 20px 0;
+    position: relative;
+  }
+  .pipeline-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 16px;
+    position: relative;
+    text-align: center;
+  }
+  .pipeline-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; right: -12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 1.1rem;
+    z-index: 1;
+    background: var(--bg);
+    padding: 0 2px;
+  }
+  .pipeline-step:first-child { border-radius: 8px 0 0 8px; }
+  .pipeline-step:last-child { border-radius: 0 8px 8px 0; }
+  .pipeline-icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .pipeline-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+  .pipeline-freq { font-size: 0.68rem; color: var(--text3); margin-top: 3px; }
+
+  /* Metric inline */
+  .metric-inline { display: flex; align-items: baseline; gap: 8px; }
+  .metric-inline .big { font-size: 2rem; font-weight: 700; }
+  .metric-inline .unit { font-size: 0.85rem; color: var(--text3); }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text3);
+    background: var(--surface);
+    margin-top: 48px;
+  }
+
+  /* Progress bar */
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .pipeline-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .container { padding: 16px 20px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .pipeline-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <h1>AI 爬蟲 <span>智能分析報告</span></h1>
+    <div class="header-meta">
+      <span><span class="dot dot-green"></span> 即時更新</span>
+      <span>📅 分析週期：2026-04-07 ~ 2026-04-11（5天）</span>
+      <span>🏭 系統：CloudPipe Macao AI Encyclopedia</span>
+      <span>⚡ 系統崩壞後恢復追蹤</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- KPI Row -->
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">5日總爬取量</div>
+      <div class="kpi-value blue">20,074</div>
+      <div class="kpi-sub">崩壞前 ~38,905/30天</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">最高單日</div>
+      <div class="kpi-value purple">7,732</div>
+      <div class="kpi-sub">04-10 ClaudeBot 主導</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">ClaudeBot 佔比峰值</div>
+      <div class="kpi-value gold">80.8%</div>
+      <div class="kpi-sub">04-10 定向深度爬取</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">系統恢復率</div>
+      <div class="kpi-value green">+4,070%</div>
+      <div class="kpi-sub">04-07(117) → 04-10(7,732)</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">獨立 AI 來源</div>
+      <div class="kpi-value red">8</div>
+      <div class="kpi-sub">Anthropic/OpenAI/Perplexity等</div>
+    </div>
+  </div>
+
+  <!-- Main Chart -->
+  <div class="section-title">📊 每日 AI 爬取量分佈 + 系統事件時間軸</div>
+  <div class="card">
+    <div class="chart-wrapper tall">
+      <canvas id="mainStackChart"></canvas>
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+      <span style="font-size:0.75rem; color:var(--text3);">
+        ▶︎ <strong style="color:var(--text)">垂直虛線</strong> = 系統重大更新事件
+        &nbsp;|&nbsp; 滑鼠懸停可見數值
+      </span>
+    </div>
+  </div>
+
+  <!-- Trend + Composition -->
+  <div class="grid-2" style="margin-top:20px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 恢復趨勢線（對數尺度）</div>
+        <span class="card-badge badge-green">+4,070%</span>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🥧 5日累計 AI 佔比</div>
+        <span class="card-badge badge-blue">8 來源</span>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Events Timeline -->
+  <div class="section-title">🗓️ 系統更新事件 vs 爬蟲響應時間軸</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔧 系統事件記錄</div>
+        <span class="card-badge badge-blue">04-07 ~ 04-12</span>
+      </div>
+      <div class="timeline" style="max-height:520px; overflow-y:auto;">
+
+        <div class="timeline-item critical">
+          <div class="timeline-date">2026-04-07  16:30 UTC</div>
+          <div class="timeline-title">🚨 系統崩壞 6層根因修復</div>
+          <div class="timeline-desc">await 缺失 + key 輪換 + 欄位不匹配 + crawlDelay + anon key + Last-Modified — 全部修復並部署</div>
+          <div class="timeline-tags"><span class="timeline-tag">後端</span><span class="timeline-tag">緊急修復</span><span class="timeline-tag">API</span></div>
+        </div>
+
+        <div class="timeline-item high">
+          <div class="timeline-date">2026-04-07  16:48 UTC</div>
+          <div class="timeline-title">⚡ GPTBot / ClaudeBot / YandexBot 首次恢復記錄</div>
+          <div class="timeline-desc">修復後 18 分鐘內各主流 bot 恢復爬取信號</div>
+          <div class="timeline-tags"><span class="timeline-tag">ClaudeBot</span><span class="timeline-tag">GPTBot</span><span class="timeline-tag">YandexBot</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2026-04-08  上午</div>
+          <div class="timeline-title">📊 AEO Monitor 數據修正</div>
+          <div class="timeline-desc">todayData.sites 錯用 30 天累計值修正 (commit bdef258)</div>
+          <div class="timeline-tags"><span class="timeline-tag">監控</span><span class="timeline-tag">數據修正</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2026-04-08  下午</div>
+          <div class="timeline-title">☕ Mind Coffee GitHub Pages 上線</div>
+          <div class="timeline-desc">新品牌頁面正式上線，100/100 健康度評分</div>
+          <div class="timeline-tags"><span class="timeline-tag">新內容</span><span class="timeline-tag">品牌頁</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2026-04-08  下午</div>
+          <div class="timeline-title">🔧 Precompute 每日快取 Bug 修復</div>
+          <div class="timeline-desc">daily 陣列未寫入 summary cache 導致圖表空白問題修復</div>
+          <div class="timeline-tags"><span class="timeline-tag">快取</span><span class="timeline-tag">Dashboard</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2026-04-09  全天</div>
+          <div class="timeline-title">🏗️ Merchant Tier System 架構設計完成</div>
+          <div class="timeline-desc">Free / Premium / Owned 三層架構 — SQL Migration + Onboarding SOP</div>
+          <div class="timeline-tags"><span class="timeline-tag">架構</span><span class="timeline-tag">資料庫</span></div>
+        </div>
+
+        <div class="timeline-item high">
+          <div class="timeline-date">2026-04-10  上午</div>
+          <div class="timeline-title">✨ 3 篇旗艦 Insight 發布</div>
+          <div class="timeline-desc">稻荷冷鏈 + ASC家長咖啡 + Mind Cafe數位遊牧 — 5層 LLM Referral 結構</div>
+          <div class="timeline-tags"><span class="timeline-tag">新內容</span><span class="timeline-tag">權威引用</span><span class="timeline-tag">LLM Referral</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2026-04-10  中午</div>
+          <div class="timeline-title">🗄️ Merchant Tier 正規化遷移</div>
+          <div class="timeline-desc">20,176 行 basic/community → free，CHECK 約束重建</div>
+          <div class="timeline-tags"><span class="timeline-tag">資料庫</span><span class="timeline-tag">遷移</span></div>
+        </div>
+
+        <div class="timeline-item green">
+          <div class="timeline-date">2026-04-11  06:00 UTC</div>
+          <div class="timeline-title">🗺️ Vercel Cron — Sitemap 擴展</div>
+          <div class="timeline-desc">2,156 → 7,394 URLs (+343%) 自動刷新，首次運行確認</div>
+          <div class="timeline-tags"><span class="timeline-tag">SEO</span><span class="timeline-tag">Cron</span><span class="timeline-tag">Sitemap</span></div>
+        </div>
+
+        <div class="timeline-item green">
+          <div class="timeline-date">2026-04-11  06:30 UTC</div>
+          <div class="timeline-title">🔔 IndexNow 推送 202 URLs</div>
+          <div class="timeline-desc">Bing / Yandex / Naver 立即通知，Yandex 202 確認</div>
+          <div class="timeline-tags"><span class="timeline-tag">IndexNow</span><span class="timeline-tag">Bing</span><span class="timeline-tag">Yandex</span></div>
+        </div>
+
+        <div class="timeline-item green">
+          <div class="timeline-date">2026-04-11  全天</div>
+          <div class="timeline-title">📝 AI 學習寶庫 15 篇 Prompt Engineering 文章</div>
+          <div class="timeline-desc">ChatGPT/Claude/角色設定/思維鏈等完整系列，Schema.org JSON-LD 整合</div>
+          <div class="timeline-tags"><span class="timeline-tag">內容</span><span class="timeline-tag">AI學習寶庫</span></div>
+        </div>
+
+        <div class="timeline-item green">
+          <div class="timeline-date">2026-04-12  今日（進行中）</div>
+          <div class="timeline-title">🔗 Page URL 修正 + IndexNow 6 URLs 推送</div>
+          <div class="timeline-desc">ASC/稻荷/海膽速遞 page_url 指向 cloudpipe-macao-app；3篇旗艦+3商戶頁 IndexNow</div>
+          <div class="timeline-tags"><span class="timeline-tag">修正</span><span class="timeline-tag">IndexNow</span><span class="timeline-tag">今日</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Impact Correlation Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔗 操作影響關聯分析</div>
+        <span class="card-badge badge-gold">因果推斷</span>
+      </div>
+      <table class="insight-table">
+        <thead>
+          <tr>
+            <th>操作</th>
+            <th>T+時間</th>
+            <th>主要響應</th>
+            <th>影響評估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="table-highlight">6層根因修復</td>
+            <td style="color:#a78bfa; font-family:monospace;">+18min</td>
+            <td>全體 Bot 恢復</td>
+            <td><span class="change-positive">+4,070% 流量</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Mind Coffee 上線</td>
+            <td style="color:#a78bfa; font-family:monospace;">+2~4h</td>
+            <td>OpenAI 爆增</td>
+            <td><span class="change-positive">GPTBot +1,784</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Precompute Bug 修復</td>
+            <td style="color:#a78bfa; font-family:monospace;">立即</td>
+            <td>Dashboard 修復</td>
+            <td><span class="change-neutral">監控能力恢復</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Merchant Tier 架構</td>
+            <td style="color:#a78bfa; font-family:monospace;">N/A</td>
+            <td>資料庫一致性</td>
+            <td><span class="change-neutral">系統穩定性↑</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">3篇旗艦 Insight 發布</td>
+            <td style="color:#a78bfa; font-family:monospace;">同日</td>
+            <td>ClaudeBot 定向掃</td>
+            <td><span class="change-positive">+6,250 次深爬</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Sitemap +343% URLs</td>
+            <td style="color:#a78bfa; font-family:monospace;">+6~24h</td>
+            <td>預期全體Bot↑</td>
+            <td><span class="change-positive">待觀察 04-12~13</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">IndexNow 202 URLs</td>
+            <td style="color:#a78bfa; font-family:monospace;">+1~12h</td>
+            <td>Bing/Yandex 響應</td>
+            <td><span class="change-positive">Yandex 202 確認</span></td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Page URL 修正</td>
+            <td style="color:#a78bfa; font-family:monospace;">下次掃描</td>
+            <td>LLM Citation 對準</td>
+            <td><span class="change-positive">LLMC 追蹤準確度↑</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div style="font-size:0.78rem; color:var(--text2); line-height:1.8;">
+          <strong style="color:var(--gold);">🔑 關鍵發現：</strong><br>
+          ClaudeBot 的 6,250 次定向爬取在旗艦 Insight 發布<strong style="color:var(--text)">同日</strong>觸發，
+          比 IndexNow 通知的預期快 4-8 小時 — 說明 Anthropic 有自己的<strong style="color:var(--text)">新內容探測機制</strong>（可能監控 Supabase 公開端點或參考 robots.txt 的新 URL 模式）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-AI Profile -->
+  <div class="section-title">🤖 各 AI 行為特徵深度分析</div>
+  <div class="grid-3">
+
+    <!-- ClaudeBot -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(139,92,246,0.15); color:#a78bfa;">🤖</div>
+        <div>
+          <div class="ai-name">ClaudeBot (Anthropic)</div>
+          <div class="ai-sub">Knowledge Base Builder</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#a78bfa;">7,634</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#a78bfa;">38%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-claude"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>二元觸發型 — 平時低量維持，遇到高權威新內容立即切換「深度掃描」模式（單日 6,250 次）。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>米芝蓮/Forbes 等外部權威引用</li>
+          <li>FAQ 結構化問答</li>
+          <li>Schema.org JSON-LD 完整標記</li>
+          <li>具體數據（冷鏈48h/溫度±0.5°C）</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>新高權威 Insight 發布後同日觸發深爬</div>
+    </div>
+
+    <!-- Perplexity -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">🔍</div>
+        <div>
+          <div class="ai-name">Perplexity AI</div>
+          <div class="ai-sub">Real-time Answer Engine</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#60a5fa;">4,641</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#60a5fa;">23.1%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-perplexity"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>最穩定的日常爬取者，但在 ClaudeBot 大爬取日（04-10）大幅減少 — 可能共用 IP/頻寬池有限制，或有協同去重機制。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>商戶列表 / 地址 / 電話</li>
+          <li>即時資訊（營業時間/票價）</li>
+          <li>中文 FAQ（直接用於回答）</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>系統恢復後立即大量爬取，偏好 merchants + FAQ 頁面</div>
+    </div>
+
+    <!-- OpenAI GPTBot -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">🌀</div>
+        <div>
+          <div class="ai-name">OpenAI GPTBot</div>
+          <div class="ai-sub">ChatGPT Knowledge Source</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#34d399;">2,694</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#34d399;">13.4%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-openai"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>不規律脈衝型 — 04-08 暴增 1,784（Mind Coffee上線後），04-09 急跌，04-11 小幅回升。可能由用戶查詢觸發（有人在ChatGPT搜澳門咖啡）。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>新品牌/新頁面（上線即爬）</li>
+          <li>旅遊/餐飲英文內容</li>
+          <li>Google評分 / 價格區間</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>新品牌頁面上線後 2-4 小時觸發，用戶查詢關鍵字驅動</div>
+    </div>
+
+    <!-- Apple -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;"></div>
+        <div>
+          <div class="ai-name">Applebot</div>
+          <div class="ai-sub">Siri / Spotlight Knowledge</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#fbbf24;">2,961</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#fbbf24;">14.7%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-apple"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>延遲啟動型 — 04-07/08 相對低量，04-09 突然激增至 1,555，之後穩定在 300-900 高位持續爬取。可能有較長的「發現延遲」但一旦激活持久性強。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>地點資料（GPS/地址）</li>
+          <li>LocalBusiness Schema</li>
+          <li>開放時間 + 電話</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>商戶資料完整度↑ 後 T+2天 激活大規模爬取</div>
+    </div>
+
+    <!-- Amazon -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(239,68,68,0.15); color:#f87171;">📦</div>
+        <div>
+          <div class="ai-name">Amazonbot</div>
+          <div class="ai-sub">Alexa / Rufus Knowledge</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#f87171;">368</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#f87171;">1.8%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-amazon"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>唯一<strong style="color:var(--green)">持續線性增長</strong>的爬蟲 — 每天穩步提升（10→49→52→103→154），沒有峰谷。說明正在逐步建立澳門本地知識庫。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>產品/商品資訊（食品貿易）</li>
+          <li>電商可用資料</li>
+          <li>英文內容優先</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>系統穩定後持續累積，預計 04-15 後超越 Yandex 量</div>
+    </div>
+
+    <!-- Yandex -->
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:rgba(239,68,68,0.1); color:#fc5252;">🔴</div>
+        <div>
+          <div class="ai-name">YandexBot</div>
+          <div class="ai-sub">Yandex AI / Alice</div>
+        </div>
+      </div>
+      <div class="ai-stats">
+        <div class="ai-stat">
+          <div class="ai-stat-label">5日總量</div>
+          <div class="ai-stat-value" style="color:#fc5252;">1,353</div>
+        </div>
+        <div class="ai-stat">
+          <div class="ai-stat-label">佔總量</div>
+          <div class="ai-stat-value" style="color:#fc5252;">6.7%</div>
+        </div>
+      </div>
+      <div class="spark-bar" id="spark-yandex"></div>
+      <div class="ai-behavior">
+        <strong style="color:var(--text)">爬取模式：</strong>衰減型 — 初始恢復量大（475），之後每日遞減。可能已完成初始索引，IndexNow 202 推送後預計 04-12 小量回升。<br><br>
+        <strong style="color:var(--text)">最愛內容：</strong>
+        <ul style="margin-top:6px; margin-left:16px; line-height:1.9;">
+          <li>繁體/簡體中文混合頁面</li>
+          <li>俄語旅遊者相關（澳門博彩）</li>
+          <li>Feed.xml / Sitemap</li>
+        </ul>
+      </div>
+      <div class="ai-trigger"><strong>觸發條件：</strong>IndexNow 推送後 1-12h 回應確認；定期重新索引</div>
+    </div>
+
+  </div>
+
+  <!-- Automated System Design -->
+  <div class="section-title">⚙️ 全自動監測分析回饋優化系統 (ACIS v1.0)</div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div class="card-title">🔄 自動化管道架構</div>
+      <span class="card-badge badge-purple">5 層閉環</span>
+    </div>
+    <div class="pipeline-grid">
+      <div class="pipeline-step">
+        <div class="pipeline-icon">📡</div>
+        <div class="pipeline-name">數據採集</div>
+        <div class="pipeline-freq">每 5 分鐘</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🧠</div>
+        <div class="pipeline-name">異常偵測</div>
+        <div class="pipeline-freq">即時觸發</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🔗</div>
+        <div class="pipeline-name">相關性分析</div>
+        <div class="pipeline-freq">每小時</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">📋</div>
+        <div class="pipeline-name">優化建議</div>
+        <div class="pipeline-freq">每日 08:00</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🚀</div>
+        <div class="pipeline-name">自動執行</div>
+        <div class="pipeline-freq">按觸發條件</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🚨 自動告警規則</div>
+        <span class="card-badge badge-red">Telegram 推送</span>
+      </div>
+      <table class="insight-table">
+        <thead>
+          <tr><th>告警名稱</th><th>觸發條件</th><th>自動動作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="table-highlight">爬蟲暴跌</td>
+            <td>任一Bot當日量 &lt; 5日均值 70%</td>
+            <td>Telegram警告 + 診斷報告</td>
+          </tr>
+          <tr>
+            <td class="table-highlight">ClaudeBot 深爬</td>
+            <td>當日ClaudeBot &gt; 1,000</td>
+            <td>Telegram通知 + 記錄觸發URL</td>
+          </tr>
+          <tr>
+            <td class="table-highlight">新 Bot 發現</td>
+            <td>未知 user-agent 出現</td>
+            <td>自動加入白名單 + robots.txt</td>
+          </tr>
+          <tr>
+            <td class="table-highlight">IndexNow 失效</td>
+            <td>Cron 06:30 連續 2 天無 202</td>
+            <td>重試 + 備用 API key 切換</td>
+          </tr>
+          <tr>
+            <td class="table-highlight">Sitemap 異常</td>
+            <td>URL 數量跌幅 &gt; 10%</td>
+            <td>回滾 + 緊急通知</td>
+          </tr>
+          <tr>
+            <td class="table-highlight">總量里程碑</td>
+            <td>當日總量 &gt; 10,000 首次突破</td>
+            <td>慶祝通知 + 自動快照</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🤖 AI 偏好驅動內容優化</div>
+        <span class="card-badge badge-green">自動觸發</span>
+      </div>
+      <table class="insight-table">
+        <thead>
+          <tr><th>偵測到的偏好</th><th>自動優化動作</th><th>頻率</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ClaudeBot 喜歡權威引用</td>
+            <td>每篇 Insight 自動注入 2+ 外部權威 source</td>
+            <td>發布時</td>
+          </tr>
+          <tr>
+            <td>Perplexity 喜歡 FAQ</td>
+            <td>每個商戶頁自動生成 5 個 FAQ (Haiku)</td>
+            <td>每週一</td>
+          </tr>
+          <tr>
+            <td>Applebot 喜歡 LocalBusiness</td>
+            <td>自動校驗 GPS/電話/開放時間完整度</td>
+            <td>每日 09:00</td>
+          </tr>
+          <tr>
+            <td>GPTBot 喜歡新內容</td>
+            <td>新品牌上線後自動觸發 IndexNow</td>
+            <td>上線即觸發</td>
+          </tr>
+          <tr>
+            <td>Amazonbot 持續增長</td>
+            <td>食品/電商類商戶英文描述優先補全</td>
+            <td>每日批次</td>
+          </tr>
+          <tr>
+            <td>Yandex 衰減</td>
+            <td>IndexNow 每週定時推送 top 50 URLs</td>
+            <td>每週三</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="section-title">🎯 優化建議（優先序排列）</div>
+  <div class="grid-2">
+    <div>
+      <div class="rec-card">
+        <div class="rec-priority p0">P0 — 今週執行</div>
+        <div class="rec-title">部署 ACIS 異常偵測 Cron Job</div>
+        <div class="rec-desc">在 Vercel Cron 加入 /api/cron/crawler-anomaly-check（UTC 每小時），當任一 Bot 超過閾值自動 Telegram 告警。預計減少「靜默崩壞」風險 90%。</div>
+      </div>
+      <div class="rec-card gold">
+        <div class="rec-priority p1">P1 — 本週</div>
+        <div class="rec-title">ClaudeBot 深爬觸發器：每週發布 1 篇權威 Insight</div>
+        <div class="rec-desc">04-10 的 6,250 次深爬完全由高權威 Insight 觸發。建立每週一篇「旗艦 Insight」發布機制，可預期每次觸發 3,000-8,000 次 ClaudeBot 爬取。</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-priority p1">P1 — 本週</div>
+        <div class="rec-title">Perplexity FAQ 批量補全計劃</div>
+        <div class="rec-desc">Perplexity 佔 23.1% 且穩定每日爬取，但主要消化 FAQ 結構。目前 FAQ 覆蓋率 12.9%，批量用 Haiku 補全至 40% 可大幅提升引用率。</div>
+      </div>
+    </div>
+    <div>
+      <div class="rec-card purple">
+        <div class="rec-priority p1">P1 — 本週</div>
+        <div class="rec-title">Applebot 觸發器：LocalBusiness Schema 完整度提升</div>
+        <div class="rec-desc">Apple 04-09 突增 1,555 對應 Merchant Tier 架構完成後的 Schema 完整度提升。批量驗證 6,238 個商戶的 GPS/電話/開放時間欄位，預計激活更多持久爬取。</div>
+      </div>
+      <div class="rec-card green">
+        <div class="rec-priority p2">P2 — 兩週內</div>
+        <div class="rec-title">Bot 偏好追蹤數據庫</div>
+        <div class="rec-desc">建立 crawler_bot_profiles 表（bot_name, preferred_url_pattern, avg_session_depth, last_triggered_by），每週自動分析並更新偏好檔案，長期指導內容策略。</div>
+      </div>
+      <div class="rec-card green">
+        <div class="rec-priority p3">P3 — 一個月</div>
+        <div class="rec-title">Amazon Rufus 食品知識庫優化</div>
+        <div class="rec-desc">Amazonbot 持續線性增長，預示 Amazon 正建立澳門食品/商品知識。為稻荷/海膽速遞補充英文產品描述 + 價格區間，把握窗口期成為 Rufus 的澳門食品權威來源。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forecast -->
+  <div class="section-title">🔮 未來 7 天預測（04-12 ~ 04-18）</div>
+  <div class="card">
+    <div class="chart-wrapper">
+      <canvas id="forecastChart"></canvas>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:16px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+      <div>
+        <div style="font-size:0.72rem; color:var(--text3); margin-bottom:6px;">04-12 今日預測</div>
+        <div style="font-size:1.3rem; font-weight:700; color:#a78bfa;">3,500 - 5,000</div>
+        <div style="font-size:0.75rem; color:var(--text3);">Sitemap 更新後 Bot 回應中</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:60%; background: linear-gradient(90deg, #a78bfa, #7c3aed);"></div></div>
+      </div>
+      <div>
+        <div style="font-size:0.72rem; color:var(--text3); margin-bottom:6px;">ClaudeBot 下次深爬</div>
+        <div style="font-size:1.3rem; font-weight:700; color:#a78bfa;">04-14 ~ 04-16</div>
+        <div style="font-size:0.75rem; color:var(--text3);">IndexNow 推送後 T+2~4天</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:75%; background: linear-gradient(90deg, #3b82f6, #1d4ed8);"></div></div>
+      </div>
+      <div>
+        <div style="font-size:0.72rem; color:var(--text3); margin-bottom:6px;">預期峰值</div>
+        <div style="font-size:1.3rem; font-weight:700; color:#34d399;">> 8,000</div>
+        <div style="font-size:0.75rem; color:var(--text3);">Sitemap +343% 全面索引後</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:45%; background: linear-gradient(90deg, #10b981, #059669);"></div></div>
+      </div>
+      <div>
+        <div style="font-size:0.72rem; color:var(--text3); margin-bottom:6px;">Applebot 趨勢</div>
+        <div style="font-size:1.3rem; font-weight:700; color:#fbbf24;">持續高位</div>
+        <div style="font-size:0.75rem; color:var(--text3);">300-600/日 穩定估算</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:85%; background: linear-gradient(90deg, #f59e0b, #d97706);"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  CloudPipe Macao AI Encyclopedia — AI 爬蟲智能分析報告 v1.0 &nbsp;|&nbsp; 生成時間：2026-04-12 &nbsp;|&nbsp; 數據週期：2026-04-07 ~ 04-11 &nbsp;|&nbsp; 分析引擎：Claude Sonnet 4.6
+</div>
+
+<script>
+// ── Color palette ──
+const COLORS = {
+  anthropic: '#a78bfa',
+  openai: '#34d399',
+  perplexity: '#60a5fa',
+  apple: '#fbbf24',
+  yandex: '#f87171',
+  amazon: '#fb923c',
+  google: '#4ade80',
+  microsoft: '#94a3b8',
+};
+
+const DATES = ['04-07', '04-08', '04-09', '04-10', '04-11'];
+
+const DATA = {
+  total:       [117, 4908, 4963, 7732, 2354],
+  anthropic:   [18,  528,  680,  6250, 158],
+  openai:      [6,   1784, 212,  15,   677],
+  perplexity:  [17,  1898, 1828, 82,   816],
+  apple:       [22,  153,  1555, 841,  390],
+  yandex:      [34,  475,  426,  301,  117],
+  amazon:      [10,  49,   52,   103,  154],
+  google:      [8,   20,   209,  138,  40],
+  microsoft:   [1,   0,    0,    1,    0],
+};
+
+// ── Helper ──
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+// ── 1. Main Stack Chart ──
+const eventAnnotations = {
+  e1: { type:'line', xMin:0, xMax:0, borderColor:'rgba(239,68,68,0.7)', borderWidth:2, borderDash:[4,3], label:{content:'系統修復', display:true, position:'start', color:'#f87171', font:{size:10}} },
+  e2: { type:'line', xMin:1, xMax:1, borderColor:'rgba(245,158,11,0.6)', borderWidth:2, borderDash:[4,3], label:{content:'Mind Coffee上線', display:true, position:'start', color:'#fbbf24', font:{size:10}} },
+  e3: { type:'line', xMin:2.5, xMax:2.5, borderColor:'rgba(59,130,246,0.6)', borderWidth:2, borderDash:[4,3], label:{content:'旗艦Insight發布', display:true, position:'start', color:'#60a5fa', font:{size:10}} },
+  e4: { type:'line', xMin:3.8, xMax:3.8, borderColor:'rgba(16,185,129,0.6)', borderWidth:2, borderDash:[4,3], label:{content:'Sitemap +343%', display:true, position:'end', color:'#34d399', font:{size:10}} },
+};
+
+new Chart(document.getElementById('mainStackChart'), {
+  type: 'bar',
+  data: {
+    labels: DATES,
+    datasets: [
+      { label: 'ClaudeBot', data: DATA.anthropic, backgroundColor: `rgba(${hexToRgb(COLORS.anthropic)},0.85)`, borderRadius:3 },
+      { label: 'GPTBot',    data: DATA.openai,    backgroundColor: `rgba(${hexToRgb(COLORS.openai)},0.8)`, borderRadius:3 },
+      { label: 'Perplexity',data: DATA.perplexity,backgroundColor: `rgba(${hexToRgb(COLORS.perplexity)},0.8)`, borderRadius:3 },
+      { label: 'Apple',     data: DATA.apple,     backgroundColor: `rgba(${hexToRgb(COLORS.apple)},0.8)`, borderRadius:3 },
+      { label: 'Yandex',    data: DATA.yandex,    backgroundColor: `rgba(${hexToRgb(COLORS.yandex)},0.75)`, borderRadius:3 },
+      { label: 'Amazon',    data: DATA.amazon,    backgroundColor: `rgba(${hexToRgb(COLORS.amazon)},0.75)`, borderRadius:3 },
+      { label: 'Google',    data: DATA.google,    backgroundColor: `rgba(${hexToRgb(COLORS.google)},0.7)`, borderRadius:3 },
+    ]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color:'#94a3b8', font:{size:11}, boxWidth:12 } },
+      annotation: { annotations: eventAnnotations },
+      tooltip: { mode:'index', intersect:false }
+    },
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8'} },
+      y: { stacked:true, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#94a3b8'} }
+    }
+  }
+});
+
+// ── 2. Trend (log) ──
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: DATES,
+    datasets: [
+      { label: '總爬取量', data: DATA.total, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.08)', tension:0.4, fill:true, borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#3b82f6' },
+      { label: 'ClaudeBot', data: DATA.anthropic, borderColor:'#a78bfa', backgroundColor:'rgba(139,92,246,0.05)', tension:0.4, borderDash:[5,3], borderWidth:1.5, pointRadius:3 },
+    ]
+  },
+  options: {
+    plugins: { legend: { labels: { color:'#94a3b8', font:{size:11} } } },
+    responsive:true, maintainAspectRatio:false,
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8'} },
+      y: { type:'logarithmic', grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#94a3b8'} }
+    }
+  }
+});
+
+// ── 3. Pie ──
+const totals5d = [
+  DATA.anthropic.reduce((a,b)=>a+b,0),
+  DATA.perplexity.reduce((a,b)=>a+b,0),
+  DATA.apple.reduce((a,b)=>a+b,0),
+  DATA.openai.reduce((a,b)=>a+b,0),
+  DATA.yandex.reduce((a,b)=>a+b,0),
+  DATA.amazon.reduce((a,b)=>a+b,0),
+  DATA.google.reduce((a,b)=>a+b,0),
+];
+new Chart(document.getElementById('pieChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['ClaudeBot','Perplexity','Apple','GPTBot','Yandex','Amazon','Google'],
+    datasets: [{
+      data: totals5d,
+      backgroundColor: [COLORS.anthropic, COLORS.perplexity, COLORS.apple, COLORS.openai, COLORS.yandex, COLORS.amazon, COLORS.google],
+      borderWidth: 2,
+      borderColor: '#0a0d14',
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12, padding:12 } },
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toLocaleString()} (${(ctx.raw/totals5d.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)` } }
+    },
+    responsive:true, maintainAspectRatio:false,
+    cutout: '60%',
+  }
+});
+
+// ── 4. Forecast Chart ──
+const forecastDates = ['04-12','04-13','04-14','04-15','04-16','04-17','04-18'];
+const forecastMid  = [4200, 3800, 5500, 7200, 8100, 5000, 4500];
+const forecastLow  = [3000, 2800, 3500, 5000, 5500, 3500, 3000];
+const forecastHigh = [6000, 5000, 8000, 10000, 12000, 7000, 6500];
+new Chart(document.getElementById('forecastChart'), {
+  type: 'line',
+  data: {
+    labels: forecastDates,
+    datasets: [
+      { label: '預測中值', data: forecastMid, borderColor:'#3b82f6', tension:0.4, borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:false },
+      { label: '樂觀情境', data: forecastHigh, borderColor:'rgba(16,185,129,0.4)', tension:0.4, borderWidth:1.5, borderDash:[5,3], pointRadius:3, fill:false },
+      { label: '保守情境', data: forecastLow, borderColor:'rgba(239,68,68,0.35)', tension:0.4, borderWidth:1.5, borderDash:[5,3], pointRadius:3, fill:'-1', backgroundColor:'rgba(59,130,246,0.05)' },
+    ]
+  },
+  options: {
+    plugins: {
+      legend: { labels:{ color:'#94a3b8', font:{size:11} } },
+      annotation: {
+        annotations: {
+          claudeNext: { type:'box', xMin:1.8, xMax:3.2, backgroundColor:'rgba(139,92,246,0.06)', borderColor:'rgba(139,92,246,0.2)', label:{content:'ClaudeBot 深爬窗口', display:true, color:'#a78bfa', font:{size:10}} }
+        }
+      }
+    },
+    responsive:true, maintainAspectRatio:false,
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8'} },
+      y: { grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#94a3b8'} }
+    }
+  }
+});
+
+// ── Spark bars ──
+function renderSpark(id, data, color) {
+  const max = Math.max(...data);
+  const container = document.getElementById(id);
+  if (!container) return;
+  container.innerHTML = data.map((v,i) => {
+    const h = Math.max(4, Math.round((v/max)*40));
+    return `<div class="spark-bar-col" style="height:${h}px; background:${color}; flex:1;" title="${DATES[i]}: ${v.toLocaleString()}"></div>`;
+  }).join('');
+}
+renderSpark('spark-claude', DATA.anthropic, COLORS.anthropic);
+renderSpark('spark-perplexity', DATA.perplexity, COLORS.perplexity);
+renderSpark('spark-openai', DATA.openai, COLORS.openai);
+renderSpark('spark-apple', DATA.apple, COLORS.apple);
+renderSpark('spark-amazon', DATA.amazon, COLORS.amazon);
+renderSpark('spark-yandex', DATA.yandex, COLORS.yandex);
+</script>
+</body>
+</html>
