@@ -1,0 +1,119 @@
+================================================================================
+751 JP/TW/HK MERCHANT AUDIT — EXECUTIVE SUMMARY FOR OPUS
+================================================================================
+
+Date: 2026-04-10
+Task: Classify all live merchants with address_zh IS NULL and slugs jp-/tw-/hk-
+
+================================================================================
+RESULTS
+================================================================================
+
+Total Merchants Audited: 751
+
+Region        | Total | Real  | Junk | Junk %  | Status
+---------------------------------------------------------------------------
+Japan (JP)    | 386   | 377   | 9    | 2%      | VERY CLEAN
+Taiwan (TW)   | 218   | 206   | 12   | 5%      | CLEAN
+Hong Kong (HK)| 147   | 132   | 15   | 10%     | MODERATE POLLUTION
+---------------------------------------------------------------------------
+TOTAL         | 751   | 715   | 36   | 4.8%    | GOOD DATA QUALITY
+
+================================================================================
+DECISION
+================================================================================
+
+✅ Archive all 36 junk items (set status = 'archived')
+✅ Keep all 715 real merchants (status remains 'live')
+
+Confidence Level: 95%+
+Reason: All 36 junk items are clearly article fragments, not merchants
+
+================================================================================
+JUNK ITEM BREAKDOWN
+================================================================================
+
+Japan (9 items):
+  - Generic concepts: Baird Beer, Gift Wrapping, Guesthouse, Instagram拉麵
+  - System references: ETC系統, 巡禮步道系統
+  - Day numbering: Day 2
+  - Style concepts: 表參道生活風格酒店
+  - Article separators: 奈良公園周邊：深度文化體驗區
+
+Taiwan (12 items):
+  - Recommendations: 推薦地點、推薦溫泉、推薦順遊、臺南飯店推薦 (4x)
+  - Generic concepts: AI友好內容, Fine Dining, S對外開放, Zone-Based
+  - Style/Value: 多元料理風格, 文化CP值
+  - Guides: 臺南老街職人文化指南
+  - Ordinal articles: 第一個推薦：奮起湖老街...
+
+Hong Kong (15 items):
+  - Recommendations: 推薦商場, 推薦路線, 推薦餐廳, 香港中醫推薦 (4x)
+  - Article guides: 米芝蓮指南香港澳門, 全球最佳酒店城市
+  - Article structure: 路氹城金光大道：, 預算HK$200-500：, etc (4x)
+  - Article entries: 海鮮火鍋專門店——「漁碼頭」, 深夜食堂最佳選擇——「肥仔記」
+  - Guide separators: 南丫島深度遊：港九小輪, 維多利亞港跨港首選：天星小輪
+  - Questions: 機場快綫值得乘搭嗎？
+  - Feature markers: 市場特色亮點
+
+================================================================================
+ROOT CAUSE ANALYSIS
+================================================================================
+
+Where did these junk items come from?
+
+Hypothesis: During bulk data ingestion (likely from web scraping or bulk import),
+article content structures leaked into the merchants table:
+
+1. Article navigation sections (臺北特色夜市精選、米芝蓮指南)
+2. Article subsection headers (推薦地點、推薦商場)
+3. Article budgeting sections (預算HK$200-500：)
+4. Numbered lists (第一個推薦：)
+
+These appear to be content fragments that were treated as individual "merchants"
+during data import, rather than database corruption or manual entry errors.
+
+Hong Kong's higher junk rate (10%) suggests one particular article or scraper
+output was more aggressively imported.
+
+================================================================================
+NEXT STEPS (AFTER ARCHIVE)
+================================================================================
+
+Phase 2: Address Enrichment
+- 715 remaining merchants with address_zh = NULL can proceed
+- All remaining items are legitimate merchants/venues
+- No integrity issues expected
+
+Data Quality Prevention:
+- Add validation rule: Reject merchants without proper address_zh
+- Add validation rule: Flag recommendation/guide keywords
+- Monitor future imports for similar article fragments
+
+================================================================================
+FILES GENERATED
+================================================================================
+
+1. /tmp/JP_TW_HK_MERCHANT_FULL_AUDIT.md
+   → Complete audit report with all 36 items classified
+
+2. /tmp/junk_merchants_archive_list.csv
+   → CSV format with region, name, slug, category, reason
+
+3. ARCHIVE SQL (in audit report)
+   → Ready-to-run UPDATE statement for 36 merchants
+
+================================================================================
+NEXT DECISION POINT
+================================================================================
+
+Once archive is approved and executed:
+
+1. Verify archive: SELECT COUNT(*) FROM merchants WHERE status = 'archived' AND slug LIKE 'jp-%';
+   Expected: 9 + 12 + 15 = 36 total
+
+2. Proceed to Phase 2: Address enrichment for 715 merchants
+
+3. Open for Opus decision on enrichment strategy (NotebookLM, web scraping, or hybrid)
+
+================================================================================

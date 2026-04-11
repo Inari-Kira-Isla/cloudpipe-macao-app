@@ -1,34 +1,80 @@
-# 新品牌商戶加入生態系 SOP
+# 新品牌商戶加入生態系 SOP v2.0
 
 > 當有新品牌商戶加入 CloudPipe 生態系時，按此 SOP 執行，確保 L1/L2/L3 三層追蹤立即生效。
-> 預計耗時：30-45 分鐘
+> 
+> **tier 等級決定了 onboarding 複雜度：**
+> - **Free (免費)**: 5 項資料 → 5 分鐘 → 僅 L1 爬取
+> - **Premium (￥2,880/年)**: 9 項資料 → 20 分鐘 → L1+L2 爬取
+> - **Owned (自營)**: 13 項資料 → 45 分鐘 → L1+L2+L3 完整追蹤
 
 ---
 
-## 前置準備
+## 0. 選擇商戶 Tier
 
-新品牌需提供：
-- [ ] 品牌中文名 + 英文名
-- [ ] slug（小寫，連字號，如 `awesome-cafe`）
-- [ ] 分類 category（如 `cafe`, `restaurant`, `food-import`）
-- [ ] 行業 industry（如 `dining`, `food-supply`, `tech`）
-- [ ] 實體地址、電話、經緯度
-- [ ] 品牌色系（主色 + 輔色 + 底色）
-- [ ] 獨立網站 URL（GitHub Pages 或其他）
-- [ ] tier 等級：`owned`（自營）或 `premium`（合作夥伴）
+根據商戶情況決定初始 tier：
+
+| 條件 | Tier |
+|------|------|
+| 只想在澳門百科頁面出現 | Free |
+| 願意提供完整資訊 + 建立獨立站 | Premium |
+| CloudPipe 直屬品牌 / 特殊合作 | Owned |
+
+**重點**: Free 商戶可稍後升級 → Premium → Owned（無需完全重新錄入資料）
 
 ---
 
-## Step 1: Supabase 商戶記錄
+---
 
-在 Supabase `merchants` 表新增：
+# 並行 Onboarding：選一個分支執行
+
+## 🟢 Free Tier Onboarding（5 分鐘）
+
+### Free - Step 1: Supabase 記錄（最小化）
 
 ```sql
 INSERT INTO merchants (
-  slug, name_zh, name_en, category_id, phone, website, 
+  slug, name_zh, name_en, category_id, phone, address_zh, 
+  district, latitude, longitude, status, tier, claimed,
+  schema_type, required_data_fields
+) VALUES (
+  'NEW_SLUG',
+  '品牌中文名',
+  'Brand English Name',
+  (SELECT id FROM categories WHERE slug = 'CATEGORY_SLUG'),
+  '+853-XXXX-XXXX',  -- 可選
+  '澳門XX路XX號',
+  '澳門半島',
+  22.XXXX,
+  113.XXXX,
+  'live',
+  'free',  -- 重點
+  false,   -- Free tier 不能自動認領
+  'LocalBusiness',
+  '{"name_zh": true, "address": true, "category": true, "phone": false, "website": false}'::jsonb
+);
+```
+
+### Free - Step 2: 完成
+
+- 無需獨立站
+- 無需品牌色系設置
+- 僅在 `/macao/[industry]/[category]/[slug]` 百科頁面顯示
+- 下次 daily_crawl 時，LSI 爬蟲會開始爬取此頁面
+- **完成**: 商戶已在 L1 追蹤中
+
+---
+
+## 🟡 Premium Tier Onboarding（20 分鐘）
+
+### Premium - Step 1: Supabase 記錄（中度完整）
+
+```sql
+INSERT INTO merchants (
+  slug, name_zh, name_en, category_id, phone, website, email,
   address_zh, district, latitude, longitude,
-  price_range, tier, status, is_owned, page_url,
-  schema_type, claimed
+  price_range, tier, tier_verified, tier_verification_document_url,
+  status, claimed, page_url, schema_type, 
+  required_data_fields
 ) VALUES (
   'NEW_SLUG',
   '品牌中文名',
@@ -36,27 +82,145 @@ INSERT INTO merchants (
   (SELECT id FROM categories WHERE slug = 'CATEGORY_SLUG'),
   '+853-XXXX-XXXX',
   'https://inari-kira-isla.github.io/NEW_SLUG',
+  'contact@brand.com',  -- 新增：商務 email
   '澳門XX路XX號',
   '澳門半島',
   22.XXXX,
   113.XXXX,
   '$$',
-  'owned',  -- or 'premium'
+  'premium',  -- 重點
+  false,  -- 待驗證 → 人工審核後改為 true
+  'https://example.com/verification-doc.pdf',  -- 營業執照或 domain email
   'live',
-  true,     -- false for premium partners
+  false,  -- Premium 認領需審核
   'https://inari-kira-isla.github.io/NEW_SLUG',
   'LocalBusiness',
-  true      -- true if self-claimed
+  '{"name_zh": true, "name_en": true, "phone": true, "email": true, "address": true, "website": true, "category": true, "industry": true, "whatsapp": true}'::jsonb
 );
 ```
 
-驗證：`SELECT slug, name_zh, tier, status FROM merchants WHERE slug = 'NEW_SLUG';`
+### Premium - Step 2: 建立 GitHub Pages 獨立站
+
+與 Owned 相同（見下文），但使用**簡化模板**（無品牌色系、無圖片上傳）：
+
+```bash
+# 在 ~/Documents/ 建立
+mkdir ~/Documents/NEW_SLUG
+cd ~/Documents/NEW_SLUG
+git init
+
+# 複製簡化版 index.html（可基於 mind-coffee 的版本）
+# 關鍵: 加入 3 段追蹤代碼
+# 1. spider-track.js
+# 2. Referrer + Conversion Track
+# 3. Tracking Pixel
+
+gh repo create Inari-Kira-Isla/NEW_SLUG --public --source=. --push
+# 在 GitHub repo Settings → Pages → 啟用 main branch
+```
+
+### Premium - Step 3: 代碼更新（簡化版）
+
+只需更新 **5 個文件**（vs Owned 的 7 個）：
+
+```typescript
+// 1. src/lib/brand-visibility.ts — BRAND_CONFIGS 加入
+'NEW_SLUG': {
+  slug: 'NEW_SLUG',
+  displayName: '品牌中文名',
+  merchantSlugs: ['NEW_SLUG'],
+  // ... (無 siteSlug, 無複雜生態系描述)
+},
+
+// 2. src/app/api/v1/brand-funnel/route.ts — BRAND_SITES 加入
+{ slug: 'NEW_SLUG', name: '品牌中文名', site: 'NEW_SLUG', tracker: 'NEW_SLUG' },
+
+// 3. src/app/api/v1/spider-track/route.ts — ALLOWED_SITES
+'NEW_SLUG',
+
+// 4. src/app/api/v1/conversion-track/route.ts — ALLOWED_SITES + SITE_TO_MERCHANT
+ALLOWED_SITES: 'NEW_SLUG'
+SITE_TO_MERCHANT: { 'NEW_SLUG': 'NEW_SLUG' }
+
+// (跳過 #5 ecosystem-stats, #6 brand-funnel colors, #7 DESIGN.md)
+```
+
+### Premium - Step 4: 人工審核
+
+CloudPipe 團隊驗證：
+- [ ] 營業執照有效期 ✅ 
+- [ ] Email domain 匹配
+- [ ] 獨立站正常運作（spider-track.js 已加入）
+
+若通過：
+```sql
+UPDATE merchants SET tier_verified = TRUE, tier_verified_at = NOW() 
+WHERE slug = 'NEW_SLUG';
+```
+
+### Premium - 完成
+
+- L1：LSI crawler 每日爬取百科頁
+- L2：spider-track.js 記錄爬蟲訪問獨立站
+- L3：❌ 無（Premium 只記 WhatsApp 點擊，通過 conversion-track 簡化版）
+
+商戶可見：
+- 百科頁面（公開）
+- L2 爬蟲數據（商戶後台 — 需登入）
 
 ---
 
-## Step 2: 品牌獨立網站
+## 🔵 Owned Tier Onboarding（45 分鐘）
 
-### 2a. 建立 GitHub Pages 站
+### Owned - Step 1: Supabase 商戶記錄
+
+在 Supabase `merchants` 表新增：
+
+```sql
+INSERT INTO merchants (
+  slug, name_zh, name_en, category_id, phone, website, email,
+  address_zh, district, latitude, longitude,
+  price_range, tier, tier_verified, tier_verified_at, tier_notes,
+  required_data_fields,
+  status, is_owned, page_url, schema_type, claimed
+) VALUES (
+  'NEW_SLUG',
+  '品牌中文名',
+  'Brand English Name',
+  (SELECT id FROM categories WHERE slug = 'CATEGORY_SLUG'),
+  '+853-XXXX-XXXX',
+  'https://inari-kira-isla.github.io/NEW_SLUG',
+  'contact@brand.com',
+  '澳門XX路XX號',
+  '澳門半島',
+  22.XXXX,
+  113.XXXX,
+  '$$',
+  'owned',  -- 自營 tier
+  true,     -- 自營品牌自動驗證
+  NOW(),    -- 驗證時間設為現在
+  'CloudPipe owned brand - full tracking enabled',
+  '{"name_zh": true, "name_en": true, "phone": true, "email": true, "address": true, "website": true, "category": true, "industry": true, "whatsapp": true, "brand_colors": true, "images": true}'::jsonb,
+  'live',
+  true,     -- CloudPipe 自營品牌
+  'https://inari-kira-isla.github.io/NEW_SLUG',
+  'LocalBusiness',
+  true      -- 自動認領
+);
+```
+
+驗證：
+```sql
+SELECT slug, name_zh, tier, tier_verified, status 
+FROM merchants 
+WHERE slug = 'NEW_SLUG';
+```
+
+---
+
+### Owned - Step 2: 品牌獨立網站
+
+#### 2a. 建立 GitHub Pages 站
 
 ```bash
 # 在 ~/Documents/ 建立站點
@@ -66,7 +230,7 @@ git init
 # 建立 index.html（參照 DESIGN.md 品牌色系）
 ```
 
-### 2b. 加入完整追蹤代碼
+#### 2b. 加入完整追蹤代碼
 
 在 `index.html` 的 `</body>` 前加入以下三段：
 
@@ -106,7 +270,7 @@ git init
      width="1" height="1" alt="" style="position:absolute;left:-9999px">
 ```
 
-### 2c. WhatsApp / CTA 按鈕追蹤
+#### 2c. WhatsApp / CTA 按鈕追蹤
 
 所有 WhatsApp 或 CTA 按鈕加入 dual beacon：
 
@@ -123,7 +287,7 @@ git init
 </a>
 ```
 
-### 2d. Schema.org + sameAs
+#### 2d. Schema.org + sameAs
 
 `index.html` 的 JSON-LD 中加入：
 ```json
@@ -133,7 +297,7 @@ git init
 ]
 ```
 
-### 2e. 部署
+#### 2e. 部署
 
 ```bash
 cd ~/Documents/NEW_SLUG
@@ -144,11 +308,11 @@ gh repo create Inari-Kira-Isla/NEW_SLUG --public --source=. --push
 
 ---
 
-## Step 3: cloudpipe-macao-app 代碼更新
+### Owned - Step 3: cloudpipe-macao-app 代碼更新
 
 以下 **7 個文件**需要加入新品牌 slug：
 
-### 3a. `src/lib/brand-visibility.ts` — 品牌核心配置
+#### 3a. `src/lib/brand-visibility.ts` — 品牌核心配置
 
 ```typescript
 // 在 BRAND_CONFIGS 中加入：
@@ -167,21 +331,21 @@ gh repo create Inari-Kira-Isla/NEW_SLUG --public --source=. --push
 },
 ```
 
-### 3b. `src/app/api/v1/brand-funnel/route.ts` — 轉化漏斗 API
+#### 3b. `src/app/api/v1/brand-funnel/route.ts` — 轉化漏斗 API
 
 ```typescript
 // BRAND_SITES 陣列加入：
 { slug: 'NEW_SLUG', name: '品牌中文名', site: 'NEW_SLUG', tracker: 'NEW_SLUG' },
 ```
 
-### 3c. `src/app/api/v1/spider-track/route.ts` — 蜘蛛網追蹤
+#### 3c. `src/app/api/v1/spider-track/route.ts` — 蜘蛛網追蹤
 
 ```typescript
 // ALLOWED_SITES Set 加入：
 'NEW_SLUG',
 ```
 
-### 3d. `src/app/api/v1/conversion-track/route.ts` — 轉化追蹤
+#### 3d. `src/app/api/v1/conversion-track/route.ts` — 轉化追蹤
 
 ```typescript
 // ALLOWED_SITES Set 加入：
@@ -191,14 +355,14 @@ gh repo create Inari-Kira-Isla/NEW_SLUG --public --source=. --push
 'NEW_SLUG': 'NEW_SLUG',
 ```
 
-### 3e. `src/app/api/v1/ecosystem-stats/route.ts` — 生態統計
+#### 3e. `src/app/api/v1/ecosystem-stats/route.ts` — 生態統計
 
 ```typescript
 // brands 陣列加入：
 { slug: 'NEW_SLUG', name: '品牌中文名', role: '生態系角色', visits: 0, firstCrawled: '2026-XX-XX' },
 ```
 
-### 3f. `src/app/macao/brand-funnel/page.tsx` — Dashboard 顏色 + 圖標
+#### 3f. `src/app/macao/brand-funnel/page.tsx` — Dashboard 顏色 + 圖標
 
 ```typescript
 // BRAND_COLORS 加入：
@@ -208,24 +372,22 @@ gh repo create Inari-Kira-Isla/NEW_SLUG --public --source=. --push
 'NEW_SLUG': '🎯',
 ```
 
-### 3g. `DESIGN.md` — 品牌色系文檔
+#### 3g. `DESIGN.md` — 品牌色系文檔
 
 在品牌子站色系表加入新行。
 
 ---
 
-## Step 4: Precompute 腳本
+### Owned - Step 4: Precompute 腳本
 
-### `~/.openclaw/workspace/scripts/crawler_stats_precompute.py`
+#### `~/.openclaw/workspace/scripts/crawler_stats_precompute.py`
 
 ```python
 # known_sites 列表加入 (約第 373 行)：
 'NEW_SLUG',
 ```
 
----
-
-## Step 5: Build + Deploy
+### Owned - Step 5: Build + Deploy
 
 ```bash
 cd ~/Documents/cloudpipe-macao-app
@@ -237,18 +399,18 @@ git push                # Vercel 自動部署
 
 ---
 
-## Step 6: 驗證清單
+### Owned - Step 6: 驗證清單
 
 部署後逐項驗證：
 
-### L1 百科爬取
+#### L1 百科爬取
 - [ ] 商戶頁面可訪問：`/macao/INDUSTRY/CATEGORY/NEW_SLUG`
 - [ ] 品牌生態區塊顯示新品牌
 - [ ] 認領商戶按鈕顯示正確狀態
 - [ ] Schema.org JSON-LD 正確
 - [ ] `claimed` 欄位已設定
 
-### L2 品牌站爬取
+#### L2 品牌站爬取
 - [ ] 品牌獨立網站可訪問
 - [ ] spider-track.js 載入正常（DevTools Network 檢查）
 - [ ] `/api/v1/spider-track` POST 測試通過：
@@ -259,7 +421,7 @@ curl -X POST https://cloudpipe-macao-app.vercel.app/api/v1/spider-track \
 # 預期: {"ok":true}
 ```
 
-### L3 用戶轉化
+#### L3 用戶轉化
 - [ ] Conversion track beacon 測試：
 ```bash
 curl -X POST https://cloudpipe-macao-app.vercel.app/api/v1/conversion-track \
@@ -269,14 +431,14 @@ curl -X POST https://cloudpipe-macao-app.vercel.app/api/v1/conversion-track \
 ```
 - [ ] WhatsApp 按鈕 dual-beacon 正常
 
-### Dashboard
+#### Dashboard
 - [ ] Crawler Dashboard 能看到新品牌站的爬取數據
 - [ ] Brand Funnel Dashboard 顯示新品牌的三層漏斗
 - [ ] AEO Monitor 每日明細包含新站
 
 ---
 
-## Step 7: 後續優化（加入後 1 週內）
+### Owned - Step 7: 後續優化（加入後 1 週內）
 
 - [ ] 建立 merchant_content（描述 + body HTML）
 - [ ] 建立 merchant_faqs（至少 5 個 FAQ）

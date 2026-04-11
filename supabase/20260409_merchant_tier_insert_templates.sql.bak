@@ -1,0 +1,172 @@
+-- SQL Templates for inserting merchants by tier
+-- Use these when onboarding new merchants of each tier level
+-- 2026-04-09
+
+-- ============================================================================
+-- TEMPLATE 1: FREE TIER
+-- ============================================================================
+-- Used when merchant only needs L1 encyclopedia crawling
+-- No independent site, no tracking code required
+--
+-- Instructions:
+-- 1. Replace 'NEW_SLUG' with actual slug (lowercase, hyphens)
+-- 2. Replace 'Brand Name' with merchant's Chinese name
+-- 3. Verify category_id exists: SELECT id FROM categories WHERE slug = 'cafe'
+-- 4. Keep tier = 'free'
+
+-- BEGIN FREE TIER TEMPLATE
+-- INSERT INTO merchants (
+--   slug, name_zh, name_en, category_id,
+--   phone, address_zh, district, latitude, longitude,
+--   tier, tier_verified, status, claimed, schema_type, required_data_fields
+-- ) VALUES (
+--   'NEW_SLUG',
+--   '品牌中文名',
+--   'Brand English Name (optional)',
+--   (SELECT id FROM categories WHERE slug = 'cafe'),  -- adjust category slug
+--   '+853-XXXX-XXXX',  -- optional for Free tier
+--   '澳門XX路XX號',
+--   '澳門半島',
+--   22.1987,  -- Macao latitude
+--   113.5447,  -- Macao longitude
+--   'free',
+--   false,  -- Free tier not verified
+--   'live',
+--   false,  -- Free tier not claimed
+--   'LocalBusiness',
+--   '{"name_zh": true, "address": true, "category": true, "phone": false, "website": false}'::jsonb
+-- );
+-- END FREE TIER TEMPLATE
+
+-- ============================================================================
+-- TEMPLATE 2: PREMIUM TIER
+-- ============================================================================
+-- Used when merchant provides complete info + builds independent site
+-- Includes L1 encyclopedia + L2 brand site crawling
+-- Requires manual verification (営業執照 or company email domain)
+--
+-- Instructions:
+-- 1. Replace all NEW_SLUG values
+-- 2. Set tier_verification_document_url to CloudPipe drive link after verification
+-- 3. After verification, run: UPDATE merchants SET tier_verified=true, tier_verified_at=NOW() WHERE slug='...'
+
+-- BEGIN PREMIUM TIER TEMPLATE
+-- INSERT INTO merchants (
+--   slug, name_zh, name_en, category_id, phone, website, email,
+--   address_zh, district, latitude, longitude,
+--   price_range, tier, tier_verified, tier_verification_document_url,
+--   tier_notes, status, claimed, page_url, schema_type, required_data_fields
+-- ) VALUES (
+--   'NEW_SLUG',
+--   '品牌中文名',
+--   'Brand English Name',
+--   (SELECT id FROM categories WHERE slug = 'cafe'),
+--   '+853-XXXX-XXXX',
+--   'https://inari-kira-isla.github.io/NEW_SLUG',
+--   'contact@brand.com',  -- must be company domain or official email
+--   '澳門XX路XX號',
+--   '澳門半島',
+--   22.XXXX,
+--   113.XXXX,
+--   '$$',
+--   'premium',
+--   false,  -- pending manual verification
+--   NULL,  -- will be filled after verification document review
+--   'Premium tier - awaiting verification (business license or domain email)',
+--   'live',
+--   false,  -- cannot claim until tier_verified=true
+--   'https://inari-kira-isla.github.io/NEW_SLUG',
+--   'LocalBusiness',
+--   '{"name_zh": true, "name_en": true, "phone": true, "email": true, "address": true, "website": true, "category": true, "industry": true, "whatsapp": true}'::jsonb
+-- );
+-- END PREMIUM TIER TEMPLATE
+
+-- ============================================================================
+-- TEMPLATE 3: OWNED TIER
+-- ============================================================================
+-- Used for CloudPipe flagship brands or special partnerships
+-- Includes L1 + L2 + L3 full tracking with complete data
+-- Auto-verified (CloudPipe internal approval)
+--
+-- Instructions:
+-- 1. Only use for brands approved by CloudPipe team
+-- 2. tier_verified = true, tier_verified_at = NOW() (automatic)
+-- 3. is_owned = true
+
+-- BEGIN OWNED TIER TEMPLATE
+-- INSERT INTO merchants (
+--   slug, name_zh, name_en, category_id, phone, website, email,
+--   address_zh, district, latitude, longitude,
+--   price_range, tier, tier_verified, tier_verified_at, tier_notes,
+--   required_data_fields,
+--   status, is_owned, page_url, schema_type, claimed
+-- ) VALUES (
+--   'NEW_SLUG',
+--   '品牌中文名',
+--   'Brand English Name',
+--   (SELECT id FROM categories WHERE slug = 'cafe'),
+--   '+853-XXXX-XXXX',
+--   'https://inari-kira-isla.github.io/NEW_SLUG',
+--   'contact@brand.com',
+--   '澳門XX路XX號',
+--   '澳門半島',
+--   22.XXXX,
+--   113.XXXX,
+--   '$$',
+--   'owned',
+--   true,  -- auto-verified for Owned tier
+--   NOW(),  -- verification timestamp
+--   'CloudPipe owned brand - full L1+L2+L3 tracking enabled, flagship status',
+--   '{"name_zh": true, "name_en": true, "phone": true, "email": true, "address": true, "website": true, "category": true, "industry": true, "whatsapp": true, "brand_colors": true, "images": true, "brand_story": true, "faqs": true, "seo_keywords": true}'::jsonb,
+--   'live',
+--   true,  -- CloudPipe flagship
+--   'https://inari-kira-isla.github.io/NEW_SLUG',
+--   'LocalBusiness',
+--   true  -- auto-claimed
+-- );
+-- END OWNED TIER TEMPLATE
+
+-- ============================================================================
+-- REFERENCE: TIER VERIFICATION WORKFLOW
+-- ============================================================================
+
+-- After submitting Premium tier merchant:
+-- 1. Merchant provides: business license PDF or company email
+-- 2. CloudPipe team reviews in Supabase Comments on the row
+-- 3. Once approved, run verification update:
+
+-- UPDATE merchants
+-- SET tier_verified = true,
+--     tier_verified_at = NOW(),
+--     tier_notes = 'Verified by [name] on [date] - business license confirmed',
+--     tier_verification_document_url = 'https://drive.google.com/file/d/...'
+-- WHERE slug = 'NEW_SLUG' AND tier = 'premium';
+
+-- ============================================================================
+-- QUERY: Check all merchants by tier status
+-- ============================================================================
+
+-- SELECT
+--   tier,
+--   tier_verified,
+--   COUNT(*) as count,
+--   COUNT(CASE WHEN claimed THEN 1 END) as claimed_count
+-- FROM merchants
+-- GROUP BY tier, tier_verified
+-- ORDER BY tier, tier_verified;
+
+-- ============================================================================
+-- QUERY: Find unverified Premium merchants awaiting review
+-- ============================================================================
+
+-- SELECT
+--   slug,
+--   name_zh,
+--   tier,
+--   tier_verified,
+--   email,
+--   tier_verification_document_url,
+--   created_at
+-- FROM merchants
+-- WHERE tier = 'premium' AND tier_verified = false
+-- ORDER BY created_at DESC;

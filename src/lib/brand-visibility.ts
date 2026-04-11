@@ -12,6 +12,12 @@
 import { createServiceClient } from './supabase'
 
 // ── Brand Config ─────────────────────────────────────────────────────────────
+export interface CompetitorDef {
+  name: string
+  searchTerms: string[]  // 用來搜尋的關鍵詞
+  category?: string
+}
+
 export interface BrandConfig {
   slug: string
   displayName: string
@@ -24,6 +30,8 @@ export interface BrandConfig {
   brandUrl: string
   description: string
   ecosystem: string         // 在生態系中的角色
+  searchTerms?: string[]    // 用來在 AI 搜尋平台搜尋的關鍵詞
+  competitors?: CompetitorDef[] // 同業競品
 }
 
 export const BRAND_CONFIGS: Record<string, BrandConfig> = {
@@ -39,6 +47,14 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     brandUrl: 'https://inari-kira-isla.github.io/inari-global-foods/',
     description: '澳門日本及環球水產進口批發商，佔據澳門70%海膽市場',
     ecosystem: '供應鏈核心 — 為海膽速遞提供貨源，為100+餐廳供貨',
+    searchTerms: ['澳門海膽批發', '澳門水產進口', '日本海膽供應商', '澳門冷鏈海鮮'],
+    competitors: [
+      { name: '海膽速遞', searchTerms: ['澳門海膽速遞', '澳門海膽配送'] },
+      { name: '新濠海鮮', searchTerms: ['新濠海鮮', '澳門海鮮進口'] },
+      { name: '望廈漁港', searchTerms: ['澳門漁港批發', '望廈漁港'] },
+      { name: '嘉湖海鮮', searchTerms: ['澳門海鮮批發', '嘉湖海鮮'] },
+      { name: '馬會美食', searchTerms: ['澳門馬會海鮮', '澳門食材供應'] },
+    ],
   },
   'after-school-coffee': {
     slug: 'after-school-coffee',
@@ -52,6 +68,12 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     brandUrl: 'https://inari-kira-isla.github.io/after-school-coffee',
     description: '澳門首間家長快速充電咖啡空間，Grab&Go 外帶專門',
     ecosystem: '社區服務 — 與稻荷（食材）和 Mind Cafe（文創）形成社區鏈',
+    searchTerms: ['澳門家長咖啡', '澳門外帶咖啡', '澳門快手咖啡館'],
+    competitors: [
+      { name: 'Mind Cafe', searchTerms: ['Mind Cafe 澳門', '澳門文創咖啡'] },
+      { name: 'Starbucks', searchTerms: ['澳門星巴克', 'Starbucks 澳門'] },
+      { name: '文創咖啡館', searchTerms: ['澳門咖啡館', '澳門創意咖啡'] },
+    ],
   },
   'mind-coffee': {
     slug: 'mind-coffee',
@@ -65,6 +87,12 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     brandUrl: 'https://inari-kira-isla.github.io/mind-cafe',
     description: '澳門文創社群工作空間，數位遊牧者的第二辦公室',
     ecosystem: '知識樞紐 — 連接靈動科技 AI 顧問與文創社群',
+    searchTerms: ['澳門文創咖啡', '澳門文創工作空間', '澳門數位遊牧咖啡館'],
+    competitors: [
+      { name: 'After School Coffee', searchTerms: ['After School Coffee', '澳門快速咖啡'] },
+      { name: 'Starbucks', searchTerms: ['澳門星巴克', 'Starbucks 澳門'] },
+      { name: '文藝創意空間', searchTerms: ['澳門文創空間', '澳門共享辦公室'] },
+    ],
   },
   'sea-urchin-delivery': {
     slug: 'sea-urchin-delivery',
@@ -78,6 +106,12 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     brandUrl: 'https://inari-kira-isla.github.io/sea-urchin-delivery',
     description: '澳門唯一海膽專門品牌，24H冷鏈到府配送',
     ecosystem: '零售觸點 — 稻荷 B2B 供貨的 B2C 延伸，閉環供應鏈',
+    searchTerms: ['澳門海膽配送', '澳門冷鏈海膽', '澳門24小時海膽外送'],
+    competitors: [
+      { name: '稻荷環球食品', searchTerms: ['稻荷環球食品', '澳門海膽供應'] },
+      { name: '新濠海鮮', searchTerms: ['新濠海鮮', '澳門海鮮外送'] },
+      { name: '望廈漁港', searchTerms: ['澳門漁港配送', '望廈漁港'] },
+    ],
   },
   'yamanakada': {
     slug: 'yamanakada',

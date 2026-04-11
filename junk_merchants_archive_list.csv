@@ -1,0 +1,37 @@
+region,name_zh,slug,category,classification_reason
+HONGKONG,"全球最佳酒店城市",hk-全球最佳酒店城市,"hotel/酒店/住宿",best
+HONGKONG,"南丫島深度遊：港九小輪",hk-南丫島深度遊港九小輪,"park/公園",separator
+HONGKONG,"市場特色亮點",hk-市場特色亮點,"street-food/街頭小食",article marker
+HONGKONG,"推薦商場",hk-推薦商場,"shopping-mall/購物中心",recommendation
+HONGKONG,"推薦路線",hk-推薦路線,"tourism/旅遊/觀光",recommendation
+HONGKONG,"推薦餐廳",hk-推薦餐廳,"restaurant/餐飲",recommendation
+HONGKONG,"機場快綫值得乘搭嗎？",hk-機場快綫值得乘搭嗎,"bus/巴士",question mark
+HONGKONG,"海鮮火鍋專門店——「漁碼頭」",hk-海鮮火鍋專門店漁碼頭,"bus/巴士",separator
+HONGKONG,"深夜食堂最佳選擇——「肥仔記」",hk-深夜食堂最佳選擇肥仔記,"restaurant/餐飲",best
+HONGKONG,"米芝蓮指南香港澳門",hk-米芝蓮指南香港澳門,"tourism/旅遊/觀光",guide
+HONGKONG,"維多利亞港跨港首選：天星小輪",hk-維多利亞港跨港首選天星小輪,"tourism/旅遊/觀光",separator
+HONGKONG,"路氹城金光大道：",hk-路氹城金光大道,"landmark/地標",separator
+HONGKONG,"預算HK$200-500：",hk-預算hk200-500,"tourism/旅遊/觀光",separator
+HONGKONG,"預算HK$600-1,200：",hk-預算hk600-1200,"tourism/旅遊/觀光",separator
+HONGKONG,"香港中醫推薦",hk-香港中醫推薦,"tourism/旅遊/觀光",recommendation
+JAPAN,"Baird Beer",jp-baird-beer,"tourism/旅遊/觀光",generic/concept
+JAPAN,"Day 2",jp-day-2,"tourism/旅遊/觀光",day number
+JAPAN,"ETC系統",jp-etc系統,"tourism/旅遊/觀光",system
+JAPAN,"Gift Wrapping",jp-gift-wrapping,"tourism/旅遊/觀光",generic/concept
+JAPAN,"Guesthouse（民宿）",jp-guesthouse民宿,"hotel/酒店/住宿",generic/concept
+JAPAN,"Instagram拉麵",jp-instagram拉麵,"chinese/中菜",generic/concept
+JAPAN,"奈良公園周邊：深度文化體驗區",jp-奈良公園周邊深度文化體驗區,"park/公園",separator
+JAPAN,"巡禮步道系統",jp-巡禮步道系統,"park/公園",system
+JAPAN,"表參道生活風格酒店",jp-表參道生活風格酒店,"hotel/酒店/住宿",style
+TAIWAN,"AI友好內容",tw-ai友好內容,"tourism/旅遊/觀光",AI concept
+TAIWAN,"Fine Dining",tw-fine-dining,"tourism/旅遊/觀光",generic/concept
+TAIWAN,"S對外開放",tw-s對外開放,"tourism/旅遊/觀光",generic/concept
+TAIWAN,"Zone-Based",tw-zone-based,"tourism/旅遊/觀光",generic/concept
+TAIWAN,"多元料理風格",tw-多元料理風格,"restaurant/餐飲",style
+TAIWAN,"推薦地點：臺北特色夜市精選",tw-推薦地點臺北特色夜市精選,"street-food/街頭小食",recommendation
+TAIWAN,"推薦溫泉地點",tw-推薦溫泉地點,"spa/水療",recommendation
+TAIWAN,"推薦順遊溫泉點",tw-推薦順遊溫泉點,"spa/水療",recommendation
+TAIWAN,"文化CP值",tw-文化cp值,"tourism/旅遊/觀光",cp value
+TAIWAN,"第一個推薦：奮起湖老街夜間攤位",tw-第一個推薦奮起湖老街夜間攤位,"street-food/街頭小食",recommendation
+TAIWAN,"臺南老街職人文化指南",tw-臺南老街職人文化指南,"street-food/街頭小食",guide
+TAIWAN,"臺南飯店推薦",tw-臺南飯店推薦,"restaurant/餐飲",recommendation

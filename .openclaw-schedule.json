@@ -1,0 +1,48 @@
+{
+  "aiSearchBaselineCollection": {
+    "enabled": true,
+    "description": "每日收集 4 個品牌的 AI 搜尋基線排名（5個平台：Gemini, GPT, Grok, Perplexity, Claude）",
+    "schedule": "0 2 * * *",
+    "scheduleDescription": "每天 02:00 UTC（即北京時間 10:00）",
+    "reason": "在主要 AI 爬蟲活動高峰(03:00-08:00 UTC)之前收集基線，確保數據新鮮度；包含關鍵詞提取分析",
+    "tasks": [
+      {
+        "id": "ai-baseline-inari-global-foods",
+        "brand": "inari-global-foods",
+        "displayName": "稻荷環球食品",
+        "command": "npx ts-node scripts/collect-ai-search-baseline.ts --brand inari-global-foods",
+        "timeout": 600000,
+        "retries": 1
+      },
+      {
+        "id": "ai-baseline-after-school-coffee",
+        "brand": "after-school-coffee",
+        "displayName": "After School Coffee",
+        "command": "npx ts-node scripts/collect-ai-search-baseline.ts --brand after-school-coffee",
+        "timeout": 600000,
+        "retries": 1
+      },
+      {
+        "id": "ai-baseline-mind-coffee",
+        "brand": "mind-coffee",
+        "displayName": "Mind Cafe",
+        "command": "npx ts-node scripts/collect-ai-search-baseline.ts --brand mind-coffee",
+        "timeout": 600000,
+        "retries": 1
+      },
+      {
+        "id": "ai-baseline-sea-urchin-delivery",
+        "brand": "sea-urchin-delivery",
+        "displayName": "海膽速遞",
+        "command": "npx ts-node scripts/collect-ai-search-baseline.ts --brand sea-urchin-delivery",
+        "timeout": 600000,
+        "retries": 1
+      }
+    ],
+    "notificationSettings": {
+      "notifyOnSuccess": false,
+      "notifyOnFailure": true,
+      "channels": ["telegram"]
+    }
+  }
+}

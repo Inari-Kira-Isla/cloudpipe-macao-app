@@ -9,34 +9,71 @@ const PASSWORD = 'cloudpipe2026'
 interface CompetitorEntry {
   slug: string; name: string; visits: number; percentage: number
   rank: number; isBrand: boolean; label: string; rating?: number; reviews?: number
+  aiSearchRanking?: {
+    avgRank: number
+    mentioned: boolean
+    totalCitations: number
+    platforms: Record<string, any>
+    keywords?: string[]
+  } | null
 }
 interface CitationData {
   brand: string; brandRank: number; totalCompetitors: number
   competitors: CompetitorEntry[]
+  aiSearchData?: {
+    lastUpdated: string
+    platforms: string[]
+    queries: string[]
+    keywordAnalysis: Record<string, Record<string, string[]>>
+  }
 }
 
 const RANK_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
 
-export default function BrandPage({ params }: { params: { slug: string } }) {
+export default function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState('')
   const [data, setData] = useState<BrandVisibilityData | null>(null)
   const [citation, setCitation] = useState<CitationData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const slug = params.slug
-  const brandConfig = BRAND_CONFIGS[slug]
+  const [slug, setSlug] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!authed || !brandConfig) return
+    params.then(p => setSlug(p.slug))
+  }, [params])
+
+  const brandConfig = slug ? BRAND_CONFIGS[slug] : null
+
+  useEffect(() => {
+    if (!authed || !slug || !brandConfig) return
     setLoading(true)
     Promise.all([
       fetch(`/api/v1/brand-visibility?slug=${slug}&days=30`).then(r => r.json()),
-      fetch(`/api/v1/brand-citation?slug=${slug}&days=30`).then(r => r.json()).catch(() => null),
+      fetch(`/api/v1/brand-citation?slug=${slug}&days=30&includeAISearch=true`).then(r => r.json()).catch(() => null),
     ]).then(([vis, cit]) => {
       setData(vis)
-      if (cit && !cit.error) setCitation(cit)
+      // 轉換 brand-citation 返回的競品列表為 citation 格式
+      if (cit && !cit.error) {
+        const citationData: CitationData = {
+          brand: cit.brand,
+          brandRank: cit.brandRank,
+          totalCompetitors: cit.totalCompetitors,
+          competitors: cit.competitors.map((comp: any) => ({
+            slug: comp.slug,
+            name: comp.name,
+            visits: comp.visits,
+            percentage: comp.percentage,
+            rank: comp.rank,
+            isBrand: comp.isBrand,
+            label: comp.label,
+            rating: comp.rating,
+            reviews: comp.reviews,
+          })),
+          aiSearchData: cit.aiSearchData,
+        }
+        setCitation(citationData)
+      }
       setLoading(false)
     }).catch(e => { setError(e.message); setLoading(false) })
   }, [authed, slug, brandConfig])
@@ -298,50 +335,189 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
             <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🏆 競爭態勢排名</h2>
               <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 4 }}>
-                依各競品被 AI 爬蟲訪問次數與覆蓋平台加權計算，排名越前代表 AI 更優先推薦
+                左：爬蟲訪問次數 | 右：AI 搜尋平台排名
               </p>
               <p style={{ fontSize: 14, color: '#0f4c81', fontWeight: 600, marginBottom: 16 }}>
                 你的排名：第 {citation.brandRank} / {citation.totalCompetitors}
               </p>
-              {citation.competitors.map((comp, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 0',
-                  borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none',
-                }}>
-                  <span style={{
-                    fontSize: 14, fontWeight: 600, color: '#9ca3af', width: 28,
-                  }}>#{comp.rank}</span>
-                  <span style={{
-                    fontSize: 14, fontWeight: comp.isBrand ? 700 : 400,
-                    color: comp.isBrand ? '#8b5cf6' : '#1a1a2e',
-                    flex: 1,
-                  }}>
-                    {comp.isBrand && '★ '}{comp.name}
-                  </span>
-                  {!comp.isBrand && (
-                    <span style={{
-                      fontSize: 11, padding: '2px 8px', borderRadius: 4,
-                      background: comp.label === '主要競爭者' ? '#fef3c7' : '#f3f4f6',
-                      color: comp.label === '主要競爭者' ? '#92400e' : '#6b7280',
-                      fontWeight: 500,
-                    }}>
-                      {comp.label}
-                    </span>
-                  )}
-                  <div style={{ width: 120, textAlign: 'right' }}>
-                    <div style={{ background: '#f3f4f6', borderRadius: 4, height: 8, marginBottom: 2 }}>
-                      <div style={{
-                        background: RANK_COLORS[i] || '#6b7280',
-                        borderRadius: 4, height: 8,
-                        width: `${comp.percentage}%`,
-                      }} />
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{comp.percentage}%</span>
-                  </div>
-                </div>
-              ))}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>#</th>
+                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>品牌</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>爬蟲訪問</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Gemini</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Claude</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Grok</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>平均排名</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {citation.competitors.map((comp, i) => (
+                      <tr key={i} style={{ borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                        <td style={{ padding: '10px 12px', fontWeight: 600, color: '#9ca3af' }}>#{comp.rank}</td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <span style={{
+                            fontWeight: comp.isBrand ? 700 : 500,
+                            color: comp.isBrand ? '#8b5cf6' : '#1a1a2e',
+                          }}>
+                            {comp.isBrand && '★ '}{comp.name}
+                          </span>
+                          {!comp.isBrand && comp.label && (
+                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{comp.label}</div>
+                          )}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                          <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6, marginBottom: 2 }}>
+                            <div style={{
+                              background: RANK_COLORS[i] || '#6b7280',
+                              borderRadius: 4, height: 6,
+                              width: `${comp.percentage}%`,
+                            }} />
+                          </div>
+                          <span style={{ fontWeight: 600 }}>{comp.percentage}%</span>
+                        </td>
+                        {comp.aiSearchRanking ? (
+                          <>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {comp.aiSearchRanking.platforms.gemini?.position ? (
+                                <span style={{
+                                  background: comp.aiSearchRanking.platforms.gemini.position <= 3 ? '#dbeafe' : '#f3f4f6',
+                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                  color: comp.aiSearchRanking.platforms.gemini.position <= 3 ? '#0369a1' : '#6b7280',
+                                }}>
+                                  #{comp.aiSearchRanking.platforms.gemini.position}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {comp.aiSearchRanking.platforms.gpt?.position ? (
+                                <span style={{
+                                  background: comp.aiSearchRanking.platforms.gpt.position <= 3 ? '#dbeafe' : '#f3f4f6',
+                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                  color: comp.aiSearchRanking.platforms.gpt.position <= 3 ? '#0369a1' : '#6b7280',
+                                }}>
+                                  #{comp.aiSearchRanking.platforms.gpt.position}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {comp.aiSearchRanking.platforms.perplexity?.position ? (
+                                <span style={{
+                                  background: comp.aiSearchRanking.platforms.perplexity.position <= 3 ? '#dbeafe' : '#f3f4f6',
+                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                  color: comp.aiSearchRanking.platforms.perplexity.position <= 3 ? '#0369a1' : '#6b7280',
+                                }}>
+                                  #{comp.aiSearchRanking.platforms.perplexity.position}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {comp.aiSearchRanking.platforms.claude?.position ? (
+                                <span style={{
+                                  background: comp.aiSearchRanking.platforms.claude.position <= 3 ? '#dbeafe' : '#f3f4f6',
+                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                  color: comp.aiSearchRanking.platforms.claude.position <= 3 ? '#0369a1' : '#6b7280',
+                                }}>
+                                  #{comp.aiSearchRanking.platforms.claude.position}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {comp.aiSearchRanking.platforms.grok?.position ? (
+                                <span style={{
+                                  background: comp.aiSearchRanking.platforms.grok.position <= 3 ? '#dbeafe' : '#f3f4f6',
+                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                  color: comp.aiSearchRanking.platforms.grok.position <= 3 ? '#0369a1' : '#6b7280',
+                                }}>
+                                  #{comp.aiSearchRanking.platforms.grok.position}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              <span style={{
+                                background: comp.aiSearchRanking.avgRank <= 3 ? '#dcfce7' : '#f3f4f6',
+                                padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                color: comp.aiSearchRanking.avgRank <= 3 ? '#15803d' : '#6b7280',
+                              }}>
+                                #{comp.aiSearchRanking.avgRank}
+                              </span>
+                            </td>
+                          </>
+                        ) : (
+                          <td colSpan={5} style={{ padding: '10px 12px', textAlign: 'center', color: '#d1d5db', fontSize: 12 }}>
+                            待更新
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+
+            {/* 🔍 Keyword Analysis — AI 搜尋關鍵詞分析 */}
+            {citation.aiSearchData && citation.aiSearchData.keywordAnalysis && Object.keys(citation.aiSearchData.keywordAnalysis).length > 0 && (
+              <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔍 AI 搜尋關鍵詞分析</h2>
+                <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
+                  不同 AI 平台在搜尋各關鍵詞時出現的詞彙對比（顯示最相關的 10 個關鍵詞）
+                </p>
+                {Object.entries(citation.aiSearchData.keywordAnalysis).map(([query, platformKeywords], qIdx) => (
+                  <div key={qIdx} style={{ marginBottom: 24, paddingBottom: 24, borderBottom: qIdx < Object.keys(citation.aiSearchData!.keywordAnalysis).length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#0f4c81' }}>
+                      🔎 "{query}"
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                      {Object.entries(platformKeywords).map(([platform, keywords]) => (
+                        <div key={platform} style={{ background: '#f9fafb', borderRadius: 8, padding: 12, border: '1px solid #e5e7eb' }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8, textTransform: 'uppercase' }}>
+                            {platform === 'gemini' ? '🤖 Gemini' :
+                             platform === 'gpt' ? '🧠 ChatGPT' :
+                             platform === 'perplexity' ? '🔎 Perplexity' :
+                             platform === 'claude' ? '✨ Claude' :
+                             platform === 'grok' ? '⚡ Grok' :
+                             platform}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {keywords.length > 0 ? (
+                              keywords.slice(0, 5).map((keyword, kIdx) => (
+                                <span key={kIdx} style={{
+                                  background: '#dbeafe', color: '#0369a1', padding: '4px 8px', borderRadius: 4,
+                                  fontSize: 12, fontWeight: 500,
+                                }}>
+                                  {keyword}
+                                </span>
+                              ))
+                            ) : (
+                              <span style={{ fontSize: 12, color: '#d1d5db' }}>—</span>
+                            )}
+                          </div>
+                          {keywords.length > 5 && (
+                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+                              +{keywords.length - 5} 更多
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
