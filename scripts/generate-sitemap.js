@@ -101,10 +101,13 @@ async function main() {
   const entries = []
 
   // 靜態核心頁面
-  entries.push(urlEntry(`${SITE_URL}/`,                  TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao`,             TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/insights`,    TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,    TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/`,                       TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao`,                  TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/insights`,         TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/llms.txt`,               TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,         TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/certified-shops`,  TODAY, 'weekly', '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/report`,           TODAY, 'daily',  '0.9'))
 
   // 行業頁面 (20 個)
   for (const ind of INDUSTRIES) {

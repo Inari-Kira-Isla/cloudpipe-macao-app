@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated: 2026-04-12T02:09:38.083Z | Total URLs: 156 -->
+<!-- Generated: 2026-04-12T04:31:24.524Z | Static routes only (DB offline) | Total URLs: 159 -->
+<!-- NOTE: Dynamic sitemap with merchants+insights served at /sitemap.xml by Next.js (src/app/sitemap.ts) -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://cloudpipe-macao-app.vercel.app/</loc>
@@ -21,6 +22,24 @@
   </url>
   <url>
     <loc>https://cloudpipe-macao-app.vercel.app/macao/llms-txt</loc>
+    <lastmod>2026-04-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/llms.txt</loc>
+    <lastmod>2026-04-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/certified-shops</loc>
+    <lastmod>2026-04-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cloudpipe-macao-app.vercel.app/macao/report</loc>
     <lastmod>2026-04-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
