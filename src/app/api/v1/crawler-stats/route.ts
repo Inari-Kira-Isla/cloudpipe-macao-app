@@ -489,9 +489,102 @@ export async function GET(request: NextRequest) {
         break
       }
 
+      case 'insight-categories': {
+        // Get top insight URLs from crawler_visits (last N days)
+        const { data: visitData } = await supabase
+          .from('crawler_visits')
+          .select('path, bot_name')
+          .eq('page_type', 'insight')
+          .gte('ts', since)
+          .order('ts', { ascending: false })
+          .limit(5000)
+
+        // Aggregate visits per slug
+        const slugVisits: Record<string, { count: number; bots: Set<string> }> = {}
+        for (const v of visitData || []) {
+          const slug = v.path.split('/').filter(Boolean).pop()
+          if (!slug) continue
+          if (!slugVisits[slug]) slugVisits[slug] = { count: 0, bots: new Set() }
+          slugVisits[slug].count++
+          slugVisits[slug].bots.add(v.bot_name)
+        }
+
+        // Get insight metadata for top visited slugs
+        const topSlugs = Object.entries(slugVisits)
+          .sort((a, b) => b[1].count - a[1].count)
+          .slice(0, 300)
+          .map(([slug]) => slug)
+
+        const { data: insightData } = await supabase
+          .from('insights')
+          .select('slug, title, tags, related_industries, lang')
+          .in('slug', topSlugs)
+
+        // Aggregate by tag
+        const tagStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
+        const langStats: Record<string, number> = {}
+        const industryStats: Record<string, { count: number; bots: Set<string> }> = {}
+
+        for (const insight of insightData || []) {
+          const visits = slugVisits[insight.slug]
+          if (!visits) continue
+
+          // By tag
+          for (const tag of (insight.tags || [])) {
+            if (!tagStats[tag]) tagStats[tag] = { count: 0, bots: new Set(), slugs: [] }
+            tagStats[tag].count += visits.count
+            for (const b of visits.bots) tagStats[tag].bots.add(b)
+            if (tagStats[tag].slugs.length < 5) tagStats[tag].slugs.push(insight.slug)
+          }
+
+          // By related_industries
+          for (const ind of (insight.related_industries || [])) {
+            if (!industryStats[ind]) industryStats[ind] = { count: 0, bots: new Set() }
+            industryStats[ind].count += visits.count
+            for (const b of visits.bots) industryStats[ind].bots.add(b)
+          }
+
+          // By language
+          langStats[insight.lang] = (langStats[insight.lang] || 0) + visits.count
+        }
+
+        result = {
+          period: { since, days },
+          total_insight_visits: Object.values(slugVisits).reduce((s, v) => s + v.count, 0),
+          by_tag: Object.fromEntries(
+            Object.entries(tagStats)
+              .sort((a, b) => b[1].count - a[1].count)
+              .slice(0, 60)
+              .map(([tag, info]) => [tag, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
+          ),
+          by_industry: Object.fromEntries(
+            Object.entries(industryStats)
+              .sort((a, b) => b[1].count - a[1].count)
+              .map(([ind, info]) => [ind, { count: info.count, unique_bots: info.bots.size }])
+          ),
+          by_lang: langStats,
+          top_insights: Object.entries(slugVisits)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 50)
+            .map(([slug, info]) => {
+              const ins = insightData?.find(i => i.slug === slug)
+              return {
+                slug,
+                title: ins?.title || slug,
+                visits: info.count,
+                unique_bots: info.bots.size,
+                tags: ins?.tags || [],
+                lang: ins?.lang || 'zh',
+              }
+            }),
+          generated_at: new Date().toISOString(),
+        }
+        break
+      }
+
       default:
         return NextResponse.json(
-          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, session-count, journey, spider-web, daily' },
+          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, session-count, journey, spider-web, daily, insight-categories' },
           { status: 400 }
         )
     }
