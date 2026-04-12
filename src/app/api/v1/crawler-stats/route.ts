@@ -490,6 +490,39 @@ export async function GET(request: NextRequest) {
       }
 
       case 'insight-categories': {
+        // Extract region + industry from insight slug
+        // Slug patterns: {region}-{industry}-..., upgrade-{region}-{industry}-..., {region}-tourism-{sub}-...
+        const SLUG_REGIONS = ['macau', 'japan', 'taiwan', 'hongkong', 'hk', 'tw', 'jp']
+        const SLUG_INDUSTRIES = ['dining', 'shopping', 'attractions', 'hotels', 'nightlife',
+          'wellness', 'gaming', 'transport', 'tourism', 'entertainment', 'culture',
+          'services', 'education', 'food', 'cafe', 'restaurant', 'bar', 'museum',
+          'temple', 'market', 'spa', 'casino', 'hotel', 'resort']
+        const REGION_LABEL: Record<string, string> = {
+          macau: '澳門', japan: '日本', taiwan: '台灣', hongkong: '香港', hk: '香港', tw: '台灣', jp: '日本'
+        }
+        const extractSlugMeta = (slug: string): { region: string; industry: string } => {
+          const parts = slug.split('-').map(p => p.toLowerCase())
+          // Remove URL encoding artifacts
+          const cleanParts = parts.filter(p => !p.includes('%'))
+          let region = 'unknown', industry = 'general'
+          // Strip "upgrade" prefix
+          const start = cleanParts[0] === 'upgrade' ? cleanParts.slice(1) : cleanParts
+          for (const p of start) {
+            if (SLUG_REGIONS.includes(p) && region === 'unknown') region = p
+            if (SLUG_INDUSTRIES.includes(p) && industry === 'general') industry = p
+          }
+          // "tourism" → "attractions"
+          if (industry === 'tourism') industry = 'attractions'
+          if (industry === 'food' || industry === 'cafe' || industry === 'restaurant') industry = 'dining'
+          if (industry === 'bar') industry = 'nightlife'
+          if (industry === 'museum' || industry === 'temple') industry = 'attractions'
+          if (industry === 'market') industry = 'shopping'
+          if (industry === 'spa') industry = 'wellness'
+          if (industry === 'casino') industry = 'gaming'
+          if (industry === 'hotel' || industry === 'resort') industry = 'hotels'
+          return { region, industry }
+        }
+
         // Get top insight URLs from crawler_visits (last N days)
         const { data: visitData } = await supabase
           .from('crawler_visits')
@@ -509,72 +542,88 @@ export async function GET(request: NextRequest) {
           slugVisits[slug].bots.add(v.bot_name)
         }
 
-        // Get insight metadata for top visited slugs
+        // Get insight titles for top slugs (optional — for display only)
         const topSlugs = Object.entries(slugVisits)
           .sort((a, b) => b[1].count - a[1].count)
-          .slice(0, 300)
+          .slice(0, 200)
           .map(([slug]) => slug)
-
         const { data: insightData } = await supabase
           .from('insights')
-          .select('slug, title, tags, related_industries, lang')
+          .select('slug, title, lang')
           .in('slug', topSlugs)
+        const titleMap: Record<string, string> = {}
+        const langMap: Record<string, string> = {}
+        for (const ins of insightData || []) {
+          titleMap[ins.slug] = ins.title
+          langMap[ins.slug] = ins.lang
+        }
 
-        // Aggregate by tag
-        const tagStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
+        // Aggregate by region, industry (extracted from slug)
+        const regionStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
+        const industryStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
         const langStats: Record<string, number> = {}
-        const industryStats: Record<string, { count: number; bots: Set<string> }> = {}
+        const crossStats: Record<string, { count: number; bots: Set<string> }> = {}
 
-        for (const insight of insightData || []) {
-          const visits = slugVisits[insight.slug]
-          if (!visits) continue
+        for (const [slug, visits] of Object.entries(slugVisits)) {
+          const { region, industry } = extractSlugMeta(slug)
+          const regionLabel = REGION_LABEL[region] || region
 
-          // By tag
-          for (const tag of (insight.tags || [])) {
-            if (!tagStats[tag]) tagStats[tag] = { count: 0, bots: new Set(), slugs: [] }
-            tagStats[tag].count += visits.count
-            for (const b of visits.bots) tagStats[tag].bots.add(b)
-            if (tagStats[tag].slugs.length < 5) tagStats[tag].slugs.push(insight.slug)
-          }
+          // By region
+          if (!regionStats[regionLabel]) regionStats[regionLabel] = { count: 0, bots: new Set(), slugs: [] }
+          regionStats[regionLabel].count += visits.count
+          for (const b of visits.bots) regionStats[regionLabel].bots.add(b)
+          if (regionStats[regionLabel].slugs.length < 5) regionStats[regionLabel].slugs.push(slug)
 
-          // By related_industries
-          for (const ind of (insight.related_industries || [])) {
-            if (!industryStats[ind]) industryStats[ind] = { count: 0, bots: new Set() }
-            industryStats[ind].count += visits.count
-            for (const b of visits.bots) industryStats[ind].bots.add(b)
-          }
+          // By industry
+          if (!industryStats[industry]) industryStats[industry] = { count: 0, bots: new Set(), slugs: [] }
+          industryStats[industry].count += visits.count
+          for (const b of visits.bots) industryStats[industry].bots.add(b)
+          if (industryStats[industry].slugs.length < 5) industryStats[industry].slugs.push(slug)
 
-          // By language
-          langStats[insight.lang] = (langStats[insight.lang] || 0) + visits.count
+          // By region×industry cross
+          const key = `${regionLabel}×${industry}`
+          if (!crossStats[key]) crossStats[key] = { count: 0, bots: new Set() }
+          crossStats[key].count += visits.count
+          for (const b of visits.bots) crossStats[key].bots.add(b)
+
+          // By language (from DB or slug)
+          const lang = langMap[slug] || 'zh'
+          langStats[lang] = (langStats[lang] || 0) + visits.count
         }
 
         result = {
           period: { since, days },
           total_insight_visits: Object.values(slugVisits).reduce((s, v) => s + v.count, 0),
-          by_tag: Object.fromEntries(
-            Object.entries(tagStats)
+          by_region: Object.fromEntries(
+            Object.entries(regionStats)
               .sort((a, b) => b[1].count - a[1].count)
-              .slice(0, 60)
-              .map(([tag, info]) => [tag, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
+              .map(([r, info]) => [r, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
           ),
           by_industry: Object.fromEntries(
             Object.entries(industryStats)
               .sort((a, b) => b[1].count - a[1].count)
-              .map(([ind, info]) => [ind, { count: info.count, unique_bots: info.bots.size }])
+              .map(([ind, info]) => [ind, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
+          ),
+          by_cross: Object.fromEntries(
+            Object.entries(crossStats)
+              .sort((a, b) => b[1].count - a[1].count)
+              .slice(0, 30)
+              .map(([k, info]) => [k, { count: info.count, unique_bots: info.bots.size }])
           ),
           by_lang: langStats,
           top_insights: Object.entries(slugVisits)
             .sort((a, b) => b[1].count - a[1].count)
             .slice(0, 50)
             .map(([slug, info]) => {
-              const ins = insightData?.find(i => i.slug === slug)
+              const { region, industry } = extractSlugMeta(slug)
               return {
                 slug,
-                title: ins?.title || slug,
+                title: titleMap[slug] || slug,
                 visits: info.count,
                 unique_bots: info.bots.size,
-                tags: ins?.tags || [],
-                lang: ins?.lang || 'zh',
+                region: REGION_LABEL[region] || region,
+                industry,
+                lang: langMap[slug] || 'zh',
               }
             }),
           generated_at: new Date().toISOString(),
