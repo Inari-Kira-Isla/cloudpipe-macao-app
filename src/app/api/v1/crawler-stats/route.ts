@@ -77,6 +77,52 @@ export async function GET(request: NextRequest) {
     switch (view) {
       // ── Pre-computed views (instant, no heavy queries) ──────────────────
       case 'summary': {
+        // Primary: read from crawler_stats_cache Supabase table (pg_cron refreshes every 5 min)
+        // This is the single source of truth — same number shown everywhere
+        const { data: cacheRow } = await supabase
+          .from('crawler_stats_cache')
+          .select('*')
+          .eq('id', 1)
+          .single()
+
+        if (cacheRow && cacheRow.total_visits_30d > 0) {
+          // Pick total_visits for the requested time window
+          const windowVisits = days >= 90 ? cacheRow.total_visits_90d
+            : days >= 30 ? cacheRow.total_visits_30d
+            : days >= 7  ? cacheRow.total_visits_7d
+            : cacheRow.total_visits_1d
+
+          // Scale bot/industry breakdowns proportionally for sub-30d windows
+          const ratio = days >= 30 ? 1 : windowVisits / (cacheRow.total_visits_30d || 1)
+          const scaledBots: Record<string, { count: number; owner: string }> = {}
+          for (const [name, info] of Object.entries<{ count: number; owner: string }>(cacheRow.bots_breakdown || {})) {
+            scaledBots[name] = { count: Math.round((info.count || 0) * ratio), owner: info.owner }
+          }
+          const scaledIndustries: Record<string, number> = {}
+          for (const [ind, cnt] of Object.entries<number>(cacheRow.industries_breakdown || {})) {
+            scaledIndustries[ind] = Math.round((cnt || 0) * ratio)
+          }
+
+          return NextResponse.json({
+            period: { since: new Date(Date.now() - days * 86400000).toISOString(), days },
+            total_visits: windowVisits,
+            today_visits: cacheRow.total_visits_1d,
+            unique_bots: cacheRow.unique_bots,
+            unique_sessions: 0,
+            bots: scaledBots,
+            top_pages: {},
+            industries: scaledIndustries,
+            page_types: {},
+            sites: cacheRow.sites_breakdown || {},
+            site_sample_total: cacheRow.total_visits_30d,
+            daily: cacheRow.daily_30d || [],
+            generated_at: cacheRow.generated_at,
+          }, {
+            headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'SUPABASE-CACHE' },
+          })
+        }
+
+        // Fallback: cache table not seeded yet, read from GitHub Pages JSON
         const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
           // If days<=1 (today), use RPC or direct query for accurate data
@@ -194,28 +240,51 @@ export async function GET(request: NextRequest) {
         break
       }
 
-      // ── Live aggregated summary — single indexed RPC call instead of 6 parallel full scans ───
+      // ── Live aggregated summary — reads crawler_stats_cache (pg_cron refreshes every 5 min) ───
       case 'live-summary': {
         const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
 
-        // Use get_crawler_summary SQL function (1 indexed scan vs 6 full table scans)
-        // Falls back to lightweight count-only if function not yet deployed
-        const { data: rpcData, error: rpcError } = await supabase
-          .rpc('get_crawler_summary', { since_ts: since30 })
+        // Primary: read from crawler_stats_cache (single-row, always fresh within 5 min)
+        const { data: cacheRow, error: cacheErr } = await supabase
+          .from('crawler_stats_cache')
+          .select('*')
+          .eq('id', 1)
+          .single()
 
-        if (!rpcError && rpcData && rpcData.total_visits > 0) {
+        if (!cacheErr && cacheRow && cacheRow.total_visits_30d > 0) {
           result = {
             period: { since: since30, days: 30 },
-            total_visits: rpcData.total_visits || 0,
-            today_visits: rpcData.today_visits || 0,
-            unique_bots: rpcData.unique_bots || 0,
-            bots: rpcData.bots || {},
-            sites: rpcData.sites || {},
-            site_sample_total: rpcData.site_sample_total || 0,
-            industries: rpcData.industries || {},
-            daily: rpcData.daily || {},
-            daily_by_owner: rpcData.daily_by_owner || null,
-            generated_at: rpcData.generated_at || new Date().toISOString(),
+            total_visits: cacheRow.total_visits_30d,
+            today_visits: cacheRow.total_visits_1d,
+            unique_bots: cacheRow.unique_bots,
+            bots: cacheRow.bots_breakdown || {},
+            sites: cacheRow.sites_breakdown || {},
+            site_sample_total: cacheRow.total_visits_30d,
+            industries: cacheRow.industries_breakdown || {},
+            daily: cacheRow.daily_30d || {},
+            daily_by_owner: cacheRow.daily_by_owner_30d || null,
+            generated_at: cacheRow.generated_at,
+          }
+        }
+
+        // Fallback: cache table missing, call RPC directly
+        if (!result) {
+          const { data: rpcData, error: rpcError } = await supabase
+            .rpc('get_crawler_summary', { since_ts: since30 })
+          if (!rpcError && rpcData && rpcData.total_visits > 0) {
+            result = {
+              period: { since: since30, days: 30 },
+              total_visits: rpcData.total_visits || 0,
+              today_visits: rpcData.today_visits || 0,
+              unique_bots: rpcData.unique_bots || 0,
+              bots: rpcData.bots || {},
+              sites: rpcData.sites || {},
+              site_sample_total: rpcData.site_sample_total || 0,
+              industries: rpcData.industries || {},
+              daily: rpcData.daily || {},
+              daily_by_owner: rpcData.daily_by_owner || null,
+              generated_at: rpcData.generated_at || new Date().toISOString(),
+            }
           }
         }
 

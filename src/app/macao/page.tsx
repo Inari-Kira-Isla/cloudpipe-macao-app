@@ -106,9 +106,7 @@ async function getData() {
     { data: insights },
     { count: totalMerchantCount },
     { data: crawlerRows },
-    { count: totalAiVisits },
-    { count: todayAiVisits },
-    { data: botRows },
+    { data: statsCache },
     { data: landmarkRows },
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
@@ -142,20 +140,11 @@ async function getData() {
       .gte('ts', thirtyDaysAgo)
       .order('ts', { ascending: false })
       .limit(3000),
-    // Total AI visits (30d)
-    supabase.from('crawler_visits')
-      .select('*', { count: 'exact', head: true })
-      .gte('ts', thirtyDaysAgo),
-    // Today AI visits
-    supabase.from('crawler_visits')
-      .select('*', { count: 'exact', head: true })
-      .gte('ts', todayStr),
-    // Bot breakdown (30d) — bot_owner for top bots display
-    supabase.from('crawler_visits')
-      .select('bot_owner')
-      .gte('ts', thirtyDaysAgo)
-      .not('bot_owner', 'is', null)
-      .limit(5000),
+    // AI visit stats — single source of truth, pg_cron refreshes every 5 min
+    supabase.from('crawler_stats_cache')
+      .select('total_visits_30d, total_visits_1d, bots_breakdown')
+      .eq('id', 1)
+      .single(),
     // Landmark data for HIGH_ROI_ATTRACTIONS
     supabase.from('merchants')
       .select('slug, name_zh, name_en, google_rating, google_reviews, page_url, address_zh, district, category:categories(slug, name_zh)')
@@ -210,17 +199,14 @@ async function getData() {
     if (slug) slugCounts.set(slug, (slugCounts.get(slug) || 0) + 1)
   }
 
-  // Bot breakdown — count by owner
-  const botOwnerCounts = new Map<string, number>()
-  for (const row of (botRows as any) || []) {
-    if (row.bot_owner) {
-      botOwnerCounts.set(row.bot_owner, (botOwnerCounts.get(row.bot_owner) || 0) + 1)
-    }
-  }
-  const topBots = [...botOwnerCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
+  // Bot breakdown — read from crawler_stats_cache.bots_breakdown (single source of truth)
+  const botsBreakdown: Record<string, { count: number; owner: string }> = (statsCache as any)?.bots_breakdown || {}
+  const topBots = Object.entries(botsBreakdown)
+    .sort((a, b) => (b[1]?.count || 0) - (a[1]?.count || 0))
     .slice(0, 8)
-    .map(([owner]) => owner)
+    .map(([, info]) => info?.owner || '')
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i) // unique owners
 
   // Category counts from full slim dataset (keeps industry section accurate)
   const groupedCounts = new Map<string, number>()
@@ -255,9 +241,9 @@ async function getData() {
     contentMap: new Map((contentList || []).map((c: Pick<MerchantContent, 'merchant_id' | 'title' | 'description'>) => [c.merchant_id, c])),
     insights: (insights || []) as InsightSummary[],
     crawlerStats: {
-      total: totalAiVisits || 0,
-      today: todayAiVisits || 0,
-      botCount: botOwnerCounts.size,
+      total: (statsCache as any)?.total_visits_30d || 0,
+      today: (statsCache as any)?.total_visits_1d || 0,
+      botCount: Object.keys(botsBreakdown).length,
       topBots,
     },
     todayCrawled,
