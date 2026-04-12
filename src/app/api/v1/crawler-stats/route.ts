@@ -370,6 +370,18 @@ export async function GET(request: NextRequest) {
         break
       }
 
+      case 'session-count': {
+        // Lightweight COUNT DISTINCT for session count (used by precompute script)
+        const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
+        const { count: sessionCount } = await supabase
+          .from('crawler_visits')
+          .select('session_id', { count: 'exact', head: true })
+          .gte('ts', since30)
+          .not('session_id', 'is', null)
+        result = { unique_sessions: sessionCount || 0 }
+        break
+      }
+
       case 'sessions': {
         // Lightweight: recent sessions only
         let query = supabase
@@ -410,7 +422,7 @@ export async function GET(request: NextRequest) {
 
       default:
         return NextResponse.json(
-          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, journey, spider-web, daily' },
+          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, session-count, journey, spider-web, daily' },
           { status: 400 }
         )
     }
