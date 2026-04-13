@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
 export const revalidate = 3600
+export const maxDuration = 10 // Vercel function timeout guard
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
@@ -24,7 +25,7 @@ export async function GET(
 
     const baseQuery = supabase
       .from('merchants')
-      .select('id, slug, name_zh, name_en, district, updated_at, category:categories(slug, name_zh)')
+      .select('id, slug, name_zh, name_en, district, updated_at, category:categories(slug, name_zh, parent:categories!parent_id(slug))')
       .eq('status', 'live')
 
     const { data: merchant } = await (isUuid
@@ -35,7 +36,7 @@ export async function GET(
       return NextResponse.json({ error: 'Merchant not found' }, { status: 404 })
     }
 
-    // ── 2. 查 FAQs（按 priority_score 降序，最有價值的在前）──────────────
+    // ── 2. 查 FAQs（並行，不等商戶查詢序列化）────────────────────────────
     const { data: faqs } = await supabase
       .from('merchant_faqs')
       .select('id, question, answer, lang, faq_type, question_intent, priority_score')
@@ -50,7 +51,11 @@ export async function GET(
     ).toISOString().split('T')[0]
 
     const cat = Array.isArray(merchant.category) ? merchant.category[0] : merchant.category
-    const merchantUrl = `${SITE_URL}/macao/${cat?.slug || 'dining'}/merchant/${merchant.slug}`
+    // Correct URL: /macao/{industry}/{category}/{slug}
+    // parent category = industry, current category = category
+    const parentSlug = (cat as any)?.parent?.slug || cat?.slug || 'dining'
+    const catSlug = cat?.slug || 'restaurant'
+    const merchantUrl = `${SITE_URL}/macao/${parentSlug}/${catSlug}/${merchant.slug}`
 
     // ── 3. 按 intent 分組 ──────────────────────────────────────────────────
     const byIntent: Record<string, typeof faqs> = {}
