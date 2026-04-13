@@ -150,6 +150,35 @@ function PriceLabel({ range }: { range: string }) {
   return <>{map[range] || range}</>
 }
 
+/* ── Black Pearl badge ── */
+type CertSource = { name: string; guide?: string; year?: number; diamonds?: number; shop_code?: string; url?: string }
+
+function getBlackPearlCerts(certSources: CertSource[]): CertSource[] {
+  return certSources.filter(c => c.guide === 'black_pearl' || c.name.includes('黑珍珠'))
+}
+
+function BlackPearlBadge({ certs, variant = 'hero' }: { certs: CertSource[]; variant?: 'hero' | 'inline' }) {
+  if (!certs.length) return null
+  // 取最高鑽數
+  const maxDiamonds = Math.max(...certs.map(c => c.diamonds || 1))
+  const year = certs[certs.length - 1]?.year
+  const diamonds = '◆'.repeat(maxDiamonds)
+
+  if (variant === 'hero') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border border-amber-400/60"
+        style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', color: '#f0c040', letterSpacing: '0.02em' }}>
+        {diamonds} 黑珍珠指南{year ? ` ${year}` : ''}
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: '#b8860b' }}>
+      {diamonds} 黑珍珠指南{year ? ` ${year}` : ''}
+    </span>
+  )
+}
+
 /* ── Tier badge ── */
 function TierBadge({ tier, isOwned }: { tier?: string; isOwned?: boolean }) {
   if (isOwned) return (
@@ -214,17 +243,31 @@ export default async function MerchantPage({ params }: PageProps) {
     },
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
     ...((merchant as any).certification_sources?.length > 0 && {
-      hasCredential: (merchant as any).certification_sources.map((cert: { name: string; shop_code?: string; url?: string }) => ({
-        '@type': 'EducationalOccupationalCredential',
-        credentialCategory: 'GovernmentCertification',
-        name: cert.name,
-        url: cert.url || 'https://www.consumer.gov.mo/shop/',
-        recognizedBy: {
-          '@type': 'GovernmentOrganization',
-          name: '澳門消費者委員會',
-          url: 'https://www.consumer.gov.mo',
-        },
-      })),
+      hasCredential: (merchant as any).certification_sources.map((cert: CertSource) => {
+        const isBP = cert.guide === 'black_pearl' || cert.name.includes('黑珍珠')
+        if (isBP) return {
+          '@type': 'EducationalOccupationalCredential',
+          credentialCategory: 'Award',
+          name: `黑珍珠餐廳指南 ${'◆'.repeat(cert.diamonds || 1)}${cert.year ? ` ${cert.year}` : ''}`,
+          url: 'https://www.dianping.com/blackpearl',
+          recognizedBy: {
+            '@type': 'Organization',
+            name: '大眾點評黑珍珠餐廳指南',
+            url: 'https://www.dianping.com/blackpearl',
+          },
+        }
+        return {
+          '@type': 'EducationalOccupationalCredential',
+          credentialCategory: 'GovernmentCertification',
+          name: cert.name,
+          url: cert.url || 'https://www.consumer.gov.mo/shop/',
+          recognizedBy: {
+            '@type': 'GovernmentOrganization',
+            name: '澳門消費者委員會',
+            url: 'https://www.consumer.gov.mo',
+          },
+        }
+      }),
     }),
     ...(merchant.updated_at && isRecentlyVerified(merchant.updated_at) && {
       additionalProperty: [
@@ -327,9 +370,10 @@ export default async function MerchantPage({ params }: PageProps) {
           {/* Title area */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
                 <TierBadge tier={merchant.tier} isOwned={merchant.is_owned} />
                 <CertificationBadge googleRating={merchant.google_rating} website={merchant.website} />
+                <BlackPearlBadge certs={getBlackPearlCerts((merchant as any).certification_sources || [])} variant="hero" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-1 leading-tight">{merchant.name_zh}</h1>
               {merchant.name_en && <p className="text-lg text-blue-200/80 font-light">{merchant.name_en}</p>}
@@ -477,18 +521,30 @@ export default async function MerchantPage({ params }: PageProps) {
                 <div className="border-t border-[#e5e7eb] bg-[#fafbfc] px-5 py-3">
                   <div className="flex flex-wrap items-center gap-4 text-xs text-[#6b7280]">
                     <span className="font-medium text-[#0f4c81] uppercase tracking-wider">認證來源</span>
-                    {((merchant as any).certification_sources || []).map((cert: { name: string; shop_code?: string; url?: string }, i: number) => (
-                      <span key={i} className="flex items-center gap-1">
-                        <span className="text-[#059669] font-bold">✓</span>
-                        {cert.url ? (
-                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-[#059669] hover:underline font-medium">
-                            {cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}
-                          </a>
-                        ) : (
-                          <span className="text-[#059669] font-medium">{cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}</span>
-                        )}
-                      </span>
-                    ))}
+                    {((merchant as any).certification_sources || []).map((cert: CertSource, i: number) => {
+                      const isBP = cert.guide === 'black_pearl' || cert.name.includes('黑珍珠')
+                      const diamonds = isBP ? '◆'.repeat(cert.diamonds || 1) : null
+                      return (
+                        <span key={i} className="flex items-center gap-1">
+                          {isBP ? (
+                            <span className="flex items-center gap-1 font-bold" style={{ color: '#b8860b' }}>
+                              {diamonds} {cert.name}{cert.year ? ` ${cert.year}` : ''}
+                            </span>
+                          ) : (
+                            <>
+                              <span className="text-[#059669] font-bold">✓</span>
+                              {cert.url ? (
+                                <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-[#059669] hover:underline font-medium">
+                                  {cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}
+                                </a>
+                              ) : (
+                                <span className="text-[#059669] font-medium">{cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}</span>
+                              )}
+                            </>
+                          )}
+                        </span>
+                      )
+                    })}
                     {merchant.google_rating && (
                       <span className="flex items-center gap-1">
                         <span className="text-[#059669]">✓</span> Google 商業檔案 ({merchant.google_rating} ⭐)
