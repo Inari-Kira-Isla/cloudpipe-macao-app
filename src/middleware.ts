@@ -17,20 +17,19 @@ function isAIBot(ua: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next()
   const ua = request.headers.get('user-agent') || ''
+  const path = request.nextUrl.pathname
 
-  // 只追蹤 AI 爬蟲的 404（避免 noise）
   if (isAIBot(ua)) {
-    const path = request.nextUrl.pathname
+    // 把 pathname 注入到 request header，讓 not-found.tsx Server Component 讀取
+    // （not-found 無法直接拿 request.url，只能靠 headers()）
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-cloudpipe-pathname', path)
 
-    // 在 response header 加標記，供 Edge function 後處理
-    // 實際 404 狀態由 response 決定，這裡記錄意圖
-    response.headers.set('x-cloudpipe-bot', '1')
-    response.headers.set('x-cloudpipe-path', path)
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
