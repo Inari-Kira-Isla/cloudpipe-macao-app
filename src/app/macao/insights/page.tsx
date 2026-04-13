@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
@@ -146,8 +147,8 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(collectionSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
       {/* RSS Feed Discovery for AI crawlers */}
       <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析 RSS" href={`${siteUrl}/feed.xml`} />
 

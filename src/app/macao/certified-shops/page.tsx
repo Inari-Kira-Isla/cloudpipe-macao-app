@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
@@ -137,8 +138,8 @@ export default async function CertifiedShopsPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(listSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div className="min-h-screen bg-[#fafbfc]">
         {/* Hero */}

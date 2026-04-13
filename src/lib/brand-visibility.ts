@@ -224,9 +224,21 @@ export interface GraphHealth {
   lastUpdated: string
 }
 
+export interface IntelligenceDensity {
+  knowledgeDepth: { score: number; max: 30; detail: string }
+  faqQuality:     { score: number; max: 30; detail: string }
+  graphConnectivity: { score: number; max: 20; detail: string }
+  languageCoverage:  { score: number; max: 20; detail: string }
+  total: number
+  grade: string
+  gradeLabel: string
+  gradeColor: string
+}
+
 export interface BrandVisibilityData {
   brand: BrandConfig
   score: ScoreBreakdown
+  intelligenceDensity: IntelligenceDensity
   bots: BotBreakdown[]
   milestones: Milestone[]
   insights: InsightCoverage[]
@@ -274,6 +286,52 @@ function computeScore(
     insightCoverage: { score: insightScore, max: 30, detail: `${insights.length} insights, ${totalWords.toLocaleString()} words` },
     faqDensity: { score: faqScore, max: 20, detail: `${totalFaqs} FAQs across insights` },
     crossLinks: { score: linkScore, max: 15, detail: `${totalLinks} cross-links` },
+    total, grade, gradeLabel, gradeColor,
+  }
+}
+
+// ── Intelligence Density Computation ────────────────────────────────────────
+function computeIntelligenceDensity(insights: InsightCoverage[]): IntelligenceDensity {
+  if (insights.length === 0) {
+    return {
+      knowledgeDepth:    { score: 0, max: 30, detail: '無 Insight 資料' },
+      faqQuality:        { score: 0, max: 30, detail: '無 FAQ 資料' },
+      graphConnectivity: { score: 0, max: 20, detail: '無連結資料' },
+      languageCoverage:  { score: 0, max: 20, detail: '無語言資料' },
+      total: 0, grade: 'F', gradeLabel: '大腦空白', gradeColor: '#dc2626',
+    }
+  }
+
+  // Knowledge Depth (max 30): 平均字數，2000字 = 滿分
+  const avgWords = insights.reduce((s, i) => s + i.wordCount, 0) / insights.length
+  const depthScore = Math.min(30, Math.round((avgWords / 2000) * 30))
+
+  // FAQ Quality (max 30): 平均 FAQ 數，5個/篇 = 滿分
+  const avgFaqs = insights.reduce((s, i) => s + i.faqCount, 0) / insights.length
+  const faqScore = Math.min(30, Math.round((avgFaqs / 5) * 30))
+
+  // Graph Connectivity (max 20): 平均交叉連結，3個/篇 = 滿分
+  const avgLinks = insights.reduce((s, i) => s + i.crossLinks, 0) / insights.length
+  const linkScore = Math.min(20, Math.round((avgLinks / 3) * 20))
+
+  // Language Coverage (max 20): zh/en/pt 各 6.7 分，有幾種語言就幾分
+  const langs = new Set(insights.map(i => i.lang))
+  const langScore = Math.min(20, Math.round((langs.size / 3) * 20))
+
+  const total = depthScore + faqScore + linkScore + langScore
+
+  let grade = 'F', gradeLabel = '大腦空白', gradeColor = '#dc2626'
+  if (total >= 85) { grade = 'A+'; gradeLabel = '深度知識庫'; gradeColor = '#059669' }
+  else if (total >= 70) { grade = 'A';  gradeLabel = '知識豐富';   gradeColor = '#059669' }
+  else if (total >= 55) { grade = 'B';  gradeLabel = '正在深化';   gradeColor = '#0f4c81' }
+  else if (total >= 35) { grade = 'C';  gradeLabel = '知識稀薄';   gradeColor = '#d97706' }
+  else if (total >= 15) { grade = 'D';  gradeLabel = '剛起步';     gradeColor = '#dc2626' }
+
+  return {
+    knowledgeDepth:    { score: depthScore, max: 30, detail: `平均 ${Math.round(avgWords).toLocaleString()} 字/篇` },
+    faqQuality:        { score: faqScore,   max: 30, detail: `平均 ${avgFaqs.toFixed(1)} 個 FAQ/篇` },
+    graphConnectivity: { score: linkScore,  max: 20, detail: `平均 ${avgLinks.toFixed(1)} 個交叉連結/篇` },
+    languageCoverage:  { score: langScore,  max: 20, detail: `覆蓋 ${langs.size} 種語言（${[...langs].join('/')}）` },
     total, grade, gradeLabel, gradeColor,
   }
 }
@@ -486,6 +544,7 @@ export async function fetchBrandVisibility(
 
   // Score
   const score = computeScore(bots, insightResults)
+  const intelligenceDensity = computeIntelligenceDensity(insightResults)
 
   // Ecosystem nodes
   const ecosystem: EcosystemNode[] = []
@@ -542,6 +601,7 @@ export async function fetchBrandVisibility(
   return {
     brand,
     score,
+    intelligenceDensity,
     bots: bots.sort((a, b) => b.count - a.count),
     milestones,
     insights: insightResults,

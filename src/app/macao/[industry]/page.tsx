@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Category, Merchant } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 import { PILLAR_CONTENT } from '@/lib/pillar-content'
@@ -197,7 +198,7 @@ export default async function IndustryPage({ params }: PageProps) {
   return (
     <>
       {schemas.map((s, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(s) }} />
       ))}
 
       {/* Hero */}

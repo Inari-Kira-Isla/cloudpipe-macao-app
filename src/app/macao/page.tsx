@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 300 // 5-min ISR cache — prevents per-request Supabase hammering
@@ -433,7 +434,7 @@ export default async function MacaoIndexPage() {
         <script
           key={i}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
         />
       ))}
       <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />

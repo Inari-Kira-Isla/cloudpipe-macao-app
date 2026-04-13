@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 import ComparisonTable from '../ComparisonTable'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { ClickTracker } from '@/components/ClickTracker'
@@ -454,9 +455,9 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleSchema) }} />
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
       <ClickTracker pageType="insight" pageSlug={slug} />
       {/* RSS Feed Discovery */}
       <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析" href={`${siteUrl}/feed.xml`} />

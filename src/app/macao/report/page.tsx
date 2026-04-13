@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 
@@ -161,8 +162,8 @@ export default async function ReportPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reportSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(reportSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div style={{ minHeight: '100vh', background: '#fafbfc' }}>
         {/* Hero */}

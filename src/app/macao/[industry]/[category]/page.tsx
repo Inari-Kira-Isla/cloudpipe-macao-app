@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Category, Merchant } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 
@@ -160,7 +161,7 @@ export default async function CategoryPage({ params }: PageProps) {
   return (
     <>
       {schemas.map((s, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(s) }} />
       ))}
 
       <div className="hero-gradient text-white">

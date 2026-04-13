@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -112,7 +113,7 @@ export default async function CasinoHotelsPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <div className="min-h-screen bg-gray-50">
         {/* Hero */}

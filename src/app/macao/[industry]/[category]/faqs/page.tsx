@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -201,9 +202,9 @@ export default async function CategoryFaqsPage({ params }: PageProps) {
   return (
     <>
       {faqPageSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqPageSchema) }} />
       )}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
 
       {/* ═══ Hero ═══ */}
       <div className="hero-gradient text-white">

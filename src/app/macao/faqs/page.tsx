@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -163,9 +164,9 @@ export default async function MacaoFaqsHubPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(datasetSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
 
       <main className="min-h-screen bg-gray-50">
         {/* Hero */}

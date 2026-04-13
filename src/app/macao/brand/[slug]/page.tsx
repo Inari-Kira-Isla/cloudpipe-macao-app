@@ -145,7 +145,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
     )
   }
 
-  const { score, bots, milestones, insights, ecosystem, suggestions, graphHealth } = data
+  const { score, intelligenceDensity, bots, milestones, insights, ecosystem, suggestions, graphHealth } = data
 
   return (
     <main style={{ background: '#fafbfc', minHeight: '100vh' }}>
@@ -206,6 +206,49 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
               <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{dim.detail}</div>
             </div>
           ))}
+        </div>
+
+        {/* Intelligence Density Card */}
+        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🧠 品牌智力密度</h2>
+              <p style={{ fontSize: 13, color: '#6b7280' }}>衡量品牌大腦的知識深度與圖譜連結品質</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                display: 'inline-flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                width: 80, height: 80, borderRadius: '50%',
+                border: `4px solid ${intelligenceDensity.gradeColor}`,
+                background: `${intelligenceDensity.gradeColor}12`,
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: intelligenceDensity.gradeColor }}>{intelligenceDensity.total}</div>
+                <div style={{ fontSize: 10, color: '#9ca3af' }}>/ 100</div>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, fontWeight: 600, color: intelligenceDensity.gradeColor }}>
+                {intelligenceDensity.grade} · {intelligenceDensity.gradeLabel}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            {[
+              { label: '📖 知識深度', ...intelligenceDensity.knowledgeDepth, color: '#7c3aed' },
+              { label: '❓ FAQ 品質', ...intelligenceDensity.faqQuality, color: '#059669' },
+              { label: '🕸️ 圖譜連結', ...intelligenceDensity.graphConnectivity, color: '#0f4c81' },
+              { label: '🌐 語言覆蓋', ...intelligenceDensity.languageCoverage, color: '#d97706' },
+            ].map((dim, i) => (
+              <div key={i} style={{ background: '#f9fafb', borderRadius: 8, padding: 14 }}>
+                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>{dim.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: dim.color }}>
+                  {dim.score}<span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af' }}>/{dim.max}</span>
+                </div>
+                <div style={{ background: '#e5e7eb', borderRadius: 4, height: 4, marginTop: 6 }}>
+                  <div style={{ background: dim.color, borderRadius: 4, height: 4, width: `${(dim.score / dim.max) * 100}%`, transition: 'width 0.5s' }} />
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{dim.detail}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bot Breakdown */}

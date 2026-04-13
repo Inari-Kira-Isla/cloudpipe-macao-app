@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import EcosystemFooter from "@/components/EcosystemFooter";
 import "./globals.css";
+import { safeJsonLd } from "@/lib/types";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,7 +97,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "CloudPipe AI 澳門商戶百科",
@@ -137,7 +138,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               itemListElement: [

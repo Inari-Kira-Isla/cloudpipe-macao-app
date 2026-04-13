@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
@@ -298,9 +299,9 @@ export default async function MerchantPage({ params }: PageProps) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }} />
-      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(schemaOrg) }} />
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
       <ClickTracker pageType="merchant" pageSlug={slug} />
 
       {/* ═══ Hero ═══ */}
