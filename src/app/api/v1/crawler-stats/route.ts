@@ -439,6 +439,89 @@ export async function GET(request: NextRequest) {
         break
       }
 
+      case 'industry-paths': {
+        // Drill-down: top paths for a specific industry label
+        const industry = searchParams.get('industry') || ''
+        if (!industry) return NextResponse.json({ error: 'industry required' }, { status: 400 })
+
+        // 'insights' is stored as page_type, others as industry column
+        const isPageType = ['insights', 'report', 'faqs', 'general', 'not_found'].includes(industry)
+
+        let q = supabase
+          .from('crawler_visits')
+          .select('path, bot_name, ts, industry, page_type, category')
+          .gte('ts', since)
+          .order('ts', { ascending: false })
+          .limit(1000)
+
+        if (siteFilter) q = q.eq('site', siteFilter)
+        if (isPageType) {
+          q = q.eq('page_type', industry)
+        } else {
+          q = q.eq('industry', industry)
+        }
+
+        const { data } = await q
+        const pathMap: Record<string, { count: number; bots: Set<string>; category: string | null; lastTs: string }> = {}
+        for (const v of data || []) {
+          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), category: v.category, lastTs: v.ts }
+          pathMap[v.path].count++
+          if (v.bot_name) pathMap[v.path].bots.add(v.bot_name)
+          if (v.ts > pathMap[v.path].lastTs) pathMap[v.path].lastTs = v.ts
+        }
+
+        result = {
+          industry,
+          total: data?.length || 0,
+          paths: Object.entries(pathMap)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 50)
+            .map(([path, info]) => ({
+              path,
+              count: info.count,
+              bots: [...info.bots],
+              category: info.category,
+              lastTs: info.lastTs,
+            })),
+        }
+        break
+      }
+
+      case 'not-found': {
+        // 404 monitoring — AI bots that hit missing pages
+        const { data } = await supabase
+          .from('crawler_visits')
+          .select('path, bot_name, ts')
+          .eq('status_code', 404)
+          .gte('ts', since)
+          .not('bot_name', 'is', null)
+          .order('ts', { ascending: false })
+          .limit(500)
+
+        const pathMap: Record<string, { count: number; bots: Set<string>; lastTs: string }> = {}
+        for (const v of data || []) {
+          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), lastTs: v.ts }
+          pathMap[v.path].count++
+          if (v.bot_name) pathMap[v.path].bots.add(v.bot_name)
+          if (v.ts > pathMap[v.path].lastTs) pathMap[v.path].lastTs = v.ts
+        }
+
+        result = {
+          total_404s: data?.length || 0,
+          unique_paths: Object.keys(pathMap).length,
+          paths: Object.entries(pathMap)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 30)
+            .map(([path, info]) => ({
+              path,
+              count: info.count,
+              bots: [...info.bots],
+              lastTs: info.lastTs,
+            })),
+        }
+        break
+      }
+
       case 'session-count': {
         // Lightweight COUNT DISTINCT for session count (used by precompute script)
         const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
