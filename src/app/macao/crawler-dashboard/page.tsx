@@ -223,7 +223,7 @@ export default function CrawlerDashboard() {
     setSelectedIndustry(industry)
     setIndustryPathsLoading(true)
     const data = await safeFetch<{ paths?: typeof industryPaths; byIndustry?: typeof insightsByIndustry; mode?: string }>(
-      `${API}&type=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`,
+      `${API}&view=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`,
       { paths: [], byIndustry: [], mode: 'path-list' }
     )
     setIndustryMode((data.mode as 'path-list' | 'industry-breakdown') || 'path-list')
@@ -235,7 +235,7 @@ export default function CrawlerDashboard() {
   const fetchNotFound = useCallback(async () => {
     setNotFoundLoading(true)
     const data = await safeFetch<typeof notFound404>(
-      `${API}&type=not-found&days=${days}`, null
+      `${API}&view=not-found&days=${days}`, null
     )
     setNotFound404(data)
     setNotFoundLoading(false)
