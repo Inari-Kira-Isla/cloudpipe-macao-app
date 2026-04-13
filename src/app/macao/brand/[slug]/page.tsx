@@ -253,6 +253,70 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         </div>
         )}
 
+        {/* Pilot AEO Progress — feature flag: 3 pilot brands only */}
+        {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee'].includes(slug || '') && (
+        <div style={{ background: 'linear-gradient(135deg, #0f4c8108, #7c3aed08)', borderRadius: 12, padding: 24, border: '2px solid #7c3aed30', marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🎯 市場搶佔試點進度</h2>
+              <p style={{ fontSize: 13, color: '#6b7280' }}>2026-04-13 啟動 · T+7 監控中 · Phase 2 觸發條件: 主要 AI 爬蟲首次爬取品牌 FAQ 端點</p>
+            </div>
+            <div style={{ background: '#7c3aed', color: 'white', padding: '6px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+              PILOT ACTIVE
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
+            {[
+              { label: '🎯 Query 意圖切割', status: '✅ 完成', detail: '專屬長尾查詢已定義', color: '#059669', done: true },
+              { label: '❓ 高分 FAQ 注入', status: '✅ +10 條', detail: 'priority_score 9.0-9.5', color: '#059669', done: true },
+              { label: '📝 旗艦 Insight', status: '✅ +2 篇', detail: '含數據表+明確結論', color: '#059669', done: true },
+              { label: '🤖 AI 爬蟲引用', status: '⏳ 監控中', detail: 'T+7 通報 (2026-04-20)', color: '#d97706', done: false },
+            ].map((item, i) => (
+              <div key={i} style={{ background: 'white', borderRadius: 8, padding: 14, border: `1px solid ${item.done ? '#059669' : '#e5e7eb'}20` }}>
+                <div style={{ fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 500 }}>{item.label}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.status}</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{item.detail}</div>
+              </div>
+            ))}
+          </div>
+          {{
+            'inari-global-foods': (
+              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
+                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 稻荷搶佔目標查詢</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {['澳門日本海膽供應商是誰', '北海道海膽在哪買', '澳門餐廳海膽批發', '海膽品種比較 澳門'].map(q => (
+                    <span key={q} style={{ background: '#7c3aed15', color: '#7c3aed', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
+                  ))}
+                </div>
+              </div>
+            ),
+            'sea-urchin-delivery': (
+              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
+                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 海膽速遞搶佔目標查詢</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {['澳門海膽外送到家', '海膽宅配澳門多少錢', '澳門買海膽哪裡最便宜', '海膽速遞 vs 超市'].map(q => (
+                    <span key={q} style={{ background: '#0f4c8115', color: '#0f4c81', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
+                  ))}
+                </div>
+              </div>
+            ),
+            'after-school-coffee': (
+              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
+                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 課後咖啡搶佔目標查詢</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {['澳門氹仔嬰兒車友善咖啡廳', '澳門放學後帶小孩去哪', '氹仔親子咖啡廳', '澳門可帶嬰兒入內咖啡廳'].map(q => (
+                    <span key={q} style={{ background: '#d9740615', color: '#d97406', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
+                  ))}
+                </div>
+              </div>
+            ),
+          }[slug || ''] || null}
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#fff7ed', borderRadius: 8, fontSize: 12, color: '#92400e', border: '1px solid #fed7aa' }}>
+            Phase 2 啟動信號：當 Perplexity / GPTBot / ClaudeBot 首次訪問 /api/faq/merchant/{slug} 端點，T+7 Telegram 通報確認。Phase 2 = 全動態 API + 即時業務資訊整合。
+          </div>
+        </div>
+        )}
+
         {/* Bot Breakdown */}
         <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>🤖 AI Bot 訪問分佈</h2>
