@@ -8,12 +8,15 @@
 
 import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { trackBotVisit } from '@/lib/track-bot'
 
 export const revalidate = 3600 // 1 hour Vercel Edge cache
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Fire-and-forget bot tracking (non-blocking)
+  trackBotVisit(request, '/api/faq/index', 'api-faq-index')
   try {
     // ── 1. FAQ intent 分佈統計（逐一查詢 + limit(0)，避免 PostgREST 1000 行限制）
     // 注意：Promise.all 並發會讓 Supabase 單例 client 互相干擾 → 改為序列查詢

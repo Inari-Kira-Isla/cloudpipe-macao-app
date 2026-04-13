@@ -7,6 +7,7 @@
 
 import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { trackBotVisit } from '@/lib/track-bot'
 
 export const revalidate = 3600
 export const maxDuration = 10 // Vercel function timeout guard
@@ -17,8 +18,11 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Fire-and-forget bot tracking (non-blocking)
+  const { id: paramId } = await params
+  trackBotVisit(_req, `/api/faq/merchant/${paramId}`, 'api-faq-merchant')
   try {
-    const { id } = await params
+    const id = paramId
 
     // ── 1. 查商戶基本資料（UUID 或 slug 都支援）────────────────────────────
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
