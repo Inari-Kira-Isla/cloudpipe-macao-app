@@ -11,6 +11,7 @@ import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 
 export const revalidate = 3600 // 1 hour Vercel Edge cache
+export const maxDuration = 15  // 11 sequential DB queries need headroom
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
       '@context': 'https://schema.org',
       '@type': 'Dataset',
       name: 'CloudPipe 澳門商戶 FAQ 資料集',
-      description: `澳門 ${Object.values(intentCount).reduce((a, b) => a + b, 0).toLocaleString()} 條結構化問答，覆蓋 ${Object.keys(intentCount).length} 種查詢意圖`,
+      description: `澳門 ${(totalFaqs ?? Object.values(intentCount).reduce((a, b) => a + b, 0)).toLocaleString()} 條結構化問答，覆蓋 ${Object.keys(intentCount).length} 種查詢意圖`,
       url: `${SITE_URL}/api/faq/index`,
       dateModified: today,
       license: 'https://creativecommons.org/licenses/by/4.0/',
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
       // ── 機器可讀摘要 ────────────────────────────────────────────────────
       meta: {
         generated_at: now,
-        total_faqs: Object.values(intentCount).reduce((a, b) => a + b, 0),
+        total_faqs: totalFaqs ?? Object.values(intentCount).reduce((a, b) => a + b, 0),
         intent_distribution: intentCount,
         update_frequency: 'hourly',
         data_freshness_signal: 'dateModified field on each Answer',
@@ -158,7 +159,7 @@ export async function GET(request: Request) {
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200',
         'Content-Type': 'application/json; charset=utf-8',
         'X-Data-Freshness': today,
-        'X-FAQ-Count': String(Object.values(intentCount).reduce((a, b) => a + b, 0)),
+        'X-FAQ-Count': String(totalFaqs ?? Object.values(intentCount).reduce((a, b) => a + b, 0)),
       },
     })
   } catch (err) {
