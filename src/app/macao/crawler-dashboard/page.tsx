@@ -500,34 +500,15 @@ export default function CrawlerDashboard() {
                                 <p style={{ color: '#6b7280', margin: '0 0 10px', fontWeight: 500 }}>
                                   AI 深度內容偏好（Insight 行業分佈）
                                 </p>
-                                {insightsByIndustry.map((item, i) => {
+                                {insightsByIndustry.map((item) => {
                                   const maxCount = insightsByIndustry[0]?.count || 1
                                   return (
-                                    <div key={item.industry} style={{ marginBottom: 10 }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                                        <span style={{ fontWeight: 600, color: '#1f2937' }}>{item.industry}</span>
-                                        <span style={{ fontWeight: 700, color: '#0f4c81' }}>{item.count} 次</span>
+                                    <div key={item.industry} style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                      <span style={{ minWidth: 90, fontWeight: 600, color: '#1f2937', fontSize: 12 }}>{item.industry}</span>
+                                      <div style={{ flex: 1, background: '#e5e7eb', borderRadius: 4, height: 8 }}>
+                                        <div style={{ background: '#4285f4', borderRadius: 4, height: 8, width: `${(item.count / maxCount) * 100}%` }} />
                                       </div>
-                                      <div style={{ background: '#e5e7eb', borderRadius: 4, height: 6, marginBottom: 4 }}>
-                                        <div style={{ background: '#4285f4', borderRadius: 4, height: 6, width: `${(item.count / maxCount) * 100}%` }} />
-                                      </div>
-                                      {item.topPaths.length > 0 && (
-                                        <div style={{ paddingLeft: 8, borderLeft: '2px solid #e5e7eb' }}>
-                                          {item.topPaths.map(p => (
-                                            <a key={p}
-                                              href={`https://cloudpipe-macao-app.vercel.app${p}`}
-                                              target="_blank" rel="noopener noreferrer"
-                                              style={{ display: 'block', color: '#6b7280', fontSize: 10, textDecoration: 'none', lineHeight: 1.6,
-                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                                            >
-                                              {p.replace('/macao/insights/', '')}
-                                            </a>
-                                          ))}
-                                        </div>
-                                      )}
-                                      {i < insightsByIndustry.length - 1 && (
-                                        <div style={{ borderBottom: '1px solid #f3f4f6', marginTop: 8 }} />
-                                      )}
+                                      <span style={{ minWidth: 48, textAlign: 'right', fontWeight: 700, color: '#0f4c81', fontSize: 12 }}>{item.count}</span>
                                     </div>
                                   )
                                 })}
