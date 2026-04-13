@@ -172,6 +172,7 @@ export default function CrawlerDashboard() {
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null)
   const [industryPaths, setIndustryPaths] = useState<{ path: string; count: number; bots: string[]; lastTs: string }[]>([])
   const [insightsByIndustry, setInsightsByIndustry] = useState<{ industry: string; count: number; bots: string[]; topPaths: string[] }[]>([])
+  const [insightsRealTotal, setInsightsRealTotal] = useState<number | null>(null)
   const [industryMode, setIndustryMode] = useState<'path-list' | 'industry-breakdown'>('path-list')
   const [industryPathsLoading, setIndustryPathsLoading] = useState(false)
 
@@ -226,9 +227,14 @@ export default function CrawlerDashboard() {
       `${API}&view=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`,
       { paths: [], byIndustry: [], mode: 'path-list' }
     )
-    setIndustryMode((data.mode as 'path-list' | 'industry-breakdown') || 'path-list')
+    const mode = (data.mode as 'path-list' | 'industry-breakdown') || 'path-list'
+    setIndustryMode(mode)
     setIndustryPaths(data.paths || [])
-    setInsightsByIndustry(data.byIndustry || [])
+    const byInd = data.byIndustry || []
+    setInsightsByIndustry(byInd)
+    if (mode === 'industry-breakdown') {
+      setInsightsRealTotal(byInd.reduce((s, r) => s + r.count, 0))
+    }
     setIndustryPathsLoading(false)
   }, [selectedIndustry, days])
 
@@ -476,7 +482,9 @@ export default function CrawlerDashboard() {
                         <span style={{ color: selectedIndustry === ind ? '#0f4c81' : '#333', fontWeight: selectedIndustry === ind ? 600 : 400 }}>
                           {selectedIndustry === ind ? '▼ ' : '▶ '}{ind}
                         </span>
-                        <span style={{ fontWeight: 600, color: selectedIndustry === ind ? '#0f4c81' : '#555' }}>{count}</span>
+                        <span style={{ fontWeight: 600, color: selectedIndustry === ind ? '#0f4c81' : '#555' }}>
+                          {ind === 'insights' && insightsRealTotal !== null ? insightsRealTotal.toLocaleString() : count}
+                        </span>
                       </div>
                       <div style={{ background: '#e5e5e5', borderRadius: 4, height: 5 }}>
                         <div style={{
@@ -497,14 +505,9 @@ export default function CrawlerDashboard() {
                               <p style={{ color: '#999', margin: 0 }}>無數據</p>
                             ) : (
                               <>
-                                <div style={{ marginBottom: 10 }}>
-                                  <p style={{ color: '#6b7280', margin: '0 0 2px', fontWeight: 500, fontSize: 12 }}>
-                                    AI 深度內容偏好（Insight 行業分佈，30天）
-                                  </p>
-                                  <p style={{ color: '#aaa', margin: 0, fontSize: 10 }}>
-                                    總計 {insightsByIndustry.reduce((s, r) => s + r.count, 0).toLocaleString()} 次｜左側數字為當前時段估算值
-                                  </p>
-                                </div>
+                                <p style={{ color: '#6b7280', margin: '0 0 10px', fontWeight: 500, fontSize: 12 }}>
+                                  AI 深度內容偏好（{days} 天，共 {insightsRealTotal?.toLocaleString()} 次）
+                                </p>
                                 {insightsByIndustry.map((item) => {
                                   const maxCount = insightsByIndustry[0]?.count || 1
                                   return (
