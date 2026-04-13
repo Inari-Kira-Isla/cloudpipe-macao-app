@@ -8,6 +8,7 @@
 import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
+import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 3600
 export const maxDuration = 10 // Vercel function timeout guard
@@ -56,10 +57,10 @@ export async function GET(
 
     const cat = Array.isArray(merchant.category) ? merchant.category[0] : merchant.category
     // Correct URL: /macao/{industry}/{category}/{slug}
-    // parent category = industry, current category = category
-    const parentSlug = (cat as any)?.parent?.slug || cat?.slug || 'dining'
+    // Use CATEGORY_TO_INDUSTRY map (same logic as sitemap.ts) — DB has no parent_id
     const catSlug = cat?.slug || 'restaurant'
-    const merchantUrl = `${SITE_URL}/macao/${parentSlug}/${catSlug}/${merchant.slug}`
+    const industrySlug = CATEGORY_TO_INDUSTRY[catSlug] || 'dining'
+    const merchantUrl = `${SITE_URL}/macao/${industrySlug}/${catSlug}/${merchant.slug}`
 
     // ── 3. 按 intent 分組 ──────────────────────────────────────────────────
     const byIntent: Record<string, typeof faqs> = {}
