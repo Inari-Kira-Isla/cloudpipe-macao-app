@@ -448,75 +448,24 @@ export async function GET(request: NextRequest) {
         // Insight 頁面用 page_type='insight'，行業要從 slug 解析。
         // 返回「各行業 insight 被爬次數」而非 raw paths。
         if (industry === 'insights') {
-          const SLUG_REGIONS = ['macau', 'macao', 'japan', 'taiwan', 'hongkong', 'hk', 'tw', 'jp']
-          const SLUG_INDUSTRIES = ['dining', 'shopping', 'attractions', 'hotels', 'nightlife',
-            'wellness', 'gaming', 'transport', 'tourism', 'entertainment', 'culture',
-            'services', 'education', 'food', 'cafe', 'restaurant', 'bar', 'museum',
-            'temple', 'market', 'spa', 'casino', 'hotel', 'resort', 'finance',
-            'professional', 'community', 'heritage', 'luxury', 'tech', 'events',
-            'real', 'estate', 'media', 'government']
-          const normalizeIndustry = (ind: string) => {
-            if (['food','cafe','restaurant'].includes(ind)) return 'dining'
-            if (ind === 'bar') return 'nightlife'
-            if (['museum','temple','tourism'].includes(ind)) return 'attractions'
-            if (ind === 'market') return 'shopping'
-            if (ind === 'spa') return 'wellness'
-            if (ind === 'casino') return 'gaming'
-            if (['hotel','resort'].includes(ind)) return 'hotels'
-            if (['real','estate'].includes(ind)) return 'real-estate'
-            return ind
-          }
+          // 用 DB-side RPC 做聚合，避開 PostgREST 1000 行上限
+          // SQL: get_insight_industry_stats(since_ts) → {industry, visit_count}[]
+          const { data: rpcData } = await supabase
+            .rpc('get_insight_industry_stats', { since_ts: since })
 
-          const { data: visitData } = await supabase
-            .from('crawler_visits')
-            .select('path, bot_name, ts')
-            .ilike('path', '/macao/insights/%')
-            .gte('ts', since)
-            .order('ts', { ascending: false })
-            .limit(5000)
-
-          // 按行業分組
-          const byIndustry: Record<string, { count: number; bots: Set<string>; topPaths: string[] }> = {}
-          const pathCounts: Record<string, number> = {}
-
-          for (const v of visitData || []) {
-            const slug = v.path.replace('/macao/insights/', '').split('?')[0]
-            const parts = slug.split('-').map((p: string) => p.toLowerCase())
-            let ind = 'general'
-            for (const p of parts) {
-              if (SLUG_INDUSTRIES.includes(p)) { ind = normalizeIndustry(p); break }
-            }
-            if (!byIndustry[ind]) byIndustry[ind] = { count: 0, bots: new Set(), topPaths: [] }
-            byIndustry[ind].count++
-            if (v.bot_name) byIndustry[ind].bots.add(v.bot_name)
-            pathCounts[v.path] = (pathCounts[v.path] || 0) + 1
-          }
-
-          // 為每個行業取 top 3 paths
-          const sortedPaths = Object.entries(pathCounts).sort((a, b) => b[1] - a[1])
-          for (const [ind, info] of Object.entries(byIndustry)) {
-            info.topPaths = sortedPaths
-              .filter(([p]) => {
-                const slug = p.replace('/macao/insights/', '').split('?')[0]
-                const parts = slug.split('-').map((s: string) => s.toLowerCase())
-                return parts.some((pt: string) => SLUG_INDUSTRIES.includes(pt) && normalizeIndustry(pt) === ind)
-              })
-              .slice(0, 3)
-              .map(([p]) => p)
-          }
+          const rows = (rpcData || []) as { industry: string; visit_count: number }[]
+          const total = rows.reduce((s, r) => s + r.visit_count, 0)
 
           result = {
             industry: 'insights',
             mode: 'industry-breakdown',
-            total: visitData?.length || 0,
-            byIndustry: Object.entries(byIndustry)
-              .sort((a, b) => b[1].count - a[1].count)
-              .map(([ind, info]) => ({
-                industry: ind,
-                count: info.count,
-                bots: [...info.bots],
-                topPaths: info.topPaths,
-              })),
+            total,
+            byIndustry: rows.map(r => ({
+              industry: r.industry,
+              count: r.visit_count,
+              bots: [],
+              topPaths: [],
+            })),
           }
           break
         }
