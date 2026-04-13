@@ -497,9 +497,14 @@ export default function CrawlerDashboard() {
                               <p style={{ color: '#999', margin: 0 }}>無數據</p>
                             ) : (
                               <>
-                                <p style={{ color: '#6b7280', margin: '0 0 10px', fontWeight: 500 }}>
-                                  AI 深度內容偏好（Insight 行業分佈）
-                                </p>
+                                <div style={{ marginBottom: 10 }}>
+                                  <p style={{ color: '#6b7280', margin: '0 0 2px', fontWeight: 500, fontSize: 12 }}>
+                                    AI 深度內容偏好（Insight 行業分佈，30天）
+                                  </p>
+                                  <p style={{ color: '#aaa', margin: 0, fontSize: 10 }}>
+                                    總計 {insightsByIndustry.reduce((s, r) => s + r.count, 0).toLocaleString()} 次｜左側數字為當前時段估算值
+                                  </p>
+                                </div>
                                 {insightsByIndustry.map((item) => {
                                   const maxCount = insightsByIndustry[0]?.count || 1
                                   return (
