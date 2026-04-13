@@ -15,24 +15,27 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-a
 
 export async function GET() {
   try {
-    // ── 1. FAQ intent 分佈統計（用 count 查詢，避免 PostgREST 1000 行限制）─
+    // ── 1. FAQ intent 分佈統計（逐一查詢 + limit(0)，避免 PostgREST 1000 行限制）
+    // 注意：Promise.all 並發會讓 Supabase 單例 client 互相干擾 → 改為序列查詢
     const ALL_INTENTS = [
       'check_hours', 'check_price', 'check_stock', 'compare',
       'find_location', 'book', 'delivery', 'seasonal', 'contact', 'general',
     ]
-    const intentResults = await Promise.all(
-      ALL_INTENTS.map(intent =>
-        supabase
-          .from('merchant_faqs')
-          .select('*', { count: 'exact', head: true })
-          .eq('question_intent', intent)
-          .then(({ count }) => ({ intent, count: count ?? 0 }))
-      )
-    )
     const intentCount: Record<string, number> = {}
-    for (const { intent, count } of intentResults) {
-      if (count > 0) intentCount[intent] = count
+    for (const intent of ALL_INTENTS) {
+      const { count } = await supabase
+        .from('merchant_faqs')
+        .select('*', { count: 'exact' })
+        .eq('question_intent', intent)
+        .limit(0)
+      if (count && count > 0) intentCount[intent] = count
     }
+
+    // 全站 FAQ 總數（不依賴 intentCount sum，避免遺漏未知 intent）
+    const { count: totalFaqs } = await supabase
+      .from('merchant_faqs')
+      .select('*', { count: 'exact' })
+      .limit(0)
 
     // ── 2. 取各行業 Top FAQ（priority_score 最高的前 3 條）────────────────
     const { data: topFaqs } = await supabase
