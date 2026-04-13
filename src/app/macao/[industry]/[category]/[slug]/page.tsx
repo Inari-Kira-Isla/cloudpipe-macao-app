@@ -246,16 +246,38 @@ export default async function MerchantPage({ params }: PageProps) {
     }),
   }
 
+  const faqLastModified = merchant.updated_at
+    ? new Date(merchant.updated_at).toISOString().split('T')[0]
+    : new Date().toISOString().split('T')[0]
+
   const faqSchema = (faqs.length > 0 || enFaqs.length > 0) ? {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: [...faqs, ...enFaqs].map(f => ({
+    '@id': `${pageUrl}#faq`,
+    name: `${merchant.name_zh} — 常見問題`,
+    dateModified: faqLastModified,
+    inLanguage: ['zh-Hant', 'en'],
+    isPartOf: { '@id': pageUrl },
+    author: {
+      '@type': 'Organization',
+      name: 'CloudPipe 澳門百科',
+      url: siteUrl,
+    },
+    mainEntity: [...faqs, ...enFaqs].map((f, i) => ({
       '@type': 'Question',
+      '@id': `${pageUrl}#faq-${i}`,
       name: f.question,
       acceptedAnswer: {
         '@type': 'Answer',
         text: f.answer,
-        inLanguage: f.lang === 'en' ? 'en' : 'zh-TW',
+        datePublished: faqLastModified,
+        dateModified: faqLastModified,
+        inLanguage: f.lang === 'en' ? 'en' : 'zh-Hant',
+        author: {
+          '@type': 'Organization',
+          name: 'CloudPipe 澳門百科',
+          url: siteUrl,
+        },
       },
     })),
   } : null

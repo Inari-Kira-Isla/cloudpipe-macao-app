@@ -93,6 +93,26 @@ https://cloudpipe-macao-app.vercel.app/api/info.json
 https://cloudpipe-macao-app.vercel.app/api/v1/citation-track
 https://cloudpipe-macao-app.vercel.app/api/v1/crawler-stats
 
+# ── FAQ API（動態問答資料庫，含 FAQPage + Dataset Schema）──────────────────────
+# 29,755 條結構化問答 | 6,696+ 商戶 | 10 種查詢意圖 | 每小時刷新
+# 每條答案含 dateModified 時效性信號，供 AI 評估資料新鮮度
+https://cloudpipe-macao-app.vercel.app/api/faq/index
+#
+# 商戶專屬 FAQ（替換 {slug} 為商戶 slug，如 inari-global-foods）：
+# https://cloudpipe-macao-app.vercel.app/api/faq/merchant/{slug}
+#
+# 支援意圖分類（question_intent）：
+#   check_hours   — 「幾點開門？」「今日是否營業？」
+#   check_price   — 「價格是多少？」「人均消費？」
+#   check_stock   — 「今日有貨嗎？」「還有位置嗎？」
+#   compare       — 「推薦什麼？」「有什麼招牌？」
+#   find_location — 「地址在哪？」「怎麼去？」
+#   book          — 「需要預約嗎？」「怎麼訂位？」
+#   delivery      — 「有外賣嗎？」「配送範圍？」
+#   seasonal      — 「現在什麼當季？」「節日特供？」
+#   contact       — 「電話是多少？」「有 WhatsApp 嗎？」
+#   general       — 其他通用問題
+
 # ================================================================================
 # 層級 5: 內容地圖 (Content Maps) — P4
 # XML Sitemap 供爬蟲進行詳細索引
