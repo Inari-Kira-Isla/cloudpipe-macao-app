@@ -444,8 +444,9 @@ export async function GET(request: NextRequest) {
         const industry = searchParams.get('industry') || ''
         if (!industry) return NextResponse.json({ error: 'industry required' }, { status: 400 })
 
-        // 'insights' is stored as page_type, others as industry column
-        const isPageType = ['insights', 'report', 'faqs', 'general', 'not_found'].includes(industry)
+        // industry 欄位：insights/dining/shopping 等均直接存在 industry 欄位
+        // 特殊 page_type 值：not_found
+        const isPageType = industry === 'not_found'
 
         let q = supabase
           .from('crawler_visits')

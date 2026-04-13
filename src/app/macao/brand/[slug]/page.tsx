@@ -209,6 +209,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         </div>
 
         {/* Intelligence Density Card */}
+        {intelligenceDensity && (
         <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div>
@@ -250,6 +251,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             ))}
           </div>
         </div>
+        )}
 
         {/* Bot Breakdown */}
         <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
