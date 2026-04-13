@@ -171,6 +171,8 @@ export default function CrawlerDashboard() {
   // Industry drill-down
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null)
   const [industryPaths, setIndustryPaths] = useState<{ path: string; count: number; bots: string[]; lastTs: string }[]>([])
+  const [insightsByIndustry, setInsightsByIndustry] = useState<{ industry: string; count: number; bots: string[]; topPaths: string[] }[]>([])
+  const [industryMode, setIndustryMode] = useState<'path-list' | 'industry-breakdown'>('path-list')
   const [industryPathsLoading, setIndustryPathsLoading] = useState(false)
 
   // 404 monitoring
@@ -220,10 +222,13 @@ export default function CrawlerDashboard() {
     if (selectedIndustry === industry) { setSelectedIndustry(null); return }
     setSelectedIndustry(industry)
     setIndustryPathsLoading(true)
-    const data = await safeFetch<{ paths: typeof industryPaths }>(
-      `${API}&type=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`, { paths: [] }
+    const data = await safeFetch<{ paths?: typeof industryPaths; byIndustry?: typeof insightsByIndustry; mode?: string }>(
+      `${API}&type=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`,
+      { paths: [], byIndustry: [], mode: 'path-list' }
     )
+    setIndustryMode((data.mode as 'path-list' | 'industry-breakdown') || 'path-list')
     setIndustryPaths(data.paths || [])
+    setInsightsByIndustry(data.byIndustry || [])
     setIndustryPathsLoading(false)
   }, [selectedIndustry, days])
 
@@ -486,9 +491,52 @@ export default function CrawlerDashboard() {
                         <div style={{ marginTop: 8, padding: 12, background: 'white', borderRadius: 8, border: '1px solid #c7d7f5', fontSize: 12 }}>
                           {industryPathsLoading ? (
                             <p style={{ color: '#999', margin: 0 }}>載入中…</p>
+                          ) : industryMode === 'industry-breakdown' ? (
+                            // Insights 模式：顯示行業分類統計
+                            insightsByIndustry.length === 0 ? (
+                              <p style={{ color: '#999', margin: 0 }}>無數據</p>
+                            ) : (
+                              <>
+                                <p style={{ color: '#6b7280', margin: '0 0 10px', fontWeight: 500 }}>
+                                  AI 深度內容偏好（Insight 行業分佈）
+                                </p>
+                                {insightsByIndustry.map((item, i) => {
+                                  const maxCount = insightsByIndustry[0]?.count || 1
+                                  return (
+                                    <div key={item.industry} style={{ marginBottom: 10 }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                                        <span style={{ fontWeight: 600, color: '#1f2937' }}>{item.industry}</span>
+                                        <span style={{ fontWeight: 700, color: '#0f4c81' }}>{item.count} 次</span>
+                                      </div>
+                                      <div style={{ background: '#e5e7eb', borderRadius: 4, height: 6, marginBottom: 4 }}>
+                                        <div style={{ background: '#4285f4', borderRadius: 4, height: 6, width: `${(item.count / maxCount) * 100}%` }} />
+                                      </div>
+                                      {item.topPaths.length > 0 && (
+                                        <div style={{ paddingLeft: 8, borderLeft: '2px solid #e5e7eb' }}>
+                                          {item.topPaths.map(p => (
+                                            <a key={p}
+                                              href={`https://cloudpipe-macao-app.vercel.app${p}`}
+                                              target="_blank" rel="noopener noreferrer"
+                                              style={{ display: 'block', color: '#6b7280', fontSize: 10, textDecoration: 'none', lineHeight: 1.6,
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                            >
+                                              {p.replace('/macao/insights/', '')}
+                                            </a>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {i < insightsByIndustry.length - 1 && (
+                                        <div style={{ borderBottom: '1px solid #f3f4f6', marginTop: 8 }} />
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </>
+                            )
                           ) : industryPaths.length === 0 ? (
                             <p style={{ color: '#999', margin: 0 }}>無路徑數據</p>
                           ) : (
+                            // 一般行業：顯示 top paths
                             <>
                               <p style={{ color: '#6b7280', margin: '0 0 8px', fontWeight: 500 }}>前 {industryPaths.length} 條路徑（依訪問次數排序）</p>
                               {industryPaths.map((p, i) => (

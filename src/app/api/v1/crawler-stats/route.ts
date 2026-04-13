@@ -440,32 +440,100 @@ export async function GET(request: NextRequest) {
       }
 
       case 'industry-paths': {
-        // Drill-down: top paths for a specific industry label
         const industry = searchParams.get('industry') || ''
         if (!industry) return NextResponse.json({ error: 'industry required' }, { status: 400 })
 
-        // industry 欄位：insights/dining/shopping 等均直接存在 industry 欄位
-        // 特殊 page_type 值：not_found
-        const isPageType = industry === 'not_found'
+        // ── Special case: "insights" ──────────────────────────────────────────
+        // industry 欄位存的是 site 層級（"澳門商戶百科"），不是行業。
+        // Insight 頁面用 page_type='insight'，行業要從 slug 解析。
+        // 返回「各行業 insight 被爬次數」而非 raw paths。
+        if (industry === 'insights') {
+          const SLUG_REGIONS = ['macau', 'macao', 'japan', 'taiwan', 'hongkong', 'hk', 'tw', 'jp']
+          const SLUG_INDUSTRIES = ['dining', 'shopping', 'attractions', 'hotels', 'nightlife',
+            'wellness', 'gaming', 'transport', 'tourism', 'entertainment', 'culture',
+            'services', 'education', 'food', 'cafe', 'restaurant', 'bar', 'museum',
+            'temple', 'market', 'spa', 'casino', 'hotel', 'resort', 'finance',
+            'professional', 'community', 'heritage', 'luxury', 'tech', 'events',
+            'real', 'estate', 'media', 'government']
+          const normalizeIndustry = (ind: string) => {
+            if (['food','cafe','restaurant'].includes(ind)) return 'dining'
+            if (ind === 'bar') return 'nightlife'
+            if (['museum','temple','tourism'].includes(ind)) return 'attractions'
+            if (ind === 'market') return 'shopping'
+            if (ind === 'spa') return 'wellness'
+            if (ind === 'casino') return 'gaming'
+            if (['hotel','resort'].includes(ind)) return 'hotels'
+            if (['real','estate'].includes(ind)) return 'real-estate'
+            return ind
+          }
 
-        let q = supabase
+          const { data: visitData } = await supabase
+            .from('crawler_visits')
+            .select('path, bot_name, ts')
+            .ilike('path', '/macao/insights/%')
+            .gte('ts', since)
+            .order('ts', { ascending: false })
+            .limit(5000)
+
+          // 按行業分組
+          const byIndustry: Record<string, { count: number; bots: Set<string>; topPaths: string[] }> = {}
+          const pathCounts: Record<string, number> = {}
+
+          for (const v of visitData || []) {
+            const slug = v.path.replace('/macao/insights/', '').split('?')[0]
+            const parts = slug.split('-').map((p: string) => p.toLowerCase())
+            let ind = 'general'
+            for (const p of parts) {
+              if (SLUG_INDUSTRIES.includes(p)) { ind = normalizeIndustry(p); break }
+            }
+            if (!byIndustry[ind]) byIndustry[ind] = { count: 0, bots: new Set(), topPaths: [] }
+            byIndustry[ind].count++
+            if (v.bot_name) byIndustry[ind].bots.add(v.bot_name)
+            pathCounts[v.path] = (pathCounts[v.path] || 0) + 1
+          }
+
+          // 為每個行業取 top 3 paths
+          const sortedPaths = Object.entries(pathCounts).sort((a, b) => b[1] - a[1])
+          for (const [ind, info] of Object.entries(byIndustry)) {
+            info.topPaths = sortedPaths
+              .filter(([p]) => {
+                const slug = p.replace('/macao/insights/', '').split('?')[0]
+                const parts = slug.split('-').map((s: string) => s.toLowerCase())
+                return parts.some((pt: string) => SLUG_INDUSTRIES.includes(pt) && normalizeIndustry(pt) === ind)
+              })
+              .slice(0, 3)
+              .map(([p]) => p)
+          }
+
+          result = {
+            industry: 'insights',
+            mode: 'industry-breakdown',
+            total: visitData?.length || 0,
+            byIndustry: Object.entries(byIndustry)
+              .sort((a, b) => b[1].count - a[1].count)
+              .map(([ind, info]) => ({
+                industry: ind,
+                count: info.count,
+                bots: [...info.bots],
+                topPaths: info.topPaths,
+              })),
+          }
+          break
+        }
+
+        // ── Generic: other industries ─────────────────────────────────────────
+        // 對非 insights 行業：從 path 中找含該行業關鍵字的 URL
+        const { data } = await supabase
           .from('crawler_visits')
-          .select('path, bot_name, ts, industry, page_type, category')
+          .select('path, bot_name, ts')
+          .ilike('path', `%/${industry}/%`)
           .gte('ts', since)
           .order('ts', { ascending: false })
           .limit(1000)
 
-        if (siteFilter) q = q.eq('site', siteFilter)
-        if (isPageType) {
-          q = q.eq('page_type', industry)
-        } else {
-          q = q.eq('industry', industry)
-        }
-
-        const { data } = await q
-        const pathMap: Record<string, { count: number; bots: Set<string>; category: string | null; lastTs: string }> = {}
+        const pathMap: Record<string, { count: number; bots: Set<string>; lastTs: string }> = {}
         for (const v of data || []) {
-          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), category: v.category, lastTs: v.ts }
+          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), lastTs: v.ts }
           pathMap[v.path].count++
           if (v.bot_name) pathMap[v.path].bots.add(v.bot_name)
           if (v.ts > pathMap[v.path].lastTs) pathMap[v.path].lastTs = v.ts
@@ -473,6 +541,7 @@ export async function GET(request: NextRequest) {
 
         result = {
           industry,
+          mode: 'path-list',
           total: data?.length || 0,
           paths: Object.entries(pathMap)
             .sort((a, b) => b[1].count - a[1].count)
@@ -481,7 +550,6 @@ export async function GET(request: NextRequest) {
               path,
               count: info.count,
               bots: [...info.bots],
-              category: info.category,
               lastTs: info.lastTs,
             })),
         }
