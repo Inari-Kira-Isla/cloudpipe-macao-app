@@ -8,8 +8,8 @@ import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
 import { ClickTracker } from '@/components/ClickTracker'
 
-// ✅ ISR: 按需生成，不緩存（動態內容）
-export const revalidate = 0
+// ✅ ISR: 每 24 小時重新生成（商戶資料變動不頻繁，節省 CPU）
+export const revalidate = 86400
 export const dynamicParams = true
 
 /** 14 天內更新 = 核實過 */

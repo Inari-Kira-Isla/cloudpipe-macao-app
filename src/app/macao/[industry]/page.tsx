@@ -7,8 +7,8 @@ import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 import { PILLAR_CONTENT } from '@/lib/pillar-content'
 
-// ✅ Dynamic: 每次請求都重新生成（確保數據最新）
-export const dynamic = 'force-dynamic'
+// ✅ ISR: 每小時重新生成（平衡資料新鮮度與 CPU 用量）
+export const revalidate = 3600
 export const dynamicParams = true
 
 interface PageProps {
