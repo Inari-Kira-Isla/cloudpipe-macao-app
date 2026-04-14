@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
 import { notifySitemaps } from '@/lib/notify-crawlers'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1h ISR — AI bot 高頻抓 llms.txt，必須 cache
 export const maxDuration = 30
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()

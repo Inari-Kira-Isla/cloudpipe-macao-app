@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1h ISR — AI bot 抓 llms.txt EN 版，必須 cache
 export const maxDuration = 30
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()

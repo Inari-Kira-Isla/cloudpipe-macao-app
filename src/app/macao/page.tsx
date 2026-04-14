@@ -4,7 +4,7 @@ import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const revalidate = 300 // 5-min ISR cache — prevents per-request Supabase hammering
+export const revalidate = 3600 // 1h ISR — 首頁 bot 高頻訪問，5min 重生在 50k 訪問量下太貴
 export const dynamicParams = true
 
 /* ── Category enrichment (icons + descriptions for SEO) ── */
