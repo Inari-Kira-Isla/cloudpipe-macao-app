@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// AI Bot patterns — 只追蹤已知 AI 爬蟲
 const AI_BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT/i, /OAI-SearchBot/i,
   /ClaudeBot/i, /Claude-Web/i, /Anthropic/i,
@@ -12,19 +11,81 @@ const AI_BOT_PATTERNS = [
   /Bytespider/i, /SamanthaDoubao/i,
 ]
 
-function isAIBot(ua: string): boolean {
-  return AI_BOT_PATTERNS.some(p => p.test(ua))
+const BOT_NAME_MAP: [RegExp, string, string][] = [
+  [/GPTBot|ChatGPT|OAI-SearchBot/i, 'GPTBot', 'OpenAI'],
+  [/ClaudeBot|Claude-Web/i, 'ClaudeBot', 'Anthropic'],
+  [/PerplexityBot/i, 'PerplexityBot', 'Perplexity'],
+  [/Googlebot|Google-Extended|GoogleOther/i, 'Googlebot', 'Google'],
+  [/Amazonbot/i, 'Amazonbot', 'Amazon'],
+  [/Applebot/i, 'Applebot', 'Apple'],
+  [/meta-externalagent|FacebookBot/i, 'meta-externalagent', 'Meta'],
+  [/YandexBot/i, 'YandexBot', 'Yandex'],
+  [/Bingbot/i, 'Bingbot', 'Microsoft'],
+  [/Bytespider|SamanthaDoubao/i, 'Bytespider', 'ByteDance'],
+]
+
+function detectBot(ua: string): { name: string; owner: string } | null {
+  for (const [pattern, name, owner] of BOT_NAME_MAP) {
+    if (pattern.test(ua)) return { name, owner }
+  }
+  if (AI_BOT_PATTERNS.some(p => p.test(ua))) return { name: 'UnknownBot', owner: 'Unknown' }
+  return null
+}
+
+function getPageType(path: string): string {
+  if (path.startsWith('/macao/insights/')) return 'insight'
+  if (path.match(/^\/macao\/[^/]+\/[^/]+\/[^/]+$/)) return 'merchant'
+  if (path.match(/^\/macao\/[^/]+\/[^/]+\/faqs/)) return 'faqs'
+  if (path.match(/^\/macao\/[^/]+\/[^/]+$/)) return 'category'
+  if (path.match(/^\/macao\/[^/]+$/)) return 'industry'
+  if (path === '/macao' || path === '/macao/') return 'home'
+  if (path.startsWith('/api/faq/')) return 'api-faq'
+  return 'page'
+}
+
+async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string) {
+  const today = new Date().toISOString().slice(0, 10)
+  const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
+  const sessionId = `mw-${bot.name}-${today}`
+  const row = {
+    bot_name: bot.name,
+    bot_owner: bot.owner,
+    path,
+    site: 'cloudpipe-macao-app',
+    page_type: getPageType(path),
+    session_id: sessionId,
+    ua_raw: ua.slice(0, 200),
+    ts: new Date().toISOString(),
+  }
+  // fire-and-forget — never await, never block response
+  fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(() => {})
 }
 
 export async function middleware(request: NextRequest) {
   const ua = request.headers.get('user-agent') || ''
   const path = request.nextUrl.pathname
 
-  if (isAIBot(ua)) {
-    // 把 pathname 注入到 request header，讓 not-found.tsx Server Component 讀取
-    // （not-found 無法直接拿 request.url，只能靠 headers()）
+  const bot = detectBot(ua)
+  if (bot) {
+    // 注入 pathname header 給 not-found.tsx 讀取
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-cloudpipe-pathname', path)
+
+    // 伺服器端追蹤 — 不依賴 bot 載入 img pixel
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (supabaseUrl && supabaseKey) {
+      trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
+    }
 
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
