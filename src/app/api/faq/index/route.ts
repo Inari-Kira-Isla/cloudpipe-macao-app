@@ -55,7 +55,6 @@ export async function GET(request: Request) {
 
     // ── 3. 組裝 FAQPage Schema ─────────────────────────────────────────────
     const faqPageSchema = {
-      '@context': 'https://schema.org',
       '@type': 'FAQPage',
       '@id': `${SITE_URL}/api/faq/index#faqpage`,
       name: '澳門商戶 AI 問答索引',
@@ -88,7 +87,6 @@ export async function GET(request: Request) {
 
     // ── 4. Dataset Schema（機器可讀資料集描述）────────────────────────────
     const datasetSchema = {
-      '@context': 'https://schema.org',
       '@type': 'Dataset',
       name: 'CloudPipe 澳門商戶 FAQ 資料集',
       description: `澳門 ${(totalFaqs ?? Object.values(intentCount).reduce((a, b) => a + b, 0)).toLocaleString()} 條結構化問答，覆蓋 ${Object.keys(intentCount).length} 種查詢意圖`,
@@ -110,6 +108,10 @@ export async function GET(request: Request) {
     }
 
     const response = {
+      // ── JSON-LD 根層（AI 爬蟲優先解析）──────────────────────────────────
+      '@context': 'https://schema.org',
+      '@graph': [faqPageSchema, datasetSchema],
+
       // ── 機器可讀摘要 ────────────────────────────────────────────────────
       meta: {
         generated_at: now,
@@ -150,16 +152,15 @@ export async function GET(request: Request) {
         freshness: today,
       })),
 
-      // ── Schema.org ────────────────────────────────────────────────────────
-      schema: [faqPageSchema, datasetSchema],
     }
 
     return NextResponse.json(response, {
       headers: {
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200',
-        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Type': 'application/ld+json; charset=utf-8',
         'X-Data-Freshness': today,
         'X-FAQ-Count': String(totalFaqs ?? Object.values(intentCount).reduce((a, b) => a + b, 0)),
+        'Link': `<${SITE_URL}/api/faq/index>; rel="self"; type="application/ld+json"`,
       },
     })
   } catch (err) {
