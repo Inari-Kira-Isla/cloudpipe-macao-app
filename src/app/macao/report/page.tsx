@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     locale: 'zh_TW',
   },
   alternates: { canonical: `${siteUrl}/macao/report` },
+  robots: { index: false, follow: false },
 }
 
 interface BotInfo { count: number; owner: string }
