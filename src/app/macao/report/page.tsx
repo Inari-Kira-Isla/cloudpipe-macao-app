@@ -2,7 +2,7 @@ import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 
-export const revalidate = 300 // re-generate every 5 min (matches crawler_stats_cache refresh)
+export const revalidate = 1800 // 30min ISR — report 不需 5min，減少 bot 爬到時的 CPU 消耗
 
 const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
