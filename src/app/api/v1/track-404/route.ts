@@ -48,6 +48,8 @@ export async function POST(request: NextRequest) {
     const botName = parseBotName(ua)
     if (!botName) return NextResponse.json({ skipped: true })
 
+    const today = new Date().toISOString().slice(0, 10)
+    const sessionId = `404-${botName}-${today}`
     await supabase.from('crawler_visits').insert({
       ts: new Date().toISOString(),
       path,
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
       page_type: 'not_found',
       site: site || 'cloudpipe-macao-app',
       status_code: 404,
+      session_id: sessionId,
     })
 
     return NextResponse.json({ logged: true, bot: botName, path })

@@ -76,6 +76,7 @@ interface RoutingBaseline {
 
 const API = '/api/v1/crawler-stats?token=cloudpipe2026'
 const ROUTING_API = '/api/v1/routing-baseline'
+const SESSIONS_CACHE = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-sessions-1.json'
 
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
@@ -202,7 +203,7 @@ export default function CrawlerDashboard() {
     try {
       const [sum, ses, pg, sw] = await Promise.all([
         safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, []),
+        safeFetch<{sessions: Session[]}>(SESSIONS_CACHE, {sessions: []}).then(r => r.sessions || []),
         safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, []),
         safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
