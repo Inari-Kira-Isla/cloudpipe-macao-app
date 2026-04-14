@@ -43,6 +43,30 @@ function getPageType(path: string): string {
   return 'page'
 }
 
+async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
+  // Extract merchant slug from path: /macao/{industry}/{category}/{slug}
+  const merchantMatch = path.match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
+  const merchantSlug = merchantMatch ? merchantMatch[1] : null
+  const row = {
+    event_type: 'faq_arrival',
+    conversion_type: 'faq',
+    merchant_slug: merchantSlug,
+    region: 'macao',
+    metadata: { path, utm_medium: utmMedium, ts: new Date().toISOString() },
+    created_at: new Date().toISOString(),
+  }
+  fetch(`${supabaseUrl}/rest/v1/analytics_events`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(() => {})
+}
+
 async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string) {
   const today = new Date().toISOString().slice(0, 10)
   const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
@@ -73,6 +97,15 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
 export async function middleware(request: NextRequest) {
   const ua = request.headers.get('user-agent') || ''
   const path = request.nextUrl.pathname
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  // Track FAQ conversion arrivals (human or bot with utm_source=faq)
+  const utmSource = request.nextUrl.searchParams.get('utm_source')
+  const utmMedium = request.nextUrl.searchParams.get('utm_medium')
+  if (utmSource === 'faq' && supabaseUrl && supabaseKey) {
+    trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
+  }
 
   const bot = detectBot(ua)
   if (bot) {
@@ -81,8 +114,6 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-cloudpipe-pathname', path)
 
     // 伺服器端追蹤 — 不依賴 bot 載入 img pixel
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (supabaseUrl && supabaseKey) {
       trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
     }

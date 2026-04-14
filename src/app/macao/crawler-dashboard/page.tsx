@@ -158,13 +158,15 @@ export default function CrawlerDashboard() {
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
-  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery'>('overview')
+  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery' | 'faq-conversion'>('overview')
   const [routing, setRouting] = useState<RoutingBaseline | null>(null)
   const [routingLoading, setRoutingLoading] = useState(false)
   const [discovery, setDiscovery] = useState<MerchantDiscovery | null>(null)
   const [discoveryLoading, setDiscoveryLoading] = useState(false)
   const [discoveryRegion, setDiscoveryRegion] = useState('')
   const [discoveryIndustry, setDiscoveryIndustry] = useState('')
+  const [faqConversions, setFaqConversions] = useState<{ total: number; today: number; topMerchants: { slug: string; count: number }[]; byMedium: Record<string, number> } | null>(null)
+  const [faqConvLoading, setFaqConvLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -273,6 +275,29 @@ export default function CrawlerDashboard() {
     const data = await safeFetch<MerchantDiscovery | null>(`/api/v1/merchant-discovery?days=${days}`, null)
     setDiscovery(data)
     setDiscoveryLoading(false)
+  }
+
+  const loadFaqConversions = async () => {
+    if (faqConversions) return
+    setFaqConvLoading(true)
+    const today = new Date().toISOString().slice(0, 10)
+    const data = await safeFetch<{ data: { merchant_slug: string | null; metadata: { utm_medium?: string } | null; created_at: string }[] }>(
+      `/api/v1/faq-conversions?days=${days}`, { data: [] }
+    )
+    const rows = data?.data || []
+    const todayRows = rows.filter(r => r.created_at?.startsWith(today))
+    const merchantCount: Record<string, number> = {}
+    const mediumCount: Record<string, number> = {}
+    for (const r of rows) {
+      if (r.merchant_slug) merchantCount[r.merchant_slug] = (merchantCount[r.merchant_slug] || 0) + 1
+      const med = r.metadata?.utm_medium || 'ai-answer'
+      mediumCount[med] = (mediumCount[med] || 0) + 1
+    }
+    const topMerchants = Object.entries(merchantCount)
+      .sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .map(([slug, count]) => ({ slug, count }))
+    setFaqConversions({ total: rows.length, today: todayRows.length, topMerchants, byMedium: mediumCount })
+    setFaqConvLoading(false)
   }
 
   const loadJourney = async (sessionId: string) => {
@@ -422,11 +447,12 @@ export default function CrawlerDashboard() {
 
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
-            {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery'] as const).map(t => (
+            {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
               <button key={t} onClick={() => {
                 setTab(t); setJourney(null)
                 if (t === 'routing') loadRouting()
                 if (t === 'merchant-discovery') loadDiscovery()
+                if (t === 'faq-conversion') loadFaqConversions()
               }}
                 style={{
                   padding: '8px 20px', border: 'none', cursor: 'pointer',
@@ -434,7 +460,7 @@ export default function CrawlerDashboard() {
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度' }[t]}
+                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度', 'faq-conversion': '💡 FAQ 轉化' }[t]}
               </button>
             ))}
           </div>
@@ -1247,6 +1273,67 @@ export default function CrawlerDashboard() {
                 </>
               )
             })()}
+          </div>
+        )}
+
+        {/* FAQ Conversion Tab */}
+        {tab === 'faq-conversion' && (
+          <div>
+            {faqConvLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入 FAQ 轉化數據...</p>}
+            {!faqConvLoading && !faqConversions && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
+            {faqConversions && (
+              <>
+                {/* Summary Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
+                  {[
+                    { label: `累計 FAQ 點擊（${days}天）`, value: faqConversions.total, color: '#0f4c81' },
+                    { label: '今日 FAQ 點擊', value: faqConversions.today, color: '#10a37f' },
+                    { label: '涉及商戶數', value: faqConversions.topMerchants.length, color: '#c5a572' },
+                  ].map(card => (
+                    <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Top Merchants */}
+                <h3 style={{ fontSize: 14, color: '#0f4c81', marginBottom: 8 }}>熱門 FAQ 點擊商戶</h3>
+                <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>用戶點擊 FAQ 答案連結後抵達的商戶頁面（utm_source=faq）</p>
+                {faqConversions.topMerchants.length === 0 ? (
+                  <p style={{ color: '#999', fontSize: 13 }}>尚無數據 — FAQ 連結剛部署，等待首批點擊</p>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: '#f5f5f5' }}>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: '#888' }}>商戶 Slug</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, color: '#888' }}>點擊次數</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: '#888' }}>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {faqConversions.topMerchants.map((m, i) => (
+                        <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{ padding: '7px 12px', fontWeight: 600 }}>
+                            {i + 1}. {m.slug}
+                          </td>
+                          <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700, color: '#0f4c81' }}>{m.count}</td>
+                          <td style={{ padding: '7px 12px' }}>
+                            <a href={`/macao/search?q=${m.slug}`} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: 11, color: '#4285f4' }}>查看頁面 →</a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+
+                <div style={{ marginTop: 24, padding: '12px 16px', background: '#f9f9f9', borderRadius: 8, fontSize: 12, color: '#666' }}>
+                  <strong>數據來源：</strong>middleware 捕捉 utm_source=faq 的所有到訪，寫入 analytics_events。
+                  覆蓋人類點擊 + AI bot 跟連結兩種情況。
+                </div>
+              </>
+            )}
           </div>
         )}
 
