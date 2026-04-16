@@ -103,6 +103,7 @@ async function main() {
   // 靜態核心頁面
   entries.push(urlEntry(`${SITE_URL}/`,                  TODAY, 'daily',  '1.0'))
   entries.push(urlEntry(`${SITE_URL}/macao`,             TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/llms.txt`,          TODAY, 'daily',  '1.0'))
   entries.push(urlEntry(`${SITE_URL}/macao/insights`,    TODAY, 'daily',  '1.0'))
   entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,    TODAY, 'daily',  '0.9'))
 
