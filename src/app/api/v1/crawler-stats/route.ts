@@ -85,7 +85,12 @@ export async function GET(request: NextRequest) {
           .eq('id', 1)
           .single()
 
-        if (cacheRow && cacheRow.total_visits_30d > 0) {
+        // Staleness check: if generated_at is >20 min old, skip cache and fall through to GitHub Pages JSON
+        const cacheAgeMinutes = cacheRow?.generated_at
+          ? (Date.now() - new Date(cacheRow.generated_at).getTime()) / 60000
+          : 999
+
+        if (cacheRow && cacheRow.total_visits_30d > 0 && cacheAgeMinutes <= 20) {
           // Pick total_visits for the requested time window
           const windowVisits = days >= 90 ? cacheRow.total_visits_90d
             : days >= 30 ? cacheRow.total_visits_30d
