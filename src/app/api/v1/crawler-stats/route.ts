@@ -77,57 +77,6 @@ export async function GET(request: NextRequest) {
     switch (view) {
       // ── Pre-computed views (instant, no heavy queries) ──────────────────
       case 'summary': {
-        // Primary: read from crawler_stats_cache Supabase table (pg_cron refreshes every 5 min)
-        // This is the single source of truth — same number shown everywhere
-        const { data: cacheRow } = await supabase
-          .from('crawler_stats_cache')
-          .select('*')
-          .eq('id', 1)
-          .single()
-
-        // Staleness check: if generated_at is >20 min old, skip cache and fall through to GitHub Pages JSON
-        const cacheAgeMinutes = cacheRow?.generated_at
-          ? (Date.now() - new Date(cacheRow.generated_at).getTime()) / 60000
-          : 999
-
-        if (cacheRow && cacheRow.total_visits_30d > 0 && cacheAgeMinutes <= 20) {
-          // Pick total_visits for the requested time window
-          const windowVisits = days >= 90 ? cacheRow.total_visits_90d
-            : days >= 30 ? cacheRow.total_visits_30d
-            : days >= 7  ? cacheRow.total_visits_7d
-            : cacheRow.total_visits_1d
-
-          // Scale bot/industry breakdowns proportionally for sub-30d windows
-          const ratio = days >= 30 ? 1 : windowVisits / (cacheRow.total_visits_30d || 1)
-          const scaledBots: Record<string, { count: number; owner: string }> = {}
-          for (const [name, info] of Object.entries<{ count: number; owner: string }>(cacheRow.bots_breakdown || {})) {
-            scaledBots[name] = { count: Math.round((info.count || 0) * ratio), owner: info.owner }
-          }
-          const scaledIndustries: Record<string, number> = {}
-          for (const [ind, cnt] of Object.entries<number>(cacheRow.industries_breakdown || {})) {
-            scaledIndustries[ind] = Math.round((cnt || 0) * ratio)
-          }
-
-          return NextResponse.json({
-            period: { since: new Date(Date.now() - days * 86400000).toISOString(), days },
-            total_visits: windowVisits,
-            today_visits: cacheRow.total_visits_1d,
-            unique_bots: cacheRow.unique_bots,
-            unique_sessions: 0,
-            bots: scaledBots,
-            top_pages: {},
-            industries: scaledIndustries,
-            page_types: {},
-            sites: cacheRow.sites_breakdown || {},
-            site_sample_total: cacheRow.total_visits_30d,
-            daily: cacheRow.daily_30d || [],
-            generated_at: cacheRow.generated_at,
-          }, {
-            headers: { ...CORS, 'Cache-Control': 'public, max-age=60', 'X-Cache': 'SUPABASE-CACHE' },
-          })
-        }
-
-        // Fallback: cache table not seeded yet, read from GitHub Pages JSON
         const cached = await readCache('crawler-stats-summary-30') as any
         if (cached) {
           // If days<=1 (today), use RPC or direct query for accurate data
@@ -245,51 +194,28 @@ export async function GET(request: NextRequest) {
         break
       }
 
-      // ── Live aggregated summary — reads crawler_stats_cache (pg_cron refreshes every 5 min) ───
+      // ── Live aggregated summary — single indexed RPC call instead of 6 parallel full scans ───
       case 'live-summary': {
         const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
 
-        // Primary: read from crawler_stats_cache (single-row, always fresh within 5 min)
-        const { data: cacheRow, error: cacheErr } = await supabase
-          .from('crawler_stats_cache')
-          .select('*')
-          .eq('id', 1)
-          .single()
+        // Use get_crawler_summary SQL function (1 indexed scan vs 6 full table scans)
+        // Falls back to lightweight count-only if function not yet deployed
+        const { data: rpcData, error: rpcError } = await supabase
+          .rpc('get_crawler_summary', { since_ts: since30 })
 
-        if (!cacheErr && cacheRow && cacheRow.total_visits_30d > 0) {
+        if (!rpcError && rpcData && rpcData.total_visits > 0) {
           result = {
             period: { since: since30, days: 30 },
-            total_visits: cacheRow.total_visits_30d,
-            today_visits: cacheRow.total_visits_1d,
-            unique_bots: cacheRow.unique_bots,
-            bots: cacheRow.bots_breakdown || {},
-            sites: cacheRow.sites_breakdown || {},
-            site_sample_total: cacheRow.total_visits_30d,
-            industries: cacheRow.industries_breakdown || {},
-            daily: cacheRow.daily_30d || {},
-            daily_by_owner: cacheRow.daily_by_owner_30d || null,
-            generated_at: cacheRow.generated_at,
-          }
-        }
-
-        // Fallback: cache table missing, call RPC directly
-        if (!result) {
-          const { data: rpcData, error: rpcError } = await supabase
-            .rpc('get_crawler_summary', { since_ts: since30 })
-          if (!rpcError && rpcData && rpcData.total_visits > 0) {
-            result = {
-              period: { since: since30, days: 30 },
-              total_visits: rpcData.total_visits || 0,
-              today_visits: rpcData.today_visits || 0,
-              unique_bots: rpcData.unique_bots || 0,
-              bots: rpcData.bots || {},
-              sites: rpcData.sites || {},
-              site_sample_total: rpcData.site_sample_total || 0,
-              industries: rpcData.industries || {},
-              daily: rpcData.daily || {},
-              daily_by_owner: rpcData.daily_by_owner || null,
-              generated_at: rpcData.generated_at || new Date().toISOString(),
-            }
+            total_visits: rpcData.total_visits || 0,
+            today_visits: rpcData.today_visits || 0,
+            unique_bots: rpcData.unique_bots || 0,
+            bots: rpcData.bots || {},
+            sites: rpcData.sites || {},
+            site_sample_total: rpcData.site_sample_total || 0,
+            industries: rpcData.industries || {},
+            daily: rpcData.daily || {},
+            daily_by_owner: rpcData.daily_by_owner || null,
+            generated_at: rpcData.generated_at || new Date().toISOString(),
           }
         }
 
@@ -444,119 +370,6 @@ export async function GET(request: NextRequest) {
         break
       }
 
-      case 'industry-paths': {
-        const industry = searchParams.get('industry') || ''
-        if (!industry) return NextResponse.json({ error: 'industry required' }, { status: 400 })
-
-        // ── Special case: "insights" ──────────────────────────────────────────
-        // industry 欄位存的是 site 層級（"澳門商戶百科"），不是行業。
-        // Insight 頁面用 page_type='insight'，行業要從 slug 解析。
-        // 返回「各行業 insight 被爬次數」而非 raw paths。
-        if (industry === 'insights') {
-          // 用 DB-side RPC 做聚合，避開 PostgREST 1000 行上限
-          // SQL: get_insight_industry_stats(since_ts) → {industry, visit_count}[]
-          const { data: rpcData } = await supabase
-            .rpc('get_insight_industry_stats', { since_ts: since })
-
-          const rows = (rpcData || []) as { industry: string; visit_count: number }[]
-          const total = rows.reduce((s, r) => s + r.visit_count, 0)
-
-          result = {
-            industry: 'insights',
-            mode: 'industry-breakdown',
-            total,
-            byIndustry: rows.map(r => ({
-              industry: r.industry,
-              count: r.visit_count,
-              bots: [],
-              topPaths: [],
-            })),
-          }
-          break
-        }
-
-        // ── Generic: other industries ─────────────────────────────────────────
-        // 對非 insights 行業：從 path 中找含該行業關鍵字的 URL
-        const { data } = await supabase
-          .from('crawler_visits')
-          .select('path, bot_name, ts')
-          .ilike('path', `%/${industry}/%`)
-          .gte('ts', since)
-          .order('ts', { ascending: false })
-          .limit(1000)
-
-        const pathMap: Record<string, { count: number; bots: Set<string>; lastTs: string }> = {}
-        for (const v of data || []) {
-          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), lastTs: v.ts }
-          pathMap[v.path].count++
-          if (v.bot_name) pathMap[v.path].bots.add(v.bot_name)
-          if (v.ts > pathMap[v.path].lastTs) pathMap[v.path].lastTs = v.ts
-        }
-
-        result = {
-          industry,
-          mode: 'path-list',
-          total: data?.length || 0,
-          paths: Object.entries(pathMap)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 50)
-            .map(([path, info]) => ({
-              path,
-              count: info.count,
-              bots: [...info.bots],
-              lastTs: info.lastTs,
-            })),
-        }
-        break
-      }
-
-      case 'not-found': {
-        // 404 monitoring — AI bots that hit missing pages
-        const { data } = await supabase
-          .from('crawler_visits')
-          .select('path, bot_name, ts')
-          .eq('status_code', 404)
-          .gte('ts', since)
-          .not('bot_name', 'is', null)
-          .order('ts', { ascending: false })
-          .limit(500)
-
-        const pathMap: Record<string, { count: number; bots: Set<string>; lastTs: string }> = {}
-        for (const v of data || []) {
-          if (!pathMap[v.path]) pathMap[v.path] = { count: 0, bots: new Set(), lastTs: v.ts }
-          pathMap[v.path].count++
-          if (v.bot_name) pathMap[v.path].bots.add(v.bot_name)
-          if (v.ts > pathMap[v.path].lastTs) pathMap[v.path].lastTs = v.ts
-        }
-
-        result = {
-          total_404s: data?.length || 0,
-          unique_paths: Object.keys(pathMap).length,
-          paths: Object.entries(pathMap)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 30)
-            .map(([path, info]) => ({
-              path,
-              count: info.count,
-              bots: [...info.bots],
-              lastTs: info.lastTs,
-            })),
-        }
-        break
-      }
-
-      case 'session-count': {
-        // Lightweight COUNT DISTINCT for session count (used by precompute script)
-        const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
-        const { count: sessionCount } = await supabase
-          .from('crawler_visits')
-          .select('session_id', { count: 'exact', head: true })
-          .gte('ts', since30)
-          .not('session_id', 'is', null)
-        result = { unique_sessions: sessionCount || 0 }
-        break
-      }
-
       case 'sessions': {
         // Lightweight: recent sessions only
         let query = supabase
@@ -595,151 +408,9 @@ export async function GET(request: NextRequest) {
         break
       }
 
-      case 'insight-categories': {
-        // Extract region + industry from insight slug
-        // Slug patterns: {region}-{industry}-..., upgrade-{region}-{industry}-..., {region}-tourism-{sub}-...
-        const SLUG_REGIONS = ['macau', 'japan', 'taiwan', 'hongkong', 'hk', 'tw', 'jp']
-        const SLUG_INDUSTRIES = ['dining', 'shopping', 'attractions', 'hotels', 'nightlife',
-          'wellness', 'gaming', 'transport', 'tourism', 'entertainment', 'culture',
-          'services', 'education', 'food', 'cafe', 'restaurant', 'bar', 'museum',
-          'temple', 'market', 'spa', 'casino', 'hotel', 'resort']
-        const REGION_LABEL: Record<string, string> = {
-          macau: '澳門', japan: '日本', taiwan: '台灣', hongkong: '香港', hk: '香港', tw: '台灣', jp: '日本'
-        }
-        const extractSlugMeta = (slug: string): { region: string; industry: string } => {
-          const parts = slug.split('-').map(p => p.toLowerCase())
-          // Remove URL encoding artifacts
-          const cleanParts = parts.filter(p => !p.includes('%'))
-          let region = 'unknown', industry = 'general'
-          // Strip "upgrade" prefix
-          const start = cleanParts[0] === 'upgrade' ? cleanParts.slice(1) : cleanParts
-          for (const p of start) {
-            if (SLUG_REGIONS.includes(p) && region === 'unknown') region = p
-            if (SLUG_INDUSTRIES.includes(p) && industry === 'general') industry = p
-          }
-          // "tourism" → "attractions"
-          if (industry === 'tourism') industry = 'attractions'
-          if (industry === 'food' || industry === 'cafe' || industry === 'restaurant') industry = 'dining'
-          if (industry === 'bar') industry = 'nightlife'
-          if (industry === 'museum' || industry === 'temple') industry = 'attractions'
-          if (industry === 'market') industry = 'shopping'
-          if (industry === 'spa') industry = 'wellness'
-          if (industry === 'casino') industry = 'gaming'
-          if (industry === 'hotel' || industry === 'resort') industry = 'hotels'
-          return { region, industry }
-        }
-
-        // Get top insight URLs from crawler_visits (last N days)
-        const { data: visitData } = await supabase
-          .from('crawler_visits')
-          .select('path, bot_name')
-          .eq('page_type', 'insight')
-          .gte('ts', since)
-          .order('ts', { ascending: false })
-          .limit(5000)
-
-        // Aggregate visits per slug
-        const slugVisits: Record<string, { count: number; bots: Set<string> }> = {}
-        for (const v of visitData || []) {
-          const slug = v.path.split('/').filter(Boolean).pop()
-          if (!slug) continue
-          if (!slugVisits[slug]) slugVisits[slug] = { count: 0, bots: new Set() }
-          slugVisits[slug].count++
-          slugVisits[slug].bots.add(v.bot_name)
-        }
-
-        // Get insight titles for top slugs (optional — for display only)
-        const topSlugs = Object.entries(slugVisits)
-          .sort((a, b) => b[1].count - a[1].count)
-          .slice(0, 200)
-          .map(([slug]) => slug)
-        const { data: insightData } = await supabase
-          .from('insights')
-          .select('slug, title, lang')
-          .in('slug', topSlugs)
-        const titleMap: Record<string, string> = {}
-        const langMap: Record<string, string> = {}
-        for (const ins of insightData || []) {
-          titleMap[ins.slug] = ins.title
-          langMap[ins.slug] = ins.lang
-        }
-
-        // Aggregate by region, industry (extracted from slug)
-        const regionStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
-        const industryStats: Record<string, { count: number; bots: Set<string>; slugs: string[] }> = {}
-        const langStats: Record<string, number> = {}
-        const crossStats: Record<string, { count: number; bots: Set<string> }> = {}
-
-        for (const [slug, visits] of Object.entries(slugVisits)) {
-          const { region, industry } = extractSlugMeta(slug)
-          const regionLabel = REGION_LABEL[region] || region
-
-          // By region
-          if (!regionStats[regionLabel]) regionStats[regionLabel] = { count: 0, bots: new Set(), slugs: [] }
-          regionStats[regionLabel].count += visits.count
-          for (const b of visits.bots) regionStats[regionLabel].bots.add(b)
-          if (regionStats[regionLabel].slugs.length < 5) regionStats[regionLabel].slugs.push(slug)
-
-          // By industry
-          if (!industryStats[industry]) industryStats[industry] = { count: 0, bots: new Set(), slugs: [] }
-          industryStats[industry].count += visits.count
-          for (const b of visits.bots) industryStats[industry].bots.add(b)
-          if (industryStats[industry].slugs.length < 5) industryStats[industry].slugs.push(slug)
-
-          // By region×industry cross
-          const key = `${regionLabel}×${industry}`
-          if (!crossStats[key]) crossStats[key] = { count: 0, bots: new Set() }
-          crossStats[key].count += visits.count
-          for (const b of visits.bots) crossStats[key].bots.add(b)
-
-          // By language (from DB or slug)
-          const lang = langMap[slug] || 'zh'
-          langStats[lang] = (langStats[lang] || 0) + visits.count
-        }
-
-        result = {
-          period: { since, days },
-          total_insight_visits: Object.values(slugVisits).reduce((s, v) => s + v.count, 0),
-          by_region: Object.fromEntries(
-            Object.entries(regionStats)
-              .sort((a, b) => b[1].count - a[1].count)
-              .map(([r, info]) => [r, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
-          ),
-          by_industry: Object.fromEntries(
-            Object.entries(industryStats)
-              .sort((a, b) => b[1].count - a[1].count)
-              .map(([ind, info]) => [ind, { count: info.count, unique_bots: info.bots.size, top_slugs: info.slugs }])
-          ),
-          by_cross: Object.fromEntries(
-            Object.entries(crossStats)
-              .sort((a, b) => b[1].count - a[1].count)
-              .slice(0, 30)
-              .map(([k, info]) => [k, { count: info.count, unique_bots: info.bots.size }])
-          ),
-          by_lang: langStats,
-          top_insights: Object.entries(slugVisits)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 50)
-            .map(([slug, info]) => {
-              const { region, industry } = extractSlugMeta(slug)
-              return {
-                slug,
-                title: titleMap[slug] || slug,
-                visits: info.count,
-                unique_bots: info.bots.size,
-                region: REGION_LABEL[region] || region,
-                industry,
-                lang: langMap[slug] || 'zh',
-              }
-            }),
-          generated_at: new Date().toISOString(),
-        }
-        break
-      }
-
       default:
         return NextResponse.json(
-          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, session-count, journey, spider-web, daily, insight-categories' },
+          { error: 'Invalid view. Use: summary, live-summary, bots, pages, sessions, journey, spider-web, daily' },
           { status: 400 }
         )
     }

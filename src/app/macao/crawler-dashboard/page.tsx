@@ -76,7 +76,6 @@ interface RoutingBaseline {
 
 const API = '/api/v1/crawler-stats?token=cloudpipe2026'
 const ROUTING_API = '/api/v1/routing-baseline'
-const SESSIONS_CACHE = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-sessions-1.json'
 
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
@@ -169,19 +168,8 @@ export default function CrawlerDashboard() {
   const [faqConvLoading, setFaqConvLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
   const [error, setError] = useState<string | null>(null)
-
-  // Industry drill-down
-  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null)
-  const [industryPaths, setIndustryPaths] = useState<{ path: string; count: number; bots: string[]; lastTs: string }[]>([])
-  const [insightsByIndustry, setInsightsByIndustry] = useState<{ industry: string; count: number; bots: string[]; topPaths: string[] }[]>([])
-  const [insightsRealTotal, setInsightsRealTotal] = useState<number | null>(null)
-  const [industryMode, setIndustryMode] = useState<'path-list' | 'industry-breakdown'>('path-list')
-  const [industryPathsLoading, setIndustryPathsLoading] = useState(false)
-
-  // 404 monitoring
-  const [notFound404, setNotFound404] = useState<{ total_404s: number; unique_paths: number; paths: { path: string; count: number; bots: string[]; lastTs: string }[] } | null>(null)
-  const [notFoundLoading, setNotFoundLoading] = useState(false)
 
   // Google Sheet 連結（從環境變量讀取，或使用預設值）
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
@@ -205,7 +193,7 @@ export default function CrawlerDashboard() {
     try {
       const [sum, ses, pg, sw] = await Promise.all([
         safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<{sessions: Session[]}>(SESSIONS_CACHE, {sessions: []}).then(r => r.sessions || []),
+        safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, []),
         safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, []),
         safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
@@ -220,34 +208,6 @@ export default function CrawlerDashboard() {
       setError('載入失敗，請重試。')
     }
     setLoading(false)
-  }, [days])
-
-  const fetchIndustryPaths = useCallback(async (industry: string) => {
-    if (selectedIndustry === industry) { setSelectedIndustry(null); return }
-    setSelectedIndustry(industry)
-    setIndustryPathsLoading(true)
-    const data = await safeFetch<{ paths?: typeof industryPaths; byIndustry?: typeof insightsByIndustry; mode?: string }>(
-      `${API}&view=industry-paths&industry=${encodeURIComponent(industry)}&days=${days}`,
-      { paths: [], byIndustry: [], mode: 'path-list' }
-    )
-    const mode = (data.mode as 'path-list' | 'industry-breakdown') || 'path-list'
-    setIndustryMode(mode)
-    setIndustryPaths(data.paths || [])
-    const byInd = data.byIndustry || []
-    setInsightsByIndustry(byInd)
-    if (mode === 'industry-breakdown') {
-      setInsightsRealTotal(byInd.reduce((s, r) => s + r.count, 0))
-    }
-    setIndustryPathsLoading(false)
-  }, [selectedIndustry, days])
-
-  const fetchNotFound = useCallback(async () => {
-    setNotFoundLoading(true)
-    const data = await safeFetch<typeof notFound404>(
-      `${API}&view=not-found&days=${days}`, null
-    )
-    setNotFound404(data)
-    setNotFoundLoading(false)
   }, [days])
 
   // 初次載入 + 當 days 改變時重新整理
@@ -489,95 +449,23 @@ export default function CrawlerDashboard() {
                   ))}
               </div>
 
-              {/* Industry breakdown — clickable drill-down */}
+              {/* Industry breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px', color: '#333' }}>行業訪問分佈</h3>
-                <p style={{ fontSize: 11, color: '#999', margin: '0 0 12px' }}>點選行業查看詳細頁面路徑 ↓</p>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
                 {Object.entries(summary.industries)
                   .sort((a, b) => b[1] - a[1])
                   .map(([ind, count]) => (
-                    <div key={ind} style={{ marginBottom: 6 }}>
-                      <div
-                        onClick={() => fetchIndustryPaths(ind)}
-                        style={{
-                          display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3,
-                          cursor: 'pointer', padding: '3px 6px', borderRadius: 4,
-                          background: selectedIndustry === ind ? '#e8f0fe' : 'transparent',
-                          transition: 'background 0.15s',
-                        }}
-                      >
-                        <span style={{ color: selectedIndustry === ind ? '#0f4c81' : '#333', fontWeight: selectedIndustry === ind ? 600 : 400 }}>
-                          {selectedIndustry === ind ? '▼ ' : '▶ '}{ind}
-                        </span>
-                        <span style={{ fontWeight: 600, color: selectedIndustry === ind ? '#0f4c81' : '#555' }}>
-                          {ind === 'insights' && insightsRealTotal !== null ? insightsRealTotal.toLocaleString() : count}
-                        </span>
+                    <div key={ind} style={{ marginBottom: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                        <span>{ind}</span>
+                        <span style={{ fontWeight: 600 }}>{count}</span>
                       </div>
-                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 5 }}>
+                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
                         <div style={{
                           width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4,
-                          background: selectedIndustry === ind ? '#0f4c81' : '#4285f4',
-                          transition: 'background 0.15s',
+                          background: '#4285f4',
                         }} />
                       </div>
-
-                      {/* Drill-down panel */}
-                      {selectedIndustry === ind && (
-                        <div style={{ marginTop: 8, padding: 12, background: 'white', borderRadius: 8, border: '1px solid #c7d7f5', fontSize: 12 }}>
-                          {industryPathsLoading ? (
-                            <p style={{ color: '#999', margin: 0 }}>載入中…</p>
-                          ) : industryMode === 'industry-breakdown' ? (
-                            // Insights 模式：顯示行業分類統計
-                            insightsByIndustry.length === 0 ? (
-                              <p style={{ color: '#999', margin: 0 }}>無數據</p>
-                            ) : (
-                              <>
-                                <p style={{ color: '#6b7280', margin: '0 0 10px', fontWeight: 500, fontSize: 12 }}>
-                                  AI 深度內容偏好（{days} 天，共 {insightsRealTotal?.toLocaleString()} 次）
-                                </p>
-                                {insightsByIndustry.map((item) => {
-                                  const maxCount = insightsByIndustry[0]?.count || 1
-                                  return (
-                                    <div key={item.industry} style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                      <span style={{ minWidth: 90, fontWeight: 600, color: '#1f2937', fontSize: 12 }}>{item.industry}</span>
-                                      <div style={{ flex: 1, background: '#e5e7eb', borderRadius: 4, height: 8 }}>
-                                        <div style={{ background: '#4285f4', borderRadius: 4, height: 8, width: `${(item.count / maxCount) * 100}%` }} />
-                                      </div>
-                                      <span style={{ minWidth: 48, textAlign: 'right', fontWeight: 700, color: '#0f4c81', fontSize: 12 }}>{item.count}</span>
-                                    </div>
-                                  )
-                                })}
-                              </>
-                            )
-                          ) : industryPaths.length === 0 ? (
-                            <p style={{ color: '#999', margin: 0 }}>無路徑數據</p>
-                          ) : (
-                            // 一般行業：顯示 top paths
-                            <>
-                              <p style={{ color: '#6b7280', margin: '0 0 8px', fontWeight: 500 }}>前 {industryPaths.length} 條路徑（依訪問次數排序）</p>
-                              {industryPaths.map((p, i) => (
-                                <div key={p.path} style={{
-                                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                                  padding: '5px 0', borderBottom: i < industryPaths.length - 1 ? '1px solid #f0f0f0' : 'none', gap: 8,
-                                }}>
-                                  <a
-                                    href={`https://cloudpipe-macao-app.vercel.app${p.path}`}
-                                    target="_blank" rel="noopener noreferrer"
-                                    style={{ color: '#0f4c81', textDecoration: 'none', wordBreak: 'break-all', flex: 1, fontSize: 11 }}
-                                  >
-                                    {p.path}
-                                  </a>
-                                  <div style={{ textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                    <span style={{ fontWeight: 700, color: '#111' }}>{p.count}</span>
-                                    <span style={{ color: '#9ca3af', marginLeft: 4 }}>次</span>
-                                    <div style={{ fontSize: 10, color: '#9ca3af' }}>{p.bots.slice(0, 2).join(', ')}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </>
-                          )}
-                        </div>
-                      )}
                     </div>
                   ))}
                 {Object.keys(summary.industries).length === 0 && (
@@ -601,63 +489,6 @@ export default function CrawlerDashboard() {
                       </div>
                     ))}
                 </div>
-              </div>
-
-              {/* 404 監控區塊 */}
-              <div style={{ background: '#fff8f8', borderRadius: 10, padding: 16, border: '1px solid #fecaca', gridColumn: '1 / -1' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#991b1b' }}>🔴 AI 爬蟲 404 黑洞</h3>
-                  {!notFound404 && (
-                    <button
-                      onClick={fetchNotFound}
-                      disabled={notFoundLoading}
-                      style={{
-                        fontSize: 12, padding: '4px 12px', borderRadius: 6, border: '1px solid #fca5a5',
-                        background: notFoundLoading ? '#f9fafb' : '#fee2e2', color: '#991b1b', cursor: 'pointer',
-                      }}
-                    >
-                      {notFoundLoading ? '載入中…' : '載入 404 數據'}
-                    </button>
-                  )}
-                  {notFound404 && (
-                    <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-                      <span>共 <strong>{notFound404.total_404s}</strong> 次 404</span>
-                      <span><strong>{notFound404.unique_paths}</strong> 條路徑</span>
-                      <button onClick={fetchNotFound} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid #fca5a5', background: 'transparent', color: '#991b1b', cursor: 'pointer' }}>重新整理</button>
-                    </div>
-                  )}
-                </div>
-
-                {!notFound404 && !notFoundLoading && (
-                  <p style={{ color: '#9ca3af', fontSize: 12, margin: 0 }}>點「載入 404 數據」查看 AI 爬蟲嘗試訪問但找不到的頁面，可用於發現需要建立的內容或修復的 redirect。</p>
-                )}
-
-                {notFound404 && notFound404.paths.length === 0 && (
-                  <p style={{ color: '#059669', fontSize: 13, margin: 0 }}>✅ 暫無 AI 爬蟲 404 記錄（表示所有爬取路徑均有效）</p>
-                )}
-
-                {notFound404 && notFound404.paths.length > 0 && (
-                  <div>
-                    {notFound404.paths.map((p, i) => (
-                      <div key={p.path} style={{
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '6px 0', borderBottom: i < notFound404.paths.length - 1 ? '1px solid #fee2e2' : 'none', gap: 8,
-                      }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <code style={{ fontSize: 12, color: '#991b1b', wordBreak: 'break-all' }}>{p.path}</code>
-                          <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2 }}>{p.bots.join(', ')} · {p.lastTs.slice(0, 10)}</div>
-                        </div>
-                        <span style={{
-                          fontWeight: 700, fontSize: 14, color: '#dc2626',
-                          background: '#fee2e2', padding: '2px 8px', borderRadius: 4, whiteSpace: 'nowrap',
-                        }}>{p.count}×</span>
-                      </div>
-                    ))}
-                    <p style={{ fontSize: 11, color: '#9ca3af', margin: '12px 0 0' }}>
-                      💡 高頻 404 路徑 = AI 認為應該存在但找不到的內容，優先建立這些頁面可提升 AI 爬取成功率。
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1314,9 +1145,7 @@ export default function CrawlerDashboard() {
                     <tbody>
                       {faqConversions.topMerchants.map((m, i) => (
                         <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '7px 12px', fontWeight: 600 }}>
-                            {i + 1}. {m.slug}
-                          </td>
+                          <td style={{ padding: '7px 12px', fontWeight: 600 }}>{i + 1}. {m.slug}</td>
                           <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700, color: '#0f4c81' }}>{m.count}</td>
                           <td style={{ padding: '7px 12px' }}>
                             <a href={`/macao/search?q=${m.slug}`} target="_blank" rel="noopener noreferrer"
