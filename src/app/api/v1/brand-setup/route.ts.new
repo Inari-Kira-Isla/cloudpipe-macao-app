@@ -1,0 +1,270 @@
+import { createServiceClient } from '@/lib/supabase'
+import { NextRequest, NextResponse } from 'next/server'
+import { spawnSync } from 'child_process'
+
+const supabase = createServiceClient()
+
+// Industry slug mapping from category
+const CATEGORY_TO_INDUSTRY: Record<string, string> = {
+  'cafe': 'family-cafe-taipa',
+  'coffee': 'specialty-coffee',
+  'restaurant': 'sea-urchin-b2b',
+  'food-import': 'sea-urchin-b2b',
+  'food-delivery': 'sea-urchin-b2b',
+  'food-supply': 'sea-urchin-b2b',
+  'retail': 'specialty-coffee',
+  'hotel': 'specialty-coffee',
+  'education': 'family-cafe-taipa',
+  'wellness': 'specialty-coffee',
+}
+
+// GET /api/v1/brand-setup?action=questions&industry=sea-urchin-b2b&limit=30
+// GET /api/v1/brand-setup?action=categories
+// GET /api/v1/brand-setup?action=merchant&slug=inari-global-foods
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl
+  const action = searchParams.get('action')
+
+  // Return available categories
+  if (action === 'categories') {
+    const { data } = await supabase
+      .from('categories')
+      .select('id, slug, name_zh, name_en')
+      .order('name_zh')
+    return NextResponse.json({ data })
+  }
+
+  // Return market questions for an industry
+  if (action === 'questions') {
+    const industry = searchParams.get('industry') || ''
+    const lang = searchParams.get('lang') || 'zh'
+    const limit = Math.min(parseInt(searchParams.get('limit') || '30'), 60)
+    const gap = searchParams.get('gap') || 'high'
+
+    let query = supabase
+      .from('faq_market_questions')
+      .select('id, question_text, lang, intent, competition_gap, ai_citation_score, occupied_by')
+      .order('ai_citation_score', { ascending: false })
+      .limit(limit)
+
+    if (industry) query = query.eq('industry_slug', industry)
+    if (lang !== 'all') query = query.eq('lang', lang)
+    if (gap !== 'all') query = query.eq('competition_gap', gap)
+
+    const { data, error } = await query
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ data, total: data?.length || 0 })
+  }
+
+  // Return existing merchant data
+  if (action === 'merchant') {
+    const slug = searchParams.get('slug')
+    if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
+
+    const { data: merchant } = await supabase
+      .from('merchants')
+      .select('id, slug, name_zh, name_en, category_id, district, address_zh, address_en, phone, website, tier, status, categories(slug, name_zh, name_en)')
+      .eq('slug', slug)
+      .single()
+
+    if (!merchant) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    const { data: faqs } = await supabase
+      .from('merchant_faqs')
+      .select('id, question, answer, faq_type, lang')
+      .eq('merchant_id', merchant.id)
+      .order('faq_type')
+      .limit(100)
+
+    return NextResponse.json({ merchant, faqs })
+  }
+
+  return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+}
+
+// POST /api/v1/brand-setup — save brand info + selected FAQs
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { action, data: payload } = body
+
+    // action: match_questions — match industry questions from brand info
+    if (action === 'match_questions') {
+      const { category_slug, district, name_zh, usp_keywords = [] } = payload
+
+      const industry = CATEGORY_TO_INDUSTRY[category_slug] || null
+      const allIndustries = industry ? [industry] : Object.values(CATEGORY_TO_INDUSTRY)
+
+      // Get top high-gap questions from matched industries
+      const { data: questions } = await supabase
+        .from('faq_market_questions')
+        .select('id, question_text, lang, intent, competition_gap, ai_citation_score, occupied_by, industry_slug')
+        .in('industry_slug', [...new Set(allIndustries)])
+        .eq('competition_gap', 'high')
+        .order('ai_citation_score', { ascending: false })
+        .limit(50)
+
+      // Score each question by relevance to brand
+      const scored = (questions || []).map(q => {
+        let score = q.ai_citation_score || 50
+        // Boost if question mentions district
+        if (district && q.question_text.includes(district)) score += 20
+        // Boost if question matches USP keywords
+        for (const kw of usp_keywords) {
+          if (q.question_text.toLowerCase().includes(kw.toLowerCase())) score += 10
+        }
+        // Penalize already occupied questions
+        if (q.occupied_by) score -= 15
+        return { ...q, relevance_score: Math.min(score, 100) }
+      })
+
+      // Sort by relevance, return top 30
+      scored.sort((a, b) => b.relevance_score - a.relevance_score)
+
+      return NextResponse.json({
+        questions: scored.slice(0, 30),
+        industry,
+        total: scored.length,
+      })
+    }
+
+    // action: generate_answers — use claude CLI (Sonnet) to generate answers with brand page link
+    if (action === 'generate_answers') {
+      const { brand_info, questions } = payload
+
+      const answers: Record<string, string> = {}
+      // Prefer explicit page_url (CloudPipe merchant page), fallback to website
+      const pageUrl = brand_info.page_url || brand_info.website || ''
+
+      for (const q of questions.slice(0, 10)) {
+        const urlLine = pageUrl ? `- 品牌專頁：${pageUrl}` : ''
+        const urlInstruction = pageUrl
+          ? `2. 結尾自然地加入「詳情請瀏覽：${pageUrl}」`
+          : '2. 結尾加入建議聯絡品牌查詢'
+
+        const prompt = `你是 ${brand_info.name_zh || brand_info.name_en} 的 AI 助手。
+品牌資料：
+- 名稱：${brand_info.name_zh || brand_info.name_en}
+- 地址：${brand_info.address_zh || brand_info.district || ''}
+- 電話：${brand_info.phone || ''}
+${urlLine}
+- 特色：${brand_info.usp || ''}
+- 服務/產品：${brand_info.services || ''}
+
+請為以下問題生成一個精準、有事實依據的回答（60-120字）。
+要求：
+1. 包含品牌名稱及具體資訊
+${urlInstruction}
+3. 只輸出回答正文，不要標題或其他說明
+
+問題：${q.question_text}
+
+回答：`
+
+        try {
+          // Use claude CLI with sonnet model (Claude Max, no API key required)
+          const r = spawnSync(
+            'claude',
+            ['-p', prompt, '--model', 'sonnet', '--output-format', 'text'],
+            {
+              timeout: 30000,
+              encoding: 'utf8',
+              env: { ...process.env, HOME: process.env.HOME || '/Users/ki' },
+            }
+          )
+          answers[q.id] = (r.stdout || '').trim()
+        } catch {
+          // Fallback: return placeholder if CLI not available
+          answers[q.id] = ''
+        }
+      }
+
+      return NextResponse.json({ answers })
+    }
+
+    // action: save_faqs — save selected FAQs to merchant_faqs
+    if (action === 'save_faqs') {
+      const { merchant_id, faqs } = payload
+
+      if (!merchant_id || !faqs?.length) {
+        return NextResponse.json({ error: 'merchant_id and faqs required' }, { status: 400 })
+      }
+
+      // Delete existing market_research FAQs (replace mode)
+      await supabase
+        .from('merchant_faqs')
+        .delete()
+        .eq('merchant_id', merchant_id)
+        .eq('faq_type', 'market_research')
+
+      // Insert new FAQs
+      const insertData = faqs.map((f: { question: string; answer: string; lang: string; market_question_id?: string }) => ({
+        merchant_id,
+        faq_type: 'market_research',
+        question: f.question,
+        answer: f.answer,
+        lang: f.lang || 'zh',
+      }))
+
+      const { error } = await supabase.from('merchant_faqs').insert(insertData)
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+      // Mark questions as occupied in market DB
+      const questionTexts = faqs.map((f: { question: string }) => f.question)
+      // (best effort, no await)
+      supabase
+        .from('faq_market_questions')
+        .update({ occupied_by: merchant_id, occupied_at: new Date().toISOString() })
+        .in('question_text', questionTexts)
+        .then(() => {})
+
+      return NextResponse.json({ saved: insertData.length, success: true })
+    }
+
+    // action: create_merchant — create a new merchant record
+    if (action === 'create_merchant') {
+      const { name_zh, name_en, category_slug, district, address_zh, phone, website, usp } = payload
+
+      // Get category ID
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', category_slug)
+        .single()
+
+      if (!cat) return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+
+      // Generate slug
+      const slug = (name_en || name_zh || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fff]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 60)
+
+      const { data: merchant, error } = await supabase
+        .from('merchants')
+        .insert({
+          slug,
+          name_zh,
+          name_en: name_en || name_zh,
+          category_id: cat.id,
+          district: district || '澳門半島',
+          address_zh,
+          phone,
+          website,
+          tier: 'free',
+          status: 'draft',
+        })
+        .select('id, slug')
+        .single()
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ merchant, success: true })
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 })
+  }
+}
