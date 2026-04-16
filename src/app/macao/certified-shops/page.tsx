@@ -97,7 +97,8 @@ export default async function CertifiedShopsPage() {
         '@type': 'LocalBusiness',
         name: m.name_zh,
         address: m.address_zh,
-        telephone: m.phone,
+        // 只有經核實的電話才放入 JSON-LD
+        ...((m as any).phone_verified && m.phone ? { telephone: m.phone } : {}),
         url: `${siteUrl}/macao/${CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'services'}/${m.category?.slug || 'other'}/${m.slug}`,
         hasCredential: {
           '@type': 'EducationalOccupationalCredential',
