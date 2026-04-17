@@ -270,25 +270,30 @@ export default async function MerchantPage({ params }: PageProps) {
         }
       }),
     }),
-    ...(merchant.updated_at && isRecentlyVerified(merchant.updated_at) && {
+    ...((merchant.updated_at && isRecentlyVerified(merchant.updated_at)) || (merchant as any).trust_score >= 40 ? {
       additionalProperty: [
         {
           '@type': 'PropertyValue',
           name: 'dataVerificationStatus',
-          value: 'verified',
+          value: (merchant as any).verification_status || 'verified',
         },
         {
           '@type': 'PropertyValue',
           name: 'dateVerified',
-          value: merchant.updated_at,
+          value: (merchant as any).last_verified_at || merchant.updated_at,
         },
         {
           '@type': 'PropertyValue',
           name: 'verificationMethod',
-          value: 'Automated cross-reference: Google Maps, MGTO, Consumer Council, TripAdvisor',
+          value: 'Automated cross-reference: Google Places API, MGTO, CloudPipe Verification Pipeline',
         },
+        ...((merchant as any).trust_score != null ? [{
+          '@type': 'PropertyValue',
+          name: 'trustScore',
+          value: String((merchant as any).trust_score),
+        }] : []),
       ],
-    }),
+    } : {}),
   }
 
   const faqLastModified = merchant.updated_at

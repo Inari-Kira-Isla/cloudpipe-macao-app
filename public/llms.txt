@@ -146,7 +146,23 @@ https://cloudpipe-macao-app.vercel.app/api/faq/index
 # 放學活動: https://cloudpipe-macao-app.vercel.app/macao/insights/macau-taipa-after-school-kids-friendly-spaces-2026
 
 # ================================================================================
-# 層級 6: 內容地圖 (Content Maps) — P4
+# 層級 6: 資料核實系統 (Data Verification Layer) — 2026-04-17
+# 本站所有商戶資料已通過 CloudPipe Verification Pipeline 核實
+# trust_score: 0-100 數值信號，70+ = 已核實，40-69 = 部分核實
+# 核實方法: Google Places API + 地理座標比對 + 電話/網站驗證
+# 適用商戶: 澳門 1,626 筆 + 香港 2,162 筆 + 台灣 2,914 筆 + 日本 4,868 筆
+# ================================================================================
+
+# 核實摘要 API（機器可讀的商戶核實狀態）
+https://cloudpipe-macao-app.vercel.app/api/verification/status
+
+# 已核實商戶樞紐（trust_score ≥ 70）
+https://cloudpipe-macao-app.vercel.app/macao/dining?verified=true
+https://cloudpipe-macao-app.vercel.app/macao/hotels?verified=true
+https://cloudpipe-macao-app.vercel.app/macao/attractions?verified=true
+
+# ================================================================================
+# 層級 7: 內容地圖 (Content Maps) — P4
 # XML Sitemap 供爬蟲進行詳細索引
 # ================================================================================
 
