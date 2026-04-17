@@ -207,28 +207,15 @@ export async function GET(request: NextRequest) {
       }
 
       case 'spider-web': {
-        if (days <= 30) {
+        if (days === 30) {
           const cached = await readCache('crawler-stats-spider-web-30') as any
           if (cached) {
-            // Scale site totals proportionally for sub-30d views
-            if (days < 30) {
-              const ratio = days / 30
-              const scaledSites = (cached.sites || []).map((s: any) => ({
-                ...s,
-                total: Math.round((s.total || 0) * ratio),
-                spider_web: Math.round((s.spider_web || 0) * ratio),
-              }))
-              return NextResponse.json(
-                { ...cached, sites: scaledSites, period: { since, days } },
-                { headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED-SCALED' } },
-              )
-            }
             return NextResponse.json(cached, {
               headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
             })
           }
         }
-        // days > 30: live query
+        // days != 30: live query with actual period data
         const { data: swRows } = await supabase
           .from('crawler_visits')
           .select('site, bot_name, page_type, referer')
