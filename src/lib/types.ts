@@ -30,8 +30,12 @@ export interface Merchant {
   category_id?: string
   category?: Category
   phone?: string
-  email?: string
+  phone_verified?: boolean
+  phone_source?: string
   website?: string
+  website_alive?: boolean
+  google_verified_at?: string
+  email?: string
   address_zh?: string
   address_en?: string
   district?: string

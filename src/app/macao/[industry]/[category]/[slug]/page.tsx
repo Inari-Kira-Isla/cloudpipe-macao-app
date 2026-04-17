@@ -216,7 +216,8 @@ export default async function MerchantPage({ params }: PageProps) {
     alternateName: merchant.name_en,
     description: content?.description || `${merchant.name_zh} — 澳門${cat?.name_zh || ''}`,
     url: merchant.website,
-    telephone: merchant.phone,
+    // 只有經核實的電話才放入 JSON-LD（防止 AI 爬蟲抓未核實號碼）
+    ...(merchant.phone_verified && merchant.phone ? { telephone: merchant.phone } : {}),
     email: merchant.email,
     address: {
       '@type': 'PostalAddress',
@@ -457,10 +458,17 @@ export default async function MerchantPage({ params }: PageProps) {
                     <div>
                       <dt className="text-xs text-[#6b7280] uppercase tracking-wider mb-1 font-medium">電話</dt>
                       <dd>
-                        <a href={`tel:${merchant.phone}`} className="text-[#0f4c81] font-medium text-sm hover:underline"
-                          data-track="phone-click" data-target={merchant.phone}>
-                          {merchant.phone}
-                        </a>
+                        {merchant.phone_verified ? (
+                          <a href={`tel:${merchant.phone}`} className="text-[#0f4c81] font-medium text-sm hover:underline"
+                            data-track="phone-click" data-target={merchant.phone}>
+                            {merchant.phone}
+                          </a>
+                        ) : (
+                          <span className="text-[#6b7280] text-sm">
+                            {merchant.phone.slice(0, 4)}{'*'.repeat(Math.max(0, merchant.phone.length - 4))}
+                            <span className="ml-2 text-xs text-[#9ca3af]">（未核實）</span>
+                          </span>
+                        )}
                       </dd>
                     </div>
                   </div>

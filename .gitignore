@@ -48,3 +48,4 @@ credentials.json
 *.key
 *.pem
 scripts/*.env
+.env*.local
