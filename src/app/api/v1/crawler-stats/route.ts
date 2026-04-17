@@ -77,9 +77,9 @@ export async function GET(request: NextRequest) {
     switch (view) {
       // ── Pre-computed views (instant, no heavy queries) ──────────────────
       case 'summary': {
-        // 30-day: use precomputed cache (instant)
-        if (days === 30) {
-          const cached = await readCache('crawler-stats-summary-30') as any
+        // Precomputed windows (instant, no DB load)
+        if ([7, 30, 90].includes(days)) {
+          const cached = await readCache(`crawler-stats-summary-${days}`) as any
           if (cached) {
             return NextResponse.json(cached, {
               headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
@@ -136,14 +136,23 @@ export async function GET(request: NextRequest) {
       }
 
       case 'daily': {
-        if (days <= 30) {
-          const cached = await readCache('crawler-stats-daily-30') as any
+        // Precomputed windows: use exact cache (no slicing needed)
+        if ([7, 30, 90].includes(days)) {
+          const cached = await readCache(`crawler-stats-daily-${days}`) as any
           if (cached) {
-            const dailyArr: unknown[] = cached.daily || []
-            const sliced = days < 30 ? dailyArr.slice(-days) : dailyArr
+            return NextResponse.json(cached, {
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
+            })
+          }
+        }
+        // days=1 or cache miss: slice from 7-day cache
+        if (days <= 7) {
+          const cached = await readCache('crawler-stats-daily-7') as any
+          if (cached) {
+            const sliced = (cached.daily || []).slice(-days)
             return NextResponse.json(
               { ...cached, daily: sliced, period: { since, days } },
-              { headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' } },
+              { headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED-SLICE' } },
             )
           }
         }
@@ -203,16 +212,14 @@ export async function GET(request: NextRequest) {
 
       // ── Live aggregated summary — single indexed RPC call instead of 6 parallel full scans ───
       case 'live-summary': {
-        const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
-
         // Use get_crawler_summary SQL function (1 indexed scan vs 6 full table scans)
         // Falls back to lightweight count-only if function not yet deployed
         const { data: rpcData, error: rpcError } = await supabase
-          .rpc('get_crawler_summary', { since_ts: since30 })
+          .rpc('get_crawler_summary', { since_ts: since })
 
         if (!rpcError && rpcData && rpcData.total_visits > 0) {
           result = {
-            period: { since: since30, days: 30 },
+            period: { since, days },
             total_visits: rpcData.total_visits || 0,
             today_visits: rpcData.today_visits || 0,
             unique_bots: rpcData.unique_bots || 0,
@@ -235,10 +242,10 @@ export async function GET(request: NextRequest) {
             { count: todayCount },
             { data: siteData },
           ] = await Promise.all([
-            supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since30).order('ts', { ascending: false }).limit(1000),
-            supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since30),
+            supabase.from('crawler_visits').select('bot_name, bot_owner').gte('ts', since).order('ts', { ascending: false }).limit(1000),
+            supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', since),
             supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).gte('ts', todayStart),
-            supabase.from('crawler_visits').select('site').gte('ts', since30).order('ts', { ascending: false }).limit(1000),
+            supabase.from('crawler_visits').select('site').gte('ts', since).order('ts', { ascending: false }).limit(1000),
           ])
           const bots: Record<string, { count: number; owner: string }> = {}
           for (const r of botData || []) {
@@ -259,7 +266,7 @@ export async function GET(request: NextRequest) {
             const { data: page } = await supabase
               .from('crawler_visits')
               .select('ts, bot_owner')
-              .gte('ts', since30)
+              .gte('ts', since)
               .order('ts', { ascending: false })
               .range(dboOffset, dboOffset + 999)
             if (!page || page.length === 0) break
@@ -275,7 +282,7 @@ export async function GET(request: NextRequest) {
             dboOffset += 1000
           }
           result = {
-            period: { since: since30, days: 30 },
+            period: { since: since, days: 30 },
             total_visits: totalCount || 0,
             today_visits: todayCount || 0,
             unique_bots: Object.keys(bots).length,
@@ -298,7 +305,7 @@ export async function GET(request: NextRequest) {
             const { data: page } = await supabase
               .from('crawler_visits')
               .select('ts, bot_owner')
-              .gte('ts', since30)
+              .gte('ts', since)
               .order('ts', { ascending: false })
               .range(offset, offset + pageSize - 1)
             if (!page || page.length === 0) break
