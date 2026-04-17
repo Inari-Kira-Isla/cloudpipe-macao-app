@@ -173,24 +173,81 @@ export async function GET(request: NextRequest) {
       }
 
       case 'daily': {
-        const cached = await readCache('crawler-stats-daily-30')
-        if (cached) {
-          return NextResponse.json(cached, {
-            headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
-          })
+        if (days <= 30) {
+          const cached = await readCache('crawler-stats-daily-30') as any
+          if (cached) {
+            const dailyArr: unknown[] = cached.daily || []
+            const sliced = days < 30 ? dailyArr.slice(-days) : dailyArr
+            return NextResponse.json(
+              { ...cached, daily: sliced, period: { since, days } },
+              { headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' } },
+            )
+          }
         }
-        result = { error: 'Pre-computed cache not available', note: 'Run crawler_stats_precompute.py' }
+        // days > 30: live query grouped by date
+        const { data: visitRows } = await supabase
+          .from('crawler_visits')
+          .select('ts, bot_owner')
+          .gte('ts', since)
+          .order('ts', { ascending: true })
+          .limit(50000)
+        const dailyMap: Record<string, { total: number; by_owner: Record<string, number> }> = {}
+        for (const r of visitRows || []) {
+          const d = (r.ts as string).slice(0, 10)
+          if (!dailyMap[d]) dailyMap[d] = { total: 0, by_owner: {} }
+          dailyMap[d].total++
+          const owner = r.bot_owner || 'Unknown'
+          dailyMap[d].by_owner[owner] = (dailyMap[d].by_owner[owner] || 0) + 1
+        }
+        const dailyArr = Object.entries(dailyMap)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, v]) => ({ date, total: v.total, by_owner: v.by_owner }))
+        result = { period: { since, days }, daily: dailyArr }
         break
       }
 
       case 'spider-web': {
-        const cached = await readCache('crawler-stats-spider-web-30')
-        if (cached) {
-          return NextResponse.json(cached, {
-            headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
-          })
+        if (days <= 30) {
+          const cached = await readCache('crawler-stats-spider-web-30') as any
+          if (cached) {
+            // Scale site totals proportionally for sub-30d views
+            if (days < 30) {
+              const ratio = days / 30
+              const scaledSites = (cached.sites || []).map((s: any) => ({
+                ...s,
+                total: Math.round((s.total || 0) * ratio),
+                spider_web: Math.round((s.spider_web || 0) * ratio),
+              }))
+              return NextResponse.json(
+                { ...cached, sites: scaledSites, period: { since, days } },
+                { headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED-SCALED' } },
+              )
+            }
+            return NextResponse.json(cached, {
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
+            })
+          }
         }
-        result = { error: 'Pre-computed cache not available', note: 'Run crawler_stats_precompute.py' }
+        // days > 30: live query
+        const { data: swRows } = await supabase
+          .from('crawler_visits')
+          .select('site, bot_name, page_type, referer')
+          .gte('ts', since)
+          .limit(50000)
+        const siteAgg: Record<string, { total: number; bots: Set<string>; spider_web: number }> = {}
+        for (const r of swRows || []) {
+          const s = r.site || 'cloudpipe-macao-app'
+          if (!siteAgg[s]) siteAgg[s] = { total: 0, bots: new Set(), spider_web: 0 }
+          siteAgg[s].total++
+          if (r.bot_name) siteAgg[s].bots.add(r.bot_name)
+          if (r.page_type === 'spider-web' && r.referer) siteAgg[s].spider_web++
+        }
+        result = {
+          period: { since, days },
+          sites: Object.entries(siteAgg)
+            .sort(([, a], [, b]) => b.total - a.total)
+            .map(([site, v]) => ({ site, total: v.total, unique_bots: v.bots.size, spider_web: v.spider_web })),
+        }
         break
       }
 
