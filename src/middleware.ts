@@ -43,6 +43,15 @@ function getPageType(path: string): string {
   return 'page'
 }
 
+function getIndustryCategory(path: string): { industry: string | null; category: string | null } {
+  if (!path.startsWith('/macao/')) return { industry: null, category: null }
+  const parts = path.replace(/^\/macao\//, '').split('/').filter(Boolean)
+  if (parts.length === 0) return { industry: null, category: null }
+  if (parts[0] === 'insights') return { industry: 'insights', category: null }
+  if (parts[0] === 'faqs') return { industry: null, category: null }
+  return { industry: parts[0] || null, category: parts[1] || null }
+}
+
 async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
   // Extract merchant slug from path: /macao/{industry}/{category}/{slug}
   const merchantMatch = path.match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
@@ -71,12 +80,15 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
   const today = new Date().toISOString().slice(0, 10)
   const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
   const sessionId = `mw-${bot.name}-${today}`
+  const { industry, category } = getIndustryCategory(path)
   const row = {
     bot_name: bot.name,
     bot_owner: bot.owner,
     path,
     site: 'cloudpipe-macao-app',
     page_type: getPageType(path),
+    industry,
+    category,
     session_id: sessionId,
     ua_raw: ua.slice(0, 200),
     ts: new Date().toISOString(),
