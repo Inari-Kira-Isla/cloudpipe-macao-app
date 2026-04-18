@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { BRAND_CONFIGS } from '@/lib/brand-visibility'
 import type { BrandVisibilityData } from '@/lib/brand-visibility'
 import BrandOpsTab from '@/components/BrandOpsTab'
+import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
 
 const PASSWORD = 'cloudpipe2026'
 
@@ -515,6 +516,9 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             <strong>生態系運作機制:</strong> 每日 03:00 UTC 自動生成 5 篇品牌旗艦 Insight → 03:30 圖譜深化（Sections + FAQ + Answer Hub）→ 每週一雙向連結重建 → 每月計劃檢視 → AI Bot 自然爬取 → 引用率提升
           </div>
         </div>
+
+        {/* ═══ 品牌知識圖譜 ═══ */}
+        {slug && <KnowledgeGraphBlock slug={slug} />}
 
         {/* ═══ 同業競品比較 ═══ */}
         {citation && citation.competitors && (
