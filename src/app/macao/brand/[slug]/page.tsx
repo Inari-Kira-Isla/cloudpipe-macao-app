@@ -107,7 +107,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   if (!authed) {
     return (
       <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafbfc' }}>
-        <div style={{ background: 'white', padding: 40, borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', maxWidth: 400, width: '100%' }}>
+        <div className="brand-pw-box" style={{ background: 'white', padding: 40, borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', maxWidth: 400, width: '100%' }}>
           <h2 style={{ textAlign: 'center', marginBottom: 8, color: '#0f4c81' }}>🔒 {brandConfig.displayName}</h2>
           <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 24, fontSize: 14 }}>AI Visibility Dashboard</p>
           <input
@@ -160,13 +160,13 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   return (
     <main style={{ background: '#fafbfc', minHeight: '100vh' }}>
       {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, #0f4c81, #1a1a2e, #16213e)', color: 'white', padding: '60px 24px 48px' }}>
+      <div className="brand-hero" style={{ background: 'linear-gradient(135deg, #0f4c81, #1a1a2e, #16213e)', color: 'white', padding: '60px 24px 48px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 300 }}>
-              <p style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>CloudPipe AI Visibility Dashboard</p>
-              <h1 style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: 8 }}>{brandConfig.displayName}</h1>
-              <p style={{ fontSize: 16, opacity: 0.8, marginBottom: 16 }}>{brandConfig.description}</p>
+          <div className="brand-hero-row" style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <p className="brand-hero-desc" style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>CloudPipe AI Visibility Dashboard</p>
+              <h1 className="brand-hero-title" style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: 8 }}>{brandConfig.displayName}</h1>
+              <p className="brand-hero-desc" style={{ fontSize: 16, opacity: 0.8, marginBottom: 16 }}>{brandConfig.description}</p>
               <p style={{ fontSize: 14, opacity: 0.6 }}>
                 🕸️ 生態系角色: {brandConfig.ecosystem}
               </p>
@@ -178,7 +178,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             </div>
             {/* Score Circle */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{
+              <div className="brand-score-circle" style={{
                 width: 140, height: 140, borderRadius: '50%',
                 border: `6px solid ${score.gradeColor}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -199,16 +199,16 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
       </div>
 
       {/* Tab switcher */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex' }}>
-          <button onClick={() => setActiveTab('aeo')} style={{
+      <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div className="brand-tab-bar" style={{ maxWidth: 1100, margin: '0 auto', display: 'flex' }}>
+          <button onClick={() => setActiveTab('aeo')} className="brand-tab-btn" style={{
             padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
             background: 'none', color: activeTab === 'aeo' ? '#0f4c81' : '#6b7280',
             borderBottom: activeTab === 'aeo' ? '3px solid #0f4c81' : '3px solid transparent',
           }}>
             📊 AI 能見度
           </button>
-          <button onClick={() => setActiveTab('ops')} style={{
+          <button onClick={() => setActiveTab('ops')} className="brand-tab-btn" style={{
             padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
             background: 'none', color: activeTab === 'ops' ? '#c5a572' : '#6b7280',
             borderBottom: activeTab === 'ops' ? '3px solid #c5a572' : '3px solid transparent',
@@ -219,12 +219,12 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
       </div>
 
       {activeTab === 'ops' && slug && (
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+        <div className="brand-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px' }}>
           <BrandOpsTab slug={slug} brandName={brandConfig.displayName} />
         </div>
       )}
 
-      {activeTab === 'aeo' && <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      {activeTab === 'aeo' && <div className="brand-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
         {/* 4 Dimension Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
           {[

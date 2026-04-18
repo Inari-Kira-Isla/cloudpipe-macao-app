@@ -581,8 +581,48 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
         </div>
       )}
 
+      {/* ── 快速上傳（手機顯眼入口）────────────────────────────────────── */}
+      <div className="ops-upload-area" style={{ ...card, padding: '16px 18px' }}>
+        <div style={{ ...sectionTitle, marginBottom: 12 }}>📤 快速上傳資料</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {[
+            { icon: '📸', label: '圖片/相片', action: () => imageInputRef.current?.click() },
+            { icon: '📄', label: 'PDF/文件', action: () => fileInputRef.current?.click() },
+            { icon: '🔗', label: '加入網頁', action: () => { setUrlType('url'); setShowUrlInput(true); document.querySelector('.brand-ai-section')?.scrollIntoView({ behavior: 'smooth' }) } },
+          ].map(item => (
+            <button
+              key={item.label}
+              onClick={item.action}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 6, padding: '14px 8px', borderRadius: 10,
+                border: '1.5px dashed #d1d5db', background: '#f8fafc',
+                cursor: 'pointer', fontSize: 12, color: '#374151', fontWeight: 500,
+                minHeight: 72,
+              }}
+            >
+              <span style={{ fontSize: 24 }}>{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </div>
+        {attachment && (
+          <div style={{
+            marginTop: 10, padding: '8px 12px', background: '#eff6ff',
+            borderRadius: 8, fontSize: 12, color: '#1d4ed8', display: 'flex',
+            alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span>📎 {attachment.label}</span>
+            <button onClick={() => setAttachment(null)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 16 }}>✕</button>
+          </div>
+        )}
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, marginBottom: 0 }}>
+          上傳後可在下方 AI 助理對話，問題包括「幫我寫 FAQ」「總結這份菜單」
+        </p>
+      </div>
+
       {/* ── 統一 AI 助理 ─────────────────────────────────────────────── */}
-      <div style={{ ...card, marginBottom: 0 }}>
+      <div className="brand-ai-section" style={{ ...card, marginBottom: 0 }}>
         <div style={sectionTitle}>
           🤖 AI 品牌助理
           <span style={{ fontSize: 12, fontWeight: 400, color: '#6b7280', marginLeft: 4 }}>
@@ -594,7 +634,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
         {messages.length === 0 && (
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>快速開始：</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="ops-chat-hints" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {[
                 '分析近期發文表現，哪種 hook 效果最好？',
                 '根據商業目標，建議下週發什麼主題？',
