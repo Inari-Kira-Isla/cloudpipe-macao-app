@@ -96,6 +96,7 @@ export async function GET(request: NextRequest) {
     totalCompetitors: ranked.length,
     competitors: ranked,
     aiSearchData,
+    brandPlatformRanking: aiSearchData?.brandPlatformRanking || null,
     period: { days },
   })
 }
@@ -119,21 +120,29 @@ async function fetchAISearchData(
   brand: any,
   competitors: any[]
 ): Promise<any> {
-  const { data: results } = await supabase
+  const { data: allResults } = await supabase
     .from('ai_search_results')
     .select('*')
     .eq('brand_slug', slug)
     .order('timestamp', { ascending: false })
-    .limit(200)
+    .limit(500)
 
-  if (!results || results.length === 0) {
+  if (!allResults || allResults.length === 0) {
     return null
   }
 
+  // Split into current vs baseline snapshots
+  const results = allResults.filter(r => !r.snapshot_label || r.snapshot_label === 'current')
+  const baselineResults = allResults.filter(r => r.snapshot_label && r.snapshot_label.startsWith('W'))
+
+  // Find all baseline snapshots (W0, W1, W4, etc.)
+  const baselineLabels = [...new Set(baselineResults.map(r => r.snapshot_label))].sort()
+  const latestBaseline = baselineLabels[0] || null  // earliest = W0
+
   // 聚合各競品在各平台的排名及關鍵詞
   const competitorRanks: Record<string, any> = {}
-  const platforms = [...new Set(results.map(r => r.platform))] as string[]
-  const queries = [...new Set(results.map(r => r.query))] as string[]
+  const platforms = [...new Set(allResults.map(r => r.platform))] as string[]
+  const queries = [...new Set(allResults.map(r => r.query))] as string[]
 
   // 構建平台-查詢-關鍵詞映射表（用於分析）
   const keywordMatrix: Record<string, Record<string, string[]>> = {}
@@ -199,12 +208,41 @@ async function fetchAISearchData(
     }
   }
 
+  // Build brand's own platform ranking from W0 baseline
+  const brandW0: Record<string, { position: number; mentioned: boolean; keywords: string[] }> = {}
+  if (latestBaseline) {
+    const brandBaseline = baselineResults.filter(
+      r => r.snapshot_label === latestBaseline && r.competitor_name === brand.displayName
+    )
+    for (const r of brandBaseline) {
+      brandW0[r.platform] = {
+        position: r.position,
+        mentioned: r.mentioned,
+        keywords: r.keywords_extracted || [],
+      }
+    }
+  }
+
+  // Current brand platform rankings (from 'current' snapshot)
+  const brandCurrent: Record<string, { position: number; mentioned: boolean }> = {}
+  const brandCurrentRows = results.filter(r => r.competitor_name === brand.displayName)
+  for (const r of brandCurrentRows) {
+    if (!brandCurrent[r.platform] || new Date(r.timestamp) > new Date(brandCurrent[r.platform] as any)) {
+      brandCurrent[r.platform] = { position: r.position, mentioned: r.mentioned }
+    }
+  }
+
   return {
-    lastUpdated: results[0]?.timestamp,
+    lastUpdated: results[0]?.timestamp || allResults[0]?.timestamp,
     platforms,
     queries,
     competitorRanks,
-    keywordAnalysis: keywordMatrix, // 平台-查詢級別的關鍵詞分析
+    keywordAnalysis: keywordMatrix,
+    brandPlatformRanking: {
+      W0: brandW0,
+      W0Label: latestBaseline,
+      current: brandCurrent,
+    },
   }
 }
 
