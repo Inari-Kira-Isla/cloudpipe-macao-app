@@ -162,6 +162,29 @@ interface ChatMessage {
   content: string
 }
 
+interface InspireSuggestion {
+  type: string
+  title: string
+  why: string
+  outline: string[]
+  draft: string
+  cta?: string
+}
+
+const INSPIRE_OUTPUT_TYPES = [
+  { value: 'insight',    label: '📖 品牌 Insight 文章' },
+  { value: 'fb_post',   label: '📘 Facebook 文案' },
+  { value: 'ig_caption', label: '📸 Instagram Caption' },
+  { value: 'threads',   label: '🧵 Threads 短文' },
+  { value: 'blog',      label: '✍️ 品牌部落格' },
+  { value: 'faq',       label: '❓ FAQ 問答組' },
+]
+
+const INSPIRE_TYPE_ICONS: Record<string, string> = {
+  insight: '📖', fb_post: '📘', ig_caption: '📸',
+  threads: '🧵', blog: '✍️', faq: '❓',
+}
+
 export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([])
   const [assets, setAssets] = useState<AssetItem[]>([])
@@ -185,6 +208,17 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [websiteUrl, setWebsiteUrl] = useState('')
   const [websiteSubmitting, setWebsiteSubmitting] = useState(false)
   const [websiteMsg, setWebsiteMsg] = useState('')
+  // Inspire Panel
+  const [inspireContentType, setInspireContentType] = useState<'url' | 'youtube' | 'image' | 'text'>('url')
+  const [inspireUrl, setInspireUrl] = useState('')
+  const [inspireDescription, setInspireDescription] = useState('')
+  const [inspireGoals, setInspireGoals] = useState<string[]>(['insight', 'fb_post'])
+  const [inspireImage, setInspireImage] = useState<{ base64: string; mime: string; name: string } | null>(null)
+  const [inspireLoading, setInspireLoading] = useState(false)
+  const [inspireSuggestions, setInspireSuggestions] = useState<InspireSuggestion[]>([])
+  const [inspireCopied, setInspireCopied] = useState<string | null>(null)
+  const [inspireError, setInspireError] = useState('')
+  const inspireImageRef = useRef<HTMLInputElement>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -313,6 +347,81 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
     } finally {
       setWebsiteSubmitting(false)
     }
+  }
+
+  function toggleInspireGoal(g: string) {
+    setInspireGoals(prev =>
+      prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]
+    )
+  }
+
+  async function handleInspireImageSelect(files: FileList | null) {
+    if (!files?.[0]) return
+    const file = files[0]
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      const base64 = result.split(',')[1]
+      setInspireImage({ base64, mime: file.type, name: file.name })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function handleInspireAnalyze() {
+    if (inspireLoading) return
+    if (inspireContentType !== 'text' && !inspireUrl && !inspireImage) {
+      setInspireError('請輸入網址或上傳圖片')
+      return
+    }
+    if (!inspireDescription.trim() && inspireContentType === 'text') {
+      setInspireError('請輸入說明文字')
+      return
+    }
+    if (inspireGoals.length === 0) {
+      setInspireError('請選擇至少一種輸出類型')
+      return
+    }
+
+    setInspireLoading(true)
+    setInspireError('')
+    setInspireSuggestions([])
+
+    try {
+      const payload: Record<string, unknown> = {
+        slug,
+        content_type: inspireContentType,
+        description: inspireDescription,
+        output_goals: inspireGoals,
+      }
+      if (inspireContentType === 'image' && inspireImage) {
+        payload.image_base64 = inspireImage.base64
+        payload.image_mime = inspireImage.mime
+      } else if (inspireUrl) {
+        payload.url = inspireUrl
+      }
+
+      const res = await fetch('/api/v1/brand-ops/inspire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setInspireError(data.error)
+      } else {
+        setInspireSuggestions(data.suggestions ?? [])
+      }
+    } catch {
+      setInspireError('分析失敗，請重試')
+    } finally {
+      setInspireLoading(false)
+    }
+  }
+
+  async function copyToClipboard(text: string, key: string) {
+    await navigator.clipboard.writeText(text)
+    setInspireCopied(key)
+    setTimeout(() => setInspireCopied(null), 2000)
   }
 
   async function handleApprove(id: string) {
@@ -634,7 +743,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', marginBottom: 2 }}>
-                    [{CATEGORIES.find(c => c.value === item.category)?.label || item.category}] {item.title}
+                    [{SCHEMA_TYPES.find(s => s.value === (item.schema_type || item.category))?.label || item.schema_type || item.category}] {item.title}
                   </div>
                   <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
                     {item.content.slice(0, 120)}{item.content.length > 120 ? '...' : ''}
@@ -669,7 +778,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                 background: '#e0f2fe', color: '#0369a1',
                 borderRadius: 4, padding: '2px 8px', fontSize: 11, flexShrink: 0,
               }}>
-                {CATEGORIES.find(c => c.value === item.category)?.label || item.category}
+                {SCHEMA_TYPES.find(s => s.value === (item.schema_type || item.category))?.label || item.schema_type || item.category}
               </span>
               <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{item.title}</span>
               <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>
@@ -728,6 +837,211 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 💡 內容靈感分析器 */}
+      <div style={card}>
+        <div style={sectionTitle}>
+          💡 內容靈感分析器
+          <span style={{ fontSize: 12, fontWeight: 400, color: '#6b7280', marginLeft: 4 }}>
+            — 貼入文章/YouTube/圖片，AI 結合品牌知識庫生成可用內容
+          </span>
+        </div>
+
+        {/* 素材類型選擇 */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          {([
+            { v: 'url', label: '🔗 文章/網頁' },
+            { v: 'youtube', label: '▶️ YouTube' },
+            { v: 'image', label: '🖼️ 圖片' },
+            { v: 'text', label: '✏️ 文字說明' },
+          ] as const).map(({ v, label }) => (
+            <button key={v} onClick={() => { setInspireContentType(v); setInspireUrl(''); setInspireImage(null) }}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer', border: 'none',
+                background: inspireContentType === v ? '#0f4c81' : '#f3f4f6',
+                color: inspireContentType === v ? '#fff' : '#374151',
+                fontWeight: inspireContentType === v ? 600 : 400,
+              }}>{label}</button>
+          ))}
+        </div>
+
+        {/* URL / YouTube 輸入 */}
+        {(inspireContentType === 'url' || inspireContentType === 'youtube') && (
+          <input
+            value={inspireUrl}
+            onChange={e => setInspireUrl(e.target.value)}
+            placeholder={inspireContentType === 'youtube'
+              ? 'https://www.youtube.com/watch?v=...'
+              : 'https://example.com/article/...'}
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              border: '1px solid #d1d5db', fontSize: 14, marginBottom: 10,
+              boxSizing: 'border-box',
+            }}
+          />
+        )}
+
+        {/* 圖片上傳 */}
+        {inspireContentType === 'image' && (
+          <div style={{ marginBottom: 10 }}>
+            <input
+              ref={inspireImageRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={e => handleInspireImageSelect(e.target.files)}
+            />
+            {inspireImage ? (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0',
+              }}>
+                <span style={{ fontSize: 20 }}>🖼️</span>
+                <span style={{ fontSize: 13, color: '#15803d', flex: 1 }}>{inspireImage.name}</span>
+                <button onClick={() => setInspireImage(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 18 }}>×</button>
+              </div>
+            ) : (
+              <div
+                onClick={() => inspireImageRef.current?.click()}
+                style={{
+                  border: '2px dashed #d1d5db', borderRadius: 8, padding: '20px',
+                  textAlign: 'center', cursor: 'pointer', color: '#6b7280', fontSize: 13,
+                }}
+              >
+                📁 點擊上傳圖片（JPG / PNG / WebP）
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 說明文字 */}
+        <textarea
+          value={inspireDescription}
+          onChange={e => setInspireDescription(e.target.value)}
+          placeholder={
+            inspireContentType === 'image'
+              ? '描述圖片內容及用途（例：這是我們在北海道供應商的漁場現場照，想做品牌溯源推廣）'
+              : inspireContentType === 'youtube'
+              ? '補充說明（例：這是競品的宣傳影片，想了解他們如何包裝賣點）'
+              : inspireContentType === 'text'
+              ? '輸入任何文字說明，例如：最近大閘蟹季節到了，品牌想推北海道毛蟹作高端替代選擇...'
+              : '補充說明（可選）：想用此素材達到什麼效果？'
+          }
+          rows={3}
+          style={{
+            width: '100%', padding: '10px 12px', borderRadius: 8,
+            border: '1px solid #d1d5db', fontSize: 14, resize: 'vertical',
+            marginBottom: 12, boxSizing: 'border-box', fontFamily: 'inherit',
+          }}
+        />
+
+        {/* 輸出類型選擇 */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>選擇輸出類型（可多選）：</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {INSPIRE_OUTPUT_TYPES.map(t => (
+              <button key={t.value} onClick={() => toggleInspireGoal(t.value)}
+                style={{
+                  padding: '5px 12px', borderRadius: 16, fontSize: 12, cursor: 'pointer', border: 'none',
+                  background: inspireGoals.includes(t.value) ? '#c5a572' : '#f3f4f6',
+                  color: inspireGoals.includes(t.value) ? '#fff' : '#374151',
+                  fontWeight: inspireGoals.includes(t.value) ? 600 : 400,
+                }}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* 分析按鈕 */}
+        <button
+          onClick={handleInspireAnalyze}
+          disabled={inspireLoading || inspireGoals.length === 0}
+          style={{
+            ...btnPrimary, padding: '10px 24px', fontSize: 14,
+            opacity: inspireLoading || inspireGoals.length === 0 ? 0.5 : 1,
+          }}
+        >
+          {inspireLoading ? '⏳ AI 分析中（約15-30秒）...' : '✨ 開始分析，生成內容建議'}
+        </button>
+
+        {inspireError && (
+          <div style={{ marginTop: 10, fontSize: 13, color: '#dc2626', background: '#fef2f2', borderRadius: 8, padding: '8px 12px' }}>
+            ❌ {inspireError}
+          </div>
+        )}
+
+        {/* 結果卡片 */}
+        {inspireSuggestions.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 12 }}>
+              ✅ 已生成 {inspireSuggestions.length} 個內容建議
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {inspireSuggestions.map((s, i) => (
+                <div key={i} style={{
+                  background: '#fafafa', borderRadius: 10, border: '1px solid #e2e8f0',
+                  overflow: 'hidden',
+                }}>
+                  {/* Card Header */}
+                  <div style={{
+                    background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+                    padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10,
+                  }}>
+                    <span style={{ fontSize: 20 }}>{INSPIRE_TYPE_ICONS[s.type] ?? '📝'}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e' }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{s.why}</div>
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 12,
+                      background: '#eff6ff', color: '#0f4c81',
+                    }}>
+                      {INSPIRE_OUTPUT_TYPES.find(t => t.value === s.type)?.label ?? s.type}
+                    </span>
+                  </div>
+
+                  {/* Outline */}
+                  {s.outline?.length > 0 && (
+                    <div style={{ padding: '10px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>大綱</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, color: '#374151', lineHeight: 1.8 }}>
+                        {s.outline.map((pt, j) => <li key={j}>{pt}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Draft */}
+                  <div style={{ padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1 }}>草稿</div>
+                      <button
+                        onClick={() => copyToClipboard(s.draft + (s.cta ? `\n\n${s.cta}` : ''), `draft-${i}`)}
+                        style={{
+                          padding: '4px 10px', borderRadius: 6, border: '1px solid #d1d5db',
+                          background: inspireCopied === `draft-${i}` ? '#dcfce7' : '#fff',
+                          color: inspireCopied === `draft-${i}` ? '#15803d' : '#374151',
+                          fontSize: 12, cursor: 'pointer', fontWeight: 500,
+                        }}
+                      >
+                        {inspireCopied === `draft-${i}` ? '✅ 已複製' : '📋 複製草稿'}
+                      </button>
+                    </div>
+                    <div style={{
+                      background: '#fff', borderRadius: 6, border: '1px solid #e2e8f0',
+                      padding: '12px 14px', fontSize: 13, color: '#374151',
+                      lineHeight: 1.8, whiteSpace: 'pre-wrap', maxHeight: 300,
+                      overflowY: 'auto',
+                    }}>
+                      {s.draft}
+                      {s.cta && <div style={{ marginTop: 12, fontWeight: 600, color: '#0f4c81' }}>{s.cta}</div>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* AI 顧問 Chatbot */}
