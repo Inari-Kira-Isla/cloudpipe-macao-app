@@ -6,11 +6,26 @@ interface KnowledgeItem {
   id: string
   brand_slug: string
   category: string
+  schema_type: string | null
   title: string
   content: string
   source_type: string
   status: 'pending' | 'active' | 'rejected'
   priority: number
+  confidence: number | null
+  lang: string | null
+  valid_until: string | null
+  created_at: string
+}
+
+interface AssetItem {
+  id: string
+  asset_type: string
+  asset_subtype: string | null
+  original_filename: string | null
+  file_size: number | null
+  parse_status: string
+  review_status: string
   created_at: string
 }
 
@@ -40,17 +55,49 @@ interface BrandOpsTabProps {
   brandName: string
 }
 
-const CATEGORIES = [
-  { value: 'brand_story', label: '品牌故事' },
-  { value: 'products', label: '產品/服務' },
-  { value: 'customer_personas', label: '目標客群' },
-  { value: 'competitive_positioning', label: '競爭定位' },
-  { value: 'content_guidelines', label: '內容守則' },
-  { value: 'event_calendar', label: '活動時程' },
-  { value: 'industry_knowledge', label: '行業知識' },
-  { value: 'reference_materials', label: '參考資料' },
-  { value: 'news', label: '最新動態' },
+const SCHEMA_TYPES = [
+  { value: 'brand_identity',     label: '🏷️ 品牌身份/故事' },
+  { value: 'brand_voice',        label: '🗣️ 品牌語氣/守則' },
+  { value: 'brand_visual',       label: '🎨 視覺規範' },
+  { value: 'product_catalog',    label: '📦 產品/服務清單' },
+  { value: 'product_detail',     label: '🔍 產品詳細規格' },
+  { value: 'service_package',    label: '📋 服務套餐' },
+  { value: 'pricing_tier',       label: '💰 定價方案' },
+  { value: 'customer_persona',   label: '👥 目標客群' },
+  { value: 'use_case',           label: '💡 使用場景' },
+  { value: 'customer_story',     label: '⭐ 客戶案例' },
+  { value: 'competitor_intel',   label: '🔎 競品情報' },
+  { value: 'market_position',    label: '📊 市場定位' },
+  { value: 'industry_data',      label: '📈 行業數據' },
+  { value: 'location_info',      label: '📍 地點/開放時間' },
+  { value: 'contact_channel',    label: '📞 聯絡渠道' },
+  { value: 'delivery_logistics', label: '🚚 配送物流' },
+  { value: 'certification',      label: '🏆 認證/獎項' },
+  { value: 'policy',             label: '📜 政策/條款' },
+  { value: 'event_calendar',     label: '📅 活動時程' },
+  { value: 'news_update',        label: '📰 最新動態' },
+  { value: 'faq_seed',           label: '❓ 常見問答' },
+  { value: 'media_asset',        label: '🖼️ 媒體資產' },
 ]
+
+const IMAGE_SUBTYPES = [
+  { value: 'product_photo', label: '產品照' },
+  { value: 'logo',          label: 'Logo' },
+  { value: 'menu_scan',     label: '菜單/目錄掃描' },
+  { value: 'catalog',       label: '產品目錄' },
+  { value: 'business_card', label: '名片' },
+  { value: 'scene_photo',   label: '場景/環境照' },
+  { value: 'certificate',   label: '認證/獎狀' },
+  { value: 'other',         label: '其他' },
+]
+
+const PARSE_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  queued:        { label: '排隊中', color: '#9ca3af' },
+  parsing:       { label: '解析中', color: '#f59e0b' },
+  parsed:        { label: '✅ 已解析', color: '#10b981' },
+  failed:        { label: '❌ 失敗', color: '#ef4444' },
+  manual_review: { label: '⚠️ 需人工審核', color: '#f59e0b' },
+}
 
 const STATUS_LABELS: Record<string, string> = {
   pending: '待審核',
@@ -117,13 +164,18 @@ interface ChatMessage {
 
 export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([])
+  const [assets, setAssets] = useState<AssetItem[]>([])
   const [posts, setPosts] = useState<PostCache[]>([])
   const [plan, setPlan] = useState<ContentPlan | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [fileUploading, setFileUploading] = useState(false)
+  const [fileUploadMsg, setFileUploadMsg] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [newItem, setNewItem] = useState({ category: 'news', title: '', content: '' })
+  const [dragOver, setDragOver] = useState(false)
+  const [selectedSubtype, setSelectedSubtype] = useState('other')
+  const [newItem, setNewItem] = useState({ schema_type: 'news_update', title: '', content: '' })
   const [goalInput, setGoalInput] = useState('')
   const [focusInput, setFocusInput] = useState('')
   const [savedMsg, setSavedMsg] = useState('')
@@ -131,18 +183,21 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
-      const [kRes, pRes, plRes] = await Promise.all([
+      const [kRes, pRes, plRes, aRes] = await Promise.all([
         fetch(`/api/v1/brand-ops?slug=${slug}&action=knowledge`),
         fetch(`/api/v1/brand-ops?slug=${slug}&action=posts`),
         fetch(`/api/v1/brand-ops?slug=${slug}&action=plan`),
+        fetch(`/api/v1/brand-ops/upload?slug=${slug}`),
       ])
-      const [k, p, pl] = await Promise.all([kRes.json(), pRes.json(), plRes.json()])
+      const [k, p, pl, a] = await Promise.all([kRes.json(), pRes.json(), plRes.json(), aRes.json()])
       setKnowledge(k.items || [])
       setPosts(p.posts || [])
+      setAssets(a.assets || [])
       if (pl.plan) {
         setPlan(pl.plan)
         setGoalInput(pl.plan.commercial_goal || '')
@@ -194,14 +249,41 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
       await fetch('/api/v1/brand-ops', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'upload', slug, ...newItem }),
+        body: JSON.stringify({ action: 'upload', slug, category: newItem.schema_type, ...newItem }),
       })
-      setNewItem({ category: 'news', title: '', content: '' })
+      setNewItem({ schema_type: 'news_update', title: '', content: '' })
       setShowForm(false)
       await fetchAll()
     } finally {
       setUploading(false)
     }
+  }
+
+  async function handleFileUpload(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setFileUploading(true)
+    setFileUploadMsg('')
+    const results: string[] = []
+    for (const file of Array.from(files)) {
+      try {
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('slug', slug)
+        fd.append('asset_subtype', selectedSubtype)
+        const res = await fetch('/api/v1/brand-ops/upload', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (data.success) {
+          results.push(data.duplicate ? `${file.name}（已存在）` : `✅ ${file.name}`)
+        } else {
+          results.push(`❌ ${file.name}: ${data.error}`)
+        }
+      } catch {
+        results.push(`❌ ${file.name}: 上傳失敗`)
+      }
+    }
+    setFileUploadMsg(results.join(' | '))
+    setFileUploading(false)
+    await fetchAll()
   }
 
   async function handleApprove(id: string) {
@@ -307,12 +389,105 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
         </div>
       </div>
 
+      {/* 📂 檔案上傳 */}
+      <div style={card}>
+        <div style={sectionTitle}>📂 上傳品牌資料（PDF / 圖片 / 文件）</div>
+        <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+          支援 PDF、JPG/PNG/WebP、CSV、Word 文件（最大 20MB）。AI 自動解析成結構化知識條目，由你審核後啟用。
+        </p>
+
+        {/* Subtype 選擇（圖片用） */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          <span style={{ fontSize: 12, color: '#6b7280', lineHeight: '28px' }}>圖片類型：</span>
+          {IMAGE_SUBTYPES.map(s => (
+            <button key={s.value} onClick={() => setSelectedSubtype(s.value)} style={{
+              padding: '4px 10px', borderRadius: 16, fontSize: 12, cursor: 'pointer',
+              background: selectedSubtype === s.value ? '#0f4c81' : '#f3f4f6',
+              color: selectedSubtype === s.value ? '#fff' : '#374151',
+              border: 'none', fontWeight: selectedSubtype === s.value ? 600 : 400,
+            }}>{s.label}</button>
+          ))}
+        </div>
+
+        {/* Drag & Drop Zone */}
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleFileUpload(e.dataTransfer.files) }}
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            border: `2px dashed ${dragOver ? '#0f4c81' : '#d1d5db'}`,
+            borderRadius: 10, padding: '32px 16px', textAlign: 'center',
+            background: dragOver ? '#eff6ff' : '#fafafa',
+            cursor: 'pointer', transition: 'all 0.2s',
+            marginBottom: 12,
+          }}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.xlsx,.doc,.docx"
+            style={{ display: 'none' }}
+            onChange={e => handleFileUpload(e.target.files)}
+          />
+          {fileUploading ? (
+            <div style={{ color: '#0f4c81', fontWeight: 600 }}>上傳中...</div>
+          ) : (
+            <>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📁</div>
+              <div style={{ fontSize: 14, color: '#374151', fontWeight: 600 }}>拖放檔案到這裡，或點擊選擇</div>
+              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>PDF · 圖片 · Word · CSV · 最大 20MB</div>
+            </>
+          )}
+        </div>
+
+        {fileUploadMsg && (
+          <div style={{ fontSize: 13, color: '#374151', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 12px', marginBottom: 12 }}>
+            {fileUploadMsg}
+          </div>
+        )}
+
+        {/* 已上傳檔案列表 */}
+        {assets.length > 0 && (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8 }}>已上傳 ({assets.length})</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {assets.map(a => {
+                const st = PARSE_STATUS_LABELS[a.parse_status] || { label: a.parse_status, color: '#9ca3af' }
+                return (
+                  <div key={a.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    background: '#f8fafc', borderRadius: 6, padding: '8px 12px',
+                    fontSize: 13,
+                  }}>
+                    <span style={{ fontSize: 18 }}>
+                      {a.asset_type === 'pdf' ? '📄' : a.asset_type === 'image' ? '🖼️' : a.asset_type === 'spreadsheet' ? '📊' : '📝'}
+                    </span>
+                    <span style={{ flex: 1, color: '#1a1a2e', fontWeight: 500 }}>
+                      {a.original_filename || '未命名'}
+                      {a.asset_subtype && <span style={{ fontSize: 11, color: '#9ca3af', marginLeft: 6 }}>({a.asset_subtype})</span>}
+                    </span>
+                    {a.file_size && (
+                      <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                        {(a.file_size / 1024).toFixed(0)}KB
+                      </span>
+                    )}
+                    <span style={{ fontSize: 11, fontWeight: 600, color: st.color }}>{st.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 品牌資料庫 */}
       <div style={card}>
         <div style={{ ...sectionTitle, justifyContent: 'space-between' }}>
-          <span>📚 品牌資料庫</span>
+          <span>📚 品牌知識庫</span>
           <button onClick={() => setShowForm(!showForm)} style={btnPrimary}>
-            {showForm ? '取消' : '+ 新增資料'}
+            {showForm ? '取消' : '+ 手動新增'}
           </button>
         </div>
 
@@ -322,17 +497,17 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
             background: '#f8fafc', borderRadius: 8, padding: 16,
             border: '1px solid #e2e8f0', marginBottom: 16,
           }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 12, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 12, marginBottom: 12 }}>
               <div>
                 <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>
-                  類別
+                  知識類型
                 </label>
                 <select
-                  value={newItem.category}
-                  onChange={e => setNewItem(p => ({ ...p, category: e.target.value }))}
+                  value={newItem.schema_type}
+                  onChange={e => setNewItem(p => ({ ...p, schema_type: e.target.value }))}
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
                 >
-                  {CATEGORIES.map(c => (
+                  {SCHEMA_TYPES.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
@@ -344,7 +519,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                 <input
                   value={newItem.title}
                   onChange={e => setNewItem(p => ({ ...p, title: e.target.value }))}
-                  placeholder="例：2026年北海道海膽進貨標準"
+                  placeholder="例：北海道海膽進貨標準 2026"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, boxSizing: 'border-box' }}
                 />
               </div>
@@ -356,7 +531,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
               <textarea
                 value={newItem.content}
                 onChange={e => setNewItem(p => ({ ...p, content: e.target.value }))}
-                placeholder="填入品牌資料、產品介紹、公告、客群描述等..."
+                placeholder="填入品牌資料、產品介紹、政策、常見問答等..."
                 rows={5}
                 style={{
                   width: '100%', padding: '8px 10px', borderRadius: 6,

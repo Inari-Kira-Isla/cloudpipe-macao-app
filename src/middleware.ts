@@ -120,17 +120,8 @@ export async function middleware(request: NextRequest) {
   }
 
   const bot = detectBot(ua)
-  if (bot) {
-    // 注入 pathname header 給 not-found.tsx 讀取
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-cloudpipe-pathname', path)
-
-    // 伺服器端追蹤 — 不依賴 bot 載入 img pixel
-    if (supabaseUrl && supabaseKey) {
-      trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
-    }
-
-    return NextResponse.next({ request: { headers: requestHeaders } })
+  if (bot && supabaseUrl && supabaseKey) {
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
   }
 
   return NextResponse.next()
