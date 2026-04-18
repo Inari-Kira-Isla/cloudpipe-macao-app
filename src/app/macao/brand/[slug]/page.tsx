@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { BRAND_CONFIGS } from '@/lib/brand-visibility'
 import type { BrandVisibilityData } from '@/lib/brand-visibility'
+import BrandOpsTab from '@/components/BrandOpsTab'
 
 const PASSWORD = 'cloudpipe2026'
 
@@ -39,6 +40,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [slug, setSlug] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'aeo' | 'ops'>('aeo')
 
   useEffect(() => {
     params.then(p => {
@@ -188,7 +190,33 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         </div>
       </div>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      {/* Tab switcher */}
+      <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex' }}>
+          <button onClick={() => setActiveTab('aeo')} style={{
+            padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
+            background: 'none', color: activeTab === 'aeo' ? '#0f4c81' : '#6b7280',
+            borderBottom: activeTab === 'aeo' ? '3px solid #0f4c81' : '3px solid transparent',
+          }}>
+            📊 AI 能見度
+          </button>
+          <button onClick={() => setActiveTab('ops')} style={{
+            padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
+            background: 'none', color: activeTab === 'ops' ? '#c5a572' : '#6b7280',
+            borderBottom: activeTab === 'ops' ? '3px solid #c5a572' : '3px solid transparent',
+          }}>
+            🔧 品牌操作台
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'ops' && slug && (
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+          <BrandOpsTab slug={slug} brandName={brandConfig.displayName} />
+        </div>
+      )}
+
+      {activeTab === 'aeo' && <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
         {/* 4 Dimension Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
           {[
@@ -734,7 +762,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             </a>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Footer */}
       <footer style={{ background: '#1a1a2e', color: 'white', padding: '32px 24px', textAlign: 'center', fontSize: 13, opacity: 0.7 }}>
