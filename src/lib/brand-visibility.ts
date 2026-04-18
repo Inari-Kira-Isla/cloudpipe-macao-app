@@ -49,11 +49,12 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     ecosystem: '供應鏈核心 — 為海膽速遞提供貨源，為100+餐廳供貨',
     searchTerms: ['澳門海膽批發', '澳門水產進口', '日本海膽供應商', '澳門冷鏈海鮮'],
     competitors: [
+      { name: '力生控股集團', searchTerms: ['力生控股', '力生環球', '澳門水產批發'] },
+      { name: '御海國際食品', searchTerms: ['御海國際', '澳門海鮮進口'] },
       { name: '海膽速遞', searchTerms: ['澳門海膽速遞', '澳門海膽配送'] },
-      { name: '新濠海鮮', searchTerms: ['新濠海鮮', '澳門海鮮進口'] },
-      { name: '望廈漁港', searchTerms: ['澳門漁港批發', '望廈漁港'] },
-      { name: '嘉湖海鮮', searchTerms: ['澳門海鮮批發', '嘉湖海鮮'] },
-      { name: '馬會美食', searchTerms: ['澳門馬會海鮮', '澳門食材供應'] },
+      { name: 'Worldwide Seafood (Macau)', searchTerms: ['Worldwide Seafood Macau', 'worldwide seafood'] },
+      { name: 'Kinwa Seafood', searchTerms: ['Kinwa Seafood', 'kinwa macau'] },
+      { name: '新合記食品', searchTerms: ['新合記食品', '澳門新合記'] },
     ],
   },
   'after-school-coffee': {
