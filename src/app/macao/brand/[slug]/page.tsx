@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { BRAND_CONFIGS } from '@/lib/brand-visibility'
 import type { BrandVisibilityData } from '@/lib/brand-visibility'
 import BrandOpsTab from '@/components/BrandOpsTab'
@@ -8,6 +8,7 @@ import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
 
 const PASSWORD = 'cloudpipe2026'
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 interface CompetitorEntry {
   slug: string; name: string; visits: number; percentage: number
   rank: number; isBrand: boolean; label: string; rating?: number; reviews?: number
@@ -38,16 +39,382 @@ interface CitationData {
 
 const RANK_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
 
+// ─── Design tokens ───────────────────────────────────────────────────────────
+const CP = {
+  gold: '#F5C842',
+  goldGlow: 'rgba(245,200,66,0.35)',
+  navy: '#08111F',
+  glass: 'rgba(255,255,255,0.04)',
+  glassBorder: 'rgba(255,255,255,0.08)',
+  muted: 'rgba(255,255,255,0.5)',
+  faint: 'rgba(255,255,255,0.35)',
+  green: '#4ADE80',
+  greenBg: 'rgba(74,222,128,0.1)',
+  greenBorder: 'rgba(74,222,128,0.22)',
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function GlassCard({ children, style = {}, padding = 16 }: {
+  children: React.ReactNode; style?: React.CSSProperties; padding?: number
+}) {
+  return (
+    <div style={{
+      background: CP.glass,
+      border: `1px solid ${CP.glassBorder}`,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: 18,
+      padding,
+      position: 'relative',
+      overflow: 'hidden',
+      ...style,
+    }}>
+      {/* top shine */}
+      <div style={{
+        position: 'absolute', top: 0, left: 12, right: 12, height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+        pointerEvents: 'none',
+      }} />
+      {children}
+    </div>
+  )
+}
+
+function SectionHeader({ title, subtitle, action }: {
+  title: string; subtitle?: string; action?: string
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+      padding: '4px 2px 12px',
+    }}>
+      <div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: -0.4 }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 12, color: CP.muted, marginTop: 3, fontWeight: 500 }}>{subtitle}</div>}
+      </div>
+      {action && <div style={{ fontSize: 12, fontWeight: 600, color: CP.gold }}>{action}</div>}
+    </div>
+  )
+}
+
+function Sparkline({ data, color = CP.gold, width = 80, height = 24 }: {
+  data: number[]; color?: string; width?: number; height?: number
+}) {
+  const max = Math.max(...data)
+  const min = Math.min(...data)
+  const range = max - min || 1
+  const step = width / (data.length - 1)
+  const pts = data.map((v, i) => [i * step, height - ((v - min) / range) * height * 0.9 - 2] as [number, number])
+  const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
+  const area = `${path} L${width},${height} L0,${height} Z`
+  const gid = `sg${Math.random().toString(36).slice(2, 8)}`
+  const last = pts[pts.length - 1]
+  return (
+    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid})`} />
+      <path d={path} stroke={color} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r="2.5" fill={color} />
+      <circle cx={last[0]} cy={last[1]} r="5" fill={color} opacity="0.25" />
+    </svg>
+  )
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const [drawn, setDrawn] = useState(false)
+  const [animScore, setAnimScore] = useState(0)
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setDrawn(true), 150)
+    let start: number | null = null
+    const duration = 1600
+    const step = (ts: number) => {
+      if (!start) start = ts
+      const p = Math.min(1, (ts - start) / duration)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setAnimScore(Math.round(score * eased))
+      if (p < 1) requestAnimationFrame(step)
+    }
+    const t2 = setTimeout(() => requestAnimationFrame(step), 200)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [score])
+
+  const size = 168
+  const strokeWidth = 10
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const targetOffset = circumference * (1 - score / 100)
+  const ringColor = score >= 70 ? CP.gold : score >= 50 ? '#F59E0B' : '#EF4444'
+  const glowColor = score >= 70 ? CP.goldGlow : score >= 50 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)'
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
+      {/* glow */}
+      <div style={{
+        position: 'absolute', inset: -24, borderRadius: '50%',
+        background: `radial-gradient(circle, ${glowColor} 0%, transparent 65%)`,
+        filter: 'blur(16px)',
+        opacity: drawn ? 1 : 0,
+        transition: 'opacity 1.2s ease-out',
+        pointerEvents: 'none',
+      }} />
+      <svg width={size} height={size} style={{ position: 'relative', transform: 'rotate(-90deg)' }}>
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F5C842" />
+            <stop offset="50%" stopColor="#FFD866" />
+            <stop offset="100%" stopColor="#E8A838" />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={radius}
+          fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius}
+          fill="none"
+          stroke={score >= 70 ? 'url(#ringGrad)' : ringColor}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={drawn ? targetOffset : circumference}
+          style={{
+            transition: 'stroke-dashoffset 1.8s cubic-bezier(0.22, 1, 0.36, 1)',
+            filter: `drop-shadow(0 0 8px ${glowColor})`,
+          }}
+        />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{
+          fontSize: 10, fontWeight: 600, letterSpacing: 1.2,
+          color: CP.muted, textTransform: 'uppercase', marginBottom: 2,
+        }}>AI 能見度</div>
+        <div style={{
+          fontSize: 56, fontWeight: 800, lineHeight: 1,
+          background: `linear-gradient(180deg, #FFE082 0%, ${ringColor} 100%)`,
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text', letterSpacing: -2,
+        }}>{animScore}</div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: CP.faint, marginTop: 4, letterSpacing: 0.3 }}>
+          out of 100
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CompetitorBar({ name, score, me, color }: {
+  name: string; score: number; me?: boolean; color?: string
+}) {
+  const [w, setW] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setW(score), 300); return () => clearTimeout(t) }, [score])
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {me && (
+            <div style={{
+              fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+              background: 'rgba(245,200,66,0.15)', color: CP.gold, letterSpacing: 0.5,
+            }}>YOU</div>
+          )}
+          <div style={{ fontSize: 13, fontWeight: me ? 700 : 500, color: me ? '#fff' : 'rgba(255,255,255,0.7)' }}>
+            {name}
+          </div>
+        </div>
+        <div style={{
+          fontSize: 13, fontWeight: 700,
+          color: me ? CP.gold : 'rgba(255,255,255,0.6)',
+          letterSpacing: -0.3, fontFeatureSettings: '"tnum"',
+        }}>{score}</div>
+      </div>
+      <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', width: `${w}%`,
+          background: me
+            ? 'linear-gradient(90deg, #F5C842 0%, #FFD866 100%)'
+            : (color || 'rgba(255,255,255,0.25)'),
+          borderRadius: 3,
+          transition: 'width 1.4s cubic-bezier(0.22, 1, 0.36, 1)',
+          boxShadow: me ? '0 0 8px rgba(245,200,66,0.4)' : 'none',
+        }} />
+      </div>
+    </div>
+  )
+}
+
+function MetricDimCard({ label, score: s, max, detail, color }: {
+  label: string; score: number; max: number; detail: string; color: string
+}) {
+  const [w, setW] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setW((s / max) * 100), 400); return () => clearTimeout(t) }, [s, max])
+  return (
+    <GlassCard padding={16}>
+      <div style={{ fontSize: 12, color: CP.muted, marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 10 }}>
+        <div style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: -0.8, fontFeatureSettings: '"tnum"' }}>{s}</div>
+        <div style={{ fontSize: 13, color: CP.faint, fontWeight: 500 }}>/{max}</div>
+      </div>
+      <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', width: `${w}%`,
+          background: color,
+          borderRadius: 2,
+          transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
+          boxShadow: `0 0 6px ${color}60`,
+        }} />
+      </div>
+      <div style={{ fontSize: 11, color: CP.faint, marginTop: 6 }}>{detail}</div>
+    </GlassCard>
+  )
+}
+
+// ─── Password screen ──────────────────────────────────────────────────────────
+function PasswordScreen({
+  displayName, onAuth
+}: { displayName: string; onAuth: () => void }) {
+  const [pw, setPw] = useState('')
+  const [err, setErr] = useState(false)
+
+  const attempt = () => {
+    if (pw === PASSWORD) { onAuth() }
+    else setErr(true)
+  }
+
+  return (
+    <main style={{
+      minHeight: '100vh',
+      background: CP.navy,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Inter', 'Noto Sans TC', -apple-system, system-ui, sans-serif",
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Aurora blobs */}
+      <div className="cp-aurora-blob cp-aurora-a" />
+      <div className="cp-aurora-blob cp-aurora-b" />
+      <div className="cp-aurora-blob cp-aurora-c" />
+
+      <div style={{
+        position: 'relative', zIndex: 10,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: 24, padding: '40px 36px',
+        maxWidth: 380, width: '100%', margin: '0 16px',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+      }}>
+        {/* logo mark */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 14,
+            background: 'linear-gradient(135deg, #F5C842 0%, #E8A838 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 6px 20px rgba(245,200,66,0.3)',
+          }}>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M4 13C4 9.5 6.5 7 10 7C12.7 7 14.9 8.9 15.4 11.5C17.3 11.5 19 12.9 19 15C19 17.1 17.3 18.5 15.4 18.5H5.5C3.5 18.5 2 17 2 15C2 13.8 2.8 13 4 13Z" fill="#08111F"/>
+            </svg>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: CP.gold, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            CloudPipe
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', letterSpacing: -0.6, marginBottom: 6 }}>
+            {displayName}
+          </div>
+          <div style={{ fontSize: 13, color: CP.muted }}>AI Visibility Dashboard</div>
+        </div>
+
+        <input
+          type="password"
+          value={pw}
+          onChange={e => { setPw(e.target.value); setErr(false) }}
+          onKeyDown={e => e.key === 'Enter' && attempt()}
+          placeholder="密碼"
+          style={{
+            width: '100%', padding: '13px 16px',
+            borderRadius: 12,
+            border: `1px solid ${err ? '#EF4444' : 'rgba(255,255,255,0.12)'}`,
+            background: 'rgba(0,0,0,0.3)',
+            color: '#fff', fontSize: 15,
+            outline: 'none',
+            marginBottom: err ? 6 : 14,
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+          }}
+        />
+        {err && (
+          <p style={{ color: '#F87171', fontSize: 12, marginBottom: 12, textAlign: 'center' }}>
+            密碼錯誤，請重試
+          </p>
+        )}
+        <button
+          onClick={attempt}
+          style={{
+            width: '100%', padding: '13px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, #F5C842, #E8A838)',
+            color: '#08111F', border: 'none',
+            fontSize: 15, fontWeight: 700, cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(245,200,66,0.3)',
+            fontFamily: 'inherit',
+            transition: 'opacity 0.2s',
+          }}
+        >
+          進入 Dashboard
+        </button>
+      </div>
+    </main>
+  )
+}
+
+// ─── Loading screen ───────────────────────────────────────────────────────────
+function LoadingScreen({ name }: { name: string }) {
+  return (
+    <main style={{
+      minHeight: '100vh', background: CP.navy,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Inter', 'Noto Sans TC', -apple-system, system-ui, sans-serif",
+      position: 'relative', overflow: 'hidden',
+    }}>
+      <div className="cp-aurora-blob cp-aurora-a" />
+      <div className="cp-aurora-blob cp-aurora-b" />
+      <div className="cp-aurora-blob cp-aurora-c" />
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          border: `3px solid rgba(255,255,255,0.08)`,
+          borderTop: `3px solid ${CP.gold}`,
+          animation: 'spin 0.8s linear infinite',
+          margin: '0 auto 20px',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ fontSize: 15, color: CP.muted }}>正在分析 {name} 的 AI 能見度…</div>
+      </div>
+    </main>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 export default function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
   const [authed, setAuthed] = useState(false)
-  const [pw, setPw] = useState('')
-  const [pwError, setPwError] = useState(false)
   const [data, setData] = useState<BrandVisibilityData | null>(null)
   const [citation, setCitation] = useState<CitationData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [slug, setSlug] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'aeo' | 'ops'>('aeo')
+  const [prevTab, setPrevTab] = useState<'aeo' | 'ops'>('aeo')
 
   useEffect(() => {
     params.then(p => {
@@ -69,7 +436,6 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
       fetch(`/api/v1/brand-citation?slug=${slug}&days=30&includeAISearch=true`).then(r => r.json()).catch(() => null),
     ]).then(([vis, cit]) => {
       setData(vis)
-      // 轉換 brand-citation 返回的競品列表為 citation 格式
       if (cit && !cit.error) {
         const citationData: CitationData = {
           brand: cit.brand,
@@ -95,720 +461,829 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
     }).catch(e => { setError(e.message); setLoading(false) })
   }, [authed, slug, brandConfig])
 
+  const changeTab = (t: 'aeo' | 'ops') => {
+    if (t === activeTab) return
+    setPrevTab(activeTab)
+    setActiveTab(t)
+  }
+
+  // ── Guard states ─────────────────────────────────────────────────────────
   if (!brandConfig) {
     return (
-      <main style={{ padding: '80px 24px', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: 16 }}>品牌未找到</h1>
-        <p style={{ color: '#6b7280' }}>可用品牌: {Object.keys(BRAND_CONFIGS).join(', ')}</p>
+      <main style={{
+        minHeight: '100vh', background: CP.navy, color: '#fff',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Inter', 'Noto Sans TC', system-ui, sans-serif",
+        padding: '40px 24px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 20, marginBottom: 12 }}>品牌未找到</div>
+        <div style={{ color: CP.muted, fontSize: 14 }}>可用品牌: {Object.keys(BRAND_CONFIGS).join(', ')}</div>
       </main>
     )
   }
 
   if (!authed) {
     return (
-      <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafbfc' }}>
-        <div className="brand-pw-box" style={{ background: 'white', padding: 40, borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', maxWidth: 400, width: '100%' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: 8, color: '#0f4c81' }}>🔒 {brandConfig.displayName}</h2>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 24, fontSize: 14 }}>AI Visibility Dashboard</p>
-          <input
-            type="password"
-            value={pw}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                if (pw === PASSWORD) { sessionStorage.setItem(`brand_auth_${slug}`, '1'); setAuthed(true) }
-                else setPwError(true)
-              }
-            }}
-            onChange={e => { setPw(e.target.value); setPwError(false) }}
-            placeholder="Password"
-            style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: `1px solid ${pwError ? '#ef4444' : '#e5e7eb'}`, marginBottom: pwError ? 6 : 12, fontSize: 16 }}
-          />
-          {pwError && <p style={{ color: '#ef4444', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>密碼錯誤</p>}
-          <button
-            onClick={() => {
-              if (pw === PASSWORD) { sessionStorage.setItem(`brand_auth_${slug}`, '1'); setAuthed(true) }
-              else setPwError(true)
-            }}
-            style={{ width: '100%', padding: 12, borderRadius: 8, background: '#0f4c81', color: 'white', border: 'none', fontSize: 16, cursor: 'pointer' }}
-          >
-            Enter
-          </button>
-        </div>
-      </main>
+      <PasswordScreen
+        displayName={brandConfig.displayName}
+        onAuth={() => {
+          if (slug) sessionStorage.setItem(`brand_auth_${slug}`, '1')
+          setAuthed(true)
+        }}
+      />
     )
   }
 
-  if (loading) {
-    return (
-      <main style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 24, marginBottom: 16 }}>⏳</div>
-        <p>正在分析 {brandConfig.displayName} 的 AI 能見度...</p>
-      </main>
-    )
-  }
+  if (loading) return <LoadingScreen name={brandConfig.displayName} />
 
   if (error || !data) {
     return (
-      <main style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <p style={{ color: '#dc2626' }}>載入失敗: {error || '未知錯誤'}</p>
+      <main style={{ minHeight: '100vh', background: CP.navy, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#F87171' }}>載入失敗: {error || '未知錯誤'}</div>
       </main>
     )
   }
 
   const { score, intelligenceDensity, bots, milestones, insights, ecosystem, suggestions, graphHealth } = data
 
+  const tabDirection = (activeTab === 'ops' && prevTab === 'aeo') ? 'right' : 'left'
+
   return (
-    <main style={{ background: '#fafbfc', minHeight: '100vh' }}>
-      {/* Hero */}
-      <div className="brand-hero" style={{ background: 'linear-gradient(135deg, #0f4c81, #1a1a2e, #16213e)', color: 'white', padding: '60px 24px 48px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className="brand-hero-row" style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+    <main style={{
+      background: CP.navy,
+      minHeight: '100vh',
+      color: '#fff',
+      fontFamily: "'Inter', 'Noto Sans TC', -apple-system, system-ui, sans-serif",
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* ── Aurora background ───────────────────────────────────────────── */}
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+        <div className="cp-aurora-blob cp-aurora-a" />
+        <div className="cp-aurora-blob cp-aurora-b" />
+        <div className="cp-aurora-blob cp-aurora-c" />
+      </div>
+
+      {/* ── Content wrapper ──────────────────────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '56px 28px 40px' }}>
+          {/* top row: logo + brand avatar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 26, height: 26, borderRadius: 7,
+                background: 'linear-gradient(135deg, #F5C842 0%, #E8A838 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 10px rgba(245,200,66,0.3)',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 8C2.5 5.5 4.5 3.5 7 3.5C9 3.5 10.5 4.8 10.8 6.7C12.2 6.7 13.5 7.8 13.5 9.5C13.5 11.2 12.2 12.5 10.8 12.5H3.2C1.7 12.5 0.5 11.3 0.5 9.8C0.5 8.8 1.3 8 2.5 8Z" fill="#08111F"/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: -0.2 }}>CloudPipe</span>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: CP.gold,
+                padding: '2px 7px', borderRadius: 5,
+                background: 'rgba(245,200,66,0.1)', border: `1px solid rgba(245,200,66,0.2)`,
+              }}>PRO</span>
+            </div>
+            {/* brand avatar */}
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, fontWeight: 700, color: '#fff',
+              border: '1.5px solid rgba(255,255,255,0.15)',
+            }}>
+              {brandConfig.displayName.slice(0, 1)}
+            </div>
+          </div>
+
+          {/* hero content: left text + right ring */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 48, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 260 }}>
-              <p className="brand-hero-desc" style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>CloudPipe AI Visibility Dashboard</p>
-              <h1 className="brand-hero-title" style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: 8 }}>{brandConfig.displayName}</h1>
-              <p className="brand-hero-desc" style={{ fontSize: 16, opacity: 0.8, marginBottom: 16 }}>{brandConfig.description}</p>
-              <p style={{ fontSize: 14, opacity: 0.6 }}>
-                🕸️ 生態系角色: {brandConfig.ecosystem}
+              {/* status pill */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '5px 12px', borderRadius: 999,
+                background: CP.greenBg, border: `1px solid ${CP.greenBorder}`,
+                marginBottom: 16,
+              }}>
+                <div style={{
+                  width: 6, height: 6, borderRadius: '50%', background: CP.green,
+                  boxShadow: `0 0 8px ${CP.green}`,
+                  animation: 'cp-pulse 2s ease-in-out infinite',
+                }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#86EFAC', letterSpacing: 0.2 }}>
+                  監測中 · 實時更新
+                </span>
+              </div>
+
+              <h1 style={{
+                margin: 0, marginBottom: 8,
+                fontSize: 'clamp(2rem, 5vw, 3rem)',
+                fontWeight: 800, lineHeight: 1.05, letterSpacing: -1.5,
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #F5C842 140%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>{brandConfig.displayName}</h1>
+
+              <p style={{ fontSize: 15, color: CP.muted, marginBottom: 6, fontWeight: 400, lineHeight: 1.5 }}>
+                {brandConfig.description}
               </p>
+              <p style={{ fontSize: 13, color: CP.faint }}>
+                🕸️ {brandConfig.ecosystem}
+              </p>
+
               {milestones[0] && (
-                <p style={{ fontSize: 14, marginTop: 12, background: 'rgba(255,255,255,0.1)', display: 'inline-block', padding: '4px 12px', borderRadius: 20 }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  marginTop: 16, padding: '6px 12px',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${CP.glassBorder}`,
+                  borderRadius: 8, fontSize: 12, color: CP.muted,
+                }}>
                   🤖 首次被 {milestones[0].bot} 發現於 {milestones[0].date.slice(0, 10)}
-                </p>
+                </div>
               )}
             </div>
-            {/* Score Circle */}
+
+            {/* Score ring area */}
             <div style={{ textAlign: 'center' }}>
-              <div className="brand-score-circle" style={{
-                width: 140, height: 140, borderRadius: '50%',
-                border: `6px solid ${score.gradeColor}`,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.1)',
-              }}>
-                <div style={{ fontSize: 36, fontWeight: 700 }}>{score.total}</div>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>/ 100</div>
-              </div>
+              <ScoreRing score={score.total} />
+
+              {/* sub-stats */}
               <div style={{
-                marginTop: 8, padding: '4px 16px', borderRadius: 20,
-                background: score.gradeColor, fontSize: 14, fontWeight: 600,
+                display: 'flex', gap: 0, justifyContent: 'space-between',
+                marginTop: 24, padding: '0 4px',
               }}>
-                {score.grade} · {score.gradeLabel}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab switcher */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div className="brand-tab-bar" style={{ maxWidth: 1100, margin: '0 auto', display: 'flex' }}>
-          <button onClick={() => setActiveTab('aeo')} className="brand-tab-btn" style={{
-            padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
-            background: 'none', color: activeTab === 'aeo' ? '#0f4c81' : '#6b7280',
-            borderBottom: activeTab === 'aeo' ? '3px solid #0f4c81' : '3px solid transparent',
-          }}>
-            📊 AI 能見度
-          </button>
-          <button onClick={() => setActiveTab('ops')} className="brand-tab-btn" style={{
-            padding: '14px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', border: 'none',
-            background: 'none', color: activeTab === 'ops' ? '#c5a572' : '#6b7280',
-            borderBottom: activeTab === 'ops' ? '3px solid #c5a572' : '3px solid transparent',
-          }}>
-            🔧 品牌操作台
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'ops' && slug && (
-        <div className="brand-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px' }}>
-          <BrandOpsTab slug={slug} brandName={brandConfig.displayName} />
-        </div>
-      )}
-
-      {activeTab === 'aeo' && <div className="brand-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
-        {/* 4 Dimension Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
-          {[
-            { label: '🤖 Bot 觸及', ...score.botReach, color: '#0f4c81' },
-            { label: '📝 Insight 覆蓋', ...score.insightCoverage, color: '#059669' },
-            { label: '❓ FAQ 密度', ...score.faqDensity, color: '#d97706' },
-            { label: '🔗 交叉連結', ...score.crossLinks, color: '#6366f1' },
-          ].map((dim, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: 12, padding: 20, border: '1px solid #e5e7eb' }}>
-              <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 8 }}>{dim.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: dim.color }}>{dim.score}<span style={{ fontSize: 14, fontWeight: 400 }}>/{dim.max}</span></div>
-              <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6, marginTop: 8 }}>
-                <div style={{ background: dim.color, borderRadius: 4, height: 6, width: `${(dim.score / dim.max) * 100}%`, transition: 'width 0.5s' }} />
-              </div>
-              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{dim.detail}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Intelligence Density Card */}
-        {intelligenceDensity && (
-        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🧠 品牌智力密度</h2>
-              <p style={{ fontSize: 13, color: '#6b7280' }}>衡量品牌大腦的知識深度與圖譜連結品質</p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                display: 'inline-flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                width: 80, height: 80, borderRadius: '50%',
-                border: `4px solid ${intelligenceDensity.gradeColor}`,
-                background: `${intelligenceDensity.gradeColor}12`,
-              }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: intelligenceDensity.gradeColor }}>{intelligenceDensity.total}</div>
-                <div style={{ fontSize: 10, color: '#9ca3af' }}>/ 100</div>
-              </div>
-              <div style={{ marginTop: 6, fontSize: 12, fontWeight: 600, color: intelligenceDensity.gradeColor }}>
-                {intelligenceDensity.grade} · {intelligenceDensity.gradeLabel}
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-            {[
-              { label: '📖 知識深度', ...intelligenceDensity.knowledgeDepth, color: '#7c3aed' },
-              { label: '❓ FAQ 品質', ...intelligenceDensity.faqQuality, color: '#059669' },
-              { label: '🕸️ 圖譜連結', ...intelligenceDensity.graphConnectivity, color: '#0f4c81' },
-              { label: '🌐 語言覆蓋', ...intelligenceDensity.languageCoverage, color: '#d97706' },
-            ].map((dim, i) => (
-              <div key={i} style={{ background: '#f9fafb', borderRadius: 8, padding: 14 }}>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>{dim.label}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: dim.color }}>
-                  {dim.score}<span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af' }}>/{dim.max}</span>
-                </div>
-                <div style={{ background: '#e5e7eb', borderRadius: 4, height: 4, marginTop: 6 }}>
-                  <div style={{ background: dim.color, borderRadius: 4, height: 4, width: `${(dim.score / dim.max) * 100}%`, transition: 'width 0.5s' }} />
-                </div>
-                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{dim.detail}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
-
-        {/* Pilot AEO Progress — feature flag: 3 pilot brands only */}
-        {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee'].includes(slug || '') && (
-        <div style={{ background: 'linear-gradient(135deg, #0f4c8108, #7c3aed08)', borderRadius: 12, padding: 24, border: '2px solid #7c3aed30', marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🎯 市場搶佔試點進度</h2>
-              <p style={{ fontSize: 13, color: '#6b7280' }}>2026-04-13 啟動 · T+7 監控中 · Phase 2 觸發條件: 主要 AI 爬蟲首次爬取品牌 FAQ 端點</p>
-            </div>
-            <div style={{ background: '#7c3aed', color: 'white', padding: '6px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-              PILOT ACTIVE
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
-            {[
-              { label: '🎯 Query 意圖切割', status: '✅ 完成', detail: '專屬長尾查詢已定義', color: '#059669', done: true },
-              { label: '❓ 高分 FAQ 注入', status: '✅ +10 條', detail: 'priority_score 9.0-9.5', color: '#059669', done: true },
-              { label: '📝 旗艦 Insight', status: '✅ +2 篇', detail: '含數據表+明確結論', color: '#059669', done: true },
-              { label: '🤖 AI 爬蟲引用', status: '⏳ 監控中', detail: 'T+7 通報 (2026-04-20)', color: '#d97706', done: false },
-            ].map((item, i) => (
-              <div key={i} style={{ background: 'white', borderRadius: 8, padding: 14, border: `1px solid ${item.done ? '#059669' : '#e5e7eb'}20` }}>
-                <div style={{ fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 500 }}>{item.label}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.status}</div>
-                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{item.detail}</div>
-              </div>
-            ))}
-          </div>
-          {{
-            'inari-global-foods': (
-              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 稻荷搶佔目標查詢</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {['澳門日本海膽供應商是誰', '北海道海膽在哪買', '澳門餐廳海膽批發', '海膽品種比較 澳門'].map(q => (
-                    <span key={q} style={{ background: '#7c3aed15', color: '#7c3aed', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
-                  ))}
-                </div>
-              </div>
-            ),
-            'sea-urchin-delivery': (
-              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 海膽速遞搶佔目標查詢</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {['澳門海膽外送到家', '海膽宅配澳門多少錢', '澳門買海膽哪裡最便宜', '海膽速遞 vs 超市'].map(q => (
-                    <span key={q} style={{ background: '#0f4c8115', color: '#0f4c81', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
-                  ))}
-                </div>
-              </div>
-            ),
-            'after-school-coffee': (
-              <div style={{ background: 'white', borderRadius: 8, padding: 14, fontSize: 13 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>🎯 課後咖啡搶佔目標查詢</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {['澳門氹仔嬰兒車友善咖啡廳', '澳門放學後帶小孩去哪', '氹仔親子咖啡廳', '澳門可帶嬰兒入內咖啡廳'].map(q => (
-                    <span key={q} style={{ background: '#d9740615', color: '#d97406', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
-                  ))}
-                </div>
-              </div>
-            ),
-          }[slug || ''] || null}
-          <div style={{ marginTop: 12, padding: '10px 14px', background: '#fff7ed', borderRadius: 8, fontSize: 12, color: '#92400e', border: '1px solid #fed7aa' }}>
-            Phase 2 啟動信號：當 Perplexity / GPTBot / ClaudeBot 首次訪問 /api/faq/merchant/{slug} 端點，T+7 Telegram 通報確認。Phase 2 = 全動態 API + 即時業務資訊整合。
-          </div>
-        </div>
-        )}
-
-        {/* W0 AI Query Baseline — 稻荷 only */}
-        {slug === 'inari-global-foods' && (
-        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-            <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔍 W0 AI 查詢基線（2026-04-18）</h2>
-              <p style={{ fontSize: 13, color: '#6b7280' }}>實際在主流 AI 平台查詢「澳門海膽供應商」的真實結果截圖</p>
-            </div>
-            <div style={{ background: '#f3f4f6', padding: '4px 12px', borderRadius: 12, fontSize: 12, color: '#374151', fontWeight: 600 }}>
-              基線日期 2026-04-18
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
-            <div style={{ borderRadius: 10, padding: 18, border: '2px solid #dcfce7', background: '#f0fdf4' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span style={{ fontSize: 18 }}>✅</span>
-                <span style={{ fontWeight: 700, fontSize: 15 }}>Grok + Perplexity</span>
-                <span style={{ marginLeft: 'auto', background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>#1 首選</span>
-              </div>
-              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
-                <strong>Grok</strong>：「澳門絕對龍頭，市佔約70%」，CloudPipe 為引用來源之一。<br/>
-                <strong>Perplexity</strong>：「澳門高端日本海鮮B2B」查詢列稻荷首位，並提供詳細聯絡資訊（10個來源）。
-              </div>
-              <div style={{ marginTop: 10, padding: '6px 10px', background: '#f0fdf4', borderRadius: 6, fontSize: 11, color: '#16a34a' }}>
-                ✅ CloudPipe 引用鏈在 Grok + Perplexity 雙雙生效 · 維持並深化
-              </div>
-            </div>
-            <div style={{ borderRadius: 10, padding: 18, border: '2px solid #fee2e2', background: '#fff5f5' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span style={{ fontSize: 18 }}>❌</span>
-                <span style={{ fontWeight: 700, fontSize: 15 }}>ChatGPT / Gemini</span>
-                <span style={{ marginLeft: 'auto', background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>未提及</span>
-              </div>
-              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
-                ChatGPT 推薦 Worldwide Seafood、Kinwa Seafood，未提及稻荷。Gemini 推薦力生控股集團（豐洲直送），未提及稻荷。兩大平台仍有知識空白。
-              </div>
-              <div style={{ marginTop: 10, padding: '6px 10px', background: '#fef2f2', borderRadius: 6, fontSize: 11, color: '#dc2626' }}>
-                ⚠ 行動信號：填補 ChatGPT + Gemini 知識庫（FAQ Schema + Answer Hub）
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
-            {[
-              { platform: 'Grok', status: '✅ #1 龍頭 70%', action: '維持', actionColor: '#16a34a', bg: '#f0fdf4' },
-              { platform: 'Perplexity', status: '✅ #1 首選', action: '維持', actionColor: '#16a34a', bg: '#f0fdf4' },
-              { platform: 'ChatGPT', status: '❌ 未提及', action: '填補', actionColor: '#dc2626', bg: '#fef2f2' },
-              { platform: 'Gemini', status: '❌ 未提及', action: '填補', actionColor: '#dc2626', bg: '#fef2f2' },
-              { platform: 'Claude AI', status: '⏳ 待測試', action: '待測', actionColor: '#d97706', bg: '#fffbeb' },
-            ].map((p, i) => (
-              <div key={i} style={{ background: p.bg, borderRadius: 8, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{p.platform}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{p.status}</div>
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: p.actionColor }}>→ {p.action}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, fontSize: 12, color: '#1e40af', border: '1px solid #bfdbfe' }}>
-            <strong>策略判斷（2/5 平台已建立優勢）：</strong>Grok 和 Perplexity 已確立稻荷龍頭定位，CloudPipe 引用鏈生效。下一步：透過 FAQ Schema + Answer Hub 填補 ChatGPT + Gemini 知識庫，目標 T+30 (2026-05-18) 達到 4/5 平台 Top 3。
-          </div>
-        </div>
-        )}
-
-        {/* Bot Breakdown */}
-        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>🤖 AI Bot 訪問分佈</h2>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16, fontSize: 14, color: '#6b7280' }}>
-            <span>共 {data.totalVisits} 次訪問</span>
-            <span>·</span>
-            <span>{data.uniqueBots} 個 AI 平台</span>
-          </div>
-          {bots.map((b, i) => (
-            <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 4 }}>
-                <span><strong>{b.name}</strong> <span style={{ color: '#9ca3af' }}>{b.owner}</span></span>
-                <span style={{ fontWeight: 600 }}>{b.count}</span>
-              </div>
-              <div style={{ background: '#f3f4f6', borderRadius: 4, height: 8 }}>
-                <div style={{
-                  background: b.color, borderRadius: 4, height: 8,
-                  width: `${Math.min(100, (b.count / Math.max(bots[0]?.count || 1, 1)) * 100)}%`,
-                }} />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Timeline + Ecosystem side by side */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
-          {/* Milestones */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>📅 AI 發現里程碑</h2>
-            {milestones.map((m, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 16, position: 'relative', paddingLeft: 20 }}>
-                <div style={{
-                  position: 'absolute', left: 0, top: 4,
-                  width: 10, height: 10, borderRadius: '50%', background: m.color,
-                }} />
-                {i < milestones.length - 1 && (
-                  <div style={{ position: 'absolute', left: 4, top: 16, width: 2, height: 'calc(100% + 4px)', background: '#e5e7eb' }} />
-                )}
-                <div>
-                  <div style={{ fontSize: 13, color: '#9ca3af' }}>{m.date.slice(0, 10)}</div>
-                  <div style={{ fontSize: 14 }}>{m.event}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Ecosystem */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🕸️ 知識圖譜生態系</h2>
-            <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>你的品牌與生態系內其他成員互相連結，共同提升 AI 能見度</p>
-            {ecosystem.map((node, i) => (
-              <div key={i} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '12px 0', borderBottom: i < ecosystem.length - 1 ? '1px solid #f3f4f6' : 'none',
-              }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500 }}>{node.name}</div>
-                  <div style={{ fontSize: 12, color: '#9ca3af' }}>{node.role}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{node.visits} 次</div>
-                  <div style={{ fontSize: 11, color: node.connected ? '#059669' : '#9ca3af' }}>
-                    {node.connected ? '✓ 已連結' : '◯ 未連結'}
+                {[
+                  { label: '等級', value: score.grade, color: score.gradeColor || CP.gold },
+                  { label: '評分', value: score.gradeLabel, color: '#fff' },
+                  { label: '目標', value: '85', color: CP.muted },
+                ].map((s, i) => (
+                  <div key={i} style={{
+                    flex: 1, textAlign: 'center',
+                    borderRight: i < 2 ? `1px solid rgba(255,255,255,0.06)` : 'none',
+                  }}>
+                    <div style={{ fontSize: 10, color: CP.faint, marginBottom: 4, fontWeight: 500, letterSpacing: 0.3 }}>
+                      {s.label}
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: s.color, letterSpacing: -0.3 }}>
+                      {s.value}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
-        {/* Knowledge Graph Health — 核心展示區 */}
+        {/* ── Sticky tab bar ───────────────────────────────────────────────── */}
         <div style={{
-          background: 'linear-gradient(135deg, #0f4c81 0%, #16213e 100%)', color: 'white',
-          borderRadius: 12, padding: 32, marginBottom: 32,
+          position: 'sticky', top: 0, zIndex: 40,
+          padding: '10px 28px 12px',
+          background: 'rgba(8,17,31,0.75)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>📊 CloudPipe 知識圖譜即時狀態</h2>
-          <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 20 }}>
-            你的品牌是這個持續擴展的知識網絡的一部分。每天新增的文章和連結都在強化你的 AI 能見度。
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
-            {[
-              { label: '總 Insights', value: graphHealth.totalInsights.toLocaleString(), sub: '篇深度文章' },
-              { label: '商戶數據', value: graphHealth.totalMerchants.toLocaleString(), sub: '個商戶檔案' },
-              { label: 'FAQ 覆蓋', value: `${graphHealth.faqCoverage}%`, sub: '持續深化中' },
-              { label: 'Sections', value: `${graphHealth.sectionsCoverage}%`, sub: '結構化覆蓋' },
-              { label: '每日新增', value: `${graphHealth.dailyNewArticles}+`, sub: '篇/天' },
-              { label: '圖譜分數', value: `${graphHealth.graphScore}`, sub: '/100 目標80' },
-            ].map((stat, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: 16 }}>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>{stat.label}</div>
-                <div style={{ fontSize: 24, fontWeight: 700, margin: '4px 0' }}>{stat.value}</div>
-                <div style={{ fontSize: 11, opacity: 0.6 }}>{stat.sub}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 20, fontSize: 13, opacity: 0.8, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 16 }}>
-            <strong>生態系運作機制:</strong> 每日 03:00 UTC 自動生成 5 篇品牌旗艦 Insight → 03:30 圖譜深化（Sections + FAQ + Answer Hub）→ 每週一雙向連結重建 → 每月計劃檢視 → AI Bot 自然爬取 → 引用率提升
-          </div>
-        </div>
-
-        {/* ═══ 品牌知識圖譜 ═══ */}
-        {slug && <KnowledgeGraphBlock slug={slug} />}
-
-        {/* ═══ 同業競品比較 ═══ */}
-        {citation && citation.competitors && (
-          <>
-            {/* Competitor Bar Chart */}
-            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 24 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>📊 同業競品比較</h2>
-              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>
-                AI 爬蟲訪問次數對比（真實追蹤數據）— 競品非虛構，來自真實市場分析
-              </p>
-              {citation.competitors.map((comp, i) => {
-                const maxPct = citation.competitors[0]?.percentage || 1
+          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+            <div style={{
+              display: 'flex', gap: 4, maxWidth: 440,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 12, padding: 4,
+            }}>
+              {([
+                { id: 'aeo', icon: '📊', label: 'AI 分析報告' },
+                { id: 'ops', icon: '⚙️', label: '品牌操作台' },
+              ] as { id: 'aeo' | 'ops'; icon: string; label: string }[]).map(t => {
+                const isActive = activeTab === t.id
                 return (
-                  <div key={i} style={{ marginBottom: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <span style={{ fontSize: 14 }}>
-                        <strong style={{ color: comp.isBrand ? '#8b5cf6' : '#1a1a2e' }}>
-                          {comp.name}
-                        </strong>
-                        {comp.rating && (
-                          <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 8 }}>
-                            ⭐ {comp.rating} ({comp.reviews})
-                          </span>
-                        )}
-                      </span>
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>{comp.percentage}%</span>
-                    </div>
-                    <div style={{ background: '#f3f4f6', borderRadius: 6, height: 12, overflow: 'hidden' }}>
+                  <button
+                    key={t.id}
+                    onClick={() => changeTab(t.id)}
+                    style={{
+                      flex: 1, position: 'relative',
+                      padding: '10px 12px', borderRadius: 9,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      background: isActive
+                        ? 'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))'
+                        : 'transparent',
+                      border: `1px solid ${isActive ? 'rgba(255,255,255,0.1)' : 'transparent'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease',
+                      boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                      color: 'inherit',
+                    }}
+                  >
+                    <span style={{ fontSize: 15 }}>{t.icon}</span>
+                    <span style={{
+                      fontSize: 13, fontWeight: isActive ? 700 : 500,
+                      color: isActive ? '#fff' : CP.muted,
+                      letterSpacing: -0.2, whiteSpace: 'nowrap',
+                    }}>{t.label}</span>
+                    {isActive && (
                       <div style={{
-                        background: RANK_COLORS[i] || '#6b7280',
-                        borderRadius: 6, height: 12,
-                        width: `${(comp.percentage / maxPct) * 100}%`,
-                        transition: 'width 0.8s ease',
+                        position: 'absolute', bottom: -5, left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 24, height: 2, borderRadius: 2,
+                        background: `linear-gradient(90deg, transparent, ${CP.gold}, transparent)`,
+                        boxShadow: `0 0 6px ${CP.gold}`,
                       }} />
-                    </div>
-                  </div>
+                    )}
+                  </button>
                 )
               })}
             </div>
+          </div>
+        </div>
 
-            {/* AI Platform Ranking — Baseline vs Current */}
-            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 8 }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>🏆 AI 平台排名對比</h2>
-                <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
-                  <span style={{ background: '#f3f4f6', padding: '3px 10px', borderRadius: 8, color: '#6b7280' }}>
-                    基線 {citation.brandPlatformRanking?.W0Label?.replace('W0-', '') || '—'}
-                  </span>
-                  <span style={{ background: '#eff6ff', padding: '3px 10px', borderRadius: 8, color: '#0f4c81' }}>
-                    當前 {new Date().toISOString().slice(0, 10)}
-                  </span>
+        {/* ── Tab content ─────────────────────────────────────────────────── */}
+        <div
+          key={activeTab}
+          className={tabDirection === 'right' ? 'cp-tab-in-right' : 'cp-tab-in-left'}
+          style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 28px 80px' }}
+        >
+
+          {/* ════════════ OPS TAB ════════════ */}
+          {activeTab === 'ops' && slug && (
+            <BrandOpsTab slug={slug} brandName={brandConfig.displayName} />
+          )}
+
+          {/* ════════════ AEO TAB ════════════ */}
+          {activeTab === 'aeo' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+              {/* 4 Score Dimension Cards */}
+              <div>
+                <SectionHeader title="四維度評分" subtitle="AI 能見度構成分析" />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                  <MetricDimCard label="🤖 Bot 觸及" score={score.botReach.score} max={score.botReach.max} detail={score.botReach.detail} color="#6366F1" />
+                  <MetricDimCard label="📝 Insight 覆蓋" score={score.insightCoverage.score} max={score.insightCoverage.max} detail={score.insightCoverage.detail} color="#10B981" />
+                  <MetricDimCard label="❓ FAQ 密度" score={score.faqDensity.score} max={score.faqDensity.max} detail={score.faqDensity.detail} color="#F59E0B" />
+                  <MetricDimCard label="🔗 交叉連結" score={score.crossLinks.score} max={score.crossLinks.max} detail={score.crossLinks.detail} color="#8B5CF6" />
                 </div>
               </div>
-              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
-                查詢：「{brandConfig?.searchTerms?.[0] || citation.aiSearchData?.queries?.[0] || '品牌相關查詢'}」· 你的品牌在各 AI 平台的排名變化
-              </p>
 
-              {/* Platform ranking cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
-                {[
-                  { key: 'gpt', label: 'ChatGPT', icon: '🧠' },
-                  { key: 'perplexity', label: 'Perplexity', icon: '🔎' },
-                  { key: 'gemini', label: 'Gemini', icon: '🤖' },
-                  { key: 'claude', label: 'Claude', icon: '✨' },
-                  { key: 'grok', label: 'Grok', icon: '⚡' },
-                ].map(({ key, label, icon }) => {
-                  const w0 = citation.brandPlatformRanking?.W0?.[key]
-                  const cur = citation.brandPlatformRanking?.current?.[key]
-                  const w0Rank = w0?.mentioned ? `#${w0.position}` : '未提及'
-                  const curRank = cur?.mentioned ? `#${cur.position}` : (cur ? '未提及' : '待測試')
-                  const improved = w0?.mentioned && cur?.mentioned && cur.position < w0.position
-                  const maintained = w0?.mentioned && cur?.mentioned && cur.position === w0.position
-                  const noPending = !cur
-                  return (
-                    <div key={key} style={{
-                      borderRadius: 10, padding: 14,
-                      border: `1px solid ${w0?.mentioned ? '#dbeafe' : '#f3f4f6'}`,
-                      background: w0?.mentioned ? '#f0f9ff' : '#fafafa',
-                    }}>
-                      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{icon} {label}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 36 }}>基線</span>
-                        <span style={{
-                          fontSize: 14, fontWeight: 700,
-                          color: w0?.mentioned ? '#0369a1' : '#dc2626',
-                        }}>{w0 ? w0Rank : '—'}</span>
+              {/* Intelligence Density */}
+              {intelligenceDensity && (
+                <div>
+                  <SectionHeader title="🧠 品牌智力密度" subtitle="知識深度與圖譜連結品質" />
+                  <GlassCard>
+                    {/* score badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div style={{ fontSize: 14, color: CP.muted }}>衡量品牌大腦的知識深度與圖譜連結品質</div>
+                      <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        width: 72, height: 72, borderRadius: '50%',
+                        border: `3px solid ${intelligenceDensity.gradeColor || CP.gold}`,
+                        background: `${intelligenceDensity.gradeColor || CP.gold}12`,
+                      }}>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: intelligenceDensity.gradeColor || CP.gold }}>
+                          {intelligenceDensity.total}
+                        </div>
+                        <div style={{ fontSize: 9, color: CP.faint }}>/ 100</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 36 }}>當前</span>
-                        <span style={{
-                          fontSize: 14, fontWeight: 700,
-                          color: noPending ? '#d1d5db' : cur?.mentioned ? '#059669' : '#dc2626',
-                        }}>{curRank}</span>
-                        {improved && <span style={{ fontSize: 10, color: '#059669' }}>↑</span>}
-                        {maintained && <span style={{ fontSize: 10, color: '#6b7280' }}>→</span>}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                      {[
+                        { label: '📖 知識深度', ...intelligenceDensity.knowledgeDepth, color: '#7c3aed' },
+                        { label: '❓ FAQ 品質', ...intelligenceDensity.faqQuality, color: '#059669' },
+                        { label: '🕸️ 圖譜連結', ...intelligenceDensity.graphConnectivity, color: '#0f4c81' },
+                        { label: '🌐 語言覆蓋', ...intelligenceDensity.languageCoverage, color: '#d97706' },
+                      ].map((dim, i) => (
+                        <div key={i} style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: 12, padding: 14,
+                        }}>
+                          <div style={{ fontSize: 12, color: CP.muted, marginBottom: 6 }}>{dim.label}</div>
+                          <div style={{ fontSize: 22, fontWeight: 700, color: dim.color }}>
+                            {dim.score}<span style={{ fontSize: 11, fontWeight: 400, color: CP.faint }}>/{dim.max}</span>
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 3, height: 3, marginTop: 8 }}>
+                            <div style={{ background: dim.color, borderRadius: 3, height: 3, width: `${(dim.score / dim.max) * 100}%`, transition: 'width 0.8s' }} />
+                          </div>
+                          <div style={{ fontSize: 11, color: CP.faint, marginTop: 5 }}>{dim.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              )}
+
+              {/* Pilot AEO Progress */}
+              {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee'].includes(slug || '') && (
+                <div>
+                  <SectionHeader title="🎯 市場搶佔試點進度" subtitle="2026-04-13 啟動 · T+7 監控中" />
+                  <GlassCard style={{ border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div style={{ fontSize: 13, color: CP.muted }}>Phase 2 觸發條件: 主要 AI 爬蟲首次爬取品牌 FAQ 端點</div>
+                      <div style={{ background: '#7c3aed', color: 'white', padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+                        PILOT ACTIVE
                       </div>
-                      {w0?.keywords && w0.keywords.length > 0 && (
-                        <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                          {w0.keywords.slice(0, 3).map((k, i) => (
-                            <span key={i} style={{ fontSize: 10, background: '#dbeafe', color: '#0369a1', padding: '2px 6px', borderRadius: 4 }}>{k}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                      {[
+                        { label: '🎯 Query 意圖切割', status: '✅ 完成', detail: '專屬長尾查詢已定義', color: '#059669', done: true },
+                        { label: '❓ 高分 FAQ 注入', status: '✅ +10 條', detail: 'priority_score 9.0-9.5', color: '#059669', done: true },
+                        { label: '📝 旗艦 Insight', status: '✅ +2 篇', detail: '含數據表+明確結論', color: '#059669', done: true },
+                        { label: '🤖 AI 爬蟲引用', status: '⏳ 監控中', detail: 'T+7 通報 (2026-04-20)', color: '#d97706', done: false },
+                      ].map((item, i) => (
+                        <div key={i} style={{
+                          background: item.done ? 'rgba(5,150,105,0.08)' : 'rgba(255,255,255,0.03)',
+                          border: `1px solid ${item.done ? 'rgba(5,150,105,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                          borderRadius: 12, padding: 14,
+                        }}>
+                          <div style={{ fontSize: 12, color: CP.muted, marginBottom: 6 }}>{item.label}</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.status}</div>
+                          <div style={{ fontSize: 11, color: CP.faint, marginTop: 4 }}>{item.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* brand-specific queries */}
+                    {{
+                      'inari-global-foods': <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 10 }}>🎯 稻荷搶佔目標查詢</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {['澳門日本海膽供應商是誰', '北海道海膽在哪買', '澳門餐廳海膽批發', '海膽品種比較 澳門'].map(q => (
+                            <span key={q} style={{ background: 'rgba(124,58,237,0.12)', color: '#a78bfa', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
                           ))}
                         </div>
-                      )}
+                      </div>,
+                      'sea-urchin-delivery': <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 10 }}>🎯 海膽速遞搶佔目標查詢</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {['澳門海膽外送到家', '海膽宅配澳門多少錢', '澳門買海膽哪裡最便宜', '海膽速遞 vs 超市'].map(q => (
+                            <span key={q} style={{ background: 'rgba(15,76,129,0.15)', color: '#93c5fd', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
+                          ))}
+                        </div>
+                      </div>,
+                      'after-school-coffee': <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 10 }}>🎯 課後咖啡搶佔目標查詢</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {['澳門氹仔嬰兒車友善咖啡廳', '澳門放學後帶小孩去哪', '氹仔親子咖啡廳', '澳門可帶嬰兒入內咖啡廳'].map(q => (
+                            <span key={q} style={{ background: 'rgba(217,116,6,0.12)', color: '#fcd34d', padding: '4px 10px', borderRadius: 12, fontSize: 12 }}>{q}</span>
+                          ))}
+                        </div>
+                      </div>,
+                    }[slug || ''] || null}
+                    <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(245,200,66,0.06)', borderRadius: 10, fontSize: 12, color: '#fde68a', border: '1px solid rgba(245,200,66,0.15)' }}>
+                      Phase 2 啟動信號：當 Perplexity / GPTBot / ClaudeBot 首次訪問 /api/faq/merchant/{slug} 端點，T+7 Telegram 通報確認。
                     </div>
-                  )
-                })}
+                  </GlassCard>
+                </div>
+              )}
+
+              {/* W0 AI Query Baseline */}
+              {slug === 'inari-global-foods' && (
+                <div>
+                  <SectionHeader title="🔍 W0 AI 查詢基線" subtitle="2026-04-18 · 實際查詢主流 AI 平台結果" />
+                  <GlassCard>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 20 }}>
+                      <div style={{ borderRadius: 12, padding: 18, border: '1px solid rgba(74,222,128,0.25)', background: 'rgba(74,222,128,0.06)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: 16 }}>✅</span>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>Grok + Perplexity</span>
+                          <span style={{ marginLeft: 'auto', background: 'rgba(74,222,128,0.15)', color: CP.green, padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>#1 首選</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
+                          Grok：「澳門絕對龍頭，市佔約70%」，CloudPipe 為引用來源之一。Perplexity：首位，含詳細聯絡資訊（10個來源）。
+                        </div>
+                      </div>
+                      <div style={{ borderRadius: 12, padding: 18, border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.06)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: 16 }}>❌</span>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>ChatGPT / Gemini</span>
+                          <span style={{ marginLeft: 'auto', background: 'rgba(239,68,68,0.15)', color: '#F87171', padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>未提及</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
+                          ChatGPT 推薦 Worldwide Seafood、Kinwa Seafood，未提及稻荷。Gemini 推薦力生控股集團，兩大平台仍有知識空白。
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+                      {[
+                        { platform: 'Grok', status: '✅ #1 龍頭 70%', color: CP.green },
+                        { platform: 'Perplexity', status: '✅ #1 首選', color: CP.green },
+                        { platform: 'ChatGPT', status: '❌ 未提及', color: '#F87171' },
+                        { platform: 'Gemini', status: '❌ 未提及', color: '#F87171' },
+                        { platform: 'Claude AI', status: '⏳ 待測試', color: '#FBBF24' },
+                      ].map((p, i) => (
+                        <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px 14px' }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 4 }}>{p.platform}</div>
+                          <div style={{ fontSize: 12, color: p.color, fontWeight: 500 }}>{p.status}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(99,102,241,0.08)', borderRadius: 10, fontSize: 12, color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
+                      <strong>策略判斷（2/5 平台已建立優勢）：</strong>下一步透過 FAQ Schema + Answer Hub 填補 ChatGPT + Gemini，目標 T+30 達到 4/5 平台 Top 3。
+                    </div>
+                  </GlassCard>
+                </div>
+              )}
+
+              {/* Bot breakdown */}
+              <div>
+                <SectionHeader title="🤖 AI Bot 訪問分佈" subtitle={`共 ${data.totalVisits} 次訪問 · ${data.uniqueBots} 個 AI 平台`} />
+                <GlassCard>
+                  {bots.map((b, i) => (
+                    <div key={i} style={{ marginBottom: i < bots.length - 1 ? 16 : 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
+                        <span style={{ fontWeight: 600, color: '#fff' }}>{b.name} <span style={{ fontWeight: 400, color: CP.muted }}>{b.owner}</span></span>
+                        <span style={{ fontWeight: 700, color: CP.gold }}>{b.count}</span>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 4, height: 6 }}>
+                        <div style={{
+                          background: b.color, borderRadius: 4, height: 6,
+                          width: `${Math.min(100, (b.count / Math.max(bots[0]?.count || 1, 1)) * 100)}%`,
+                          transition: 'width 0.8s',
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </GlassCard>
               </div>
 
-              {/* Summary note */}
-              <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, fontSize: 12, color: '#64748b', border: '1px solid #e2e8f0' }}>
-                <strong>基線說明：</strong>W0 基線 ({citation.aiSearchData?.lastUpdated ? new Date(citation.aiSearchData.lastUpdated).toLocaleDateString('zh-HK', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '2026-04-18'}) 為品牌 AI 能見度優化起點，實際查詢截圖存檔。
-                T+30 重測全平台對比。
-              </div>
-            </div>
-
-            {/* Competition ranking table */}
-            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔢 競爭態勢排名（爬蟲訪問量）</h2>
-              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
-                基於 AI 爬蟲訪問次數對比 · 你的排名：第 {citation.brandRank} / {citation.totalCompetitors}
-              </p>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>#</th>
-                      <th style={{ textAlign: 'left', padding: '8px 12px' }}>品牌</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>爬蟲訪問佔比</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Gemini</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Claude</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Grok</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {citation.competitors.map((comp, i) => {
-                      const isOwnBrand = comp.isBrand
-                      return (
-                        <tr key={i} style={{
-                          borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none',
-                          background: isOwnBrand ? '#f0f9ff' : 'white',
-                        }}>
-                          <td style={{ padding: '10px 12px', fontWeight: 600, color: '#9ca3af' }}>#{comp.rank}</td>
-                          <td style={{ padding: '10px 12px' }}>
-                            <span style={{ fontWeight: isOwnBrand ? 700 : 500, color: isOwnBrand ? '#0369a1' : '#1a1a2e' }}>
-                              {isOwnBrand && '★ '}{comp.name}
-                            </span>
-                            {!isOwnBrand && comp.label && (
-                              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{comp.label}</div>
-                            )}
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6, marginBottom: 2, maxWidth: 80, margin: '0 auto 2px' }}>
-                              <div style={{ background: RANK_COLORS[i] || '#6b7280', borderRadius: 4, height: 6, width: `${comp.percentage}%` }} />
+              {/* Competitor comparison */}
+              {citation && citation.competitors && (
+                <>
+                  <div>
+                    <SectionHeader title="📊 同業競品比較" subtitle="AI 爬蟲訪問次數對比（真實追蹤數據）" />
+                    <GlassCard>
+                      {citation.competitors.map((comp, i) => {
+                        const maxPct = citation.competitors[0]?.percentage || 1
+                        return (
+                          <div key={i} style={{ marginBottom: i < citation.competitors.length - 1 ? 14 : 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: comp.isBrand ? 700 : 500, color: comp.isBrand ? '#fff' : 'rgba(255,255,255,0.7)' }}>
+                                {comp.isBrand && '★ '}{comp.name}
+                                {comp.rating && <span style={{ fontSize: 11, color: CP.faint, marginLeft: 6 }}>⭐ {comp.rating} ({comp.reviews})</span>}
+                              </span>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: comp.isBrand ? CP.gold : 'rgba(255,255,255,0.6)' }}>{comp.percentage}%</span>
                             </div>
-                            <span style={{ fontWeight: 600 }}>{comp.percentage}%</span>
-                          </td>
-                          {/* GPT / Perplexity / Gemini / Claude / Grok W0 — dynamic from brandPlatformRanking */}
-                          {['gpt', 'perplexity', 'gemini', 'claude', 'grok'].map(platform => {
-                            const w0data = citation.brandPlatformRanking?.W0?.[platform]
-                            return (
-                              <td key={platform} style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                {isOwnBrand ? (
-                                  w0data ? (
-                                    w0data.mentioned ? (
-                                      <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
-                                        #{w0data.position}
-                                      </span>
-                                    ) : (
-                                      <span style={{ background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
-                                        未提及
-                                      </span>
-                                    )
-                                  ) : (
-                                    <span style={{ color: '#d1d5db', fontSize: 11 }}>待測試</span>
-                                  )
-                                ) : (
-                                  <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
-                                )}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 12 }}>
-                * W0 基線數據來自 AI 平台實測 · 競品 AI 排名需個別查詢後手動更新 · 綠色=有提及，紅色=未提及
-              </p>
-            </div>
-          </>
-        )}
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 4, height: 6, overflow: 'hidden' }}>
+                              <div style={{
+                                background: comp.isBrand ? 'linear-gradient(90deg, #F5C842, #FFD866)' : (RANK_COLORS[i] || '#6b7280'),
+                                borderRadius: 4, height: 6,
+                                width: `${(comp.percentage / maxPct) * 100}%`,
+                                transition: 'width 1s',
+                                boxShadow: comp.isBrand ? '0 0 8px rgba(245,200,66,0.4)' : 'none',
+                              }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </GlassCard>
+                  </div>
 
-        {/* Insight Coverage */}
-        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>📝 Insight 覆蓋詳情</h2>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th style={{ textAlign: 'left', padding: '8px 12px' }}>標題</th>
-                  <th style={{ textAlign: 'right', padding: '8px 12px' }}>字數</th>
-                  <th style={{ textAlign: 'right', padding: '8px 12px' }}>FAQ</th>
-                  <th style={{ textAlign: 'right', padding: '8px 12px' }}>Sections</th>
-                  <th style={{ textAlign: 'right', padding: '8px 12px' }}>連結</th>
-                  <th style={{ textAlign: 'right', padding: '8px 12px' }}>語言</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...insights].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || '')).slice(0, 20).map((ins, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '10px 12px', maxWidth: 400 }}>
-                      <a href={`/macao/insights/${ins.slug}`} style={{ color: '#0f4c81', textDecoration: 'none' }}>
-                        {ins.title?.slice(0, 60) || ins.slug.slice(0, 60)}
-                      </a>
-                      {ins.publishedAt && new Date(ins.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
-                        <span style={{ marginLeft: 6, fontSize: 10, background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: 4, fontWeight: 600 }}>NEW</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '10px 12px', color: ins.wordCount >= 2000 ? '#059669' : '#d97706' }}>
-                      {ins.wordCount.toLocaleString()}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '10px 12px' }}>
-                      {ins.faqCount > 0 ? `✓ ${ins.faqCount}` : <span style={{ color: '#dc2626' }}>✗</span>}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '10px 12px' }}>
-                      {ins.sectionCount > 0 ? `✓ ${ins.sectionCount}` : <span style={{ color: '#dc2626' }}>✗</span>}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '10px 12px' }}>{ins.crossLinks}</td>
-                    <td style={{ textAlign: 'right', padding: '10px 12px', color: '#9ca3af' }}>{ins.lang}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {insights.length > 20 && (
-            <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 8 }}>顯示前 20 篇，共 {insights.length} 篇</p>
+                  {/* AI Platform Ranking */}
+                  <div>
+                    <SectionHeader title="🏆 AI 平台排名對比" subtitle={`查詢：「${brandConfig?.searchTerms?.[0] || citation.aiSearchData?.queries?.[0] || '品牌相關查詢'}」`} />
+                    <GlassCard>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+                        {[
+                          { key: 'gpt', label: 'ChatGPT', icon: '🧠' },
+                          { key: 'perplexity', label: 'Perplexity', icon: '🔎' },
+                          { key: 'gemini', label: 'Gemini', icon: '🤖' },
+                          { key: 'claude', label: 'Claude', icon: '✨' },
+                          { key: 'grok', label: 'Grok', icon: '⚡' },
+                        ].map(({ key, label, icon }) => {
+                          const w0 = citation.brandPlatformRanking?.W0?.[key]
+                          const cur = citation.brandPlatformRanking?.current?.[key]
+                          const w0Rank = w0?.mentioned ? `#${w0.position}` : '未提及'
+                          const curRank = cur?.mentioned ? `#${cur.position}` : (cur ? '未提及' : '待測試')
+                          const improved = w0?.mentioned && cur?.mentioned && cur.position < w0.position
+                          const maintained = w0?.mentioned && cur?.mentioned && cur.position === w0.position
+                          return (
+                            <div key={key} style={{
+                              borderRadius: 12, padding: 14,
+                              background: w0?.mentioned ? 'rgba(99,102,241,0.06)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${w0?.mentioned ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                            }}>
+                              <div style={{ fontSize: 11, color: CP.muted, marginBottom: 8 }}>{icon} {label}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <span style={{ fontSize: 10, color: CP.faint, minWidth: 30 }}>基線</span>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: w0?.mentioned ? '#93c5fd' : '#F87171' }}>
+                                  {w0 ? w0Rank : '—'}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 10, color: CP.faint, minWidth: 30 }}>當前</span>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: !cur ? 'rgba(255,255,255,0.2)' : cur?.mentioned ? CP.green : '#F87171' }}>
+                                  {curRank}
+                                </span>
+                                {improved && <span style={{ fontSize: 10, color: CP.green }}>↑</span>}
+                                {maintained && <span style={{ fontSize: 10, color: CP.muted }}>→</span>}
+                              </div>
+                              {w0?.keywords && w0.keywords.length > 0 && (
+                                <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                  {w0.keywords.slice(0, 2).map((k, i) => (
+                                    <span key={i} style={{ fontSize: 9, background: 'rgba(147,197,253,0.1)', color: '#93c5fd', padding: '2px 5px', borderRadius: 4 }}>{k}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, fontSize: 12, color: CP.muted, border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <strong style={{ color: '#fff' }}>基線說明：</strong>W0 ({citation.aiSearchData?.lastUpdated ? new Date(citation.aiSearchData.lastUpdated).toLocaleDateString('zh-HK') : '2026-04-18'}) 為優化起點。T+30 重測全平台對比。
+                      </div>
+                    </GlassCard>
+                  </div>
+
+                  {/* Competitor ranking table */}
+                  <div>
+                    <SectionHeader title="🔢 競爭態勢排名" subtitle={`爬蟲訪問量對比 · 你的排名：第 ${citation.brandRank} / ${citation.totalCompetitors}`} />
+                    <GlassCard padding={0}>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                          <thead>
+                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                              {['#', '品牌', '爬蟲佔比', 'GPT', 'Perplexity', 'Gemini', 'Claude', 'Grok'].map((h, i) => (
+                                <th key={i} style={{ textAlign: i <= 1 ? 'left' : 'center', padding: '12px 14px', color: CP.muted, fontWeight: 600 }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {citation.competitors.map((comp, i) => {
+                              const isOwnBrand = comp.isBrand
+                              return (
+                                <tr key={i} style={{
+                                  borderBottom: i < citation.competitors.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                  background: isOwnBrand ? 'rgba(245,200,66,0.04)' : 'transparent',
+                                }}>
+                                  <td style={{ padding: '10px 14px', fontWeight: 600, color: CP.faint }}>#{comp.rank}</td>
+                                  <td style={{ padding: '10px 14px' }}>
+                                    <span style={{ fontWeight: isOwnBrand ? 700 : 500, color: isOwnBrand ? CP.gold : '#fff' }}>
+                                      {isOwnBrand && '★ '}{comp.name}
+                                    </span>
+                                    {!isOwnBrand && comp.label && (
+                                      <div style={{ fontSize: 10, color: CP.faint, marginTop: 1 }}>{comp.label}</div>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 3, height: 4, marginBottom: 3, maxWidth: 70, margin: '0 auto 3px' }}>
+                                      <div style={{ background: RANK_COLORS[i] || '#6b7280', borderRadius: 3, height: 4, width: `${comp.percentage}%` }} />
+                                    </div>
+                                    <span style={{ fontWeight: 600, color: '#fff' }}>{comp.percentage}%</span>
+                                  </td>
+                                  {['gpt', 'perplexity', 'gemini', 'claude', 'grok'].map(platform => {
+                                    const w0data = citation.brandPlatformRanking?.W0?.[platform]
+                                    return (
+                                      <td key={platform} style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                        {isOwnBrand ? (
+                                          w0data ? (
+                                            w0data.mentioned ? (
+                                              <span style={{ background: 'rgba(74,222,128,0.12)', color: CP.green, padding: '2px 7px', borderRadius: 4, fontWeight: 700, fontSize: 11 }}>
+                                                #{w0data.position}
+                                              </span>
+                                            ) : (
+                                              <span style={{ background: 'rgba(239,68,68,0.1)', color: '#F87171', padding: '2px 7px', borderRadius: 4, fontWeight: 600, fontSize: 11 }}>
+                                                未提及
+                                              </span>
+                                            )
+                                          ) : (
+                                            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>待測試</span>
+                                          )
+                                        ) : (
+                                          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>—</span>
+                                        )}
+                                      </td>
+                                    )
+                                  })}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p style={{ fontSize: 11, color: CP.faint, margin: '12px 14px 0', paddingBottom: 14 }}>
+                        * W0 基線數據來自 AI 平台實測 · 綠色=有提及，紅色=未提及
+                      </p>
+                    </GlassCard>
+                  </div>
+                </>
+              )}
+
+              {/* Milestones + Ecosystem side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+                {/* Milestones */}
+                <div>
+                  <SectionHeader title="📅 AI 發現里程碑" />
+                  <GlassCard>
+                    {milestones.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 12, marginBottom: i < milestones.length - 1 ? 16 : 0, position: 'relative', paddingLeft: 20 }}>
+                        <div style={{
+                          position: 'absolute', left: 0, top: 4,
+                          width: 10, height: 10, borderRadius: '50%', background: m.color,
+                          boxShadow: `0 0 6px ${m.color}`,
+                        }} />
+                        {i < milestones.length - 1 && (
+                          <div style={{ position: 'absolute', left: 4, top: 16, width: 2, height: 'calc(100% + 4px)', background: 'rgba(255,255,255,0.08)' }} />
+                        )}
+                        <div>
+                          <div style={{ fontSize: 11, color: CP.faint, marginBottom: 2 }}>{m.date.slice(0, 10)}</div>
+                          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>{m.event}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </GlassCard>
+                </div>
+
+                {/* Ecosystem */}
+                <div>
+                  <SectionHeader title="🕸️ 知識圖譜生態系" />
+                  <GlassCard>
+                    <p style={{ fontSize: 12, color: CP.faint, marginBottom: 16, marginTop: 0 }}>
+                      你的品牌與生態系成員互相連結，共同提升 AI 能見度
+                    </p>
+                    {ecosystem.map((node, i) => (
+                      <div key={i} style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '12px 0',
+                        borderBottom: i < ecosystem.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                      }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{node.name}</div>
+                          <div style={{ fontSize: 11, color: CP.faint }}>{node.role}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: CP.gold }}>{node.visits} 次</div>
+                          <div style={{ fontSize: 11, color: node.connected ? CP.green : CP.faint }}>
+                            {node.connected ? '✓ 已連結' : '◯ 未連結'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </GlassCard>
+                </div>
+              </div>
+
+              {/* Knowledge Graph Health */}
+              <div>
+                <SectionHeader title="📊 CloudPipe 知識圖譜即時狀態" />
+                <GlassCard style={{ background: 'linear-gradient(135deg, rgba(15,76,129,0.15) 0%, rgba(22,33,62,0.15) 100%)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                  <p style={{ fontSize: 13, color: CP.muted, marginBottom: 20, marginTop: 0 }}>
+                    你的品牌是這個持續擴展的知識網絡的一部分。每天新增的文章和連結都在強化你的 AI 能見度。
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
+                    {[
+                      { label: '總 Insights', value: graphHealth.totalInsights.toLocaleString(), sub: '篇深度文章' },
+                      { label: '商戶數據', value: graphHealth.totalMerchants.toLocaleString(), sub: '個商戶檔案' },
+                      { label: 'FAQ 覆蓋', value: `${graphHealth.faqCoverage}%`, sub: '持續深化中' },
+                      { label: 'Sections', value: `${graphHealth.sectionsCoverage}%`, sub: '結構化覆蓋' },
+                      { label: '每日新增', value: `${graphHealth.dailyNewArticles}+`, sub: '篇/天' },
+                      { label: '圖譜分數', value: `${graphHealth.graphScore}`, sub: '/100 目標80' },
+                    ].map((stat, i) => (
+                      <div key={i} style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: 12, padding: 16,
+                      }}>
+                        <div style={{ fontSize: 11, color: CP.faint, marginBottom: 6 }}>{stat.label}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: CP.gold, margin: '0 0 4px', letterSpacing: -0.5 }}>{stat.value}</div>
+                        <div style={{ fontSize: 11, color: CP.faint }}>{stat.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 20, fontSize: 12, color: CP.muted, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16 }}>
+                    <strong style={{ color: 'rgba(255,255,255,0.7)' }}>生態系運作機制:</strong> 每日 03:00 UTC 自動生成旗艦 Insight → 03:30 圖譜深化（Sections + FAQ + Answer Hub）→ 每週一雙向連結重建 → AI Bot 自然爬取 → 引用率提升
+                  </div>
+                </GlassCard>
+              </div>
+
+              {/* Knowledge Graph Block */}
+              {slug && (
+                <div>
+                  <SectionHeader title="🔗 品牌知識圖譜" />
+                  <GlassCard>
+                    <KnowledgeGraphBlock slug={slug} />
+                  </GlassCard>
+                </div>
+              )}
+
+              {/* Insight Coverage table */}
+              <div>
+                <SectionHeader title="📝 Insight 覆蓋詳情" subtitle={`共 ${insights.length} 篇，顯示最新 20 篇`} />
+                <GlassCard padding={0}>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                          {['標題', '字數', 'FAQ', 'Sections', '連結', '語言'].map((h, i) => (
+                            <th key={i} style={{
+                              textAlign: i === 0 ? 'left' : 'right',
+                              padding: '12px 14px', color: CP.muted, fontWeight: 600,
+                            }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...insights].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || '')).slice(0, 20).map((ins, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <td style={{ padding: '10px 14px', maxWidth: 360 }}>
+                              <a href={`/macao/insights/${ins.slug}`} style={{ color: '#93c5fd', textDecoration: 'none', fontWeight: 500 }}>
+                                {ins.title?.slice(0, 55) || ins.slug.slice(0, 55)}
+                              </a>
+                              {ins.publishedAt && new Date(ins.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
+                                <span style={{ marginLeft: 6, fontSize: 9, background: 'rgba(74,222,128,0.15)', color: CP.green, padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>NEW</span>
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '10px 14px', color: ins.wordCount >= 2000 ? CP.green : '#FBBF24' }}>
+                              {ins.wordCount.toLocaleString()}
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '10px 14px', color: ins.faqCount > 0 ? CP.green : '#F87171' }}>
+                              {ins.faqCount > 0 ? `✓ ${ins.faqCount}` : '✗'}
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '10px 14px', color: ins.sectionCount > 0 ? CP.green : '#F87171' }}>
+                              {ins.sectionCount > 0 ? `✓ ${ins.sectionCount}` : '✗'}
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '10px 14px', color: 'rgba(255,255,255,0.7)' }}>{ins.crossLinks}</td>
+                            <td style={{ textAlign: 'right', padding: '10px 14px', color: CP.faint }}>{ins.lang}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </GlassCard>
+              </div>
+
+              {/* AI Suggestions */}
+              <div>
+                <SectionHeader title="💡 AI 能見度改善建議" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {suggestions.map((s, i) => (
+                    <GlassCard key={i} padding={16} style={{
+                      borderLeft: `3px solid ${s.priority === 'high' ? CP.gold : s.priority === 'medium' ? '#6366F1' : 'rgba(255,255,255,0.2)'}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <div style={{
+                          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                          background: s.priority === 'high' ? 'rgba(245,200,66,0.12)' : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${s.priority === 'high' ? 'rgba(245,200,66,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, color: s.priority === 'high' ? CP.gold : CP.muted,
+                        }}>{i + 1}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 4 }}>{s.icon} {s.title}</div>
+                          <div style={{ fontSize: 13, color: CP.muted, marginBottom: 4 }}>{s.description}</div>
+                          <div style={{ fontSize: 12, color: CP.green, fontWeight: 600 }}>📈 {s.impact}</div>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA */}
+              <GlassCard style={{ border: `1px solid rgba(245,200,66,0.25)`, textAlign: 'center' }} padding={36}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 8, color: '#fff', letterSpacing: -0.5 }}>
+                  加入 CloudPipe 知識圖譜生態系
+                </h2>
+                <p style={{ color: CP.muted, marginBottom: 24, maxWidth: 560, margin: '0 auto 24px', fontSize: 14, lineHeight: 1.6 }}>
+                  每天 175+ 篇新文章持續擴展知識網絡。你的品牌作為生態系的一員，
+                  每一篇新 Insight 都在強化你的 AI 能見度。這不是一次性服務，而是持續複利增長的生態系。
+                </p>
+                <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a href={brandConfig.brandUrl} target="_blank" style={{
+                    padding: '12px 28px', borderRadius: 12,
+                    background: 'linear-gradient(135deg, #F5C842, #E8A838)',
+                    color: '#08111F', textDecoration: 'none', fontWeight: 700, fontSize: 14,
+                    boxShadow: '0 4px 16px rgba(245,200,66,0.3)',
+                  }}>
+                    訪問品牌官網 →
+                  </a>
+                  <a href="/macao/insights" style={{
+                    padding: '12px 28px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 14,
+                  }}>
+                    瀏覽知識百科 →
+                  </a>
+                </div>
+              </GlassCard>
+
+            </div>
           )}
         </div>
 
-        {/* Suggestions */}
-        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>💡 AI 能見度改善建議</h2>
-          {suggestions.map((s, i) => (
-            <div key={i} style={{
-              padding: 16, marginBottom: 12, borderRadius: 8,
-              background: s.priority === 'high' ? '#fef3c7' : s.priority === 'medium' ? '#e8f0fe' : '#f3f4f6',
-              borderLeft: `4px solid ${s.priority === 'high' ? '#d97706' : s.priority === 'medium' ? '#0f4c81' : '#9ca3af'}`,
-            }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{s.icon} {s.title}</div>
-              <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 4 }}>{s.description}</div>
-              <div style={{ fontSize: 12, color: '#059669', fontWeight: 500 }}>📈 {s.impact}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div style={{
-          background: 'white', borderRadius: 12, padding: 32, border: '2px solid #c5a572',
-          textAlign: 'center', marginBottom: 48,
+        {/* ── Footer ────────────────────────────────────────────────────────── */}
+        <footer style={{
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          padding: '24px 28px',
+          textAlign: 'center',
+          fontSize: 12,
+          color: CP.faint,
         }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: 8, color: '#1a1a2e' }}>加入 CloudPipe 知識圖譜生態系</h2>
-          <p style={{ color: '#6b7280', marginBottom: 20, maxWidth: 600, margin: '0 auto 20px' }}>
-            每天 175+ 篇新文章持續擴展知識網絡。你的品牌作為生態系的一員，
-            每一篇新 Insight 都在強化你的 AI 能見度。這不是一次性服務，而是持續複利增長的生態系。
-          </p>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href={brandConfig.brandUrl} target="_blank" style={{
-              padding: '12px 32px', borderRadius: 8, background: '#0f4c81',
-              color: 'white', textDecoration: 'none', fontWeight: 600,
-            }}>
-              訪問品牌官網 →
-            </a>
-            <a href="/macao/insights" style={{
-              padding: '12px 32px', borderRadius: 8, background: '#c5a572',
-              color: 'white', textDecoration: 'none', fontWeight: 600,
-            }}>
-              瀏覽知識百科 →
-            </a>
-          </div>
-        </div>
-      </div>}
-
-      {/* Footer */}
-      <footer style={{ background: '#1a1a2e', color: 'white', padding: '32px 24px', textAlign: 'center', fontSize: 13, opacity: 0.7 }}>
-        CloudPipe AI · 知識圖譜生態系 · {new Date().getFullYear()}
-      </footer>
+          CloudPipe AI · 知識圖譜生態系 · {new Date().getFullYear()}
+        </footer>
+      </div>
     </main>
   )
 }
