@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const MINIMAX_URL = 'https://api.minimax.io/anthropic/v1/messages'
+const MINIMAX_MODEL = 'MiniMax-M2.1'
 
 async function buildBrandContext(supabase: ReturnType<typeof createServiceClient>, slug: string) {
   const [knowledgeRes, postsRes, planRes] = await Promise.all([
@@ -37,14 +37,14 @@ async function buildBrandContext(supabase: ReturnType<typeof createServiceClient
   if (plan) {
     ctx += `【商業目標】\n${plan.commercial_goal || '未設定'}\n`
     ctx += `【下週焦點】\n${plan.next_focus || '未設定'}\n`
-    if (plan.content_pillars?.length) ctx += `【內容支柱】\n${plan.content_pillars.join(' / ')}\n`
-    if (plan.avoid_topics?.length) ctx += `【禁止主題】\n${plan.avoid_topics.join(', ')}\n`
+    if (plan.content_pillars?.length) ctx += `【內容支柱】\n${(plan.content_pillars as string[]).join(' / ')}\n`
+    if (plan.avoid_topics?.length) ctx += `【禁止主題】\n${(plan.avoid_topics as string[]).join(', ')}\n`
     ctx += '\n'
   }
 
   if (knowledge.length > 0) {
     ctx += `【品牌知識庫（${knowledge.length} 條）】\n`
-    for (const k of knowledge) {
+    for (const k of knowledge as Array<{category: string; title: string; content: string}>) {
       ctx += `▸ [${k.category}] ${k.title}：${k.content.slice(0, 300)}${k.content.length > 300 ? '…' : ''}\n`
     }
     ctx += '\n'
@@ -52,7 +52,7 @@ async function buildBrandContext(supabase: ReturnType<typeof createServiceClient
 
   if (posts.length > 0) {
     ctx += `【近期發文表現（最新 ${posts.length} 篇）】\n`
-    for (const p of posts) {
+    for (const p of posts as Array<{hook_type: string|null; published_at: string|null; likes: number; comments: number; reach: number; content: string}>) {
       const date = p.published_at ? p.published_at.slice(0, 10) : '未知'
       ctx += `▸ ${date} [${p.hook_type || '—'}] 讚:${p.likes} 留言:${p.comments} 觸及:${p.reach}\n`
       ctx += `  "${p.content.slice(0, 150)}${p.content.length > 150 ? '…' : ''}"\n`
@@ -70,13 +70,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'slug and messages required' }, { status: 400 })
     }
 
+    const apiKey = process.env.MINIMAX_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'MINIMAX_API_KEY not configured' }, { status: 500 })
+    }
+
     const supabase = createServiceClient()
     const brandContext = await buildBrandContext(supabase, slug)
 
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: `${brandContext}
+    const systemPrompt = `${brandContext}
 你的職責：
 1. 根據品牌知識庫回答問題，提供準確的品牌資訊
 2. 分析發文表現，找出高效 hook type 和內容模式
@@ -84,14 +86,42 @@ export async function POST(req: NextRequest) {
 4. 用繁體中文回答，語氣專業但貼地（廣東話日常用語）
 5. 回答簡潔，重點突出，適當用條列式
 
-如果問題超出品牌範疇，誠實說明。`,
+如果問題超出品牌範疇，誠實說明。`
+
+    const body = JSON.stringify({
+      model: MINIMAX_MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
-        role: m.role as 'user' | 'assistant',
+        role: m.role,
         content: m.content,
       })),
     })
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : ''
+    const response = await fetch(MINIMAX_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body,
+    })
+
+    const data = await response.json() as {
+      content?: Array<{ type: string; text?: string }>
+      error?: { message: string }
+      type?: string
+    }
+
+    if (!response.ok || data.error) {
+      const msg = data.error?.message || `HTTP ${response.status}`
+      return NextResponse.json({ error: msg }, { status: 500 })
+    }
+
+    // MiniMax may return thinking blocks before text blocks — find the text block
+    const textBlock = (data.content || []).find(b => b.type === 'text')
+    const text = textBlock?.text || ''
     return NextResponse.json({ reply: text })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
