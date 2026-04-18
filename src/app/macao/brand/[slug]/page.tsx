@@ -569,7 +569,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 </div>
               </div>
               <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
-                查詢：「澳門高端日本海鮮 B2B 供應商推薦」· 你的品牌在各 AI 平台的排名變化
+                查詢：「{brandConfig?.searchTerms?.[0] || citation.aiSearchData?.queries?.[0] || '品牌相關查詢'}」· 你的品牌在各 AI 平台的排名變化
               </p>
 
               {/* Platform ranking cards */}
@@ -625,9 +625,8 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
 
               {/* Summary note */}
               <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, fontSize: 12, color: '#64748b', border: '1px solid #e2e8f0' }}>
-                <strong>基線說明：</strong>W0 基線 (2026-04-18) 為品牌 AI 能見度優化起點，實際查詢截圖存檔。
-                競品排名（ChatGPT W0 出現：Worldwide Seafood, Kinwa Seafood, Pacific Trading Agency；Perplexity：力生環球, 御海國際, 長海食品）。
-                T+30 (2026-05-18) 重測全平台對比。
+                <strong>基線說明：</strong>W0 基線 ({citation.aiSearchData?.lastUpdated ? new Date(citation.aiSearchData.lastUpdated).toLocaleDateString('zh-HK', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '2026-04-18'}) 為品牌 AI 能見度優化起點，實際查詢截圖存檔。
+                T+30 重測全平台對比。
               </div>
             </div>
 
@@ -644,8 +643,8 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                       <th style={{ textAlign: 'left', padding: '8px 12px' }}>#</th>
                       <th style={{ textAlign: 'left', padding: '8px 12px' }}>品牌</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>爬蟲訪問佔比</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT W0</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity W0</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Gemini</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Claude</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Grok</th>
@@ -674,32 +673,31 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                             </div>
                             <span style={{ fontWeight: 600 }}>{comp.percentage}%</span>
                           </td>
-                          {/* GPT W0 */}
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            {isOwnBrand ? (
-                              <span style={{ background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
-                                未提及
-                              </span>
-                            ) : (
-                              <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
-                            )}
-                          </td>
-                          {/* Perplexity W0 */}
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            {isOwnBrand ? (
-                              <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
-                                #1
-                              </span>
-                            ) : (
-                              <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
-                            )}
-                          </td>
-                          {/* Gemini / Claude / Grok */}
-                          {['gemini', 'claude', 'grok'].map(p => (
-                            <td key={p} style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              <span style={{ color: '#d1d5db', fontSize: 11 }}>待測試</span>
-                            </td>
-                          ))}
+                          {/* GPT / Perplexity / Gemini / Claude / Grok W0 — dynamic from brandPlatformRanking */}
+                          {['gpt', 'perplexity', 'gemini', 'claude', 'grok'].map(platform => {
+                            const w0data = citation.brandPlatformRanking?.W0?.[platform]
+                            return (
+                              <td key={platform} style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                {isOwnBrand ? (
+                                  w0data ? (
+                                    w0data.mentioned ? (
+                                      <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
+                                        #{w0data.position}
+                                      </span>
+                                    ) : (
+                                      <span style={{ background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
+                                        未提及
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span style={{ color: '#d1d5db', fontSize: 11 }}>待測試</span>
+                                  )
+                                ) : (
+                                  <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
+                                )}
+                              </td>
+                            )
+                          })}
                         </tr>
                       )
                     })}
@@ -707,7 +705,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 </table>
               </div>
               <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 12 }}>
-                * W0 = 2026-04-18 基線 · 競品 AI 排名需個別查詢後手動更新 · 下次全面更新：T+30 (2026-05-18)
+                * W0 基線數據來自 AI 平台實測 · 競品 AI 排名需個別查詢後手動更新 · 綠色=有提及，紅色=未提及
               </p>
             </div>
           </>
