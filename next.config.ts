@@ -73,7 +73,8 @@ const nextConfig: NextConfig = {
       ['services', 'education', 'education', 'education'],
       ['services', 'professional', 'professional-services', 'professional'],
       ['services', 'tech', 'tech', 'tech'],
-      ['tourism', 'tourism', 'attractions', 'tourism'],
+      ['tourism', 'tourism', 'professional-services', 'tourism'],
+      ['attractions', 'tourism', 'professional-services', 'tourism'],
       ['dining', 'bar', 'nightlife', 'bar'],
     ]
     for (const [oldInd, cat, newInd, newCat] of categoryMoves) {
@@ -105,8 +106,8 @@ const nextConfig: NextConfig = {
       redirects.push({ source: `/macao/${cat}/:slug`, destination: `/macao/${ind}/${cat}/:slug`, permanent: true })
     }
 
-    // Special: /macao/tourism/:slug (Phase 1 flat merchant pages, after specific tourism/tourism redirect above)
-    redirects.push({ source: `/macao/tourism/:slug`, destination: `/macao/attractions/tourism/:slug`, permanent: true })
+    // Special: /macao/tourism/:slug (Phase 1 flat → current canonical)
+    redirects.push({ source: `/macao/tourism/:slug`, destination: `/macao/professional-services/tourism/:slug`, permanent: true })
 
     return redirects
   },
