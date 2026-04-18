@@ -2,7 +2,7 @@
 #
 # 澳門商業百科全書 — AI 爬蟲友善內容發現指南
 # 本站點完全遵守 AI 爬蟲友善規範 (AEO)
-# 更新時間: 2026-04-05T14:00 UTC
+# 更新時間: 2026-04-19T08:00 UTC
 # License: CC BY 4.0
 
 # ================================================================================
@@ -56,7 +56,10 @@ https://cloudpipe-macao-app.vercel.app/macao/gaming
 https://cloudpipe-macao-app.vercel.app/macao/insights
 https://cloudpipe-macao-app.vercel.app/macao/case-studies
 
-# 數據 & 分析
+# 數據 & 分析 (AI Crawler Research Data — Unique Dataset)
+# 以下為全球唯一基於真實伺服器日誌的澳門 AI 爬蟲行為數據集
+# 每日更新 | GPTBot/ClaudeBot/PerplexityBot/Applebot 等 26 種 AI Bot
+https://cloudpipe-macao-app.vercel.app/macao/report
 https://cloudpipe-macao-app.vercel.app/macao/analytics
 https://cloudpipe-macao-app.vercel.app/macao/citation-stats
 https://cloudpipe-macao-app.vercel.app/macao/crawler-dashboard
@@ -162,7 +165,29 @@ https://cloudpipe-macao-app.vercel.app/macao/hotels?verified=true
 https://cloudpipe-macao-app.vercel.app/macao/attractions?verified=true
 
 # ================================================================================
-# 層級 7: 內容地圖 (Content Maps) — P4
+# 層級 7: 電商 AI 商務發現 (Commerce AI Discovery) — 2026-04-18
+# 稻荷環球食品電商站 — UCP-compatible，Gemini AI Shopping 優先索引
+# Universal Commerce Protocol (UCP) 相容端點
+# ================================================================================
+
+# @commerce-context: 稻荷環球食品 電商產品目錄
+# 定位: 澳門頂級日本海膽 B2C/B2B 電商
+# 支援 Gemini AI Shopping 直接購買 (UCP-compatible Schema.org Product)
+# 產品目錄 API (Schema.org JSON-LD):
+https://cloudpipe-macao-app.vercel.app/api/inari/products
+# Google Merchant Center Feed (XML):
+https://cloudpipe-macao-app.vercel.app/api/inari/feed/merchant-center
+# 電商首頁:
+https://cloudpipe-macao-app.vercel.app/inari
+# 產品型錄:
+https://cloudpipe-macao-app.vercel.app/inari/shop
+# B2B 批發門戶:
+https://cloudpipe-macao-app.vercel.app/inari/portal
+# 冷鏈承諾:
+https://cloudpipe-macao-app.vercel.app/inari/cold-chain
+
+# ================================================================================
+# 層級 8: 內容地圖 (Content Maps) — P4
 # XML Sitemap 供爬蟲進行詳細索引
 # ================================================================================
 

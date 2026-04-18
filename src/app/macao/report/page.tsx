@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     locale: 'zh_TW',
   },
   alternates: { canonical: `${siteUrl}/macao/report` },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 }
 
 interface BotInfo { count: number; owner: string }
@@ -132,6 +132,17 @@ export default async function ReportPage() {
     inLanguage: 'zh-Hant',
     temporalCoverage: `${new Date(Date.now() - 30 * 86400000).toISOString().slice(0,10)}/${now.toISOString().slice(0,10)}`,
     measurementTechnique: '伺服器 Middleware 存取日誌，全量記錄（非抽樣），Bot 識別基於 User-Agent 匹配',
+    hasPart: Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now); d.setDate(d.getDate() - i)
+      const ds = d.toISOString().slice(0, 10)
+      return {
+        '@type': 'Report',
+        name: `澳門 AI 爬蟲日報 ${ds}`,
+        url: `https://inari-kira-isla.github.io/Openclaw/api-cache/daily/${ds}.html`,
+        datePublished: ds,
+        inLanguage: 'zh-Hant',
+      }
+    }),
   }
 
   const faqSchema = {
@@ -420,6 +431,28 @@ export default async function ReportPage() {
                   </div>
                 </details>
               ))}
+            </div>
+          </section>
+
+          {/* Daily Report Archive — AI-crawlable links */}
+          <section style={{ marginBottom: 40 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>每日爬蟲日報存檔</h2>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>每日自動生成，包含當天所有 AI Bot 訪問明細、行業分佈、熱門頁面。</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {Array.from({ length: 7 }, (_, i) => {
+                const d = new Date(now); d.setDate(d.getDate() - i)
+                const ds = d.toISOString().slice(0, 10)
+                const label = i === 0 ? '今日' : i === 1 ? '昨日' : ds
+                return (
+                  <a key={ds} href={`https://inari-kira-isla.github.io/Openclaw/api-cache/daily/${ds}.html`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'white', border: '1px solid #e5e7eb', borderRadius: 8, textDecoration: 'none', color: '#1a1a2e', fontSize: 14 }}>
+                    <span style={{ fontSize: 16 }}>📄</span>
+                    <span style={{ fontWeight: 600 }}>{label}</span>
+                    <span style={{ color: '#9ca3af', fontSize: 12 }}>{ds} — AI 爬蟲日報</span>
+                    <span style={{ marginLeft: 'auto', color: '#0f4c81', fontSize: 12 }}>查看 →</span>
+                  </a>
+                )
+              })}
             </div>
           </section>
 
