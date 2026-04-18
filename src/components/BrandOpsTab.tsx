@@ -56,6 +56,7 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   attachment?: { label: string; type: string }  // display only
+  recorded?: boolean   // asset was saved to DB
 }
 
 const SCHEMA_TYPES = [
@@ -313,6 +314,27 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
     setAttachment(null)
     setChatLoading(true)
 
+    // For file/image attachments, also upload to brand_ops_assets in parallel
+    let fileUploadPromise: Promise<void> = Promise.resolve()
+    if (sentAttachment && (sentAttachment.type === 'file' || sentAttachment.type === 'image') && sentAttachment.base64 && sentAttachment.mime) {
+      fileUploadPromise = (async () => {
+        try {
+          // Convert base64 back to Blob for FormData upload
+          const byteString = atob(sentAttachment.base64!)
+          const ab = new ArrayBuffer(byteString.length)
+          const ia = new Uint8Array(ab)
+          for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i)
+          const blob = new Blob([ab], { type: sentAttachment.mime })
+          const file = new File([blob], sentAttachment.filename || 'attachment', { type: sentAttachment.mime })
+          const fd = new FormData()
+          fd.append('file', file)
+          fd.append('slug', slug)
+          fd.append('uploaded_by', 'chat')
+          await fetch('/api/v1/brand-ops/upload', { method: 'POST', body: fd })
+        } catch { /* non-critical, unified-chat already records it */ }
+      })()
+    }
+
     try {
       const payload: Record<string, unknown> = {
         slug,
@@ -333,15 +355,35 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      const data = await res.json()
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: data.reply || `❌ 錯誤：${data.error || '未知錯誤'}`,
-      }])
+      const data = await res.json() as {
+        reply?: string
+        error?: string
+        extracted_count?: number
+        asset_id?: string
+        attachment_label?: string
+      }
+
+      let replyText = data.reply || `❌ 錯誤：${data.error || '未知錯誤'}`
+
+      // Append recording confirmation when attachment was present
+      if (sentAttachment && data.asset_id) {
+        const extractNote = (data.extracted_count ?? 0) > 0
+          ? `\n\n---\n📁 **已記錄到品牌資料庫** | 提取了 **${data.extracted_count} 條知識條目**，等待你在知識庫審核。`
+          : `\n\n---\n📁 **已記錄到品牌資料庫**（圖片/媒體類素材，無文字提取）`
+        replyText += extractNote
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: replyText }])
+
+      // Refresh knowledge list if new items were extracted
+      if ((data.extracted_count ?? 0) > 0) {
+        await fetchAll()
+      }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: '❌ 網絡錯誤，請重試。' }])
     } finally {
       setChatLoading(false)
+      await fileUploadPromise
     }
   }
 
