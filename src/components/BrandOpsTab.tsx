@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface KnowledgeItem {
   id: string
@@ -110,6 +110,11 @@ const btnDanger: React.CSSProperties = {
   cursor: 'pointer',
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([])
   const [posts, setPosts] = useState<PostCache[]>([])
@@ -122,6 +127,10 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [goalInput, setGoalInput] = useState('')
   const [focusInput, setFocusInput] = useState('')
   const [savedMsg, setSavedMsg] = useState('')
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -147,6 +156,36 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   }, [slug])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
+  async function sendChat() {
+    const text = chatInput.trim()
+    if (!text || chatLoading) return
+    const newMessages: ChatMessage[] = [...chatMessages, { role: 'user', content: text }]
+    setChatMessages(newMessages)
+    setChatInput('')
+    setChatLoading(true)
+    try {
+      const res = await fetch('/api/v1/brand-ops/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, messages: newMessages }),
+      })
+      const data = await res.json()
+      if (data.reply) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      } else {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: `錯誤：${data.error || '未知錯誤'}` }])
+      }
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: '網絡錯誤，請重試。' }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
 
   async function handleUpload() {
     if (!newItem.title.trim() || !newItem.content.trim()) return
@@ -440,6 +479,108 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* AI 顧問 Chatbot */}
+      <div style={{ ...card, marginBottom: 0 }}>
+        <div style={sectionTitle}>
+          🤖 AI 品牌顧問
+          <span style={{ fontSize: 12, fontWeight: 400, color: '#6b7280', marginLeft: 4 }}>
+            — 搜尋知識庫・分析數據・提供策略建議
+          </span>
+        </div>
+
+        {/* 快速提問按鈕 */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          {[
+            '分析近期發文表現，哪種 hook 效果最好？',
+            '根據商業目標，建議下週發什麼主題？',
+            '品牌知識庫有什麼重要資料？',
+            '如何提升觸及率？',
+          ].map(q => (
+            <button key={q} onClick={() => { setChatInput(q) }}
+              style={{
+                background: '#f0f7ff', color: '#0f4c81', border: '1px solid #bfdbfe',
+                borderRadius: 20, padding: '6px 14px', fontSize: 12, cursor: 'pointer',
+              }}>
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* 對話記錄 */}
+        <div style={{
+          minHeight: 200, maxHeight: 420, overflowY: 'auto',
+          background: '#f8fafc', borderRadius: 10, padding: 16,
+          border: '1px solid #e2e8f0', marginBottom: 12,
+        }}>
+          {chatMessages.length === 0 ? (
+            <p style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', marginTop: 60 }}>
+              向 AI 顧問提問，或點擊上方快速問題開始對話
+            </p>
+          ) : (
+            chatMessages.map((msg, i) => (
+              <div key={i} style={{
+                display: 'flex', flexDirection: 'column',
+                alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                marginBottom: 12,
+              }}>
+                <div style={{
+                  maxWidth: '80%',
+                  background: msg.role === 'user' ? '#0f4c81' : '#fff',
+                  color: msg.role === 'user' ? '#fff' : '#1a1a2e',
+                  borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  padding: '10px 14px', fontSize: 13, lineHeight: 1.65,
+                  border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            ))
+          )}
+          {chatLoading && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div style={{
+                background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px 16px 16px 4px',
+                padding: '10px 16px', fontSize: 13, color: '#6b7280',
+              }}>
+                ⏳ 分析中…
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* 輸入欄 */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat() } }}
+            placeholder={`問 ${brandName} 的 AI 顧問...`}
+            style={{
+              flex: 1, padding: '10px 14px', borderRadius: 8, fontSize: 13,
+              border: '1px solid #e2e8f0', outline: 'none',
+            }}
+          />
+          <button onClick={sendChat} disabled={chatLoading || !chatInput.trim()} style={{
+            ...btnPrimary,
+            opacity: chatLoading || !chatInput.trim() ? 0.5 : 1,
+            padding: '10px 20px',
+          }}>
+            發送
+          </button>
+          {chatMessages.length > 0 && (
+            <button onClick={() => setChatMessages([])} style={{
+              background: '#f1f5f9', color: '#6b7280', border: 'none',
+              borderRadius: 8, padding: '10px 14px', fontSize: 12, cursor: 'pointer',
+            }}>
+              清除
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
