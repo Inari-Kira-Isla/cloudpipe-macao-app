@@ -182,6 +182,9 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [websiteSubmitting, setWebsiteSubmitting] = useState(false)
+  const [websiteMsg, setWebsiteMsg] = useState('')
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -284,6 +287,32 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
     setFileUploadMsg(results.join(' | '))
     setFileUploading(false)
     await fetchAll()
+  }
+
+  async function handleWebsiteAnalysis() {
+    const url = websiteUrl.trim()
+    if (!url) return
+    setWebsiteSubmitting(true)
+    setWebsiteMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('slug', slug)
+      fd.append('source_url', url)
+      fd.append('is_website', 'true')
+      const res = await fetch('/api/v1/brand-ops/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.success) {
+        setWebsiteMsg(`✅ ${data.message}`)
+        setWebsiteUrl('')
+        await fetchAll()
+      } else {
+        setWebsiteMsg(`❌ ${data.error}`)
+      }
+    } catch {
+      setWebsiteMsg('❌ 提交失敗，請重試')
+    } finally {
+      setWebsiteSubmitting(false)
+    }
   }
 
   async function handleApprove(id: string) {
@@ -462,7 +491,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                     fontSize: 13,
                   }}>
                     <span style={{ fontSize: 18 }}>
-                      {a.asset_type === 'pdf' ? '📄' : a.asset_type === 'image' ? '🖼️' : a.asset_type === 'spreadsheet' ? '📊' : '📝'}
+                      {a.asset_type === 'pdf' ? '📄' : a.asset_type === 'image' ? '🖼️' : a.asset_type === 'spreadsheet' ? '📊' : a.asset_type === 'website' ? '🌐' : a.asset_type === 'url' ? '🔗' : '📝'}
                     </span>
                     <span style={{ flex: 1, color: '#1a1a2e', fontWeight: 500 }}>
                       {a.original_filename || '未命名'}
@@ -480,6 +509,51 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* 🌐 網站分析 */}
+      <div style={card}>
+        <div style={sectionTitle}>🌐 分析品牌網站</div>
+        <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+          輸入品牌網站網址，AI 會自動爬取所有頁面（最多10頁），提取產品、服務、品牌故事等結構化知識。
+          靜態網站（GitHub Pages / Webflow）效果最佳。
+        </p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <input
+            value={websiteUrl}
+            onChange={e => setWebsiteUrl(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleWebsiteAnalysis()}
+            placeholder="https://example.com/brand/"
+            style={{
+              flex: 1, padding: '10px 12px', borderRadius: 8,
+              border: '1px solid #d1d5db', fontSize: 14,
+            }}
+          />
+          <button
+            onClick={handleWebsiteAnalysis}
+            disabled={websiteSubmitting || !websiteUrl.trim()}
+            style={{
+              ...btnPrimary,
+              opacity: websiteSubmitting || !websiteUrl.trim() ? 0.5 : 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {websiteSubmitting ? '提交中...' : '🔍 分析整個網站'}
+          </button>
+        </div>
+        {websiteMsg && (
+          <div style={{
+            fontSize: 13, borderRadius: 8, padding: '8px 12px',
+            background: websiteMsg.startsWith('✅') ? '#f0fdf4' : '#fef2f2',
+            border: `1px solid ${websiteMsg.startsWith('✅') ? '#bbf7d0' : '#fecaca'}`,
+            color: websiteMsg.startsWith('✅') ? '#15803d' : '#dc2626',
+          }}>
+            {websiteMsg}
+          </div>
+        )}
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, marginBottom: 0 }}>
+          💡 稻荷網站：https://inari-kira-isla.github.io/inari-global-foods/
+        </p>
       </div>
 
       {/* 品牌資料庫 */}

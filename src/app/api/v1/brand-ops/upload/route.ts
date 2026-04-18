@@ -46,15 +46,23 @@ export async function POST(request: NextRequest) {
     // Handle URL-only upload (no file)
     if (!file && sourceUrl) {
       const supabase = createServiceClient()
+      // Detect if this is a full website (root URL) vs single page
+      const isWebsite = formData.get('is_website') === 'true'
       const { data, error } = await supabase.from('brand_ops_assets').insert({
         brand_slug: slug,
-        asset_type: 'url',
+        asset_type: isWebsite ? 'website' : 'url',
         source_url: sourceUrl,
         parse_status: 'queued',
         uploaded_by: uploadedBy,
+        original_filename: isWebsite ? new URL(sourceUrl).hostname : null,
       }).select('id').single()
       if (error) throw error
-      return NextResponse.json({ success: true, asset_id: data.id, type: 'url' })
+      return NextResponse.json({
+        success: true,
+        asset_id: data.id,
+        type: isWebsite ? 'website' : 'url',
+        message: isWebsite ? `網站 ${sourceUrl} 已加入爬取佇列（最多分析10頁）` : `網址已加入解析佇列`,
+      })
     }
 
     if (!file) return NextResponse.json({ error: 'file or source_url required' }, { status: 400 })
