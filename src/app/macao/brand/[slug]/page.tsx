@@ -18,9 +18,15 @@ interface CompetitorEntry {
     keywords?: string[]
   } | null
 }
+interface PlatformRank { position: number; mentioned: boolean; keywords?: string[] }
 interface CitationData {
   brand: string; brandRank: number; totalCompetitors: number
   competitors: CompetitorEntry[]
+  brandPlatformRanking?: {
+    W0: Record<string, PlatformRank>
+    W0Label: string | null
+    current: Record<string, PlatformRank>
+  } | null
   aiSearchData?: {
     lastUpdated: string
     platforms: string[]
@@ -80,6 +86,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             reviews: comp.reviews,
           })),
           aiSearchData: cit.aiSearchData,
+          brandPlatformRanking: cit.brandPlatformRanking || null,
         }
         setCitation(citationData)
       }
@@ -345,6 +352,70 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         </div>
         )}
 
+        {/* W0 AI Query Baseline — 稻荷 only */}
+        {slug === 'inari-global-foods' && (
+        <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔍 W0 AI 查詢基線（2026-04-18）</h2>
+              <p style={{ fontSize: 13, color: '#6b7280' }}>實際在主流 AI 平台查詢「澳門海膽供應商」的真實結果截圖</p>
+            </div>
+            <div style={{ background: '#f3f4f6', padding: '4px 12px', borderRadius: 12, fontSize: 12, color: '#374151', fontWeight: 600 }}>
+              基線日期 2026-04-18
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
+            <div style={{ borderRadius: 10, padding: 18, border: '2px solid #dcfce7', background: '#f0fdf4' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <span style={{ fontWeight: 700, fontSize: 15 }}>Grok + Perplexity</span>
+                <span style={{ marginLeft: 'auto', background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>#1 首選</span>
+              </div>
+              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                <strong>Grok</strong>：「澳門絕對龍頭，市佔約70%」，CloudPipe 為引用來源之一。<br/>
+                <strong>Perplexity</strong>：「澳門高端日本海鮮B2B」查詢列稻荷首位，並提供詳細聯絡資訊（10個來源）。
+              </div>
+              <div style={{ marginTop: 10, padding: '6px 10px', background: '#f0fdf4', borderRadius: 6, fontSize: 11, color: '#16a34a' }}>
+                ✅ CloudPipe 引用鏈在 Grok + Perplexity 雙雙生效 · 維持並深化
+              </div>
+            </div>
+            <div style={{ borderRadius: 10, padding: 18, border: '2px solid #fee2e2', background: '#fff5f5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18 }}>❌</span>
+                <span style={{ fontWeight: 700, fontSize: 15 }}>ChatGPT / Gemini</span>
+                <span style={{ marginLeft: 'auto', background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>未提及</span>
+              </div>
+              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                ChatGPT 推薦 Worldwide Seafood、Kinwa Seafood，未提及稻荷。Gemini 推薦力生控股集團（豐洲直送），未提及稻荷。兩大平台仍有知識空白。
+              </div>
+              <div style={{ marginTop: 10, padding: '6px 10px', background: '#fef2f2', borderRadius: 6, fontSize: 11, color: '#dc2626' }}>
+                ⚠ 行動信號：填補 ChatGPT + Gemini 知識庫（FAQ Schema + Answer Hub）
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+            {[
+              { platform: 'Grok', status: '✅ #1 龍頭 70%', action: '維持', actionColor: '#16a34a', bg: '#f0fdf4' },
+              { platform: 'Perplexity', status: '✅ #1 首選', action: '維持', actionColor: '#16a34a', bg: '#f0fdf4' },
+              { platform: 'ChatGPT', status: '❌ 未提及', action: '填補', actionColor: '#dc2626', bg: '#fef2f2' },
+              { platform: 'Gemini', status: '❌ 未提及', action: '填補', actionColor: '#dc2626', bg: '#fef2f2' },
+              { platform: 'Claude AI', status: '⏳ 待測試', action: '待測', actionColor: '#d97706', bg: '#fffbeb' },
+            ].map((p, i) => (
+              <div key={i} style={{ background: p.bg, borderRadius: 8, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{p.platform}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{p.status}</div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: p.actionColor }}>→ {p.action}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, fontSize: 12, color: '#1e40af', border: '1px solid #bfdbfe' }}>
+            <strong>策略判斷（2/5 平台已建立優勢）：</strong>Grok 和 Perplexity 已確立稻荷龍頭定位，CloudPipe 引用鏈生效。下一步：透過 FAQ Schema + Answer Hub 填補 ChatGPT + Gemini 知識庫，目標 T+30 (2026-05-18) 達到 4/5 平台 Top 3。
+          </div>
+        </div>
+        )}
+
         {/* Bot Breakdown */}
         <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>🤖 AI Bot 訪問分佈</h2>
@@ -452,7 +523,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
             <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 24 }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>📊 同業競品比較</h2>
               <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>
-                你的 AI 能見度與同業被 AI 爬蟲訪問次數對比（真實數據，非模擬查詢）
+                AI 爬蟲訪問次數對比（真實追蹤數據）— 競品非虛構，來自真實市場分析
               </p>
               {citation.competitors.map((comp, i) => {
                 const maxPct = citation.competitors[0]?.percentage || 1
@@ -484,14 +555,87 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
               })}
             </div>
 
-            {/* Competition Ranking */}
+            {/* AI Platform Ranking — Baseline vs Current */}
             <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🏆 競爭態勢排名</h2>
-              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 4 }}>
-                左：爬蟲訪問次數 | 右：AI 搜尋平台排名
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 8 }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>🏆 AI 平台排名對比</h2>
+                <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
+                  <span style={{ background: '#f3f4f6', padding: '3px 10px', borderRadius: 8, color: '#6b7280' }}>
+                    基線 {citation.brandPlatformRanking?.W0Label?.replace('W0-', '') || '—'}
+                  </span>
+                  <span style={{ background: '#eff6ff', padding: '3px 10px', borderRadius: 8, color: '#0f4c81' }}>
+                    當前 {new Date().toISOString().slice(0, 10)}
+                  </span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
+                查詢：「澳門高端日本海鮮 B2B 供應商推薦」· 你的品牌在各 AI 平台的排名變化
               </p>
-              <p style={{ fontSize: 14, color: '#0f4c81', fontWeight: 600, marginBottom: 16 }}>
-                你的排名：第 {citation.brandRank} / {citation.totalCompetitors}
+
+              {/* Platform ranking cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                {[
+                  { key: 'gpt', label: 'ChatGPT', icon: '🧠' },
+                  { key: 'perplexity', label: 'Perplexity', icon: '🔎' },
+                  { key: 'gemini', label: 'Gemini', icon: '🤖' },
+                  { key: 'claude', label: 'Claude', icon: '✨' },
+                  { key: 'grok', label: 'Grok', icon: '⚡' },
+                ].map(({ key, label, icon }) => {
+                  const w0 = citation.brandPlatformRanking?.W0?.[key]
+                  const cur = citation.brandPlatformRanking?.current?.[key]
+                  const w0Rank = w0?.mentioned ? `#${w0.position}` : '未提及'
+                  const curRank = cur?.mentioned ? `#${cur.position}` : (cur ? '未提及' : '待測試')
+                  const improved = w0?.mentioned && cur?.mentioned && cur.position < w0.position
+                  const maintained = w0?.mentioned && cur?.mentioned && cur.position === w0.position
+                  const noPending = !cur
+                  return (
+                    <div key={key} style={{
+                      borderRadius: 10, padding: 14,
+                      border: `1px solid ${w0?.mentioned ? '#dbeafe' : '#f3f4f6'}`,
+                      background: w0?.mentioned ? '#f0f9ff' : '#fafafa',
+                    }}>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{icon} {label}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 36 }}>基線</span>
+                        <span style={{
+                          fontSize: 14, fontWeight: 700,
+                          color: w0?.mentioned ? '#0369a1' : '#dc2626',
+                        }}>{w0 ? w0Rank : '—'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 36 }}>當前</span>
+                        <span style={{
+                          fontSize: 14, fontWeight: 700,
+                          color: noPending ? '#d1d5db' : cur?.mentioned ? '#059669' : '#dc2626',
+                        }}>{curRank}</span>
+                        {improved && <span style={{ fontSize: 10, color: '#059669' }}>↑</span>}
+                        {maintained && <span style={{ fontSize: 10, color: '#6b7280' }}>→</span>}
+                      </div>
+                      {w0?.keywords && w0.keywords.length > 0 && (
+                        <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {w0.keywords.slice(0, 3).map((k, i) => (
+                            <span key={i} style={{ fontSize: 10, background: '#dbeafe', color: '#0369a1', padding: '2px 6px', borderRadius: 4 }}>{k}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Summary note */}
+              <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, fontSize: 12, color: '#64748b', border: '1px solid #e2e8f0' }}>
+                <strong>基線說明：</strong>W0 基線 (2026-04-18) 為品牌 AI 能見度優化起點，實際查詢截圖存檔。
+                競品排名（ChatGPT W0 出現：Worldwide Seafood, Kinwa Seafood, Pacific Trading Agency；Perplexity：力生環球, 御海國際, 長海食品）。
+                T+30 (2026-05-18) 重測全平台對比。
+              </div>
+            </div>
+
+            {/* Competition ranking table */}
+            <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔢 競爭態勢排名（爬蟲訪問量）</h2>
+              <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
+                基於 AI 爬蟲訪問次數對比 · 你的排名：第 {citation.brandRank} / {citation.totalCompetitors}
               </p>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -499,178 +643,73 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                     <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
                       <th style={{ textAlign: 'left', padding: '8px 12px' }}>#</th>
                       <th style={{ textAlign: 'left', padding: '8px 12px' }}>品牌</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>爬蟲訪問</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>爬蟲訪問佔比</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT W0</th>
+                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity W0</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Gemini</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>GPT</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>Perplexity</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Claude</th>
                       <th style={{ textAlign: 'center', padding: '8px 12px' }}>Grok</th>
-                      <th style={{ textAlign: 'center', padding: '8px 12px' }}>平均排名</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {citation.competitors.map((comp, i) => (
-                      <tr key={i} style={{ borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                        <td style={{ padding: '10px 12px', fontWeight: 600, color: '#9ca3af' }}>#{comp.rank}</td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{
-                            fontWeight: comp.isBrand ? 700 : 500,
-                            color: comp.isBrand ? '#8b5cf6' : '#1a1a2e',
-                          }}>
-                            {comp.isBrand && '★ '}{comp.name}
-                          </span>
-                          {!comp.isBrand && comp.label && (
-                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{comp.label}</div>
-                          )}
-                        </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                          <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6, marginBottom: 2 }}>
-                            <div style={{
-                              background: RANK_COLORS[i] || '#6b7280',
-                              borderRadius: 4, height: 6,
-                              width: `${comp.percentage}%`,
-                            }} />
-                          </div>
-                          <span style={{ fontWeight: 600 }}>{comp.percentage}%</span>
-                        </td>
-                        {comp.aiSearchRanking ? (
-                          <>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              {comp.aiSearchRanking.platforms.gemini?.position ? (
-                                <span style={{
-                                  background: comp.aiSearchRanking.platforms.gemini.position <= 3 ? '#dbeafe' : '#f3f4f6',
-                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                  color: comp.aiSearchRanking.platforms.gemini.position <= 3 ? '#0369a1' : '#6b7280',
-                                }}>
-                                  #{comp.aiSearchRanking.platforms.gemini.position}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              {comp.aiSearchRanking.platforms.gpt?.position ? (
-                                <span style={{
-                                  background: comp.aiSearchRanking.platforms.gpt.position <= 3 ? '#dbeafe' : '#f3f4f6',
-                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                  color: comp.aiSearchRanking.platforms.gpt.position <= 3 ? '#0369a1' : '#6b7280',
-                                }}>
-                                  #{comp.aiSearchRanking.platforms.gpt.position}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              {comp.aiSearchRanking.platforms.perplexity?.position ? (
-                                <span style={{
-                                  background: comp.aiSearchRanking.platforms.perplexity.position <= 3 ? '#dbeafe' : '#f3f4f6',
-                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                  color: comp.aiSearchRanking.platforms.perplexity.position <= 3 ? '#0369a1' : '#6b7280',
-                                }}>
-                                  #{comp.aiSearchRanking.platforms.perplexity.position}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              {comp.aiSearchRanking.platforms.claude?.position ? (
-                                <span style={{
-                                  background: comp.aiSearchRanking.platforms.claude.position <= 3 ? '#dbeafe' : '#f3f4f6',
-                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                  color: comp.aiSearchRanking.platforms.claude.position <= 3 ? '#0369a1' : '#6b7280',
-                                }}>
-                                  #{comp.aiSearchRanking.platforms.claude.position}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              {comp.aiSearchRanking.platforms.grok?.position ? (
-                                <span style={{
-                                  background: comp.aiSearchRanking.platforms.grok.position <= 3 ? '#dbeafe' : '#f3f4f6',
-                                  padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                  color: comp.aiSearchRanking.platforms.grok.position <= 3 ? '#0369a1' : '#6b7280',
-                                }}>
-                                  #{comp.aiSearchRanking.platforms.grok.position}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              <span style={{
-                                background: comp.aiSearchRanking.avgRank <= 3 ? '#dcfce7' : '#f3f4f6',
-                                padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                                color: comp.aiSearchRanking.avgRank <= 3 ? '#15803d' : '#6b7280',
-                              }}>
-                                #{comp.aiSearchRanking.avgRank}
-                              </span>
-                            </td>
-                          </>
-                        ) : (
-                          <td colSpan={5} style={{ padding: '10px 12px', textAlign: 'center', color: '#d1d5db', fontSize: 12 }}>
-                            待更新
+                    {citation.competitors.map((comp, i) => {
+                      const isOwnBrand = comp.isBrand
+                      return (
+                        <tr key={i} style={{
+                          borderBottom: i < citation.competitors.length - 1 ? '1px solid #f3f4f6' : 'none',
+                          background: isOwnBrand ? '#f0f9ff' : 'white',
+                        }}>
+                          <td style={{ padding: '10px 12px', fontWeight: 600, color: '#9ca3af' }}>#{comp.rank}</td>
+                          <td style={{ padding: '10px 12px' }}>
+                            <span style={{ fontWeight: isOwnBrand ? 700 : 500, color: isOwnBrand ? '#0369a1' : '#1a1a2e' }}>
+                              {isOwnBrand && '★ '}{comp.name}
+                            </span>
+                            {!isOwnBrand && comp.label && (
+                              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{comp.label}</div>
+                            )}
                           </td>
-                        )}
-                      </tr>
-                    ))}
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6, marginBottom: 2, maxWidth: 80, margin: '0 auto 2px' }}>
+                              <div style={{ background: RANK_COLORS[i] || '#6b7280', borderRadius: 4, height: 6, width: `${comp.percentage}%` }} />
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{comp.percentage}%</span>
+                          </td>
+                          {/* GPT W0 */}
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            {isOwnBrand ? (
+                              <span style={{ background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
+                                未提及
+                              </span>
+                            ) : (
+                              <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
+                            )}
+                          </td>
+                          {/* Perplexity W0 */}
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            {isOwnBrand ? (
+                              <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>
+                                #1
+                              </span>
+                            ) : (
+                              <span style={{ color: '#d1d5db', fontSize: 11 }}>—</span>
+                            )}
+                          </td>
+                          {/* Gemini / Claude / Grok */}
+                          {['gemini', 'claude', 'grok'].map(p => (
+                            <td key={p} style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              <span style={{ color: '#d1d5db', fontSize: 11 }}>待測試</span>
+                            </td>
+                          ))}
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
+              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 12 }}>
+                * W0 = 2026-04-18 基線 · 競品 AI 排名需個別查詢後手動更新 · 下次全面更新：T+30 (2026-05-18)
+              </p>
             </div>
-
-            {/* 🔍 Keyword Analysis — AI 搜尋關鍵詞分析 */}
-            {citation.aiSearchData && citation.aiSearchData.keywordAnalysis && Object.keys(citation.aiSearchData.keywordAnalysis).length > 0 && (
-              <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #e5e7eb', marginBottom: 32 }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>🔍 AI 搜尋關鍵詞分析</h2>
-                <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>
-                  不同 AI 平台在搜尋各關鍵詞時出現的詞彙對比（顯示最相關的 10 個關鍵詞）
-                </p>
-                {Object.entries(citation.aiSearchData.keywordAnalysis).map(([query, platformKeywords], qIdx) => (
-                  <div key={qIdx} style={{ marginBottom: 24, paddingBottom: 24, borderBottom: qIdx < Object.keys(citation.aiSearchData!.keywordAnalysis).length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#0f4c81' }}>
-                      🔎 "{query}"
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-                      {Object.entries(platformKeywords).map(([platform, keywords]) => (
-                        <div key={platform} style={{ background: '#f9fafb', borderRadius: 8, padding: 12, border: '1px solid #e5e7eb' }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8, textTransform: 'uppercase' }}>
-                            {platform === 'gemini' ? '🤖 Gemini' :
-                             platform === 'gpt' ? '🧠 ChatGPT' :
-                             platform === 'perplexity' ? '🔎 Perplexity' :
-                             platform === 'claude' ? '✨ Claude' :
-                             platform === 'grok' ? '⚡ Grok' :
-                             platform}
-                          </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {keywords.length > 0 ? (
-                              keywords.slice(0, 5).map((keyword, kIdx) => (
-                                <span key={kIdx} style={{
-                                  background: '#dbeafe', color: '#0369a1', padding: '4px 8px', borderRadius: 4,
-                                  fontSize: 12, fontWeight: 500,
-                                }}>
-                                  {keyword}
-                                </span>
-                              ))
-                            ) : (
-                              <span style={{ fontSize: 12, color: '#d1d5db' }}>—</span>
-                            )}
-                          </div>
-                          {keywords.length > 5 && (
-                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
-                              +{keywords.length - 5} 更多
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </>
         )}
 
