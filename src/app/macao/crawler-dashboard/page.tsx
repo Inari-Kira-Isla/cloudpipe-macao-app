@@ -166,6 +166,17 @@ export default function CrawlerDashboard() {
   const [discoveryIndustry, setDiscoveryIndustry] = useState('')
   const [faqConversions, setFaqConversions] = useState<{ total: number; today: number; topMerchants: { slug: string; count: number }[]; byMedium: Record<string, number> } | null>(null)
   const [faqConvLoading, setFaqConvLoading] = useState(false)
+  interface AiReferralData {
+    total: number
+    days: number
+    by_source: Record<string, { count: number; pages: Record<string, number>; industries: Record<string, number>; latest: string }>
+    source_meta: Record<string, { label: string; color: string; icon: string }>
+    top_pages: { path: string; visits: number; sources: string[] }[]
+    daily: Record<string, Record<string, number>>
+    recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
+  }
+  const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
+  const [aiRefLoading, setAiRefLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
@@ -220,6 +231,16 @@ export default function CrawlerDashboard() {
     }, 30000)  // 30 秒
     return () => clearInterval(interval)
   }, [fetchData])
+
+  const loadAiReferrals = async () => {
+    setAiRefLoading(true)
+    const data = await safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null)
+    setAiReferrals(data)
+    setAiRefLoading(false)
+  }
+
+  // Auto-load AI referrals on mount
+  useEffect(() => { loadAiReferrals() }, [days]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRouting = async () => {
     if (routing) return
@@ -404,6 +425,94 @@ export default function CrawlerDashboard() {
               </div>
             )
           })()}
+
+          {/* ── AI 推介真人流量 ────────────────────────────────────── */}
+          <div style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', background: 'linear-gradient(90deg,#20b2aa11,#4285f411)', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>🎯</span>
+              <div>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>AI 推介真人流量</span>
+                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
+                {aiRefLoading ? '…' : (aiReferrals?.total ?? 0)}
+              </span>
+            </div>
+
+            {aiRefLoading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
+
+            {!aiRefLoading && aiReferrals && (
+              <div style={{ padding: '14px 18px' }}>
+                {aiReferrals.total === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>🕳️</div>
+                    <div>尚未記錄到 AI 推介真人流量</div>
+                    <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>當有人從 Perplexity / ChatGPT 等 AI 平台點擊連結進入後，數據會在此顯示</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    {/* By Source */}
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>來源平台</div>
+                      {Object.entries(aiReferrals.by_source)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .map(([src, data]) => {
+                          const meta = aiReferrals.source_meta[src] ?? { label: src, color: '#6b7280', icon: '🤖' }
+                          const pct = Math.round((data.count / aiReferrals.total) * 100)
+                          return (
+                            <div key={src} style={{ marginBottom: 10 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                                <span style={{ fontWeight: 600 }}>{meta.icon} {meta.label}</span>
+                                <span style={{ fontWeight: 700, color: meta.color }}>{data.count} <span style={{ fontSize: 11, color: '#999', fontWeight: 400 }}>({pct}%)</span></span>
+                              </div>
+                              <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6 }}>
+                                <div style={{ width: `${pct}%`, height: '100%', borderRadius: 4, background: meta.color }} />
+                              </div>
+                              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                                最新：{new Date(data.latest).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+
+                    {/* Top Pages */}
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>最多流量頁面</div>
+                      {aiReferrals.top_pages.slice(0, 8).map((p, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, fontSize: 12 }}>
+                          <span style={{ color: '#9ca3af', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
+                          <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {p.path}
+                          </span>
+                          <span style={{ fontWeight: 700, color: '#20b2aa', flexShrink: 0 }}>{p.visits}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent referrals */}
+                {aiReferrals.recent.length > 0 && (
+                  <div style={{ marginTop: 14, borderTop: '1px solid #f3f4f6', paddingTop: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>最近記錄</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {aiReferrals.recent.slice(0, 8).map((r, i) => {
+                        const meta = aiReferrals.source_meta[r.source] ?? { label: r.source, color: '#6b7280', icon: '🤖' }
+                        return (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, padding: '5px 8px', background: '#fafafa', borderRadius: 6 }}>
+                            <span style={{ flexShrink: 0, fontWeight: 600, color: meta.color }}>{meta.icon} {meta.label}</span>
+                            <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.path}</span>
+                            <span style={{ flexShrink: 0, color: '#9ca3af' }}>{new Date(r.ts).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
