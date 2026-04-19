@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
     const response = await fetch(MINIMAX_URL, {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
         'anthropic-version': '2023-06-01',
         'Content-Type': 'application/json',
       },
