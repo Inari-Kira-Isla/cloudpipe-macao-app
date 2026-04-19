@@ -12,6 +12,7 @@ const CORS_HEADERS = {
 // Allowed AI referrer sources
 const VALID_SOURCES = new Set([
   'perplexity','chatgpt','claude','gemini','copilot','grok','you','kagi','phind','other_ai',
+  'youcom','other',
 ])
 
 // Allowed sites (brand sites that embed the tracking snippet)
@@ -37,6 +38,8 @@ export async function POST(req: NextRequest) {
       page_type?: string
       industry?: string
       ua_raw?: string
+      search_query?: string
+      ai_platform?: string
     }
 
     const {
@@ -47,6 +50,8 @@ export async function POST(req: NextRequest) {
       page_type = 'page',
       industry = null,
       ua_raw = '',
+      search_query = '',
+      ai_platform = '',
     } = body
 
     // Validate
@@ -66,6 +71,8 @@ export async function POST(req: NextRequest) {
       page_type,
       industry: industry ?? null,
       ua_raw: (ua_raw || '').slice(0, 200),
+      search_query: (search_query || '').slice(0, 200) || null,
+      ai_platform: (ai_platform || referrer_source || '').slice(0, 50) || null,
       ts: new Date().toISOString(),
     })
 
