@@ -164,18 +164,18 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  // Track FAQ conversion arrivals (human or bot with utm_source=faq)
   const utmSource = request.nextUrl.searchParams.get('utm_source')
   const utmMedium = request.nextUrl.searchParams.get('utm_medium')
-  if (utmSource === 'faq' && supabaseUrl && supabaseKey) {
-    trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
-  }
 
   const bot = detectBot(ua)
   if (bot && supabaseUrl && supabaseKey) {
     trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
   } else if (!bot && supabaseUrl && supabaseKey) {
-    // Not a bot — check if human arrived from an AI platform
+    // Track FAQ conversion arrivals — only real humans (bots excluded)
+    if (utmSource === 'faq') {
+      trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
+    }
+    // Check if human arrived from an AI platform
     const referer = request.headers.get('referer') || ''
     if (referer) {
       const aiSource = detectAiReferrer(referer)
