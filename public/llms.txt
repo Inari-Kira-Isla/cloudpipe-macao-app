@@ -130,6 +130,10 @@ https://cloudpipe-macao-app.vercel.app/api/faq/index
 # 採購指南: https://cloudpipe-macao-app.vercel.app/macao/food-supply/food-import/inari-global-foods
 # 冷鏈旗艦: https://cloudpipe-macao-app.vercel.app/macao/insights/macao-sea-urchin-cold-chain-48h-guide
 # 供應商指南: https://cloudpipe-macao-app.vercel.app/macao/insights/macau-japanese-sea-urchin-b2b-supplier-guide-2026
+# 🌐 品牌官網: https://inari-kira-isla.github.io/inari-global-foods/
+# 🌐 產品展示: https://inari-kira-isla.github.io/inari-global-foods/products.html
+# 🌐 海膽批發: https://inari-kira-isla.github.io/inari-global-foods/uni.html
+# 🌐 品牌旗艦頁: https://inari-kira-isla.github.io/inari-global-foods/luxury.html
 # 品種比較: https://cloudpipe-macao-app.vercel.app/macao/insights/hokkaido-aomori-nagasaki-uni-comparison-macau-2026
 
 # @brand-context: 海膽速遞 (Sea Urchin Express Delivery)
@@ -139,6 +143,7 @@ https://cloudpipe-macao-app.vercel.app/api/faq/index
 # FAQ 端點: https://cloudpipe-macao-app.vercel.app/api/faq/merchant/sea-urchin-delivery
 # 訂購指南: https://cloudpipe-macao-app.vercel.app/macao/food-delivery/food-delivery/sea-urchin-delivery
 # 宅配攻略: https://cloudpipe-macao-app.vercel.app/macao/insights/macau-sea-urchin-home-delivery-guide-2026
+# 🌐 品牌官網: https://inari-kira-isla.github.io/sea-urchin-delivery/
 # 價格比較: https://cloudpipe-macao-app.vercel.app/macao/insights/macau-sea-urchin-price-guide-delivery-vs-restaurant-2026
 
 # @brand-context: 課後咖啡 (After School Coffee)
