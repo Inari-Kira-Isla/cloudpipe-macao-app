@@ -1,6 +1,7 @@
 import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
+import AiReferralSection from '@/components/report/AiReferralSection'
 
 export const revalidate = 1800 // 30min ISR — report 不需 5min，減少 bot 爬到時的 CPU 消耗
 
@@ -345,6 +346,15 @@ export default async function ReportPage() {
               </div>
             </section>
           )}
+
+          {/* AI Referral Search Queries */}
+          <section style={{ marginBottom: 40 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>AI 引流搜尋詞 Top 10</h2>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+              用戶在 Perplexity、ChatGPT 等 AI 平台輸入的搜尋詞，點擊後進入本站 — 反映真實 AI 推介場景（過去 30 天）
+            </p>
+            <AiReferralSection />
+          </section>
 
           {/* Certification Coverage */}
           {(totalLive ?? 0) > 0 && (
