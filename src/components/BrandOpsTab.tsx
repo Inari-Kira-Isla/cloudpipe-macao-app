@@ -411,7 +411,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
               value={goalInput}
               onChange={e => setGoalInput(e.target.value)}
               placeholder={`${brandName} → 目標客群 + 核心價值`}
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, boxSizing: 'border-box', color: '#1a1a2e', background: '#ffffff' }}
             />
           </div>
           <div>
@@ -420,7 +420,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
               value={focusInput}
               onChange={e => setFocusInput(e.target.value)}
               placeholder="例：強調冷鏈品質保證，配合大閘蟹季節"
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, boxSizing: 'border-box', color: '#1a1a2e', background: '#ffffff' }}
             />
           </div>
         </div>
@@ -524,7 +524,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                     <select
                       value={newItem.schema_type}
                       onChange={e => setNewItem(p => ({ ...p, schema_type: e.target.value }))}
-                      style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+                      style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, color: '#1a1a2e', background: '#ffffff' }}
                     >
                       {SCHEMA_TYPES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
@@ -532,7 +532,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                       value={newItem.title}
                       onChange={e => setNewItem(p => ({ ...p, title: e.target.value }))}
                       placeholder="標題"
-                      style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+                      style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, color: '#1a1a2e', background: '#ffffff' }}
                     />
                   </div>
                   <textarea
@@ -540,7 +540,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                     onChange={e => setNewItem(p => ({ ...p, content: e.target.value }))}
                     placeholder="內容（可以是產品規格、品牌故事、FAQ、政策說明等）"
                     rows={4}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', color: '#1a1a2e', background: '#ffffff' }}
                   />
                   <button onClick={handleAddItem} disabled={addingItem} style={{ ...btnPrimary, marginTop: 10, fontSize: 12 }}>
                     {addingItem ? '新增中...' : '新增（待審核）'}
@@ -753,7 +753,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                 onKeyDown={e => e.key === 'Enter' && handleUrlAttach()}
                 placeholder={urlType === 'website' ? 'https://example.com/' : 'https://example.com/article'}
                 autoFocus
-                style={{ flex: 1, padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13, color: '#1a1a2e', background: '#ffffff' }}
               />
               <button onClick={handleUrlAttach} style={btnPrimary}>確認</button>
               <button onClick={() => setShowUrlInput(false)} style={{ ...btnDanger, padding: '8px 12px' }}>取消</button>
@@ -827,7 +827,7 @@ export default function BrandOpsTab({ slug, brandName }: BrandOpsTabProps) {
                 flex: 1, padding: '10px 14px', borderRadius: 10,
                 border: '1px solid #d1d5db', fontSize: 13,
                 resize: 'none', fontFamily: 'inherit', lineHeight: 1.6,
-                outline: 'none',
+                outline: 'none', color: '#1a1a2e', background: '#ffffff',
               }}
             />
 
