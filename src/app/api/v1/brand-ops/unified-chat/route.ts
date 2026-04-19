@@ -1,50 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
-import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
 const MINIMAX_URL = 'https://api.minimax.io/anthropic/v1/messages'
 const MODEL = 'MiniMax-M2.5'
-
-// ─── Schema types ─────────────────────────────────────────────────────────────
-
-const SCHEMA_TYPES = [
-  'brand_identity','brand_visual','brand_voice','product_catalog','product_detail',
-  'service_package','pricing_tier','customer_persona','use_case','customer_story',
-  'competitor_intel','market_position','industry_data','location_info','contact_channel',
-  'delivery_logistics','policy','certification','event_calendar','news_update',
-  'faq_seed','media_asset',
-]
-
-const EXTRACT_TOOL = {
-  name: 'extract_knowledge',
-  description: '從品牌素材中提取結構化知識條目。每個 chunk 對應一個 schema_type。',
-  input_schema: {
-    type: 'object' as const,
-    properties: {
-      chunks: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            schema_type:     { type: 'string', enum: SCHEMA_TYPES },
-            title:           { type: 'string' },
-            content:         { type: 'string' },
-            structured_data: { type: 'object' },
-            source_quote:    { type: 'string' },
-            confidence:      { type: 'number', minimum: 0, maximum: 1 },
-            lang:            { type: 'string' },
-            tags:            { type: 'array', items: { type: 'string' } },
-          },
-          required: ['schema_type', 'title', 'content', 'confidence'],
-        },
-      },
-    },
-    required: ['chunks'],
-  },
-}
 
 // ─── MiniMax API call ─────────────────────────────────────────────────────────
 
@@ -227,48 +188,6 @@ async function recordAsset(slug: string, attachment: Attachment): Promise<string
   }
 }
 
-async function saveKnowledgeChunks(
-  slug: string,
-  assetId: string | null,
-  assetType: string,
-  chunks: Array<{
-    schema_type: string; title: string; content: string
-    structured_data?: Record<string, unknown>; source_quote?: string
-    confidence: number; lang?: string; tags?: string[]
-  }>
-): Promise<number> {
-  if (!chunks.length) return 0
-  const supabase = createServiceClient()
-  const now = new Date().toISOString()
-  const rows = chunks.filter(c => c.confidence >= 0.5).map((c, idx) => ({
-    brand_slug: slug,
-    schema_type: c.schema_type,
-    title: c.title.slice(0, 500),
-    content: c.content.slice(0, 10000),
-    source_type: assetType,
-    status: 'pending',
-    priority: c.confidence >= 0.8 ? 1 : 2,
-    asset_id: assetId ?? undefined,
-    chunk_index: idx,
-    lang: c.lang ?? 'zh-HK',
-    confidence: c.confidence,
-    tags: c.tags ?? [],
-    content_hash: crypto.createHash('sha256').update(c.content).digest('hex').slice(0, 16),
-    structured_data: c.structured_data ?? null,
-    source_quote: c.source_quote?.slice(0, 1000) ?? null,
-    created_at: now,
-    updated_at: now,
-  }))
-  try {
-    const { error } = await supabase.from('brand_ops_knowledge').insert(rows)
-    if (error) throw error
-    return rows.length
-  } catch (e) {
-    console.error('[save-knowledge]', e)
-    return 0
-  }
-}
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type AttachmentType = 'file' | 'url' | 'website' | 'image'
@@ -373,41 +292,34 @@ export async function POST(req: NextRequest) {
     const textBlock = chatResp.content?.find(b => b.type === 'text')
     const reply = textBlock?.text ?? ''
 
-    // Knowledge extraction (only for text/url attachments with meaningful content)
+    // Knowledge extraction — delegate to cloudpipe-dev (Claude Max on Mac mini)
     let extractedCount = 0
-    if (attachedText && attachedText.length > 200 && assetId) {
+    if (attachedText && attachedText.length > 200) {
       try {
-        const extractMessages = [{
-          role: 'user',
-          content: `以下係品牌素材內容：\n\n${attachedText.slice(0, 30000)}\n\n請用 extract_knowledge tool 提取所有品牌知識條目。`,
-        }]
-        const extractSys = `你係品牌知識提取專家。從素材中提取所有有價值的品牌知識條目。
-規則：confidence < 0.5 唔好輸出；source_quote 用原文；唔確定嘅填 null。
-允許的 schema_type：${SCHEMA_TYPES.join(', ')}`
-
-        const extractResp = await callMinimax(apiKey, extractSys, extractMessages, {
-          tools: [EXTRACT_TOOL],
-          tool_choice: { type: 'tool', name: 'extract_knowledge' },
-          max_tokens: 4096,
-        })
-
-        const toolBlock = extractResp.content?.find(b => b.type === 'tool_use' && b.name === 'extract_knowledge')
-        const chunks = (toolBlock?.input as { chunks?: Array<Record<string, unknown>> } | undefined)?.chunks ?? []
-
-        if (chunks.length > 0) {
-          extractedCount = await saveKnowledgeChunks(
-            slug, assetId, attachment?.type ?? 'url',
-            chunks as Parameters<typeof saveKnowledgeChunks>[3]
-          )
+        const analyzeRes = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cloudpipe-macao-app.vercel.app'}/api/v1/brand-ops/analyze`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slug,
+              content: attachedText,
+              type: attachment?.type ?? 'url',
+              filename: attachment?.filename,
+              save: true,
+              asset_id: assetId,
+            }),
+            signal: AbortSignal.timeout(105000),
+          }
+        )
+        if (analyzeRes.ok) {
+          const analyzeData = await analyzeRes.json() as { saved?: number; count?: number }
+          extractedCount = analyzeData.saved ?? analyzeData.count ?? 0
+        } else {
+          console.warn('[unified-chat] analyze endpoint returned', analyzeRes.status)
         }
-
-        const supabase = createServiceClient()
-        await supabase
-          .from('brand_ops_assets')
-          .update({ parse_status: 'parsed', parse_model: MODEL, parse_completed_at: new Date().toISOString() })
-          .eq('id', assetId)
       } catch (e) {
-        console.error('[extraction]', e)
+        console.error('[unified-chat] extraction failed, skipping:', e)
       }
     }
 
