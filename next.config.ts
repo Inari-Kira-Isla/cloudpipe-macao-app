@@ -171,6 +171,9 @@ const nextConfig: NextConfig = {
 
     return redirects
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

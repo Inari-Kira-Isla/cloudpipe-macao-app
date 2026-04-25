@@ -73,6 +73,14 @@ export default function RootLayout({
   return (
     <html lang="zh-Hant">
       <head>
+        {/* PWA */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f4c81" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="CloudPipe" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="llms-txt" href={`${siteUrl}/macao/llms-txt`} />
         <link rel="alternate" type="text/plain" title="LLMs.txt" href={`${siteUrl}/macao/llms-txt`} />
         <link rel="alternate" type="text/plain" hrefLang="en" title="LLMs.txt (English)" href={`${siteUrl}/llms-en`} />

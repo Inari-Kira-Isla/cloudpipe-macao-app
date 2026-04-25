@@ -47,12 +47,78 @@ function calcReadiness(visits: number, insightCount: number, totalWords: number,
 
 const SCHEMA_TO_IND: Record<string, string> = {
   Restaurant: 'dining', CafeOrCoffeeShop: 'dining', Bakery: 'dining',
-  FoodEstablishment: 'dining', Hotel: 'hotels', LodgingBusiness: 'hotels',
-  Store: 'shopping', ShoppingCenter: 'shopping',
+  FastFoodRestaurant: 'dining', FoodEstablishment: 'dining',
+  Hotel: 'hotels', LodgingBusiness: 'hotels', Resort: 'hotels', Hostel: 'hotels',
+  Store: 'shopping', ShoppingCenter: 'shopping', ClothingStore: 'shopping',
   TouristAttraction: 'attractions', Museum: 'attractions', Park: 'attractions',
-  LandmarksOrHistoricalBuildings: 'attractions', PlaceOfWorship: 'attractions',
-  HealthClub: 'wellness', DaySpa: 'wellness', Casino: 'gaming',
-  EntertainmentBusiness: 'gaming', BarOrPub: 'nightlife',
+  LandmarksOrHistoricalBuildings: 'attractions', AmusementPark: 'attractions',
+  PlaceOfWorship: 'attractions',
+  HealthClub: 'wellness', DaySpa: 'wellness', Pharmacy: 'wellness',
+  MedicalClinic: 'wellness', Hospital: 'wellness',
+  Casino: 'gaming', EntertainmentBusiness: 'gaming',
+  BarOrPub: 'nightlife', NightClub: 'nightlife',
+  // Travel agencies → professional-services (not attractions)
+  TravelAgency: 'professional-services',
+  LegalService: 'professional-services', AccountingService: 'professional-services',
+  FinancialService: 'finance', BankOrCreditUnion: 'finance', InsuranceAgency: 'finance',
+  EducationalOrganization: 'education', School: 'education', CollegeOrUniversity: 'education',
+  GovernmentOrganization: 'government', GovernmentBuilding: 'government',
+  BusStation: 'transport', Airport: 'transport', CarRental: 'transport',
+}
+
+const CAT_TO_IND: Record<string, string> = {
+  // Dining
+  restaurant: 'dining', cafe: 'dining', bakery: 'dining', japanese: 'dining',
+  chinese: 'dining', western: 'dining', portuguese: 'dining', dessert: 'dining',
+  'street-food': 'dining', hotpot: 'dining', 'tea-restaurant': 'dining',
+  'fast-food': 'dining', 'fine-dining': 'dining',
+  // Hotels
+  hotel: 'hotels', resort: 'hotels', hostel: 'hotels', 'budget-hotel': 'hotels',
+  'serviced-apartment': 'hotels',
+  // Shopping
+  retail: 'shopping', fashion: 'shopping', souvenir: 'shopping', 'shopping-mall': 'shopping',
+  'duty-free': 'shopping', drugstore: 'shopping', electronics: 'shopping',
+  // Attractions (genuine sightseeing — NOT travel agencies)
+  museum: 'attractions', temple: 'attractions', landmark: 'attractions',
+  park: 'attractions', 'theme-park': 'attractions', 'world-heritage': 'attractions',
+  'historic-building': 'attractions', 'cultural-site': 'attractions',
+  // Travel agencies → professional-services
+  tourism: 'professional-services',
+  // Wellness
+  spa: 'wellness', gym: 'wellness', clinic: 'wellness', pharmacy: 'wellness',
+  tcm: 'wellness', dental: 'wellness', 'spa-sauna': 'wellness',
+  // Gaming / Nightlife
+  casino: 'gaming', 'vip-gaming': 'gaming', entertainment: 'gaming',
+  bar: 'nightlife', nightclub: 'nightlife', ktv: 'nightlife', show: 'nightlife', lounge: 'nightlife',
+  // Transport
+  ferry: 'transport', bus: 'transport', taxi: 'transport', airport: 'transport',
+  shuttle: 'transport', lrt: 'transport', 'car-rental': 'transport',
+  // Food supply
+  'food-import': 'food-supply', 'food-delivery': 'food-supply',
+  'seafood-import': 'food-supply', 'cold-chain': 'food-supply',
+  // Professional services
+  professional: 'professional-services', consulting: 'professional-services',
+  'law-firm': 'professional-services', 'accounting-firm': 'professional-services',
+  notary: 'professional-services', translation: 'professional-services', hr: 'professional-services',
+  // Education
+  education: 'education', university: 'education', 'secondary-school': 'education',
+  'primary-school': 'education', kindergarten: 'education', 'language-school': 'education',
+  // Finance
+  bank: 'finance', insurance: 'finance', securities: 'finance', payment: 'finance',
+  'money-exchange': 'finance', 'accounting-service': 'finance',
+  // Tech / Events / Heritage
+  tech: 'tech', 'convention-center': 'events', festival: 'events',
+  heritage: 'heritage', 'non-gaming': 'attractions',
+}
+
+/** Extract industry from canonical page_url path segment, e.g. /macao/professional-services/tourism/slug → professional-services */
+function industryFromUrl(pageUrl: string | null): string | null {
+  if (!pageUrl) return null
+  const m = pageUrl.match(/\/macao\/([^/]+)\//)
+  const ind = m?.[1]
+  // Exclude meta-categories that are not real industry labels
+  if (!ind || ['insights', 'faqs', 'brand', 'report'].includes(ind)) return null
+  return ind
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,17 +192,18 @@ async function computeMerchantDiscovery(days: number) {
 
   // 3. All merchants (live + archived for name resolution)
   const allMerchantsData = await fetchAllPaginated<{
-    slug: string; name_zh: string | null; name_en: string | null; schema_type: string | null; category_id: number | null; district: string | null; status: string | null
+    slug: string; name_zh: string | null; name_en: string | null; schema_type: string | null
+    category_id: string | null; district: string | null; status: string | null; page_url: string | null
   }>(
     'merchants',
-    'slug, name_zh, name_en, schema_type, category_id, district, status',
+    'slug, name_zh, name_en, schema_type, category_id, district, status, page_url',
     (q) => (q as any).in('status', ['live', 'landmark', 'archived']),
     30000
   )
   console.log(`[merchant-discovery] all merchants (live+archived): ${allMerchantsData.length}`)
 
   // Categories
-  let catMap: Record<number, string> = {}
+  let catMap: Record<string, string> = {}
   try {
     const { data: catData } = await supabase.from('categories').select('id, slug')
     for (const c of catData || []) catMap[c.id] = c.slug
@@ -145,7 +212,14 @@ async function computeMerchantDiscovery(days: number) {
   const merchantNames: Record<string, { name_zh: string; name_en: string; industry: string; district: string; region: string }> = {}
   for (const m of allMerchantsData) {
     const catSlug = m.category_id ? (catMap[m.category_id] || '') : ''
-    const industry = SCHEMA_TO_IND[m.schema_type || ''] || visitBySlug[m.slug]?.industry || 'other'
+    // Priority: category slug > schema_type > page_url path > historical visit (noisy)
+    // Category is most authoritative; page_url may reflect legacy wrong placements
+    const industry =
+      CAT_TO_IND[catSlug] ||
+      SCHEMA_TO_IND[m.schema_type || ''] ||
+      industryFromUrl(m.page_url) ||
+      visitBySlug[m.slug]?.industry ||
+      'other'
     merchantNames[m.slug] = {
       name_zh: m.name_zh || prettifySlug(m.slug),
       name_en: m.name_en || '',

@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// AI platform referrers — humans clicking from AI answers
+const AI_REFERRER_MAP: [RegExp, string][] = [
+  [/perplexity\.ai/i,                          'perplexity'],
+  [/chatgpt\.com|chat\.openai\.com/i,          'chatgpt'],
+  [/claude\.ai/i,                              'claude'],
+  [/gemini\.google\.com|bard\.google\.com/i,   'gemini'],
+  [/copilot\.microsoft\.com|bing\.com/i,       'copilot'],
+  [/grok\.x\.ai|x\.com/i,                     'grok'],
+  [/you\.com/i,                                'you'],
+  [/kagi\.com/i,                               'kagi'],
+  [/phind\.com/i,                              'phind'],
+]
+
+function detectAiReferrer(referer: string): string | null {
+  for (const [pattern, name] of AI_REFERRER_MAP) {
+    if (pattern.test(referer)) return name
+  }
+  return null
+}
+
 const AI_BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT/i, /OAI-SearchBot/i,
   /ClaudeBot/i, /Claude-Web/i, /Anthropic/i,
@@ -76,6 +96,38 @@ async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: 
   }).catch(() => {})
 }
 
+async function trackAiReferral(
+  path: string,
+  referrerSource: string,
+  referrerUrl: string,
+  ua: string,
+  supabaseUrl: string,
+  supabaseKey: string,
+) {
+  const { industry, category } = getIndustryCategory(path)
+  const row = {
+    referrer_source: referrerSource,
+    referrer_url: referrerUrl.slice(0, 500),
+    path,
+    site: 'cloudpipe-macao-app',
+    page_type: getPageType(path),
+    industry,
+    category,
+    ua_raw: ua.slice(0, 200),
+    ts: new Date().toISOString(),
+  }
+  fetch(`${supabaseUrl}/rest/v1/ai_referrals`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(() => {})
+}
+
 async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string) {
   const today = new Date().toISOString().slice(0, 10)
   const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
@@ -112,25 +164,25 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  // Track FAQ conversion arrivals (human or bot with utm_source=faq)
   const utmSource = request.nextUrl.searchParams.get('utm_source')
   const utmMedium = request.nextUrl.searchParams.get('utm_medium')
-  if (utmSource === 'faq' && supabaseUrl && supabaseKey) {
-    trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
-  }
 
   const bot = detectBot(ua)
-  if (bot) {
-    // 注入 pathname header 給 not-found.tsx 讀取
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-cloudpipe-pathname', path)
-
-    // 伺服器端追蹤 — 不依賴 bot 載入 img pixel
-    if (supabaseUrl && supabaseKey) {
-      trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
+  if (bot && supabaseUrl && supabaseKey) {
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
+  } else if (!bot && supabaseUrl && supabaseKey) {
+    // Track FAQ conversion arrivals — only real humans (bots excluded)
+    if (utmSource === 'faq') {
+      trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
     }
-
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    // Check if human arrived from an AI platform
+    const referer = request.headers.get('referer') || ''
+    if (referer) {
+      const aiSource = detectAiReferrer(referer)
+      if (aiSource) {
+        trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey)
+      }
+    }
   }
 
   return NextResponse.next()

@@ -96,6 +96,19 @@ ${siteUrl}/api/v1/crawler-stats
 ${siteUrl}/sitemap.xml
 ${siteUrl}/sitemap-merchants.xml
 
+## 層級 6: 知識圖譜 Knowledge Graph (AI 結構化事實)
+> 每個實體包含已核實事實（trust_score ≥ 60）、評分、認證、時效標記
+> 資料來源：Google Places P0 核實 + 官方資料 + 人工審查
+> 授權：CC BY 4.0，AI 爬蟲可自由引用
+
+${siteUrl}/api/knowledge/index                          ← 全部實體索引（分頁）
+${siteUrl}/api/knowledge/index?region=MO               ← 澳門實體
+${siteUrl}/api/knowledge/index?region=HK               ← 香港實體
+${siteUrl}/api/knowledge/index?region=TW               ← 台灣實體
+${siteUrl}/api/knowledge/index?region=JP               ← 日本實體
+${siteUrl}/api/knowledge/index?region=MO&industry=dining    ← 澳門餐廳
+${siteUrl}/api/knowledge/entity/{slug}                 ← 單一實體事實（Schema.org JSON-LD）
+
 ---
 
 ## 核心數據
