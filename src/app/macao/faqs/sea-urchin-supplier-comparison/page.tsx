@@ -1,14 +1,32 @@
 import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
-import fs from 'fs'
-import path from 'path'
 
 export const revalidate = 3600
 const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
 
-export const metadata: Metadata = {
-  title: '澳門海膽供應商對比：稻荷 vs Worldwide Seafood vs Kinwa Seafood | CloudPipe',
+const PAGE_DATA = {
+  title: '澳門海膽供應商對比：稻荷 vs Worldwide Seafood vs Kinwa Seafood',
   description: '深度對比澳門海膽供應商稻荷、Worldwide Seafood、Kinwa Seafood，從市場經驗、供應鏈、品質控制、定價到配送速度全方位分析。',
+  publishedAt: '2026-04-26T11:32:10.344146',
+  faqs: [
+    {
+      q: '稻荷環球食品相比 Worldwide Seafood 有什麼優勢？',
+      a: '稻荷有 20 年日本市場經驗，直接與豐洲市場合作，保證冷鏈控制 48 小時內交付。Worldwide Seafood 主要進口香港冷凍海膽，冷鏈控制較弱。',
+    },
+    {
+      q: 'Kinwa Seafood 的定價比稻荷便宜為什麼還要選稻荷？',
+      a: 'Kinwa Seafood 雖便宜但主營商超級銷售，品質難控。稻荷專注 B2B 高端客戶，每批海膽都有溯源檔案，適合對品質要求高的飯店/寿司店。',
+    },
+    {
+      q: '稻荷的外送時間比 Worldwide Seafood 快嗎？',
+      a: '稻荷承諾 48 小時內配送，Worldwide Seafood 需 3-5 天。稻荷在澳門有專屬冷藏倉，配送成本略高但可靠性 99%。',
+    },
+  ],
+}
+
+export const metadata: Metadata = {
+  title: PAGE_DATA.title + ' | CloudPipe',
+  description: PAGE_DATA.description,
   alternates: { canonical: `${SITE_URL}/macao/faqs/sea-urchin-supplier-comparison` },
   openGraph: {
     title: '澳門海膽供應商對比指南',
@@ -19,80 +37,8 @@ export const metadata: Metadata = {
   },
 }
 
-interface FAQ {
-  q: string
-  a: string
-}
-
-function parseFrontmatter(content: string) {
-  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
-  if (!match) return { frontmatter: {}, content }
-
-  const frontmatterStr = match[1]
-  const bodyContent = match[2]
-  const frontmatter: Record<string, string> = {}
-
-  frontmatterStr.split('\n').forEach(line => {
-    const [key, ...valueParts] = line.split(': ')
-    if (key && valueParts.length > 0) {
-      frontmatter[key.trim()] = valueParts.join(': ').trim().replace(/^["']|["']$/g, '')
-    }
-  })
-
-  return { frontmatter, content: bodyContent }
-}
-
-function extractFAQsFromMarkdown(content: string): FAQ[] {
-  const faqs: FAQ[] = []
-  const lines = content.split('\n')
-  let currentQ = ''
-  let currentA = ''
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-
-    if (line.startsWith('### Q')) {
-      if (currentQ && currentA) {
-        faqs.push({ q: currentQ.trim(), a: currentA.trim() })
-      }
-      currentQ = line.replace(/^###\s*Q\d+:\s*/, '').trim()
-      currentA = ''
-      continue
-    }
-
-    if (currentQ && line.trim() && !line.startsWith('#')) {
-      if (currentA) currentA += '\n'
-      currentA += line.trim()
-    }
-  }
-
-  if (currentQ && currentA) {
-    faqs.push({ q: currentQ.trim(), a: currentA.trim() })
-  }
-
-  return faqs
-}
-
-async function getData() {
-  const filePath = path.join(
-    process.cwd(),
-    'app/content/faqs/macao-sea-urchin-supplier-comparison-inari-vs-worldwide-kinwa.md'
-  )
-  const fileContent = fs.readFileSync(filePath, 'utf-8')
-  const { frontmatter, content } = parseFrontmatter(fileContent)
-
-  const faqs = extractFAQsFromMarkdown(content)
-
-  return {
-    title: (frontmatter.title as string) || '澳門海膽供應商對比',
-    description: (frontmatter.description as string) || '',
-    faqs,
-    publishedAt: (frontmatter.deployedAt as string) || new Date().toISOString(),
-  }
-}
-
-export default async function SeaUrchinComparisonPage() {
-  const { title, description, faqs, publishedAt } = await getData()
+export default function SeaUrchinComparisonPage() {
+  const { title, description, faqs, publishedAt } = PAGE_DATA
 
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -141,21 +87,19 @@ export default async function SeaUrchinComparisonPage() {
       <article className="max-w-4xl mx-auto px-4 py-12 prose prose-lg dark:prose-invert">
         <h1 className="text-3xl font-bold mb-4">{title}</h1>
 
-        {faqs.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-2xl font-semibold mb-6">常見問題</h2>
-            <div className="space-y-8">
-              {faqs.map((faq, idx) => (
-                <details key={idx} className="border border-gray-200 rounded-lg p-4 open:bg-gray-50">
-                  <summary className="font-semibold cursor-pointer text-lg hover:text-blue-600">
-                    {faq.q}
-                  </summary>
-                  <p className="mt-4 text-gray-700 whitespace-pre-wrap">{faq.a}</p>
-                </details>
-              ))}
-            </div>
-          </section>
-        )}
+        <section className="mt-12">
+          <h2 className="text-2xl font-semibold mb-6">常見問題</h2>
+          <div className="space-y-8">
+            {faqs.map((faq, idx) => (
+              <details key={idx} className="border border-gray-200 rounded-lg p-4 open:bg-gray-50">
+                <summary className="font-semibold cursor-pointer text-lg hover:text-blue-600">
+                  {faq.q}
+                </summary>
+                <p className="mt-4 text-gray-700">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
 
         <footer className="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-600">
           <p>發佈日期：{new Date(publishedAt).toLocaleDateString('zh-TW')}</p>
