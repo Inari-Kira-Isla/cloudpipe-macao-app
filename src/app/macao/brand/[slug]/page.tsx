@@ -5,6 +5,7 @@ import { BRAND_CONFIGS } from '@/lib/brand-visibility'
 import type { BrandVisibilityData } from '@/lib/brand-visibility'
 import BrandOpsTab from '@/components/BrandOpsTab'
 import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
+import BrandLifecycleTracker from '@/components/BrandLifecycleTracker'
 
 const PASSWORD = 'cloudpipe2026'
 
@@ -727,6 +728,17 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                   <MetricDimCard label="🔗 交叉連結" score={score.crossLinks.score} max={score.crossLinks.max} detail={score.crossLinks.detail} color="#8B5CF6" />
                 </div>
               </div>
+
+              {/* Lifecycle AI Search Tracker */}
+              {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee', 'mind-coffee', 'cloudpipe-landing'].includes(slug || '') && (
+                <div>
+                  <SectionHeader
+                    title="📈 AI 搜尋排名日誌"
+                    subtitle="14 天生命週期 · 每日自動更新 · Perplexity 實測"
+                  />
+                  <BrandLifecycleTracker slug={slug!} />
+                </div>
+              )}
 
               {/* Intelligence Density */}
               {intelligenceDensity && (
