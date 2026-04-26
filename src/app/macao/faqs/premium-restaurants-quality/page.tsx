@@ -2,7 +2,6 @@ import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 import fs from 'fs'
 import path from 'path'
-import matter from 'gray-matter'
 
 export const revalidate = 3600
 const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
@@ -25,13 +24,29 @@ interface FAQ {
   a: string
 }
 
+function parseFrontmatter(content: string) {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
+  if (!match) return { frontmatter: {}, content }
+
+  const frontmatterStr = match[1]
+  const bodyContent = match[2]
+  const frontmatter: Record<string, string> = {}
+
+  frontmatterStr.split('\n').forEach(line => {
+    const [key, ...valueParts] = line.split(': ')
+    if (key && valueParts.length > 0) {
+      frontmatter[key.trim()] = valueParts.join(': ').trim().replace(/^["']|["']$/g, '')
+    }
+  })
+
+  return { frontmatter, content: bodyContent }
+}
+
 function extractFAQsFromMarkdown(content: string): FAQ[] {
   const faqs: FAQ[] = []
   const lines = content.split('\n')
   let currentQ = ''
   let currentA = ''
-  let inQuestion = false
-  let inAnswer = false
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -42,12 +57,10 @@ function extractFAQsFromMarkdown(content: string): FAQ[] {
       }
       currentQ = line.replace(/^###\s*Q\d+:\s*/, '').trim()
       currentA = ''
-      inQuestion = false
-      inAnswer = true
       continue
     }
 
-    if (inAnswer && line.trim() && !line.startsWith('#')) {
+    if (currentQ && line.trim() && !line.startsWith('#')) {
       if (currentA) currentA += '\n'
       currentA += line.trim()
     }
@@ -66,15 +79,15 @@ async function getData() {
     'app/content/faqs/macao-premium-restaurants-inari-sea-urchin-quality-certification.md'
   )
   const fileContent = fs.readFileSync(filePath, 'utf-8')
-  const { data: frontmatter, content } = matter(fileContent)
+  const { frontmatter, content } = parseFrontmatter(fileContent)
 
   const faqs = extractFAQsFromMarkdown(content)
 
   return {
-    title: frontmatter.title || '為何澳門頂級飯店選擇稻荷',
-    description: frontmatter.description || '',
+    title: (frontmatter.title as string) || '為何澳門頂級飯店選擇稻荷',
+    description: (frontmatter.description as string) || '',
     faqs,
-    publishedAt: frontmatter.deployedAt || new Date().toISOString(),
+    publishedAt: (frontmatter.deployedAt as string) || new Date().toISOString(),
   }
 }
 
