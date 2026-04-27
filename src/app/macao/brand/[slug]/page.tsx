@@ -1031,13 +1031,13 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
 
                   {/* Competitor ranking table */}
                   <div>
-                    <SectionHeader title="🔢 競爭態勢排名" subtitle={`爬蟲訪問量對比 · 你的排名：第 ${citation.brandRank} / ${citation.totalCompetitors}`} />
+                    <SectionHeader title="🔢 競爭態勢排名" subtitle={`爬蟲訪問量 + AI 平台實測 · 你的排名：第 ${citation.brandRank} / ${citation.totalCompetitors}`} />
                     <GlassCard padding={0}>
                       <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                           <thead>
                             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                              {['#', '品牌', '爬蟲佔比', 'GPT', 'Perplexity', 'Gemini', 'Claude', 'Grok'].map((h, i) => (
+                              {['#', '品牌', '爬蟲佔比', 'ChatGPT', 'Perplexity', 'Gemini', 'Claude', 'Grok'].map((h, i) => (
                                 <th key={i} style={{ textAlign: i <= 1 ? 'left' : 'center', padding: '12px 14px', color: CP.muted, fontWeight: 600 }}>{h}</th>
                               ))}
                             </tr>
@@ -1065,26 +1065,49 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                                     </div>
                                     <span style={{ fontWeight: 600, color: '#fff' }}>{comp.percentage}%</span>
                                   </td>
-                                  {['gpt', 'perplexity', 'gemini', 'claude', 'grok'].map(platform => {
-                                    const w0data = citation.brandPlatformRanking?.W0?.[platform]
+                                  {[
+                                    { key: 'gpt', platformKeys: ['gpt', 'chatgpt'] },
+                                    { key: 'perplexity', platformKeys: ['perplexity'] },
+                                    { key: 'gemini', platformKeys: ['gemini'] },
+                                    { key: 'claude', platformKeys: ['claude'] },
+                                    { key: 'grok', platformKeys: ['grok'] },
+                                  ].map(({ key, platformKeys }) => {
+                                    let rankData: { position: number; mentioned: boolean } | undefined
+                                    if (isOwnBrand) {
+                                      const curData = citation.brandPlatformRanking?.current
+                                      rankData = platformKeys.map(pk => curData?.[pk]).find(Boolean) as any
+                                      if (!rankData) {
+                                        const w0Data = citation.brandPlatformRanking?.W0
+                                        rankData = platformKeys.map(pk => w0Data?.[pk]).find(Boolean) as any
+                                      }
+                                    } else {
+                                      const allRanks = citation.allCompetitorPlatformRanks
+                                      if (allRanks) {
+                                        const exactMatch = allRanks[comp.name]
+                                        const partialKey = !exactMatch ? Object.keys(allRanks).find(k =>
+                                          k.toLowerCase().includes(comp.name.toLowerCase().split(' ')[0]) ||
+                                          comp.name.toLowerCase().includes(k.toLowerCase().split(' ')[0])
+                                        ) : null
+                                        const matchedRanks = exactMatch || (partialKey ? allRanks[partialKey] : null)
+                                        if (matchedRanks) {
+                                          rankData = platformKeys.map(pk => matchedRanks[pk]).find(Boolean) as any
+                                        }
+                                      }
+                                    }
                                     return (
-                                      <td key={platform} style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                        {isOwnBrand ? (
-                                          w0data ? (
-                                            w0data.mentioned ? (
-                                              <span style={{ background: 'rgba(74,222,128,0.12)', color: CP.green, padding: '2px 7px', borderRadius: 4, fontWeight: 700, fontSize: 11 }}>
-                                                #{w0data.position}
-                                              </span>
-                                            ) : (
-                                              <span style={{ background: 'rgba(239,68,68,0.1)', color: '#F87171', padding: '2px 7px', borderRadius: 4, fontWeight: 600, fontSize: 11 }}>
-                                                未提及
-                                              </span>
-                                            )
+                                      <td key={key} style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                        {rankData ? (
+                                          rankData.mentioned ? (
+                                            <span style={{
+                                              background: isOwnBrand ? 'rgba(74,222,128,0.12)' : 'rgba(239,68,68,0.08)',
+                                              color: isOwnBrand ? CP.green : '#F87171',
+                                              padding: '2px 7px', borderRadius: 4, fontWeight: 700, fontSize: 11,
+                                            }}>#{rankData.position}</span>
                                           ) : (
-                                            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>待測試</span>
+                                            <span style={{ background: 'rgba(239,68,68,0.08)', color: '#F87171', padding: '2px 6px', borderRadius: 4, fontSize: 10 }}>未提及</span>
                                           )
                                         ) : (
-                                          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>—</span>
+                                          <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 11 }}>—</span>
                                         )}
                                       </td>
                                     )
@@ -1096,9 +1119,93 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                         </table>
                       </div>
                       <p style={{ fontSize: 11, color: CP.faint, margin: '12px 14px 0', paddingBottom: 14 }}>
-                        * W0 基線數據來自 AI 平台實測 · 綠色=有提及，紅色=未提及
+                        * 綠色=你的品牌被引用，紅色=競品被引用 · 數據來自最新 AI 平台實測快照 ({citation.brandPlatformRanking?.currentLabel || 'current'})
                       </p>
                     </GlassCard>
+                  </div>
+
+                  {/* Keywords + FAQ Occupation */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+                    {/* Target Keywords */}
+                    {(citation.searchTerms?.length || brandConfig?.searchTerms?.length) ? (
+                      <div>
+                        <SectionHeader title="🔑 目標關鍵字" subtitle="AI 平台搶佔的搜尋意圖" />
+                        <GlassCard>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                            {(citation.searchTerms?.length ? citation.searchTerms : brandConfig?.searchTerms || []).map((term, i) => (
+                              <span key={i} style={{
+                                background: i === 0 ? 'rgba(245,200,66,0.12)' : 'rgba(255,255,255,0.05)',
+                                color: i === 0 ? CP.gold : 'rgba(255,255,255,0.75)',
+                                border: `1px solid ${i === 0 ? 'rgba(245,200,66,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: i === 0 ? 600 : 400,
+                              }}>
+                                {i === 0 && '🎯 '}{term}
+                              </span>
+                            ))}
+                          </div>
+                          {citation.aiSearchData?.queries?.length ? (
+                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+                              <div style={{ fontSize: 11, color: CP.muted, marginBottom: 6 }}>已實測查詢</div>
+                              {citation.aiSearchData.queries.slice(0, 4).map((q, i) => (
+                                <div key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', padding: '3px 0' }}>
+                                  <span style={{ color: CP.faint, marginRight: 6 }}>›</span>{q}
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+                        </GlassCard>
+                      </div>
+                    ) : null}
+
+                    {/* FAQ Occupation Analysis */}
+                    {citation.faqOccupation && (
+                      <div>
+                        <SectionHeader title="📊 FAQ 搶佔分析" subtitle={`${citation.faqOccupation.total} 條 FAQ · 覆蓋多維搜尋意圖`} />
+                        <GlassCard>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                            {[
+                              { label: '總 FAQ', value: citation.faqOccupation.total, color: CP.gold },
+                              { label: '高優先級 (≥9分)', value: citation.faqOccupation.highPriorityCount, color: '#4ADE80' },
+                              { label: 'AI 被引用次數', value: citation.faqOccupation.totalCitations, color: '#93c5fd' },
+                              { label: '語言版本', value: Object.keys(citation.faqOccupation.byLang).length, color: '#f59e0b' },
+                            ].map((stat, i) => (
+                              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 12px' }}>
+                                <div style={{ fontSize: 10, color: CP.muted, marginBottom: 4 }}>{stat.label}</div>
+                                <div style={{ fontSize: 22, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+                            <div style={{ fontSize: 11, color: CP.muted, marginBottom: 8 }}>按意圖類型分佈</div>
+                            {Object.entries(citation.faqOccupation.byType)
+                              .sort(([, a], [, b]) => b - a)
+                              .slice(0, 6)
+                              .map(([type, count], i) => {
+                                const pct = Math.round((count / citation.faqOccupation!.total) * 100)
+                                const typeLabels: Record<string, string> = {
+                                  insight_derived: '📖 Insight 提取', pilot_aeo: '🎯 AEO 試點',
+                                  market_research: '📊 市場研究', b2b_procurement: '🏢 B2B 採購',
+                                  flagship_derived: '⭐ 旗艦文章', flagship_lifecycle: '📅 生命週期',
+                                  manual: '✍️ 人工輸入', general: '💬 通用問答',
+                                  specific: '🔍 品牌專屬', price: '💰 定價',
+                                  delivery: '🚚 配送', location: '📍 地址',
+                                }
+                                return (
+                                  <div key={i} style={{ marginBottom: 7 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
+                                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>{typeLabels[type] || type}</span>
+                                      <span style={{ color: CP.gold, fontWeight: 600, fontFeatureSettings: '"tnum"' }}>{count} ({pct}%)</span>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 3, height: 3 }}>
+                                      <div style={{ background: `rgba(245,200,66,${0.3 + (i === 0 ? 0.5 : 0.1)})`, borderRadius: 3, height: 3, width: `${pct}%` }} />
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                          </div>
+                        </GlassCard>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

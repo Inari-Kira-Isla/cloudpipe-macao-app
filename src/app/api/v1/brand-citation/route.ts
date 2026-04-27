@@ -64,6 +64,45 @@ export async function GET(request: NextRequest) {
     aiSearchData = await fetchAISearchData(supabase, slug, brand, competitorData)
   }
 
+  // FAQ occupation analysis
+  let faqOccupation: any = null
+  if (brand.merchantSlugs?.[0]) {
+    const { data: merchantRow } = await supabase
+      .from('merchants')
+      .select('id')
+      .eq('slug', brand.merchantSlugs[0])
+      .single()
+
+    if (merchantRow?.id) {
+      const { data: faqs } = await supabase
+        .from('merchant_faqs')
+        .select('faq_type, lang, priority_score, citation_count, question_intent')
+        .eq('merchant_id', merchantRow.id)
+
+      if (faqs && faqs.length > 0) {
+        const byType: Record<string, number> = {}
+        const byLang: Record<string, number> = {}
+        let totalCitations = 0
+        let highPriority = 0
+
+        for (const faq of faqs) {
+          byType[faq.faq_type || 'unknown'] = (byType[faq.faq_type || 'unknown'] || 0) + 1
+          byLang[faq.lang || 'zh'] = (byLang[faq.lang || 'zh'] || 0) + 1
+          totalCitations += faq.citation_count || 0
+          if ((faq.priority_score || 0) >= 9) highPriority++
+        }
+
+        faqOccupation = {
+          total: faqs.length,
+          byType,
+          byLang,
+          totalCitations,
+          highPriorityCount: highPriority,
+        }
+      }
+    }
+  }
+
   // Sort by visits descending, insert brand
   const allEntries = [
     { slug: brand.merchantSlugs[0], name: brand.displayName, visits: brandVisits, isBrand: true },
@@ -97,6 +136,10 @@ export async function GET(request: NextRequest) {
     competitors: ranked,
     aiSearchData,
     brandPlatformRanking: aiSearchData?.brandPlatformRanking || null,
+    allCompetitorPlatformRanks: aiSearchData?.allCompetitorPlatformRanks || null,
+    competitorW0Ranks: aiSearchData?.competitorW0Ranks || null,
+    faqOccupation,
+    searchTerms: brand.searchTerms || [],
     period: { days },
   })
 }
@@ -132,12 +175,25 @@ async function fetchAISearchData(
   }
 
   // Split into current vs baseline snapshots
-  const results = allResults.filter(r => !r.snapshot_label || r.snapshot_label === 'current')
+  // T+7, T+14, D0 etc. are treated as "current" (more recent than W0 baseline)
+  const results = allResults.filter(r =>
+    !r.snapshot_label ||
+    r.snapshot_label === 'current' ||
+    /^T\+/.test(r.snapshot_label || '') ||
+    /^D\d/.test(r.snapshot_label || '')
+  )
   const baselineResults = allResults.filter(r => r.snapshot_label && r.snapshot_label.startsWith('W'))
 
   // Find all baseline snapshots (W0, W1, W4, etc.)
   const baselineLabels = [...new Set(baselineResults.map(r => r.snapshot_label))].sort()
   const latestBaseline = baselineLabels[0] || null  // earliest = W0
+
+  // Latest T+ snapshot label for display
+  const tPlusLabels = [...new Set(results
+    .filter(r => r.snapshot_label && /^T\+/.test(r.snapshot_label))
+    .map(r => r.snapshot_label)
+  )].sort().reverse()
+  const latestTPlus = tPlusLabels[0] || null
 
   // 聚合各競品在各平台的排名及關鍵詞
   const competitorRanks: Record<string, any> = {}
@@ -208,27 +264,60 @@ async function fetchAISearchData(
     }
   }
 
+  // Brand name variants for matching (slug, displayName, displayNameEn)
+  const brandNameVariants = new Set([
+    brand.displayName,
+    brand.displayNameEn,
+    slug,
+    brand.merchantSlugs?.[0],
+  ].filter(Boolean))
+
   // Build brand's own platform ranking from W0 baseline
   const brandW0: Record<string, { position: number; mentioned: boolean; keywords: string[] }> = {}
   if (latestBaseline) {
     const brandBaseline = baselineResults.filter(
-      r => r.snapshot_label === latestBaseline && r.competitor_name === brand.displayName
+      r => r.snapshot_label === latestBaseline &&
+        (brandNameVariants.has(r.competitor_name) || !r.competitor_name)
     )
     for (const r of brandBaseline) {
-      brandW0[r.platform] = {
-        position: r.position,
-        mentioned: r.mentioned,
-        keywords: r.keywords_extracted || [],
+      if (!brandW0[r.platform]) {
+        brandW0[r.platform] = {
+          position: r.position,
+          mentioned: r.mentioned,
+          keywords: r.keywords_extracted || [],
+        }
       }
     }
   }
 
-  // Current brand platform rankings (from 'current' snapshot)
-  const brandCurrent: Record<string, { position: number; mentioned: boolean }> = {}
-  const brandCurrentRows = results.filter(r => r.competitor_name === brand.displayName)
+  // Current brand platform rankings (from most recent T+ or 'current' snapshot)
+  const brandCurrent: Record<string, { position: number; mentioned: boolean; snapshotLabel?: string }> = {}
+  const brandCurrentRows = results.filter(r => brandNameVariants.has(r.competitor_name))
   for (const r of brandCurrentRows) {
-    if (!brandCurrent[r.platform] || new Date(r.timestamp) > new Date(brandCurrent[r.platform] as any)) {
-      brandCurrent[r.platform] = { position: r.position, mentioned: r.mentioned }
+    const existing = brandCurrent[r.platform]
+    if (!existing || new Date(r.timestamp) > new Date((existing as any).timestamp || 0)) {
+      brandCurrent[r.platform] = { position: r.position, mentioned: r.mentioned, snapshotLabel: r.snapshot_label }
+    }
+  }
+
+  // All-competitor AI platform rankings from current data (for competitor table)
+  const allCompetitorPlatformRanks: Record<string, Record<string, { position: number; mentioned: boolean }>> = {}
+  for (const r of results) {
+    if (!r.competitor_name || brandNameVariants.has(r.competitor_name)) continue
+    if (!allCompetitorPlatformRanks[r.competitor_name]) allCompetitorPlatformRanks[r.competitor_name] = {}
+    const existing = allCompetitorPlatformRanks[r.competitor_name][r.platform]
+    if (!existing || new Date(r.timestamp) > new Date((existing as any).timestamp || 0)) {
+      allCompetitorPlatformRanks[r.competitor_name][r.platform] = { position: r.position, mentioned: r.mentioned }
+    }
+  }
+
+  // Also build from W0 baseline for competitors
+  const competitorW0Ranks: Record<string, Record<string, { position: number; mentioned: boolean }>> = {}
+  for (const r of baselineResults) {
+    if (!r.competitor_name || brandNameVariants.has(r.competitor_name)) continue
+    if (!competitorW0Ranks[r.competitor_name]) competitorW0Ranks[r.competitor_name] = {}
+    if (!competitorW0Ranks[r.competitor_name][r.platform]) {
+      competitorW0Ranks[r.competitor_name][r.platform] = { position: r.position, mentioned: r.mentioned }
     }
   }
 
@@ -242,7 +331,10 @@ async function fetchAISearchData(
       W0: brandW0,
       W0Label: latestBaseline,
       current: brandCurrent,
+      currentLabel: latestTPlus || 'current',
     },
+    allCompetitorPlatformRanks,
+    competitorW0Ranks,
   }
 }
 
