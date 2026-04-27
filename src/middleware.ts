@@ -52,7 +52,23 @@ function detectBot(ua: string): { name: string; owner: string } | null {
   return null
 }
 
-function getPageType(path: string): string {
+// Our own brand domains — cross-site bot referrer = spider-web signal
+const OUR_BRAND_DOMAINS = [
+  'inari-kira-isla.github.io',
+  'inariglobal.com.mo',
+  'cloudpipe-macao-app.vercel.app',
+]
+
+function getPageType(path: string, referer?: string): string {
+  // Cross-site crawl: bot arrived via referer from one of our own brand sites
+  if (referer) {
+    try {
+      const refHost = new URL(referer).hostname
+      if (OUR_BRAND_DOMAINS.some(d => refHost === d || refHost.endsWith('.' + d))) {
+        return 'spider-web'
+      }
+    } catch { /* invalid referer URL, ignore */ }
+  }
   if (path.startsWith('/macao/insights/')) return 'insight'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/[^/]+$/)) return 'merchant'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/faqs/)) return 'faqs'
@@ -128,7 +144,7 @@ async function trackAiReferral(
   }).catch(() => {})
 }
 
-async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string) {
+async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string) {
   const today = new Date().toISOString().slice(0, 10)
   const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
   const sessionId = `mw-${bot.name}-${today}`
@@ -138,11 +154,12 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
     bot_owner: bot.owner,
     path,
     site: 'cloudpipe-macao-app',
-    page_type: getPageType(path),
+    page_type: getPageType(path, referer),
     industry,
     category,
     session_id: sessionId,
     ua_raw: ua.slice(0, 200),
+    referer: referer ? referer.slice(0, 500) : null,
     ts: new Date().toISOString(),
   }
   // fire-and-forget — never await, never block response
@@ -167,16 +184,17 @@ export async function middleware(request: NextRequest) {
   const utmSource = request.nextUrl.searchParams.get('utm_source')
   const utmMedium = request.nextUrl.searchParams.get('utm_medium')
 
+  const referer = request.headers.get('referer') || undefined
+
   const bot = detectBot(ua)
   if (bot && supabaseUrl && supabaseKey) {
-    trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer)
   } else if (!bot && supabaseUrl && supabaseKey) {
     // Track FAQ conversion arrivals — only real humans (bots excluded)
     if (utmSource === 'faq') {
       trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
     }
     // Check if human arrived from an AI platform
-    const referer = request.headers.get('referer') || ''
     if (referer) {
       const aiSource = detectAiReferrer(referer)
       if (aiSource) {
