@@ -21,7 +21,7 @@ interface CompetitorEntry {
     keywords?: string[]
   } | null
 }
-interface PlatformRank { position: number; mentioned: boolean; keywords?: string[] }
+interface PlatformRank { position: number; mentioned: boolean; keywords?: string[]; snapshotLabel?: string }
 interface CitationData {
   brand: string; brandRank: number; totalCompetitors: number
   competitors: CompetitorEntry[]
@@ -29,7 +29,18 @@ interface CitationData {
     W0: Record<string, PlatformRank>
     W0Label: string | null
     current: Record<string, PlatformRank>
+    currentLabel?: string
   } | null
+  allCompetitorPlatformRanks?: Record<string, Record<string, { position: number; mentioned: boolean }>> | null
+  competitorW0Ranks?: Record<string, Record<string, { position: number; mentioned: boolean }>> | null
+  faqOccupation?: {
+    total: number
+    byType: Record<string, number>
+    byLang: Record<string, number>
+    totalCitations: number
+    highPriorityCount: number
+  } | null
+  searchTerms?: string[]
   aiSearchData?: {
     lastUpdated: string
     platforms: string[]
@@ -455,6 +466,10 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
           })),
           aiSearchData: cit.aiSearchData,
           brandPlatformRanking: cit.brandPlatformRanking || null,
+          allCompetitorPlatformRanks: cit.allCompetitorPlatformRanks || null,
+          competitorW0Ranks: cit.competitorW0Ranks || null,
+          faqOccupation: cit.faqOccupation || null,
+          searchTerms: cit.searchTerms || [],
         }
         setCitation(citationData)
       }
@@ -548,6 +563,12 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 padding: '2px 7px', borderRadius: 5,
                 background: 'rgba(245,200,66,0.1)', border: `1px solid rgba(245,200,66,0.2)`,
               }}>PRO</span>
+              <a href="/macao/brands" style={{
+                fontSize: 11, color: 'rgba(255,255,255,0.4)', textDecoration: 'none',
+                padding: '3px 9px', borderRadius: 7,
+                border: '1px solid rgba(255,255,255,0.08)',
+                marginLeft: 4,
+              }}>← 品牌中心</a>
             </div>
             {/* brand avatar */}
             <div style={{
