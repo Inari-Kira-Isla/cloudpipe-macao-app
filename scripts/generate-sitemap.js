@@ -88,13 +88,24 @@ async function main() {
   const entries = []
 
   // 靜態核心頁面
-  entries.push(urlEntry(`${SITE_URL}/`,                       TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao`,                  TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/insights`,         TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/llms.txt`,               TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,         TODAY, 'daily',  '0.9'))
-  entries.push(urlEntry(`${SITE_URL}/macao/certified-shops`,  TODAY, 'weekly', '0.9'))
-  entries.push(urlEntry(`${SITE_URL}/macao/report`,           TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/`,                                        TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao`,                                   TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/insights`,                          TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/llms.txt`,                                TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,                          TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/certified-shops`,                   TODAY, 'weekly', '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/report`,                            TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/brands`,                            TODAY, 'weekly', '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/case-studies`,                      TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs`,                              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/best-restaurants`,             TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/casino-hotels`,                TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/inari-expertise`,              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-attractions`,            TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-food-guide`,             TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-transport`,              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/premium-restaurants-quality`,  TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/sea-urchin-supplier-comparison`, TODAY, 'weekly', '0.8'))
 
   // 行業頁面 (20 個)
   for (const ind of INDUSTRIES) {
