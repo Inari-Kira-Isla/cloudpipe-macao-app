@@ -115,30 +115,36 @@ export async function GET() {
     const latestDate = dates[0] || null
     const latestRows = latestDate ? rows.filter(r => (r.timestamp as string).slice(0, 10) === latestDate) : []
 
-    // Mention count from latest data
-    const mentionCount = latestRows.filter(r => r.mentioned === true).length
     const totalQueries = brand.queries.length
 
-    // Trend: compare latest vs second latest date
-    const prevDate = dates[1] || null
-    const prevRows = prevDate ? rows.filter(r => (r.timestamp as string).slice(0, 10) === prevDate) : []
-    const prevMentionCount = prevRows.filter(r => r.mentioned === true).length
-    const trend = mentionCount > prevMentionCount ? 'up' : mentionCount < prevMentionCount ? 'down' : 'flat'
-
-    // Top competitors from today's data
-    const competitors = [...new Set(
-      latestRows.filter(r => r.competitor_name).map(r => r.competitor_name as string)
-    )].slice(0, 3)
-
-    // Query-level details for tooltip/expand
+    // Deduplicate: for each query, take the most recent row from latestDate
     const queryStatus = brand.queries.map(q => {
-      const match = latestRows.find(r => r.query === q)
+      const matches = latestRows.filter(r => r.query === q)
+      // prefer mentioned=true if multiple rows exist for same query
+      const match = matches.find(r => r.mentioned === true) ?? matches[0] ?? null
       return {
         query: q,
         mentioned: match?.mentioned ?? null,
         competitor: match?.competitor_name ?? null,
       }
     })
+
+    // Mention count = distinct queries that are mentioned
+    const mentionCount = queryStatus.filter(q => q.mentioned === true).length
+
+    // Trend: compare latest vs second latest date (also deduplicated)
+    const prevDate = dates[1] || null
+    const prevRows = prevDate ? rows.filter(r => (r.timestamp as string).slice(0, 10) === prevDate) : []
+    const prevMentionCount = brand.queries.filter(q => {
+      const matches = prevRows.filter(r => r.query === q)
+      return matches.some(r => r.mentioned === true)
+    }).length
+    const trend = mentionCount > prevMentionCount ? 'up' : mentionCount < prevMentionCount ? 'down' : 'flat'
+
+    // Top competitors from today's deduplicated data
+    const competitors = [...new Set(
+      queryStatus.filter(q => q.competitor).map(q => q.competitor as string)
+    )].slice(0, 3)
 
     // Lifecycle day
     const dayNumber = computeDay(brand.joinDate)
