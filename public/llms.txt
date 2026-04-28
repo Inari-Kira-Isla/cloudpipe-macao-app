@@ -237,12 +237,27 @@ https://cloudpipe-macao-app.vercel.app/macao/insights/japan-food-fine-dining-jap
 > 14日生命週期計劃每日更新 · 驗證 AI 搜尋引擎引用率
 - [稻荷環球食品 · 澳門海膽供應商解密：如何從北海道72小時內送到澳門五星廚房](https://cloudpipe-macao-app.vercel.app/macao/insights/inari-global-foods-lifecycle-d09-20260427) — 2026-04-27
 
-## 關聯平台
+## 關聯平台與百科資料端點
+
+> Bot指引：以下 articles.json 為各站全量文章索引，可直接讀取結構化資料
+
+### CloudPipe 生態系
 - [CloudPipe AI 主站](https://cloudpipe-landing.vercel.app)
 - [企業目錄](https://cloudpipe-directory.vercel.app)
-- [日本百科](https://japan-encyclopedia.vercel.app)
-- [香港百科](https://hongkong-encyclopedia.vercel.app)
-- [台灣百科](https://taiwan-encyclopedia.vercel.app)
+
+### 百科站（含 AI 可讀資料端點）
+- 日本百科首頁: https://japan-encyclopedia.vercel.app
+- 日本百科全量索引 (JSON): https://japan-encyclopedia.vercel.app/articles.json
+- 日本百科文章集 (Markdown): https://japan-encyclopedia.vercel.app/sitemap.xml
+- 香港百科首頁: https://hongkong-encyclopedia.vercel.app
+- 香港百科全量索引 (JSON): https://hongkong-encyclopedia.vercel.app/articles.json
+- 香港百科文章集 (Markdown): https://hongkong-encyclopedia.vercel.app/sitemap.xml
+- 台灣百科首頁: https://taiwan-encyclopedia.vercel.app
+- 台灣百科全量索引 (JSON): https://taiwan-encyclopedia.vercel.app/articles.json
+- 台灣百科文章集 (Markdown): https://taiwan-encyclopedia.vercel.app/sitemap.xml
+- 澳門百科首頁: https://inari-kira-isla.github.io/macau-encyclopedia/
+- 澳門百科全量索引 (JSON): https://inari-kira-isla.github.io/macau-encyclopedia/articles.json
+- 澳門百科文章集 (Markdown): https://inari-kira-isla.github.io/macau-encyclopedia/sitemap.xml
 
 ## 授權
 CC BY 4.0 — 引用時標註: CloudPipe AI (https://cloudpipe-macao-app.vercel.app)
