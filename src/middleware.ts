@@ -87,13 +87,29 @@ function getPageType(path: string, referer?: string): string {
   return 'page'
 }
 
+// Whitelist of real industry slugs — anything else under /macao/ is a merchant slug
+// (top-level merchant pages caught by [industry] dynamic route)
+// Source: merchants.page_url first segment + legacy paths still being crawled
+const VALID_INDUSTRIES = new Set([
+  // 19 real industries (from live macao merchants)
+  'attractions', 'community', 'dining', 'education', 'events', 'finance',
+  'food-supply', 'gaming', 'government', 'hotels', 'luxury', 'media',
+  'nightlife', 'professional-services', 'real-estate', 'shopping', 'tech',
+  'transport', 'wellness',
+  // Meta + legacy paths
+  'insights', 'services', 'entertainment', 'heritage', 'tourism', 'culture',
+  'merchants', 'lifestyle',
+])
+
 function getIndustryCategory(path: string): { industry: string | null; category: string | null } {
   if (!path.startsWith('/macao/')) return { industry: null, category: null }
   const parts = path.replace(/^\/macao\//, '').split('/').filter(Boolean)
   if (parts.length === 0) return { industry: null, category: null }
-  if (parts[0] === 'insights') return { industry: 'insights', category: null }
   if (parts[0] === 'faqs') return { industry: null, category: null }
-  return { industry: parts[0] || null, category: parts[1] || null }
+  // Only accept whitelisted industry slugs — otherwise this is a merchant slug
+  // at top level (e.g. /macao/cc-foo, /macao/jp-bar) and industry is unknown
+  if (!VALID_INDUSTRIES.has(parts[0])) return { industry: null, category: null }
+  return { industry: parts[0], category: parts[1] || null }
 }
 
 async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
