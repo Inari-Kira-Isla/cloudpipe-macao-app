@@ -6,7 +6,7 @@ import type { BrandVisibilityData } from '@/lib/brand-visibility'
 import BrandOpsTab from '@/components/BrandOpsTab'
 import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
 import BrandLifecycleTracker from '@/components/BrandLifecycleTracker'
-import AeoRoadmapTab from './AeoRoadmapTab'
+import AeoQuestTab from './AeoQuestTab'
 
 const PASSWORD = 'cloudpipe2026'
 
@@ -739,7 +739,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
 
           {/* ════════════ ROADMAP TAB ════════════ */}
           {activeTab === 'roadmap' && slug && (
-            <AeoRoadmapTab brandSlug={slug} />
+            <AeoQuestTab brandSlug={slug} />
           )}
 
           {/* ════════════ AEO TAB ════════════ */}
