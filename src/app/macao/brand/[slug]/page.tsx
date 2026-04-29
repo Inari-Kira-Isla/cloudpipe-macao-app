@@ -6,6 +6,7 @@ import type { BrandVisibilityData } from '@/lib/brand-visibility'
 import BrandOpsTab from '@/components/BrandOpsTab'
 import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
 import BrandLifecycleTracker from '@/components/BrandLifecycleTracker'
+import AeoRoadmapTab from './AeoRoadmapTab'
 
 const PASSWORD = 'cloudpipe2026'
 
@@ -425,8 +426,8 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [slug, setSlug] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'aeo' | 'ops'>('aeo')
-  const [prevTab, setPrevTab] = useState<'aeo' | 'ops'>('aeo')
+  const [activeTab, setActiveTab] = useState<'aeo' | 'ops' | 'roadmap'>('aeo')
+  const [prevTab, setPrevTab] = useState<'aeo' | 'ops' | 'roadmap'>('aeo')
 
   useEffect(() => {
     params.then(p => {
@@ -477,7 +478,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
     }).catch(e => { setError(e.message); setLoading(false) })
   }, [authed, slug, brandConfig])
 
-  const changeTab = (t: 'aeo' | 'ops') => {
+  const changeTab = (t: 'aeo' | 'ops' | 'roadmap') => {
     if (t === activeTab) return
     setPrevTab(activeTab)
     setActiveTab(t)
@@ -673,7 +674,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
             <div style={{
-              display: 'flex', gap: 4, maxWidth: 440,
+              display: 'flex', gap: 4, maxWidth: 640,
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: 12, padding: 4,
@@ -681,7 +682,8 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
               {([
                 { id: 'aeo', icon: '📊', label: 'AI 分析報告' },
                 { id: 'ops', icon: '⚙️', label: '品牌操作台' },
-              ] as { id: 'aeo' | 'ops'; icon: string; label: string }[]).map(t => {
+                { id: 'roadmap', icon: '🎯', label: 'AEO 路線圖' },
+              ] as { id: 'aeo' | 'ops' | 'roadmap'; icon: string; label: string }[]).map(t => {
                 const isActive = activeTab === t.id
                 return (
                   <button
@@ -733,6 +735,11 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
           {/* ════════════ OPS TAB ════════════ */}
           {activeTab === 'ops' && slug && (
             <BrandOpsTab slug={slug} brandName={brandConfig.displayName} />
+          )}
+
+          {/* ════════════ ROADMAP TAB ════════════ */}
+          {activeTab === 'roadmap' && slug && (
+            <AeoRoadmapTab brandSlug={slug} />
           )}
 
           {/* ════════════ AEO TAB ════════════ */}
