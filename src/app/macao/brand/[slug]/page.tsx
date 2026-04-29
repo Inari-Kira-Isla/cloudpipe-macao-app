@@ -682,7 +682,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
               {([
                 { id: 'aeo', icon: '📊', label: 'AI 分析報告' },
                 { id: 'ops', icon: '⚙️', label: '品牌操作台' },
-                { id: 'roadmap', icon: '🎯', label: 'AEO 路線圖' },
+                { id: 'roadmap', icon: '⚔️', label: '14日任務' },
               ] as { id: 'aeo' | 'ops' | 'roadmap'; icon: string; label: string }[]).map(t => {
                 const isActive = activeTab === t.id
                 return (
