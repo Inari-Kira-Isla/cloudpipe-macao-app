@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // AI platform referrers — humans clicking from AI answers
-const AI_REFERRER_MAP: [RegExp, string][] = [
-  [/perplexity\.ai/i,                          'perplexity'],
-  [/chatgpt\.com|chat\.openai\.com/i,          'chatgpt'],
-  [/claude\.ai/i,                              'claude'],
-  [/gemini\.google\.com|bard\.google\.com/i,   'gemini'],
-  [/copilot\.microsoft\.com|bing\.com/i,       'copilot'],
-  [/grok\.x\.ai|x\.com/i,                     'grok'],
-  [/you\.com/i,                                'you'],
-  [/kagi\.com/i,                               'kagi'],
-  [/phind\.com/i,                              'phind'],
+// Match on hostname only (not full URL) — avoid utm_source=chatgpt.com false positives
+const AI_REFERRER_HOSTS: [RegExp, string][] = [
+  [/^(www\.)?perplexity\.ai$/i,                          'perplexity'],
+  [/^(www\.)?(chatgpt\.com|chat\.openai\.com)$/i,        'chatgpt'],
+  [/^(www\.)?claude\.ai$/i,                              'claude'],
+  [/^(gemini|bard)\.google\.com$/i,                      'gemini'],
+  [/^(copilot\.microsoft\.com|(www\.)?bing\.com)$/i,     'copilot'],
+  [/^(grok\.x\.ai|(www\.)?x\.com)$/i,                    'grok'],
+  [/^(www\.)?you\.com$/i,                                'you'],
+  [/^(www\.)?kagi\.com$/i,                               'kagi'],
+  [/^(www\.)?phind\.com$/i,                              'phind'],
 ]
 
 function detectAiReferrer(referer: string): string | null {
-  for (const [pattern, name] of AI_REFERRER_MAP) {
-    if (pattern.test(referer)) return name
-  }
+  try {
+    const host = new URL(referer).hostname
+    for (const [pattern, name] of AI_REFERRER_HOSTS) {
+      if (pattern.test(host)) return name
+    }
+  } catch { /* invalid URL */ }
   return null
 }
 
@@ -59,14 +63,18 @@ const OUR_BRAND_DOMAINS = [
   'cloudpipe-macao-app.vercel.app',
 ]
 
+// Asset/system paths that browsers fetch automatically — exclude from referral tracking
+const NON_CONTENT_PATHS = /^\/(manifest\.json|favicon\.ico|robots\.txt|sitemap.*\.xml|llms\.txt|sw\.js|_next\/|opengraph-image|apple-touch-icon)/i
+
+function isOwnDomain(host: string): boolean {
+  return OUR_BRAND_DOMAINS.some(d => host === d || host.endsWith('.' + d))
+}
+
 function getPageType(path: string, referer?: string): string {
   // Cross-site crawl: bot arrived via referer from one of our own brand sites
   if (referer) {
     try {
-      const refHost = new URL(referer).hostname
-      if (OUR_BRAND_DOMAINS.some(d => refHost === d || refHost.endsWith('.' + d))) {
-        return 'spider-web'
-      }
+      if (isOwnDomain(new URL(referer).hostname)) return 'spider-web'
     } catch { /* invalid referer URL, ignore */ }
   }
   if (path.startsWith('/macao/insights/')) return 'insight'
@@ -195,10 +203,15 @@ export async function middleware(request: NextRequest) {
       trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
     }
     // Check if human arrived from an AI platform
-    if (referer) {
-      const aiSource = detectAiReferrer(referer)
-      if (aiSource) {
-        trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey)
+    // Skip: (1) self-referrer (own domain) (2) asset paths (manifest/favicon/...) (3) non-AI hosts
+    if (referer && !NON_CONTENT_PATHS.test(path)) {
+      let refHost = ''
+      try { refHost = new URL(referer).hostname } catch { /* ignore */ }
+      if (refHost && !isOwnDomain(refHost)) {
+        const aiSource = detectAiReferrer(referer)
+        if (aiSource) {
+          trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey)
+        }
       }
     }
   }
