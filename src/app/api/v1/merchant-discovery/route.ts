@@ -367,13 +367,32 @@ export async function GET(req: NextRequest) {
       }
     } catch {}
 
-    return NextResponse.json({
-      days,
-      summary: { totalTracked: 0, note: 'Cache not available. Run crawler_stats_precompute.py.' },
-      merchants: [],
-    }, {
-      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=60' },
-    })
+    // Final fallback: compute live (precompute only generates days=30; today/7/90 fall through here)
+    try {
+      const fresh = await computeMerchantDiscovery(days)
+      return NextResponse.json(fresh, {
+        headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=120', 'X-Cache': 'LIVE-FALLBACK' },
+      })
+    } catch (err: any) {
+      return NextResponse.json({
+        days,
+        summary: {
+          totalTracked: 0, crawledByAI: 0, insightCovered: 0,
+          aiReady: 0, nearReady: 0, coverageGap: 0,
+          insightCoverageHist: { '0': 0, '1-2': 0, '3-5': 0, '6-10': 0, '11+': 0 },
+          note: `Live compute failed: ${err.message}`,
+        },
+        regionStats: {
+          macao:    { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 },
+          hongkong: { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 },
+          taiwan:   { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 },
+          japan:    { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 },
+        },
+        merchants: [],
+      }, {
+        headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=60' },
+      })
+    }
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

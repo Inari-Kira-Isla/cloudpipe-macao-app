@@ -1004,7 +1004,8 @@ export default function CrawlerDashboard() {
               const HIST_LABELS: Record<string, string> = {
                 '0': '無 Insight', '1-2': '1-2 篇', '3-5': '3-5 篇', '6-10': '6-10 篇', '11+': '11+ 篇'
               }
-              const maxHist = Math.max(...Object.values(s.insightCoverageHist).map(Number), 1)
+              const histData = s.insightCoverageHist || { '0': 0, '1-2': 0, '3-5': 0, '6-10': 0, '11+': 0 }
+              const maxHist = Math.max(...Object.values(histData).map(Number), 1)
               return (
                 <>
                   {/* Today Stats Banner */}
@@ -1042,7 +1043,7 @@ export default function CrawlerDashboard() {
                   {/* Insight Coverage Histogram */}
                   <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈（每個商戶被多少篇 Insight 連結）</h3>
-                    {Object.entries(s.insightCoverageHist).map(([k, v]) => (
+                    {Object.entries(histData).map(([k, v]) => (
                       <div key={k} style={{ marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
                           <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>
