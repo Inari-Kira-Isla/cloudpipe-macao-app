@@ -225,7 +225,8 @@ export default function AeoQuestTab({ brandSlug }: { brandSlug: string }) {
     const pending = actions.find(a =>
       a.direction === dir.id && (a.status === 'pending' || a.status === 'in_progress')
     )
-    const allDone = actions.filter(a => a.direction === dir.id).every(a => a.status === 'done' || a.status === 'skipped')
+    const actionsForDir = actions.filter(a => a.direction === dir.id)
+    const allDone = actionsForDir.length > 0 && actionsForDir.every(a => a.status === 'done' || a.status === 'skipped')
     const latestPending = pendingTasks.find(t => t.direction === dir.id && (t.status === 'queued' || t.status === 'running'))
     const latestDone = pendingTasks.find(t => t.direction === dir.id && t.status === 'done')
     return { dir, action: pending, allDone, latestPending, latestDone }
