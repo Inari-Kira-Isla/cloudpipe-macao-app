@@ -156,24 +156,38 @@ export async function GET(request: NextRequest) {
             )
           }
         }
-        // days > 30: live query grouped by date
-        const { data: visitRows } = await supabase
-          .from('crawler_visits')
-          .select('ts, bot_owner')
-          .gte('ts', since)
-          .order('ts', { ascending: true })
-          .limit(50000)
-        const dailyMap: Record<string, { total: number; by_owner: Record<string, number> }> = {}
-        for (const r of visitRows || []) {
-          const d = (r.ts as string).slice(0, 10)
-          if (!dailyMap[d]) dailyMap[d] = { total: 0, by_owner: {} }
-          dailyMap[d].total++
-          const owner = r.bot_owner || 'Unknown'
-          dailyMap[d].by_owner[owner] = (dailyMap[d].by_owner[owner] || 0) + 1
+        // Fallback: read pre-aggregated crawler_daily_stats table.
+        // Avoids the 60k row cap that truncates `crawler_visits` scans on high-traffic windows.
+        const sinceDate = since.slice(0, 10)
+        const { data: aggRows } = await supabase
+          .from('crawler_daily_stats')
+          .select('date, bot_owner, site, visit_count')
+          .gte('date', sinceDate)
+          .order('date', { ascending: true })
+          .limit(10000)
+        const dailyMap: Record<string, { total: number; by_owner: Record<string, number>; by_site: Record<string, number> }> = {}
+        for (const r of aggRows || []) {
+          const d = r.date as string
+          if (!d) continue
+          if (!dailyMap[d]) dailyMap[d] = { total: 0, by_owner: {}, by_site: {} }
+          const owner = r.bot_owner || ''
+          const site = r.site || 'cloudpipe-macao-app'
+          const cnt = Number(r.visit_count) || 0
+          if (owner === '_total') {
+            dailyMap[d].total += cnt
+          } else if (owner) {
+            dailyMap[d].by_owner[owner] = (dailyMap[d].by_owner[owner] || 0) + cnt
+            dailyMap[d].by_site[site] = (dailyMap[d].by_site[site] || 0) + cnt
+          }
         }
         const dailyArr = Object.entries(dailyMap)
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, v]) => ({ date, total: v.total, by_owner: v.by_owner }))
+          .map(([date, v]) => ({
+            date,
+            total: v.total || Object.values(v.by_owner).reduce((a, b) => a + b, 0),
+            by_owner: v.by_owner,
+            by_site: v.by_site,
+          }))
         result = { period: { since, days }, daily: dailyArr }
         break
       }
