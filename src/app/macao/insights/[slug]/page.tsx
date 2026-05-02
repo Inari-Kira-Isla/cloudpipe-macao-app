@@ -391,6 +391,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
     wordCount: article.word_count,
     author: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
     publisher: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    license: 'https://creativecommons.org/licenses/by/4.0/',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/macao/insights/${slug}` },
     articleSection: ui.backLabel,
     inLanguage: lc.inLanguage,
