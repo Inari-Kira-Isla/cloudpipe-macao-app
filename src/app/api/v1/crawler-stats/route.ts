@@ -22,6 +22,15 @@ const CORS = { 'Access-Control-Allow-Origin': '*' }
 
 const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
 
+type DailyCache = {
+  daily?: Array<{
+    date: string
+    total: number
+    by_owner?: Record<string, number>
+    by_site?: Record<string, number>
+  }>
+}
+
 /** Read pre-computed data from GitHub Pages static JSON (written by local cron every 5 min) */
 async function readCache(key: string): Promise<unknown | null> {
   try {
@@ -84,6 +93,43 @@ export async function GET(request: NextRequest) {
           if (cached) {
             return NextResponse.json(cached, {
               headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' },
+            })
+          }
+        }
+        // Short windows use the precomputed daily cache first. This keeps "today"
+        // responsive when the live crawler summary RPC is slow.
+        if (days <= 7) {
+          const cachedDaily = await readCache('crawler-stats-daily-7') as DailyCache | null
+          const slicedDaily = (cachedDaily?.daily || []).slice(-days)
+          if (slicedDaily.length > 0) {
+            const bots: Record<string, { count: number; owner: string }> = {}
+            const sites: Record<string, number> = {}
+            let totalVisits = 0
+            for (const day of slicedDaily) {
+              totalVisits += Number(day.total) || 0
+              for (const [owner, count] of Object.entries(day.by_owner || {})) {
+                const n = Number(count) || 0
+                if (!bots[owner]) bots[owner] = { count: 0, owner }
+                bots[owner].count += n
+              }
+              for (const [site, count] of Object.entries(day.by_site || {})) {
+                sites[site] = (sites[site] || 0) + (Number(count) || 0)
+              }
+            }
+            return NextResponse.json({
+              period: { since, days },
+              total_visits: totalVisits,
+              today_visits: slicedDaily.at(-1)?.total || totalVisits,
+              unique_bots: Object.keys(bots).length,
+              unique_sessions: 0,
+              bots,
+              top_pages: {},
+              industries: {},
+              page_types: {},
+              sites,
+              daily: slicedDaily,
+            }, {
+              headers: { ...CORS, 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED-DAILY-SUMMARY' },
             })
           }
         }
