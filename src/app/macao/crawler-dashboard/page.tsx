@@ -154,6 +154,10 @@ export default function CrawlerDashboard() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [pages, setPages] = useState<PageStat[]>([])
+  const [pagesLoading, setPagesLoading] = useState(false)
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [pagesLoadedDays, setPagesLoadedDays] = useState<number | null>(null)
+  const [sessionsLoadedDays, setSessionsLoadedDays] = useState<number | null>(null)
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
@@ -186,31 +190,31 @@ export default function CrawlerDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 9000)
     try {
       const res = await fetch(url, {
         cache: 'no-store',  // 強制不使用快取，每次都重新查詢
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+        signal: controller.signal,
       })
       if (!res.ok) return fallback
       const data = await res.json()
       if (data?.error) return fallback
       return data as T
     } catch { return fallback }
+    finally { window.clearTimeout(timeout) }
   }
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [sum, ses, pg, sw] = await Promise.all([
+      const [sum, sw] = await Promise.all([
         safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, []),
-        safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, []),
         safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
       setSummary(sum)
-      setSessions(ses)
-      setPages(pg)
       setSpiderWeb(sw)
       setLastUpdated(new Date())  // 記錄更新時間
       if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
@@ -258,6 +262,24 @@ export default function CrawlerDashboard() {
     setDiscoveryLoading(false)
   }
 
+  const loadPages = async () => {
+    if (pagesLoadedDays === days || pagesLoading) return
+    setPagesLoading(true)
+    const data = await safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, [])
+    setPages(data)
+    setPagesLoadedDays(days)
+    setPagesLoading(false)
+  }
+
+  const loadSessions = async () => {
+    if (sessionsLoadedDays === days || sessionsLoading) return
+    setSessionsLoading(true)
+    const data = await safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, [])
+    setSessions(data)
+    setSessionsLoadedDays(days)
+    setSessionsLoading(false)
+  }
+
   const loadFaqConversions = async () => {
     if (faqConversions) return
     setFaqConvLoading(true)
@@ -294,6 +316,15 @@ export default function CrawlerDashboard() {
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
   const maxInd = summary?.industries ? Math.max(...Object.values(summary.industries).map(Number).filter(n => !isNaN(n)), 1) : 1
+
+  const changeDays = (nextDays: number) => {
+    setDays(nextDays)
+    setPages([])
+    setSessions([])
+    setPagesLoadedDays(null)
+    setSessionsLoadedDays(null)
+    setJourney(null)
+  }
 
   return (
     <PasswordGate>
@@ -343,7 +374,7 @@ export default function CrawlerDashboard() {
       {/* Controls */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         {[1, 7, 30, 90].map(d => (
-          <button key={d} onClick={() => setDays(d)}
+          <button key={d} onClick={() => changeDays(d)}
             style={{
               padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
               background: days === d ? '#111' : '#fff', color: days === d ? '#fff' : '#333',
@@ -519,6 +550,8 @@ export default function CrawlerDashboard() {
             {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
               <button key={t} onClick={() => {
                 setTab(t); setJourney(null)
+                if (t === 'pages') loadPages()
+                if (t === 'sessions') loadSessions()
                 if (t === 'routing') loadRouting()
                 if (t === 'merchant-discovery') loadDiscovery()
                 if (t === 'faq-conversion') loadFaqConversions()
@@ -606,7 +639,8 @@ export default function CrawlerDashboard() {
           {tab === 'pages' && (
             <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>熱門頁面排名</h3>
-              {pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據</p>}
+              {pagesLoading && <p style={{ color: '#999', fontSize: 13 }}>載入頁面數據中...</p>}
+              {!pagesLoading && pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
               {pages.map((p, i) => (
                 <div key={p.path} style={{
                   padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none',
@@ -733,7 +767,8 @@ export default function CrawlerDashboard() {
             <div>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', marginBottom: 16 }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>Crawl Sessions</h3>
-                {sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據</p>}
+                {sessionsLoading && <p style={{ color: '#999', fontSize: 13 }}>載入 session 數據中...</p>}
+                {!sessionsLoading && sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據或查詢逾時，總覽數據仍可正常使用。</p>}
                 {sessions.map(s => (
                   <div key={s.session_id} style={{
                     padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer',
