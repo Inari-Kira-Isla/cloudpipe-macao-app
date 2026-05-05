@@ -6,6 +6,7 @@ interface BotInfo { count: number; owner: string }
 interface Summary {
   period: { since: string; days: number }
   total_visits: number
+  today_visits?: number
   unique_bots: number
   unique_sessions: number
   bots: Record<string, BotInfo>
@@ -13,6 +14,14 @@ interface Summary {
   industries: Record<string, number>
   page_types: Record<string, number>
   sites: Record<string, number>
+  daily?: { date: string; total: number }[]
+}
+interface CacheHealth {
+  source_status: 'ok' | 'stale' | 'degraded' | 'backoff' | string
+  last_cache_date: string
+  finished_at: string
+  errors?: { source: string; detail: string }[]
+  cache_files?: Record<string, { exists: boolean; score: number; latest_date: string; mtime: string }>
 }
 interface Session {
   session_id: string; bot: string; owner: string
@@ -76,6 +85,7 @@ interface RoutingBaseline {
 
 const API = '/api/v1/crawler-stats?token=cloudpipe2026'
 const ROUTING_API = '/api/v1/routing-baseline'
+const CACHE_HEALTH_URL = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-cache-health.json'
 
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
@@ -183,6 +193,7 @@ export default function CrawlerDashboard() {
   const [aiRefLoading, setAiRefLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
 
   const [error, setError] = useState<string | null>(null)
 
@@ -214,8 +225,10 @@ export default function CrawlerDashboard() {
         safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
         safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
+      const health = await safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null)
       setSummary(sum)
       setSpiderWeb(sw)
+      setCacheHealth(health)
       setLastUpdated(new Date())  // 記錄更新時間
       if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
     } catch (e) {
@@ -406,6 +419,32 @@ export default function CrawlerDashboard() {
 
       {loading && <p style={{ textAlign: 'center', color: '#999' }}>載入中...</p>}
       {error && <p style={{ textAlign: 'center', color: '#e74c3c', background: '#fef0f0', padding: '12px 16px', borderRadius: 8 }}>{error}</p>}
+
+      {cacheHealth && cacheHealth.source_status !== 'ok' && (
+        <div style={{
+          marginBottom: 16,
+          padding: '12px 14px',
+          borderRadius: 8,
+          border: '1px solid #f59e0b',
+          background: '#fffbeb',
+          color: '#92400e',
+          fontSize: 13,
+          lineHeight: 1.5,
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>
+            Cache 狀態：{cacheHealth.source_status}
+          </div>
+          <div>
+            最後數據日期：{cacheHealth.last_cache_date || 'unknown'}
+            {cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}
+          </div>
+          {cacheHealth.errors?.[0] && (
+            <div style={{ color: '#a16207', marginTop: 4 }}>
+              {cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}
+            </div>
+          )}
+        </div>
+      )}
 
       {summary && !loading && (
         <>
