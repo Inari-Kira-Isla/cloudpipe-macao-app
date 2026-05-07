@@ -13,45 +13,35 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing slug' }, { status: 400 })
   }
 
-  // Read pre-computed score JSON (< 5ms, no timeout risk)
-  const scorePath = join(SCORES_DIR, `${slug}.json`)
-  let scoreData: Record<string, unknown> | null = null
+  const supabase = createServiceClient()
 
-  if (existsSync(scorePath)) {
-    try {
-      scoreData = JSON.parse(readFileSync(scorePath, 'utf8'))
-    } catch {
-      scoreData = null
-    }
-  }
-
-  // Fetch open issues from Supabase brand_issues
-  let issues: Array<Record<string, unknown>> = []
-  try {
-    const supabase = createServiceClient()
-    const { data } = await supabase
+  // Parallel fetch: issues + profile (includes score_data written by brand_score_refresh.py)
+  const [issuesResult, profileResult] = await Promise.all([
+    supabase
       .from('brand_issues')
       .select('id, date, severity, title, description, status, discovered_at')
       .eq('brand_slug', slug)
       .order('discovered_at', { ascending: false })
-      .limit(10)
-    issues = data || []
-  } catch {
-    issues = []
-  }
-
-  // Fetch brand profile
-  let profile: Record<string, unknown> | null = null
-  try {
-    const supabase = createServiceClient()
-    const { data } = await supabase
+      .limit(10),
+    supabase
       .from('brand_profiles')
       .select('*')
       .eq('slug', slug)
-      .single()
-    profile = data
-  } catch {
-    profile = null
+      .single(),
+  ])
+
+  const issues: Array<Record<string, unknown>> = issuesResult.data || []
+  const profile: Record<string, unknown> | null = profileResult.data || null
+
+  // score_data: prefer Supabase (works on Vercel), fall back to local JSON for dev
+  let scoreData: Record<string, unknown> | null =
+    (profile?.score_data as Record<string, unknown>) || null
+
+  if (!scoreData) {
+    const scorePath = join(SCORES_DIR, `${slug}.json`)
+    if (existsSync(scorePath)) {
+      try { scoreData = JSON.parse(readFileSync(scorePath, 'utf8')) } catch { /* ignore */ }
+    }
   }
 
   if (!scoreData && issues.length === 0 && !profile) {
@@ -61,13 +51,16 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const refreshedAt = (scoreData?.refreshed_at as string) ||
+    (profile?.score_updated_at as string) || null
+
   return NextResponse.json({
     slug,
     score: scoreData,
     profile,
     issues,
-    data_freshness: scoreData
-      ? { refreshed_at: scoreData.refreshed_at, stale: isStale(scoreData.refreshed_at as string) }
+    data_freshness: refreshedAt
+      ? { refreshed_at: refreshedAt, stale: isStale(refreshedAt) }
       : null,
   })
 }
