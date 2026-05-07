@@ -985,52 +985,54 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 </div>
               )}
 
-              {/* W0 AI Query Baseline */}
-              {slug === 'inari-global-foods' && (
-                <div>
-                  <SectionHeader title="🔍 W0 AI 查詢基線" subtitle="2026-04-18 · 實際查詢主流 AI 平台結果" />
-                  <GlassCard>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 20 }}>
-                      <div style={{ borderRadius: 12, padding: 18, border: '1px solid rgba(74,222,128,0.25)', background: 'rgba(74,222,128,0.06)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                          <span style={{ fontSize: 16 }}>✅</span>
-                          <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>Grok + Perplexity</span>
-                          <span style={{ marginLeft: 'auto', background: 'rgba(74,222,128,0.15)', color: CP.green, padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>#1 首選</span>
-                        </div>
-                        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
-                          Grok：「澳門絕對龍頭，市佔約70%」，CloudPipe 為引用來源之一。Perplexity：首位，含詳細聯絡資訊（10個來源）。
-                        </div>
+              {/* Live AI Platform Citation Status */}
+              {aeoScore?.score?.platform_breakdown && (() => {
+                const pb = aeoScore.score.platform_breakdown as Record<string, { cited: number; total: number; rate: number }>
+                const PLATFORM_LABELS: Record<string, string> = {
+                  perplexity: 'Perplexity', chatgpt: 'ChatGPT', gemini: 'Gemini', claude: 'Claude AI',
+                }
+                const platforms = Object.entries(pb).map(([key, v]) => ({
+                  key,
+                  label: PLATFORM_LABELS[key] || key,
+                  cited: v.cited,
+                  total: v.total,
+                  rate: v.rate,
+                  cited_any: v.cited > 0,
+                }))
+                const citedPlatforms = platforms.filter(p => p.cited_any)
+                const notCitedPlatforms = platforms.filter(p => !p.cited_any && p.total > 0)
+                const refreshedAt = aeoScore.data_freshness?.refreshed_at
+                  ? new Date(aeoScore.data_freshness.refreshed_at).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                  : '今日'
+                return (
+                  <div>
+                    <SectionHeader title="🔍 最新 AI 引用狀態" subtitle={`${refreshedAt} 更新 · 各平台實際引用率`} />
+                    <GlassCard>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 16 }}>
+                        {platforms.map(p => {
+                          const pct = Math.round(p.rate * 100)
+                          const color = p.cited_any ? CP.green : p.total === 0 ? '#FBBF24' : '#F87171'
+                          const badge = p.cited_any ? `✅ ${pct}%` : p.total === 0 ? '⏳ 待測試' : '❌ 未提及'
+                          return (
+                            <div key={p.key} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${p.cited_any ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 10, padding: '12px 14px' }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 4 }}>{p.label}</div>
+                              <div style={{ fontSize: 12, color, fontWeight: 500 }}>{badge}</div>
+                              {p.total > 0 && (
+                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{p.cited}/{p.total} 查詢</div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
-                      <div style={{ borderRadius: 12, padding: 18, border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.06)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                          <span style={{ fontSize: 16 }}>❌</span>
-                          <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>ChatGPT / Gemini</span>
-                          <span style={{ marginLeft: 'auto', background: 'rgba(239,68,68,0.15)', color: '#F87171', padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>未提及</span>
-                        </div>
-                        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
-                          ChatGPT 推薦 Worldwide Seafood、Kinwa Seafood，未提及稻荷。Gemini 推薦力生控股集團，兩大平台仍有知識空白。
-                        </div>
+                      <div style={{ padding: '10px 14px', background: 'rgba(99,102,241,0.08)', borderRadius: 10, fontSize: 12, color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
+                        {citedPlatforms.length > 0 && <span><strong>已提及：</strong>{citedPlatforms.map(p => p.label).join('、')}。</span>}
+                        {notCitedPlatforms.length > 0 && <span> <strong>待優化：</strong>{notCitedPlatforms.map(p => p.label).join('、')} — 持續透過 FAQ Schema + 旗艦文章覆蓋。</span>}
+                        {citedPlatforms.length === platforms.filter(p => p.total > 0).length && platforms.filter(p => p.total > 0).length > 0 && <span> 🎉 全平台已引用！</span>}
                       </div>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
-                      {[
-                        { platform: 'Grok', status: '✅ #1 龍頭 70%', color: CP.green },
-                        { platform: 'Perplexity', status: '✅ #1 首選', color: CP.green },
-                        { platform: 'ChatGPT', status: '❌ 未提及', color: '#F87171' },
-                        { platform: 'Gemini', status: '❌ 未提及', color: '#F87171' },
-                        { platform: 'Claude AI', status: '⏳ 待測試', color: '#FBBF24' },
-                      ].map((p, i) => (
-                        <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px 14px' }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 4 }}>{p.platform}</div>
-                          <div style={{ fontSize: 12, color: p.color, fontWeight: 500 }}>{p.status}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(99,102,241,0.08)', borderRadius: 10, fontSize: 12, color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
-                      <strong>策略判斷（2/5 平台已建立優勢）：</strong>下一步透過 FAQ Schema + Answer Hub 填補 ChatGPT + Gemini，目標 T+30 達到 4/5 平台 Top 3。
-                    </div>
-                  </GlassCard>
-                </div>
+                    </GlassCard>
+                  </div>
+                )
+              })()}
               )}
 
               {/* Bot breakdown */}
