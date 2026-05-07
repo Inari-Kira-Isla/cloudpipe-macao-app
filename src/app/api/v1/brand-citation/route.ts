@@ -156,6 +156,8 @@ async function getCrawlCount(supabase: ReturnType<typeof createServiceClient>, m
 
 /**
  * 從 AI 搜尋基線表獲取排名數據並進行關鍵詞分析
+ * W0 baseline: ai_search_results (W0-labelled rows, historical)
+ * current:     brand_visibility_daily (live daily data, latest snapshot_date)
  */
 async function fetchAISearchData(
   supabase: ReturnType<typeof createServiceClient>,
@@ -163,6 +165,7 @@ async function fetchAISearchData(
   brand: any,
   competitors: any[]
 ): Promise<any> {
+  // Fetch historical baseline from ai_search_results (W0 rows)
   const { data: allResults } = await supabase
     .from('ai_search_results')
     .select('*')
@@ -170,19 +173,32 @@ async function fetchAISearchData(
     .order('timestamp', { ascending: false })
     .limit(500)
 
-  if (!allResults || allResults.length === 0) {
+  // Fetch live current data from brand_visibility_daily
+  const { data: liveRows } = await supabase
+    .from('brand_visibility_daily')
+    .select('snapshot_date, platform, query_text, brand_cited, rank_position')
+    .eq('brand_slug', slug)
+    .order('snapshot_date', { ascending: false })
+    .limit(200)
+
+  // If neither source has data, return null
+  if ((!allResults || allResults.length === 0) && (!liveRows || liveRows.length === 0)) {
     return null
   }
 
+  // Determine latest snapshot_date from live data
+  const latestLiveDate = liveRows && liveRows.length > 0 ? liveRows[0].snapshot_date as string : null
+
   // Split into current vs baseline snapshots
   // T+7, T+14, D0 etc. are treated as "current" (more recent than W0 baseline)
-  const results = allResults.filter(r =>
+  const safeAll = allResults || []
+  const results = safeAll.filter(r =>
     !r.snapshot_label ||
     r.snapshot_label === 'current' ||
     /^T\+/.test(r.snapshot_label || '') ||
     /^D\d/.test(r.snapshot_label || '')
   )
-  const baselineResults = allResults.filter(r => r.snapshot_label && r.snapshot_label.startsWith('W'))
+  const baselineResults = safeAll.filter(r => r.snapshot_label && r.snapshot_label.startsWith('W'))
 
   // Find all baseline snapshots (W0, W1, W4, etc.)
   const baselineLabels = [...new Set(baselineResults.map(r => r.snapshot_label))].sort()
@@ -219,7 +235,7 @@ async function fetchAISearchData(
     if (competitorResults.length > 0) {
       // 按平台分組，取每個平台最新的排名
       const byPlatform: Record<string, any> = {}
-      const latestTimestamp = results[0].timestamp
+      const latestTimestamp = results[0]?.timestamp
 
       for (const platform of platforms) {
         const platformResults = competitorResults
@@ -290,13 +306,41 @@ async function fetchAISearchData(
     }
   }
 
-  // Current brand platform rankings (from most recent T+ or 'current' snapshot)
+  // Current brand platform rankings — prefer brand_visibility_daily (live), fall back to ai_search_results T+ rows
   const brandCurrent: Record<string, { position: number; mentioned: boolean; snapshotLabel?: string }> = {}
-  const brandCurrentRows = results.filter(r => brandNameVariants.has(r.competitor_name))
-  for (const r of brandCurrentRows) {
-    const existing = brandCurrent[r.platform]
-    if (!existing || new Date(r.timestamp) > new Date((existing as any).timestamp || 0)) {
-      brandCurrent[r.platform] = { position: r.position, mentioned: r.mentioned, snapshotLabel: r.snapshot_label }
+
+  if (latestLiveDate && liveRows) {
+    // Use live data: group by platform, best (lowest) rank_position where brand_cited=true
+    const latestLive = liveRows.filter(r => r.snapshot_date === latestLiveDate)
+    const platformGroups: Record<string, typeof latestLive> = {}
+    for (const r of latestLive) {
+      const p = r.platform as string
+      if (!platformGroups[p]) platformGroups[p] = []
+      platformGroups[p].push(r)
+    }
+    for (const [platform, rows] of Object.entries(platformGroups)) {
+      const citedRows = rows.filter(r => r.brand_cited)
+      if (citedRows.length > 0) {
+        const best = citedRows.reduce((a, b) =>
+          (a.rank_position || 99) < (b.rank_position || 99) ? a : b
+        )
+        brandCurrent[platform] = {
+          position: best.rank_position || 1,
+          mentioned: true,
+          snapshotLabel: latestLiveDate,
+        }
+      } else {
+        brandCurrent[platform] = { position: 0, mentioned: false, snapshotLabel: latestLiveDate }
+      }
+    }
+  } else {
+    // Fall back to ai_search_results T+/current rows
+    const brandCurrentRows = results.filter(r => brandNameVariants.has(r.competitor_name))
+    for (const r of brandCurrentRows) {
+      const existing = brandCurrent[r.platform]
+      if (!existing || new Date(r.timestamp) > new Date((existing as any).timestamp || 0)) {
+        brandCurrent[r.platform] = { position: r.position, mentioned: r.mentioned, snapshotLabel: r.snapshot_label }
+      }
     }
   }
 
@@ -322,7 +366,7 @@ async function fetchAISearchData(
   }
 
   return {
-    lastUpdated: results[0]?.timestamp || allResults[0]?.timestamp,
+    lastUpdated: latestLiveDate || results[0]?.timestamp || allResults?.[0]?.timestamp,
     platforms,
     queries,
     competitorRanks,
@@ -331,7 +375,7 @@ async function fetchAISearchData(
       W0: brandW0,
       W0Label: latestBaseline,
       current: brandCurrent,
-      currentLabel: latestTPlus || 'current',
+      currentLabel: latestLiveDate || latestTPlus || 'current',
     },
     allCompetitorPlatformRanks,
     competitorW0Ranks,

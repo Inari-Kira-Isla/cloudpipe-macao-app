@@ -1095,52 +1095,50 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                     <GlassCard>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
                         {[
-                          { key: 'gpt', label: 'ChatGPT', icon: '🧠' },
-                          { key: 'perplexity', label: 'Perplexity', icon: '🔎' },
-                          { key: 'gemini', label: 'Gemini', icon: '🤖' },
-                          { key: 'claude', label: 'Claude', icon: '✨' },
-                          { key: 'grok', label: 'Grok', icon: '⚡' },
-                        ].map(({ key, label, icon }) => {
-                          const w0 = citation.brandPlatformRanking?.W0?.[key]
+                          { key: 'chatgpt', w0keys: ['chatgpt', 'gpt'], label: 'ChatGPT', icon: '🧠' },
+                          { key: 'perplexity', w0keys: ['perplexity'], label: 'Perplexity', icon: '🔎' },
+                          { key: 'gemini', w0keys: ['gemini'], label: 'Gemini', icon: '🤖' },
+                          { key: 'claude', w0keys: ['claude'], label: 'Claude', icon: '✨' },
+                        ].map(({ key, w0keys, label, icon }) => {
+                          const W0map = citation.brandPlatformRanking?.W0 || {}
+                          const w0 = w0keys.map(k => W0map[k]).find(Boolean)
                           const cur = citation.brandPlatformRanking?.current?.[key]
                           const w0Rank = w0?.mentioned ? `#${w0.position}` : '未提及'
                           const curRank = cur?.mentioned ? `#${cur.position}` : (cur ? '未提及' : '待測試')
                           const improved = w0?.mentioned && cur?.mentioned && cur.position < w0.position
                           const maintained = w0?.mentioned && cur?.mentioned && cur.position === w0.position
+                          const curColor = !cur ? 'rgba(255,255,255,0.2)' : cur.mentioned ? CP.green : '#F87171'
                           return (
                             <div key={key} style={{
                               borderRadius: 12, padding: 14,
-                              background: w0?.mentioned ? 'rgba(99,102,241,0.06)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${w0?.mentioned ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                              background: cur?.mentioned ? 'rgba(74,222,128,0.05)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${cur?.mentioned ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.06)'}`,
                             }}>
                               <div style={{ fontSize: 11, color: CP.muted, marginBottom: 8 }}>{icon} {label}</div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                                 <span style={{ fontSize: 10, color: CP.faint, minWidth: 30 }}>基線</span>
-                                <span style={{ fontSize: 14, fontWeight: 700, color: w0?.mentioned ? '#93c5fd' : '#F87171' }}>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: w0?.mentioned ? '#93c5fd' : 'rgba(255,255,255,0.3)' }}>
                                   {w0 ? w0Rank : '—'}
                                 </span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <span style={{ fontSize: 10, color: CP.faint, minWidth: 30 }}>當前</span>
-                                <span style={{ fontSize: 14, fontWeight: 700, color: !cur ? 'rgba(255,255,255,0.2)' : cur?.mentioned ? CP.green : '#F87171' }}>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: curColor }}>
                                   {curRank}
                                 </span>
                                 {improved && <span style={{ fontSize: 10, color: CP.green }}>↑</span>}
                                 {maintained && <span style={{ fontSize: 10, color: CP.muted }}>→</span>}
+                                {!w0?.mentioned && cur?.mentioned && <span style={{ fontSize: 10, color: CP.green }}>新↑</span>}
                               </div>
-                              {w0?.keywords && w0.keywords.length > 0 && (
-                                <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                  {w0.keywords.slice(0, 2).map((k, i) => (
-                                    <span key={i} style={{ fontSize: 9, background: 'rgba(147,197,253,0.1)', color: '#93c5fd', padding: '2px 5px', borderRadius: 4 }}>{k}</span>
-                                  ))}
-                                </div>
-                              )}
                             </div>
                           )
                         })}
                       </div>
                       <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, fontSize: 12, color: CP.muted, border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <strong style={{ color: '#fff' }}>基線說明：</strong>W0 ({citation.aiSearchData?.lastUpdated ? new Date(citation.aiSearchData.lastUpdated).toLocaleDateString('zh-HK') : '2026-04-18'}) 為優化起點。T+30 重測全平台對比。
+                        <strong style={{ color: '#fff' }}>基線說明：</strong>W0 ({citation.aiSearchData?.lastUpdated ? new Date(citation.aiSearchData.lastUpdated).toLocaleDateString('zh-HK') : '2026-04-18'}) 為優化起點。
+                        {citation.brandPlatformRanking?.currentLabel && citation.brandPlatformRanking.currentLabel !== 'current' && (
+                          <span> 當前數據：{new Date(citation.brandPlatformRanking.currentLabel).toLocaleDateString('zh-HK')}。</span>
+                        )}
                       </div>
                     </GlassCard>
                   </div>
