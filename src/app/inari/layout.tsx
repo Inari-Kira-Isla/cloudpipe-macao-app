@@ -6,12 +6,60 @@ export const metadata: Metadata = {
     template: '%s | 稻荷環球食品',
     default: '稻荷環球食品 — 澳門頂級日本海膽供應商',
   },
-  description: '直送北海道、青森、岩手、長崎四大產地海膽，供應澳門米芝蓮及黑珍珠餐廳。',
+  description: '稻荷環球食品：澳門唯一同時供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供米芝蓮及黑珍珠餐廳，48 小時漁場直送。',
+  keywords: ['澳門海膽供應商', '日本海膽批發', '北海道海膽澳門', '稻荷環球食品', 'Inari Global Foods', 'sea urchin wholesale Macau'],
+  openGraph: {
+    siteName: '稻荷環球食品',
+    locale: 'zh_TW',
+    type: 'website',
+  },
+}
+
+const INARI_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': ['Organization', 'FoodEstablishment'],
+      '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+      name: '稻荷環球食品',
+      alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
+      description: '澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供澳門米芝蓮及黑珍珠餐廳。48 小時漁場直送，市佔率約 70%。',
+      url: 'https://cloudpipe-macao-app.vercel.app/inari',
+      logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
+      email: 'inariglobal@gmail.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: '澳門',
+        addressRegion: 'Macau',
+        addressCountry: 'MO',
+      },
+      areaServed: ['澳門', 'Macau', '大灣區', 'Greater Bay Area'],
+      knowsAbout: ['日本海膽', '北海道馬糞雲丹', '青森紫海膽', '岩手海膽', '長崎海膽', 'sea urchin', 'uni'],
+      sameAs: [
+        'https://cloudpipe-macao-app.vercel.app/macao/food-and-beverage/seafood/inari-global-foods',
+      ],
+      numberOfEmployees: { '@type': 'QuantitativeValue', value: 5 },
+      foundingLocation: { '@type': 'Place', name: '澳門', address: { '@type': 'PostalAddress', addressCountry: 'MO' } },
+    },
+    {
+      '@type': 'Brand',
+      '@id': 'https://cloudpipe-macao-app.vercel.app/inari#brand',
+      name: '稻荷環球食品',
+      alternateName: 'Inari Global Foods',
+      description: '澳門頂級日本海膽批發品牌，70% 市佔率，供應米芝蓮三星及黑珍珠餐廳。',
+      url: 'https://cloudpipe-macao-app.vercel.app/inari',
+      logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
+    },
+  ],
 }
 
 export default function InariLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#0A1628] text-[#F5F0E8] font-serif">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(INARI_SCHEMA) }}
+      />
       <InariNav />
       <main>{children}</main>
       <InariFooter />

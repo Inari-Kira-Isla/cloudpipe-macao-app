@@ -423,6 +423,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   const [authed, setAuthed] = useState(false)
   const [data, setData] = useState<BrandVisibilityData | null>(null)
   const [citation, setCitation] = useState<CitationData | null>(null)
+  const [aeoScore, setAeoScore] = useState<Record<string, any> | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [slug, setSlug] = useState<string | null>(null)
@@ -447,7 +448,9 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
     Promise.all([
       fetch(`/api/v1/brand-visibility?slug=${slug}&days=30`).then(r => r.json()),
       fetch(`/api/v1/brand-citation?slug=${slug}&days=30&includeAISearch=true`).then(r => r.json()).catch(() => null),
-    ]).then(([vis, cit]) => {
+      fetch(`/api/v1/brand-aeo-score?slug=${slug}`).then(r => r.json()).catch(() => null),
+    ]).then(([vis, cit, aeo]) => {
+      if (aeo && !aeo.error) setAeoScore(aeo)
       setData(vis)
       if (cit && !cit.error) {
         const citationData: CitationData = {
@@ -757,8 +760,112 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 </div>
               </div>
 
+              {/* AEO Citation Score Panel */}
+              {aeoScore?.score && (
+                <div>
+                  <SectionHeader
+                    title="⚡ 今日 AI 引用評分"
+                    subtitle={`${aeoScore.score.date} · ${aeoScore.data_freshness?.stale ? '⚠️ 數據過時' : '✅ 最新'}`}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {/* Score + platform breakdown */}
+                    <GlassCard>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+                        {/* AEO score badge */}
+                        <div style={{ textAlign: 'center', minWidth: 80 }}>
+                          <div style={{
+                            width: 72, height: 72, borderRadius: '50%', margin: '0 auto 8px',
+                            border: `3px solid ${aeoScore.score.aeo_score >= 60 ? CP.gold : aeoScore.score.aeo_score >= 35 ? '#F59E0B' : '#EF4444'}`,
+                            background: `${aeoScore.score.aeo_score >= 60 ? CP.goldGlow : 'rgba(239,68,68,0.1)'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                          }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: aeoScore.score.aeo_score >= 60 ? CP.gold : aeoScore.score.aeo_score >= 35 ? '#F59E0B' : '#EF4444' }}>
+                              {aeoScore.score.aeo_score}
+                            </div>
+                            <div style={{ fontSize: 9, color: CP.faint }}>/ 100</div>
+                          </div>
+                          <div style={{ fontSize: 10, color: CP.faint }}>AEO 評分</div>
+                        </div>
+                        {/* Platform bars */}
+                        <div style={{ flex: 1, minWidth: 220 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: CP.muted, marginBottom: 10 }}>平台引用率</div>
+                          {Object.entries(aeoScore.score.platform_breakdown || {}).map(([platform, v]: [string, any]) => {
+                            const rate = v.rate || 0
+                            const barColor = rate >= 0.5 ? CP.green : rate >= 0.2 ? '#F59E0B' : '#EF4444'
+                            return (
+                              <div key={platform} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                                <div style={{ width: 76, fontSize: 12, color: '#fff', fontWeight: 500, textTransform: 'capitalize' }}>{platform}</div>
+                                <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3 }}>
+                                  <div style={{ width: `${rate * 100}%`, height: '100%', background: barColor, borderRadius: 3, transition: 'width 0.6s' }} />
+                                </div>
+                                <div style={{ width: 36, fontSize: 12, color: barColor, fontWeight: 700, textAlign: 'right' }}>
+                                  {Math.round(rate * 100)}%
+                                </div>
+                                <div style={{ fontSize: 11, color: CP.faint }}>{v.cited}/{v.total}</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {/* Summary stats */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 120 }}>
+                          {[
+                            { label: '整體引用率', value: `${Math.round((aeoScore.score.brand_citation_rate || 0) * 100)}%`, color: CP.gold },
+                            { label: '百科引用率', value: `${Math.round((aeoScore.score.encyclopedia_citation_rate || 0) * 100)}%`, color: '#6366F1' },
+                            { label: 'Sprint 進度', value: `${aeoScore.score.sprint_done || 0}/${aeoScore.score.sprint_total || 0}`, color: '#10B981' },
+                          ].map((s, i) => (
+                            <div key={i} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div style={{ fontSize: 10, color: CP.faint, marginBottom: 3 }}>{s.label}</div>
+                              <div style={{ fontSize: 16, fontWeight: 700, color: s.color }}>{s.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </GlassCard>
+                    {/* Suggestions */}
+                    {aeoScore.score.suggestions?.length > 0 && (
+                      <GlassCard style={{ border: '1px solid rgba(245,200,66,0.15)', background: 'rgba(245,200,66,0.04)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: CP.gold, marginBottom: 10 }}>🎯 優化建議</div>
+                        {aeoScore.score.suggestions.map((s: string, i: number) => (
+                          <div key={i} style={{ display: 'flex', gap: 10, marginBottom: i < aeoScore.score.suggestions.length - 1 ? 8 : 0 }}>
+                            <div style={{ fontSize: 13, color: s.startsWith('P0') ? '#EF4444' : s.startsWith('P1') ? '#F59E0B' : CP.muted }}>•</div>
+                            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>{s}</div>
+                          </div>
+                        ))}
+                      </GlassCard>
+                    )}
+                    {/* Open issues */}
+                    {aeoScore.issues?.length > 0 && (
+                      <GlassCard style={{ border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(239,68,68,0.03)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#F87171', marginBottom: 10 }}>🚨 待處理問題 ({aeoScore.issues.filter((i: any) => i.status === 'open').length} 個開放)</div>
+                        {aeoScore.issues.slice(0, 5).map((issue: any, i: number) => (
+                          <div key={issue.id || i} style={{
+                            padding: '10px 12px', marginBottom: i < Math.min(aeoScore.issues.length, 5) - 1 ? 8 : 0,
+                            background: 'rgba(255,255,255,0.03)', borderRadius: 10,
+                            border: `1px solid ${issue.severity === 'critical' ? 'rgba(239,68,68,0.25)' : issue.severity === 'high' ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                            display: 'flex', alignItems: 'flex-start', gap: 10,
+                          }}>
+                            <span style={{ fontSize: 14, marginTop: 1 }}>
+                              {issue.severity === 'P0' ? '🔴' : issue.severity === 'P1' ? '🟡' : '🔵'}
+                            </span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{issue.title}</div>
+                              <div style={{ fontSize: 12, color: CP.muted, lineHeight: 1.4 }}>{issue.description}</div>
+                            </div>
+                            <div style={{
+                              fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 5,
+                              background: issue.status === 'open' ? 'rgba(239,68,68,0.15)' : 'rgba(74,222,128,0.1)',
+                              color: issue.status === 'open' ? '#F87171' : CP.green, border: `1px solid ${issue.severity === 'P0' ? 'rgba(239,68,68,0.3)' : issue.severity === 'P1' ? 'rgba(245,158,11,0.25)' : 'transparent'}`,
+                            }}>{issue.status === 'open' ? '開放' : '已修復'}</div>
+                          </div>
+                        ))}
+                      </GlassCard>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Lifecycle AI Search Tracker */}
-              {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee', 'mind-coffee', 'cloudpipe-landing'].includes(slug || '') && (
+              {['inari-global-foods', 'sea-urchin-delivery', 'after-school-coffee', 'mind-cafe', 'cloudpipe'].includes(slug || '') && (
                 <div>
                   <SectionHeader
                     title="📈 AI 搜尋排名日誌"

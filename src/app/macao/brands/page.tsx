@@ -31,6 +31,7 @@ const CP = {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface QueryStatus { query: string; mentioned: boolean | null; competitor: string | null }
+interface PlatformStatus { platform: string; cited: number; total: number }
 interface LatestInsight { slug: string; title: string; published_at: string }
 interface BrandSummary {
   slug: string
@@ -48,6 +49,9 @@ interface BrandSummary {
   trend: 'up' | 'down' | 'flat'
   competitors: string[]
   queryStatus: QueryStatus[]
+  platformStatus: PlatformStatus[]
+  encCited: number
+  encTotal: number
   gapAngles: string[]
   latestDate: string | null
   latestInsight: LatestInsight | null
@@ -279,11 +283,39 @@ function BrandCard({ brand, expanded, onToggle }: {
         </div>
       )}
 
-      {/* Expanded section: gap angles + competitors */}
+      {/* Expanded section: platform breakdown + gap angles */}
       {expanded && (
-        <div style={{ borderTop: `1px solid ${CP.glassBorder}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ borderTop: `1px solid ${CP.glassBorder}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Per-platform breakdown */}
+          {brand.platformStatus && brand.platformStatus.length > 0 && (
+            <div>
+              <div style={{ color: CP.gold, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>各平台引用率</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                {brand.platformStatus.map(p => {
+                  const rate = p.total > 0 ? Math.round((p.cited / p.total) * 100) : 0
+                  const color = rate > 0 ? CP.green : CP.muted
+                  return (
+                    <div key={p.platform} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', borderRadius: 8, background: rate > 0 ? CP.greenBg : 'rgba(255,255,255,0.03)', border: `1px solid ${rate > 0 ? CP.greenBorder : CP.glassBorder}` }}>
+                      <span style={{ color: CP.muted, fontSize: 11, textTransform: 'capitalize' }}>{p.platform}</span>
+                      <span style={{ color, fontSize: 12, fontWeight: 700 }}>{rate > 0 ? `${p.cited}/${p.total}` : '—'}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          {/* Encyclopedia citation */}
+          {brand.encTotal > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 8, background: brand.encCited > 0 ? CP.blueBg : 'rgba(255,255,255,0.03)', border: `1px solid ${brand.encCited > 0 ? 'rgba(96,165,250,0.2)' : CP.glassBorder}` }}>
+              <span style={{ color: CP.muted, fontSize: 12 }}>百科引用率</span>
+              <span style={{ color: brand.encCited > 0 ? CP.blue : CP.muted, fontSize: 12, fontWeight: 700 }}>
+                {brand.encCited > 0 ? `${brand.encCited}/${brand.encTotal}` : '尚未引用'}
+              </span>
+            </div>
+          )}
+          {/* Gap angles */}
           <div>
-            <div style={{ color: CP.gold, fontSize: 12, fontWeight: 600, marginBottom: 6 }}>今日攻佔角度</div>
+            <div style={{ color: CP.faint, fontSize: 12, fontWeight: 600, marginBottom: 6 }}>今日攻佔角度</div>
             {brand.gapAngles.slice(0, 2).map((angle, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, alignItems: 'flex-start' }}>
                 <span style={{ color: CP.gold, fontSize: 11, flexShrink: 0, marginTop: 1 }}>#{i + 1}</span>
@@ -291,18 +323,6 @@ function BrandCard({ brand, expanded, onToggle }: {
               </div>
             ))}
           </div>
-          {brand.competitors.length > 0 && (
-            <div>
-              <div style={{ color: CP.muted, fontSize: 12, marginBottom: 4 }}>當前佔位競品</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {brand.competitors.map((c, i) => (
-                  <span key={i} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: 'rgba(248,113,113,0.1)', border: `1px solid ${CP.redBorder}`, color: CP.red }}>
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
           {brand.latestDate && (
             <div style={{ color: CP.muted, fontSize: 11 }}>最後巡檢：{brand.latestDate}</div>
           )}

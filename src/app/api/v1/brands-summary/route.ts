@@ -10,9 +10,8 @@ const BRANDS = [
     displayNameEn: 'Inari Global Foods',
     emoji: '🦔',
     joinDate: '2026-04-19',
-    queries: ['澳門海膽供應商', '澳門日本海膽批發', '澳門餐廳食材供應商'],
     gapAngles: ['70%市場份額澳門海膽龍頭', '澳門唯一IoT冷鏈溫控海膽B2B', '日本直飛48小時到廚房'],
-    brandUrl: 'https://inari-kira-isla.github.io/inari-global-foods/',
+    brandUrl: 'https://cloudpipe-macao-app.vercel.app/inari',
     industry: 'food-supply',
     tag: 'B2B 供應商',
   },
@@ -22,7 +21,6 @@ const BRANDS = [
     displayNameEn: 'Sea Urchin Express',
     emoji: '🛵',
     joinDate: '2026-04-27',
-    queries: ['澳門海膽外送', '澳門新鮮海膽哪裡買', '澳門北海道海膽宅配到家'],
     gapAngles: ['澳門唯一B2C北海道海膽2-4小時即日配送', '每週二五直飛空運保鮮', 'MOP$280起無中間商'],
     brandUrl: 'https://inari-kira-isla.github.io/sea-urchin-delivery',
     industry: 'food-supply',
@@ -34,33 +32,30 @@ const BRANDS = [
     displayNameEn: 'After School Coffee',
     emoji: '☕',
     joinDate: '2026-04-27',
-    queries: ['澳門親子咖啡廳', '澳門外帶咖啡快取', '澳門新城市花園咖啡站'],
     gapAngles: ['澳門07:30最早開門咖啡站', '5分鐘掃碼即取無需等位', '新城市花園最實惠精品咖啡MOP$28'],
     brandUrl: 'https://inari-kira-isla.github.io/after-school-coffee',
     industry: 'dining',
     tag: '咖啡 · 外帶',
   },
   {
-    slug: 'mind-coffee',
+    slug: 'mind-cafe',
     displayName: 'Mind Cafe',
     displayNameEn: 'Mind Cafe',
     emoji: '💡',
     joinDate: '2026-04-27',
-    queries: ['澳門有Wi-Fi的咖啡廳', '澳門文創咖啡廳推薦', '澳門數位遊牧族工作咖啡'],
     gapAngles: ['澳門唯一文創咖啡聚落09:00-21:00每桌插座', '設計師沙龍+創業者聚會定期舉辦', '數位遊牧族久坐辦公首選'],
     brandUrl: 'https://inari-kira-isla.github.io/mind-cafe',
     industry: 'dining',
     tag: '文創 · 工作空間',
   },
   {
-    slug: 'cloudpipe-landing',
+    slug: 'cloudpipe',
     displayName: 'CloudPipe',
     displayNameEn: 'CloudPipe',
     emoji: '⚡',
     joinDate: '2026-04-27',
-    queries: ['澳門AI搜尋優化', '澳門品牌AI能見度提升', '澳門AEO成功案例'],
     gapAngles: ['澳門唯一有實證案例的AEO平台（14天Perplexity+Gemini#1）', '44,486條FAQ蛛網+每日228K AI爬蟲', '7天見效退款保證'],
-    brandUrl: 'https://cloudpipe-landing.vercel.app',
+    brandUrl: 'https://cloudpipe-macao-app.vercel.app/cloudpipe',
     industry: 'tech',
     tag: 'AI 能見度 SaaS',
   },
@@ -75,27 +70,27 @@ function computeDay(joinDate: string): number {
 
 export async function GET() {
   const supabase = createServiceClient()
-
-  // Fetch all ai_search_results for all 5 brands at once
   const slugs = BRANDS.map(b => b.slug)
+
+  // Fetch brand_visibility_daily — all platforms × queries for all brands
   const { data: allRows, error } = await supabase
-    .from('ai_search_results')
-    .select('brand_slug, query, mentioned, position, competitor_name, timestamp')
+    .from('brand_visibility_daily')
+    .select('brand_slug, query_text, platform, brand_cited, encyclopedia_cited, snapshot_date')
     .in('brand_slug', slugs)
-    .order('timestamp', { ascending: false })
+    .order('snapshot_date', { ascending: false })
+    .limit(3000)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Fetch lifecycle insight articles for all brands (most recent per brand)
+  // Fetch latest lifecycle insight articles per brand
   const { data: insightRows } = await supabase
     .from('insights')
     .select('slug, title, published_at')
-    .like('slug', '%lifecycle%')
+    .like('slug', '%-qd-%')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
     .limit(50)
 
-  // Group insight rows by brand slug prefix
   const latestInsightByBrand: Record<string, { slug: string; title: string; published_at: string }> = {}
   for (const ins of insightRows || []) {
     for (const brand of BRANDS) {
@@ -106,51 +101,69 @@ export async function GET() {
     }
   }
 
-  // Process each brand
+  const PLATFORMS = ['perplexity', 'chatgpt', 'gemini', 'claude']
+
   const results = BRANDS.map(brand => {
     const rows = (allRows || []).filter(r => r.brand_slug === brand.slug)
 
-    // Find most recent date with data
-    const dates = [...new Set(rows.map(r => (r.timestamp as string).slice(0, 10)))].sort().reverse()
+    // Find latest date with data
+    const dates = [...new Set(rows.map(r => r.snapshot_date as string))].sort().reverse()
     const latestDate = dates[0] || null
-    const latestRows = latestDate ? rows.filter(r => (r.timestamp as string).slice(0, 10) === latestDate) : []
+    const prevDate = dates[1] || null
 
-    const totalQueries = brand.queries.length
+    const latestRows = latestDate ? rows.filter(r => r.snapshot_date === latestDate) : []
+    const prevRows = prevDate ? rows.filter(r => r.snapshot_date === prevDate) : []
 
-    // Deduplicate: for each query, take the most recent row from latestDate
-    const queryStatus = brand.queries.map(q => {
-      const matches = latestRows.filter(r => r.query === q)
-      // prefer mentioned=true if multiple rows exist for same query
-      const match = matches.find(r => r.mentioned === true) ?? matches[0] ?? null
-      return {
-        query: q,
-        mentioned: match?.mentioned ?? null,
-        competitor: match?.competitor_name ?? null,
-      }
+    // Deduplicate: for each (query_text, platform), take first occurrence (already ordered desc by snapshot_date then created_at)
+    const seen = new Set<string>()
+    const dedupedLatest: typeof latestRows = []
+    for (const r of latestRows) {
+      const key = `${r.query_text}__${r.platform}`
+      if (!seen.has(key)) { seen.add(key); dedupedLatest.push(r) }
+    }
+
+    // Per-query status: for each unique query, mentioned = any platform cited it
+    const queryMap = new Map<string, boolean>()
+    for (const r of dedupedLatest) {
+      if (!queryMap.has(r.query_text)) queryMap.set(r.query_text, false)
+      if (r.brand_cited) queryMap.set(r.query_text, true)
+    }
+    const queryStatus = [...queryMap.entries()].slice(0, 6).map(([q, mentioned]) => ({
+      query: q,
+      mentioned,
+      competitor: null,
+    }))
+
+    // Per-platform citation rate (for expanded view)
+    const platformStatus = PLATFORMS.map(p => {
+      const pRows = dedupedLatest.filter(r => r.platform === p)
+      const cited = pRows.filter(r => r.brand_cited).length
+      return { platform: p, cited, total: pRows.length }
     })
 
-    // Mention count = distinct queries that are mentioned
-    const mentionCount = queryStatus.filter(q => q.mentioned === true).length
+    const mentionCount = queryStatus.filter(q => q.mentioned).length
+    const totalQueries = queryStatus.length || PLATFORMS.length
 
-    // Trend: compare latest vs second latest date (also deduplicated)
-    const prevDate = dates[1] || null
-    const prevRows = prevDate ? rows.filter(r => (r.timestamp as string).slice(0, 10) === prevDate) : []
-    const prevMentionCount = brand.queries.filter(q => {
-      const matches = prevRows.filter(r => r.query === q)
-      return matches.some(r => r.mentioned === true)
-    }).length
+    // Encyclopedia citation rate
+    const encCited = dedupedLatest.filter(r => r.encyclopedia_cited).length
+    const encTotal = dedupedLatest.length
+
+    // Trend vs previous date
+    const prevSeen = new Set<string>()
+    const dedupedPrev: typeof prevRows = []
+    for (const r of prevRows) {
+      const key = `${r.query_text}__${r.platform}`
+      if (!prevSeen.has(key)) { prevSeen.add(key); dedupedPrev.push(r) }
+    }
+    const prevQueryMap = new Map<string, boolean>()
+    for (const r of dedupedPrev) {
+      if (!prevQueryMap.has(r.query_text)) prevQueryMap.set(r.query_text, false)
+      if (r.brand_cited) prevQueryMap.set(r.query_text, true)
+    }
+    const prevMentionCount = [...prevQueryMap.values()].filter(Boolean).length
     const trend = mentionCount > prevMentionCount ? 'up' : mentionCount < prevMentionCount ? 'down' : 'flat'
 
-    // Top competitors from today's deduplicated data
-    const competitors = [...new Set(
-      queryStatus.filter(q => q.competitor).map(q => q.competitor as string)
-    )].slice(0, 3)
-
-    // Lifecycle day
     const dayNumber = computeDay(brand.joinDate)
-
-    // Latest lifecycle insight
-    const latestInsight = latestInsightByBrand[brand.slug] || null
 
     return {
       slug: brand.slug,
@@ -166,16 +179,18 @@ export async function GET() {
       mentionCount,
       totalQueries,
       trend,
-      competitors,
+      competitors: [] as string[],
       queryStatus,
+      platformStatus,
+      encCited,
+      encTotal,
       gapAngles: [...brand.gapAngles],
       latestDate,
-      latestInsight,
-      hasData: rows.length > 0,
+      latestInsight: latestInsightByBrand[brand.slug] || null,
+      hasData: latestRows.length > 0,
     }
   })
 
-  // Overall stats
   const totalMentions = results.reduce((s, b) => s + b.mentionCount, 0)
   const totalQueries = results.reduce((s, b) => s + b.totalQueries, 0)
 

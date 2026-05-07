@@ -206,7 +206,11 @@ export default async function MerchantPage({ params }: PageProps) {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
-  const sameAsUrls = [merchant.website].filter(Boolean) as string[]
+  const socialLinks = (merchant as any).social_links as Record<string, string> | null
+  const sameAsUrls = [...new Set([
+    merchant.website,
+    ...(socialLinks ? Object.values(socialLinks) : []),
+  ])].filter((v): v is string => Boolean(v))
 
   const schemaOrg = {
     '@context': 'https://schema.org',
