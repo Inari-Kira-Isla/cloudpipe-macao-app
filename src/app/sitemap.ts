@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const revalidate = 3600 // 1h ISR — sitemap 不需即時，避免 AI bot 每次爬都觸發 SSR
+export const revalidate = 7200 // 2h ISR — sitemap 不需即時，避免 AI bot 每次爬都觸發 SSR
 export const maxDuration = 60
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600
+export const revalidate = 7200 // 2h - reduce ISR writes
 
 export async function GET() {
   const supabase = createServiceClient()

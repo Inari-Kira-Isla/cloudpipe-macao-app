@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 
-export const revalidate = 3600 // 1 hour Vercel Edge cache
+export const revalidate = 7200 // 2h - reduce ISR writes
 export const maxDuration = 15  // 11 sequential DB queries need headroom
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
