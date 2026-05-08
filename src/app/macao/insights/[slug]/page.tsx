@@ -391,6 +391,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
     wordCount: article.word_count,
     author: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
     publisher: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    license: 'https://creativecommons.org/licenses/by/4.0/',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/macao/insights/${slug}` },
     articleSection: ui.backLabel,
     inLanguage: lc.inLanguage,
@@ -557,6 +558,13 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
       <div className="gold-line"></div>
 
       <main className="max-w-4xl mx-auto px-4 py-10">
+        {/* ═══ Lead Summary (AI-first: renders before TOC for crawler priority) ═══ */}
+        {article.description && (
+          <p className="text-gray-700 text-base leading-relaxed mb-8 pl-4 border-l-4 border-amber-400">
+            {article.description}
+          </p>
+        )}
+
         {/* ═══ Table of Contents ═══ */}
         {sections.length > 0 && (
           <nav className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">

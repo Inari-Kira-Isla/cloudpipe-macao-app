@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// AI platform referrers — humans clicking from AI answers
+// Match on hostname only (not full URL) — avoid utm_source=chatgpt.com false positives
+const AI_REFERRER_HOSTS: [RegExp, string][] = [
+  [/^(www\.)?perplexity\.ai$/i,                          'perplexity'],
+  [/^(www\.)?(chatgpt\.com|chat\.openai\.com)$/i,        'chatgpt'],
+  [/^(www\.)?claude\.ai$/i,                              'claude'],
+  [/^(gemini|bard)\.google\.com$/i,                      'gemini'],
+  [/^(copilot\.microsoft\.com|(www\.)?bing\.com)$/i,     'copilot'],
+  [/^(grok\.x\.ai|(www\.)?x\.com)$/i,                    'grok'],
+  [/^(www\.)?you\.com$/i,                                'you'],
+  [/^(www\.)?kagi\.com$/i,                               'kagi'],
+  [/^(www\.)?phind\.com$/i,                              'phind'],
+]
+
+function detectAiReferrer(referer: string): string | null {
+  try {
+    const host = new URL(referer).hostname
+    for (const [pattern, name] of AI_REFERRER_HOSTS) {
+      if (pattern.test(host)) return name
+    }
+  } catch { /* invalid URL */ }
+  return null
+}
+
 const AI_BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT/i, /OAI-SearchBot/i,
   /ClaudeBot/i, /Claude-Web/i, /Anthropic/i,
@@ -32,7 +56,27 @@ function detectBot(ua: string): { name: string; owner: string } | null {
   return null
 }
 
-function getPageType(path: string): string {
+// Our own brand domains — cross-site bot referrer = spider-web signal
+const OUR_BRAND_DOMAINS = [
+  'inari-kira-isla.github.io',
+  'inariglobal.com.mo',
+  'cloudpipe-macao-app.vercel.app',
+]
+
+// Asset/system paths that browsers fetch automatically — exclude from referral tracking
+const NON_CONTENT_PATHS = /^\/(manifest\.json|favicon\.ico|robots\.txt|sitemap.*\.xml|llms\.txt|sw\.js|_next\/|opengraph-image|apple-touch-icon)/i
+
+function isOwnDomain(host: string): boolean {
+  return OUR_BRAND_DOMAINS.some(d => host === d || host.endsWith('.' + d))
+}
+
+function getPageType(path: string, referer?: string): string {
+  // Cross-site crawl: bot arrived via referer from one of our own brand sites
+  if (referer) {
+    try {
+      if (isOwnDomain(new URL(referer).hostname)) return 'spider-web'
+    } catch { /* invalid referer URL, ignore */ }
+  }
   if (path.startsWith('/macao/insights/')) return 'insight'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/[^/]+$/)) return 'merchant'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/faqs/)) return 'faqs'
@@ -43,13 +87,29 @@ function getPageType(path: string): string {
   return 'page'
 }
 
+// Whitelist of real industry slugs — anything else under /macao/ is a merchant slug
+// (top-level merchant pages caught by [industry] dynamic route)
+// Source: merchants.page_url first segment + legacy paths still being crawled
+const VALID_INDUSTRIES = new Set([
+  // 19 real industries (from live macao merchants)
+  'attractions', 'community', 'dining', 'education', 'events', 'finance',
+  'food-supply', 'gaming', 'government', 'hotels', 'luxury', 'media',
+  'nightlife', 'professional-services', 'real-estate', 'shopping', 'tech',
+  'transport', 'wellness',
+  // Meta + legacy paths
+  'insights', 'services', 'entertainment', 'heritage', 'tourism', 'culture',
+  'merchants', 'lifestyle',
+])
+
 function getIndustryCategory(path: string): { industry: string | null; category: string | null } {
   if (!path.startsWith('/macao/')) return { industry: null, category: null }
   const parts = path.replace(/^\/macao\//, '').split('/').filter(Boolean)
   if (parts.length === 0) return { industry: null, category: null }
-  if (parts[0] === 'insights') return { industry: 'insights', category: null }
   if (parts[0] === 'faqs') return { industry: null, category: null }
-  return { industry: parts[0] || null, category: parts[1] || null }
+  // Only accept whitelisted industry slugs — otherwise this is a merchant slug
+  // at top level (e.g. /macao/cc-foo, /macao/jp-bar) and industry is unknown
+  if (!VALID_INDUSTRIES.has(parts[0])) return { industry: null, category: null }
+  return { industry: parts[0], category: parts[1] || null }
 }
 
 async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
@@ -76,7 +136,39 @@ async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: 
   }).catch(() => {})
 }
 
-async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string) {
+async function trackAiReferral(
+  path: string,
+  referrerSource: string,
+  referrerUrl: string,
+  ua: string,
+  supabaseUrl: string,
+  supabaseKey: string,
+) {
+  const { industry, category } = getIndustryCategory(path)
+  const row = {
+    referrer_source: referrerSource,
+    referrer_url: referrerUrl.slice(0, 500),
+    path,
+    site: 'cloudpipe-macao-app',
+    page_type: getPageType(path),
+    industry,
+    category,
+    ua_raw: ua.slice(0, 200),
+    ts: new Date().toISOString(),
+  }
+  fetch(`${supabaseUrl}/rest/v1/ai_referrals`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(() => {})
+}
+
+async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string) {
   const today = new Date().toISOString().slice(0, 10)
   const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
   const sessionId = `mw-${bot.name}-${today}`
@@ -86,11 +178,12 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
     bot_owner: bot.owner,
     path,
     site: 'cloudpipe-macao-app',
-    page_type: getPageType(path),
+    page_type: getPageType(path, referer),
     industry,
     category,
     session_id: sessionId,
     ua_raw: ua.slice(0, 200),
+    referer: referer ? referer.slice(0, 500) : null,
     ts: new Date().toISOString(),
   }
   // fire-and-forget — never await, never block response
@@ -112,25 +205,31 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  // Track FAQ conversion arrivals (human or bot with utm_source=faq)
   const utmSource = request.nextUrl.searchParams.get('utm_source')
   const utmMedium = request.nextUrl.searchParams.get('utm_medium')
-  if (utmSource === 'faq' && supabaseUrl && supabaseKey) {
-    trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
-  }
+
+  const referer = request.headers.get('referer') || undefined
 
   const bot = detectBot(ua)
-  if (bot) {
-    // 注入 pathname header 給 not-found.tsx 讀取
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-cloudpipe-pathname', path)
-
-    // 伺服器端追蹤 — 不依賴 bot 載入 img pixel
-    if (supabaseUrl && supabaseKey) {
-      trackVisit(path, bot, ua, supabaseUrl, supabaseKey)
+  if (bot && supabaseUrl && supabaseKey) {
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer)
+  } else if (!bot && supabaseUrl && supabaseKey) {
+    // Track FAQ conversion arrivals — only real humans (bots excluded)
+    if (utmSource === 'faq') {
+      trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
     }
-
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    // Check if human arrived from an AI platform
+    // Skip: (1) self-referrer (own domain) (2) asset paths (manifest/favicon/...) (3) non-AI hosts
+    if (referer && !NON_CONTENT_PATHS.test(path)) {
+      let refHost = ''
+      try { refHost = new URL(referer).hostname } catch { /* ignore */ }
+      if (refHost && !isOwnDomain(refHost)) {
+        const aiSource = detectAiReferrer(referer)
+        if (aiSource) {
+          trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey)
+        }
+      }
+    }
   }
 
   return NextResponse.next()
@@ -142,3 +241,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }
+// Force redeploy Sun Apr 26 12:01:33 CST 2026

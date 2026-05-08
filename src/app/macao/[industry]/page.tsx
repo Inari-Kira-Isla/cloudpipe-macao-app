@@ -20,6 +20,10 @@ interface InsightSummary {
 }
 
 async function getData(industrySlug: string) {
+  // Reserved paths that shouldn't be treated as industry slugs
+  const reserved = ['faqs', 'search', 'brand', 'crawler-dashboard', 'citation-stats', 'report']
+  if (reserved.includes(industrySlug)) return null
+
   const industry = getIndustry(industrySlug)
   if (!industry) return null
 

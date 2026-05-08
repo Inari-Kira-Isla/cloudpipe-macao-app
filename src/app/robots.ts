@@ -170,7 +170,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: aiCrawlerDisallows,
       },
     ],
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: [
+      `${siteUrl}/sitemap.xml`,
+      `${siteUrl}/sitemap-merchants.xml`,
+    ],
   }
 }
 // rebuild 1775000447

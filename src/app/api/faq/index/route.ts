@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 
+export const dynamic = 'force-dynamic'
 export const revalidate = 7200 // 2h - reduce ISR writes
 export const maxDuration = 15  // 11 sequential DB queries need headroom
 

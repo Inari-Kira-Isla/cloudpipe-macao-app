@@ -1,0 +1,34 @@
+{
+  "name": "CloudPipe AI 能見度",
+  "short_name": "CloudPipe",
+  "description": "品牌 AI 能見度儀表板 — 查看 AI 引用排名、更新品牌資料",
+  "start_url": "/macao/brand/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafbfc",
+  "theme_color": "#0f4c81",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

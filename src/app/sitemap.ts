@@ -57,6 +57,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1.0,
     },
+    // GSC-verified A桶 pages (pos 5-10, imp≥10) — highest citation opportunity for Gemini
+    ...(['macau-gaming-industry-employment-guide-2026', 'macau-laundry-service-guide-2026', 'hk-wet-market-guide', 'macau-japanese-restaurant-ramen-sushi-guide-2026'].map(slug => ({
+      url: `${siteUrl}/macao/insights/${slug}`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 1.0,
+    }))),
     ...((insights || []).map(ins => ({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,

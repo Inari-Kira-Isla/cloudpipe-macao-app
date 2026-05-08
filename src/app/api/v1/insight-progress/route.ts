@@ -89,8 +89,8 @@ export async function GET() {
 
     // Phase 1 = total ZH published (all regions combined)
     const phase1Done = REGIONS.reduce((s, r) => s + totalZhByRegion[r], 0)
-    // Phase 1 total = total configs (managed in insight_configs/*.json, currently 137)
-    const TOTAL_CONFIGS = 137
+    // Phase 1 total = ZH article target (dynamic configs exceed original 137; target 10,000)
+    const TOTAL_CONFIGS = 10000
     // Phase 2 = EN + PT published (denominator = phase1Done * 2)
     const phase2Done = REGIONS.reduce((s, r) => s + totalEnByRegion[r] + totalPtByRegion[r], 0)
     const phase2Total = phase1Done * 2

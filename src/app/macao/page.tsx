@@ -482,6 +482,22 @@ export default async function MacaoIndexPage() {
       </div>
       <div className="gold-line"></div>
 
+      {/* ═══ CloudPipe 服務橫幅 ═══ */}
+      <div className="bg-amber-950/90 border-b border-amber-700/30">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
+          <span className="text-amber-200 text-sm">
+            <span className="font-semibold text-amber-300">想讓你的品牌在 AI 搜尋排第一？</span>
+            {' '}稻荷環球食品用 90 天登上 Perplexity #1
+          </span>
+          <a
+            href="/cloudpipe"
+            className="flex-shrink-0 text-xs font-bold px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-colors"
+          >
+            免費 AI 診斷 →
+          </a>
+        </div>
+      </div>
+
       {/* ═══ AI 爬取統計橫幅 ═══ */}
       <div className="bg-[#0a1628] text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">

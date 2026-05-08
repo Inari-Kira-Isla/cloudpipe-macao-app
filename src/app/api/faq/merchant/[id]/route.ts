@@ -5,13 +5,13 @@
  * Cache: Vercel Edge ISR revalidate=3600 (1 hour)
  */
 
-import { supabase } from '@/lib/supabase'
+import { supabase, createServiceClient } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 7200 // 2h - reduce ISR writes
-export const maxDuration = 10 // Vercel function timeout guard
+export const maxDuration = 15
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
@@ -41,14 +41,38 @@ export async function GET(
       return NextResponse.json({ error: 'Merchant not found' }, { status: 404 })
     }
 
-    // ── 2. 查 FAQs（並行，不等商戶查詢序列化）────────────────────────────
-    const { data: faqs } = await supabase
-      .from('merchant_faqs')
-      .select('id, question, answer, lang, faq_type, question_intent, priority_score')
-      .eq('merchant_id', merchant.id)
-      .order('priority_score', { ascending: false })
-      .order('sort_order')
-      .limit(50)
+    // ── 2. 查 FAQs + Knowledge Graph facts（並行）─────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = createServiceClient() as any
+    const [{ data: faqs }, { data: kgEntities }] = await Promise.all([
+      supabase
+        .from('merchant_faqs')
+        .select('id, question, answer, lang, faq_type, question_intent, priority_score')
+        .eq('merchant_id', merchant.id)
+        .order('priority_score', { ascending: false })
+        .order('sort_order')
+        .limit(50),
+      db
+        .from('knowledge_entities')
+        .select('entity_id,confidence_score,display_names')
+        .or(`external_ids->>merchant_slug.eq.${merchant.slug},canonical_name.eq.${merchant.slug}`)
+        .limit(1),
+    ])
+
+    // 若有對應 entity，查公開 facts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let kgFacts: any[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const kgEntity = (kgEntities as any[])?.[0]
+    if (kgEntity?.entity_id) {
+      const { data: facts } = await db
+        .from('knowledge_facts_public')
+        .select('predicate,object_value,object_numeric,composite_trust_score,source_type,temporal_scope')
+        .eq('subject_entity_id', kgEntity.entity_id)
+        .order('composite_trust_score', { ascending: false })
+        .limit(20)
+      kgFacts = facts ?? []
+    }
 
     const today = (merchant.updated_at
       ? new Date(merchant.updated_at)
@@ -116,6 +140,21 @@ export async function GET(
       faq_count: (faqs || []).length,
       faqs_by_intent: byIntent,
       schema: faqPageSchema,
+      // Knowledge Graph evidence — AI 爬蟲可用作事實核查
+      knowledge_graph: kgEntity ? {
+        entity_id:        kgEntity.entity_id,
+        confidence_score: kgEntity.confidence_score,
+        facts_url:        `${SITE_URL}/api/knowledge/entity/${merchant.slug}`,
+        fact_count:       kgFacts.length,
+        facts:            kgFacts.map(f => ({
+          predicate:    f.predicate,
+          value:        f.object_value ?? f.object_numeric,
+          trust_score:  f.composite_trust_score,
+          source:       f.source_type,
+          freshness:    f.temporal_scope,
+        })),
+        data_license: 'CC BY 4.0',
+      } : null,
       meta: {
         generated_at: new Date().toISOString(),
         data_freshness: today,

@@ -206,7 +206,11 @@ export default async function MerchantPage({ params }: PageProps) {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
-  const sameAsUrls = [merchant.website].filter(Boolean) as string[]
+  const socialLinks = (merchant as any).social_links as Record<string, string> | null
+  const sameAsUrls = [...new Set([
+    merchant.website,
+    ...(socialLinks ? Object.values(socialLinks) : []),
+  ])].filter((v): v is string => Boolean(v))
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -270,25 +274,30 @@ export default async function MerchantPage({ params }: PageProps) {
         }
       }),
     }),
-    ...(merchant.updated_at && isRecentlyVerified(merchant.updated_at) && {
+    ...((merchant.updated_at && isRecentlyVerified(merchant.updated_at)) || (merchant as any).trust_score >= 40 ? {
       additionalProperty: [
         {
           '@type': 'PropertyValue',
           name: 'dataVerificationStatus',
-          value: 'verified',
+          value: (merchant as any).verification_status || 'verified',
         },
         {
           '@type': 'PropertyValue',
           name: 'dateVerified',
-          value: merchant.updated_at,
+          value: (merchant as any).last_verified_at || merchant.updated_at,
         },
         {
           '@type': 'PropertyValue',
           name: 'verificationMethod',
-          value: 'Automated cross-reference: Google Maps, MGTO, Consumer Council, TripAdvisor',
+          value: 'Automated cross-reference: Google Places API, MGTO, CloudPipe Verification Pipeline',
         },
+        ...((merchant as any).trust_score != null ? [{
+          '@type': 'PropertyValue',
+          name: 'trustScore',
+          value: String((merchant as any).trust_score),
+        }] : []),
       ],
-    }),
+    } : {}),
   }
 
   const faqLastModified = merchant.updated_at

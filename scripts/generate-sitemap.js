@@ -12,12 +12,13 @@
 
 const fs = require('fs')
 const path = require('path')
-const https = require('https')
+const { createClient } = require('@supabase/supabase-js')
 
 // ── 設定 ─────────────────────────────────────────────────────────────────────
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yitmabzsxfgbchhhjjef.supabase.co'
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_secret_eNR3yu3mLT89N_kTJiDvYw_4yE3eHuK'
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 const OUT_PATH = path.join(__dirname, '..', 'public', 'sitemap.xml')
 const TODAY = new Date().toISOString().split('T')[0]
 
@@ -52,32 +53,18 @@ for (const ind of INDUSTRIES) {
   }
 }
 
-// ── HTTP 工具 ─────────────────────────────────────────────────────────────────
-function fetchJSON(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers }, (res) => {
-      let data = ''
-      res.on('data', chunk => data += chunk)
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)) }
-        catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 200)}`)) }
-      })
-    }).on('error', reject)
-  })
-}
-
-async function supabaseQuery(table, select, filters = '', limit = 5000) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.warn(`⚠️  Supabase env vars not set — skipping ${table}`)
-    return []
-  }
-  let url = `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}&limit=${limit}`
-  if (filters) url += `&${filters}`
+// ── Supabase 查詢工具 ─────────────────────────────────────────────────────────
+async function supabaseQuery(table, select, filters = {}, limit = 5000) {
   try {
-    const data = await fetchJSON(url, {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-    })
+    let q = supabase.from(table).select(select).limit(limit)
+    for (const [key, val] of Object.entries(filters)) {
+      q = q.eq(key, val)
+    }
+    const { data, error } = await q
+    if (error) {
+      console.warn(`⚠️  Failed to fetch ${table}: ${error.message}`)
+      return []
+    }
     return Array.isArray(data) ? data : []
   } catch (e) {
     console.warn(`⚠️  Failed to fetch ${table}: ${e.message}`)
@@ -101,13 +88,24 @@ async function main() {
   const entries = []
 
   // 靜態核心頁面
-  entries.push(urlEntry(`${SITE_URL}/`,                       TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao`,                  TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/insights`,         TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/llms.txt`,               TODAY, 'daily',  '1.0'))
-  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,         TODAY, 'daily',  '0.9'))
-  entries.push(urlEntry(`${SITE_URL}/macao/certified-shops`,  TODAY, 'weekly', '0.9'))
-  entries.push(urlEntry(`${SITE_URL}/macao/report`,           TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/`,                                        TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao`,                                   TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/insights`,                          TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/llms.txt`,                                TODAY, 'daily',  '1.0'))
+  entries.push(urlEntry(`${SITE_URL}/macao/llms-txt`,                          TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/certified-shops`,                   TODAY, 'weekly', '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/report`,                            TODAY, 'daily',  '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/brands`,                            TODAY, 'weekly', '0.9'))
+  entries.push(urlEntry(`${SITE_URL}/macao/case-studies`,                      TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs`,                              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/best-restaurants`,             TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/casino-hotels`,                TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/inari-expertise`,              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-attractions`,            TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-food-guide`,             TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/macau-transport`,              TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/premium-restaurants-quality`,  TODAY, 'weekly', '0.8'))
+  entries.push(urlEntry(`${SITE_URL}/macao/faqs/sea-urchin-supplier-comparison`, TODAY, 'weekly', '0.8'))
 
   // 行業頁面 (20 個)
   for (const ind of INDUSTRIES) {
@@ -127,7 +125,7 @@ async function main() {
   const insights = await supabaseQuery(
     'insights',
     'slug,updated_at',
-    'status=eq.published&order=updated_at.desc',
+    { status: 'published' },
     5000
   )
   for (const ins of insights) {
@@ -141,7 +139,7 @@ async function main() {
   const merchants = await supabaseQuery(
     'merchants',
     'slug,updated_at,categories(slug)',
-    'status=eq.live&order=code',
+    { status: 'live' },
     10000
   )
   let merchantCount = 0

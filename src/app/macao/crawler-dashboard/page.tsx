@@ -6,6 +6,7 @@ interface BotInfo { count: number; owner: string }
 interface Summary {
   period: { since: string; days: number }
   total_visits: number
+  today_visits?: number
   unique_bots: number
   unique_sessions: number
   bots: Record<string, BotInfo>
@@ -13,6 +14,14 @@ interface Summary {
   industries: Record<string, number>
   page_types: Record<string, number>
   sites: Record<string, number>
+  daily?: { date: string; total: number }[]
+}
+interface CacheHealth {
+  source_status: 'ok' | 'stale' | 'degraded' | 'backoff' | string
+  last_cache_date: string
+  finished_at: string
+  errors?: { source: string; detail: string }[]
+  cache_files?: Record<string, { exists: boolean; score: number; latest_date: string; mtime: string }>
 }
 interface Session {
   session_id: string; bot: string; owner: string
@@ -76,6 +85,7 @@ interface RoutingBaseline {
 
 const API = '/api/v1/crawler-stats?token=cloudpipe2026'
 const ROUTING_API = '/api/v1/routing-baseline'
+const CACHE_HEALTH_URL = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-cache-health.json'
 
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
@@ -154,6 +164,10 @@ export default function CrawlerDashboard() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [pages, setPages] = useState<PageStat[]>([])
+  const [pagesLoading, setPagesLoading] = useState(false)
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [pagesLoadedDays, setPagesLoadedDays] = useState<number | null>(null)
+  const [sessionsLoadedDays, setSessionsLoadedDays] = useState<number | null>(null)
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
@@ -166,8 +180,20 @@ export default function CrawlerDashboard() {
   const [discoveryIndustry, setDiscoveryIndustry] = useState('')
   const [faqConversions, setFaqConversions] = useState<{ total: number; today: number; topMerchants: { slug: string; count: number }[]; byMedium: Record<string, number> } | null>(null)
   const [faqConvLoading, setFaqConvLoading] = useState(false)
+  interface AiReferralData {
+    total: number
+    days: number
+    by_source: Record<string, { count: number; pages: Record<string, number>; industries: Record<string, number>; latest: string }>
+    source_meta: Record<string, { label: string; color: string; icon: string }>
+    top_pages: { path: string; visits: number; sources: string[] }[]
+    daily: Record<string, Record<string, number>>
+    recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
+  }
+  const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
+  const [aiRefLoading, setAiRefLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
 
   const [error, setError] = useState<string | null>(null)
 
@@ -175,32 +201,34 @@ export default function CrawlerDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 9000)
     try {
       const res = await fetch(url, {
         cache: 'no-store',  // 強制不使用快取，每次都重新查詢
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+        signal: controller.signal,
       })
       if (!res.ok) return fallback
       const data = await res.json()
       if (data?.error) return fallback
       return data as T
     } catch { return fallback }
+    finally { window.clearTimeout(timeout) }
   }
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [sum, ses, pg, sw] = await Promise.all([
+      const [sum, sw] = await Promise.all([
         safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, []),
-        safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, []),
         safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
       ])
+      const health = await safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null)
       setSummary(sum)
-      setSessions(ses)
-      setPages(pg)
       setSpiderWeb(sw)
+      setCacheHealth(health)
       setLastUpdated(new Date())  // 記錄更新時間
       if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
     } catch (e) {
@@ -221,6 +249,16 @@ export default function CrawlerDashboard() {
     return () => clearInterval(interval)
   }, [fetchData])
 
+  const loadAiReferrals = async () => {
+    setAiRefLoading(true)
+    const data = await safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null)
+    setAiReferrals(data)
+    setAiRefLoading(false)
+  }
+
+  // Auto-load AI referrals on mount
+  useEffect(() => { loadAiReferrals() }, [days]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const loadRouting = async () => {
     if (routing) return
     setRoutingLoading(true)
@@ -235,6 +273,24 @@ export default function CrawlerDashboard() {
     const data = await safeFetch<MerchantDiscovery | null>(`/api/v1/merchant-discovery?days=${days}`, null)
     setDiscovery(data)
     setDiscoveryLoading(false)
+  }
+
+  const loadPages = async () => {
+    if (pagesLoadedDays === days || pagesLoading) return
+    setPagesLoading(true)
+    const data = await safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, [])
+    setPages(data)
+    setPagesLoadedDays(days)
+    setPagesLoading(false)
+  }
+
+  const loadSessions = async () => {
+    if (sessionsLoadedDays === days || sessionsLoading) return
+    setSessionsLoading(true)
+    const data = await safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, [])
+    setSessions(data)
+    setSessionsLoadedDays(days)
+    setSessionsLoading(false)
   }
 
   const loadFaqConversions = async () => {
@@ -273,6 +329,15 @@ export default function CrawlerDashboard() {
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
   const maxInd = summary?.industries ? Math.max(...Object.values(summary.industries).map(Number).filter(n => !isNaN(n)), 1) : 1
+
+  const changeDays = (nextDays: number) => {
+    setDays(nextDays)
+    setPages([])
+    setSessions([])
+    setPagesLoadedDays(null)
+    setSessionsLoadedDays(null)
+    setJourney(null)
+  }
 
   return (
     <PasswordGate>
@@ -322,7 +387,7 @@ export default function CrawlerDashboard() {
       {/* Controls */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         {[1, 7, 30, 90].map(d => (
-          <button key={d} onClick={() => setDays(d)}
+          <button key={d} onClick={() => changeDays(d)}
             style={{
               padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
               background: days === d ? '#111' : '#fff', color: days === d ? '#fff' : '#333',
@@ -354,6 +419,32 @@ export default function CrawlerDashboard() {
 
       {loading && <p style={{ textAlign: 'center', color: '#999' }}>載入中...</p>}
       {error && <p style={{ textAlign: 'center', color: '#e74c3c', background: '#fef0f0', padding: '12px 16px', borderRadius: 8 }}>{error}</p>}
+
+      {cacheHealth && cacheHealth.source_status !== 'ok' && (
+        <div style={{
+          marginBottom: 16,
+          padding: '12px 14px',
+          borderRadius: 8,
+          border: '1px solid #f59e0b',
+          background: '#fffbeb',
+          color: '#92400e',
+          fontSize: 13,
+          lineHeight: 1.5,
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>
+            Cache 狀態：{cacheHealth.source_status}
+          </div>
+          <div>
+            最後數據日期：{cacheHealth.last_cache_date || 'unknown'}
+            {cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}
+          </div>
+          {cacheHealth.errors?.[0] && (
+            <div style={{ color: '#a16207', marginTop: 4 }}>
+              {cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}
+            </div>
+          )}
+        </div>
+      )}
 
       {summary && !loading && (
         <>
@@ -405,11 +496,101 @@ export default function CrawlerDashboard() {
             )
           })()}
 
+          {/* ── AI 推介真人流量 ────────────────────────────────────── */}
+          <div style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', background: 'linear-gradient(90deg,#20b2aa11,#4285f411)', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>🎯</span>
+              <div>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>AI 推介真人流量</span>
+                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
+                {aiRefLoading ? '…' : (aiReferrals?.total ?? 0)}
+              </span>
+            </div>
+
+            {aiRefLoading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
+
+            {!aiRefLoading && aiReferrals && (
+              <div style={{ padding: '14px 18px' }}>
+                {aiReferrals.total === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>🕳️</div>
+                    <div>尚未記錄到 AI 推介真人流量</div>
+                    <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>當有人從 Perplexity / ChatGPT 等 AI 平台點擊連結進入後，數據會在此顯示</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    {/* By Source */}
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>來源平台</div>
+                      {Object.entries(aiReferrals.by_source)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .map(([src, data]) => {
+                          const meta = aiReferrals.source_meta[src] ?? { label: src, color: '#6b7280', icon: '🤖' }
+                          const pct = Math.round((data.count / aiReferrals.total) * 100)
+                          return (
+                            <div key={src} style={{ marginBottom: 10 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                                <span style={{ fontWeight: 600 }}>{meta.icon} {meta.label}</span>
+                                <span style={{ fontWeight: 700, color: meta.color }}>{data.count} <span style={{ fontSize: 11, color: '#999', fontWeight: 400 }}>({pct}%)</span></span>
+                              </div>
+                              <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6 }}>
+                                <div style={{ width: `${pct}%`, height: '100%', borderRadius: 4, background: meta.color }} />
+                              </div>
+                              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                                最新：{new Date(data.latest).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+
+                    {/* Top Pages */}
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>最多流量頁面</div>
+                      {aiReferrals.top_pages.slice(0, 8).map((p, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, fontSize: 12 }}>
+                          <span style={{ color: '#9ca3af', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
+                          <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {p.path}
+                          </span>
+                          <span style={{ fontWeight: 700, color: '#20b2aa', flexShrink: 0 }}>{p.visits}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent referrals */}
+                {aiReferrals.recent.length > 0 && (
+                  <div style={{ marginTop: 14, borderTop: '1px solid #f3f4f6', paddingTop: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>最近記錄</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {aiReferrals.recent.slice(0, 8).map((r, i) => {
+                        const meta = aiReferrals.source_meta[r.source] ?? { label: r.source, color: '#6b7280', icon: '🤖' }
+                        return (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, padding: '5px 8px', background: '#fafafa', borderRadius: 6 }}>
+                            <span style={{ flexShrink: 0, fontWeight: 600, color: meta.color }}>{meta.icon} {meta.label}</span>
+                            <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.path}</span>
+                            <span style={{ flexShrink: 0, color: '#9ca3af' }}>{new Date(r.ts).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
             {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
               <button key={t} onClick={() => {
                 setTab(t); setJourney(null)
+                if (t === 'pages') loadPages()
+                if (t === 'sessions') loadSessions()
                 if (t === 'routing') loadRouting()
                 if (t === 'merchant-discovery') loadDiscovery()
                 if (t === 'faq-conversion') loadFaqConversions()
@@ -497,7 +678,8 @@ export default function CrawlerDashboard() {
           {tab === 'pages' && (
             <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>熱門頁面排名</h3>
-              {pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據</p>}
+              {pagesLoading && <p style={{ color: '#999', fontSize: 13 }}>載入頁面數據中...</p>}
+              {!pagesLoading && pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
               {pages.map((p, i) => (
                 <div key={p.path} style={{
                   padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none',
@@ -624,7 +806,8 @@ export default function CrawlerDashboard() {
             <div>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', marginBottom: 16 }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>Crawl Sessions</h3>
-                {sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據</p>}
+                {sessionsLoading && <p style={{ color: '#999', fontSize: 13 }}>載入 session 數據中...</p>}
+                {!sessionsLoading && sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據或查詢逾時，總覽數據仍可正常使用。</p>}
                 {sessions.map(s => (
                   <div key={s.session_id} style={{
                     padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer',
@@ -895,7 +1078,8 @@ export default function CrawlerDashboard() {
               const HIST_LABELS: Record<string, string> = {
                 '0': '無 Insight', '1-2': '1-2 篇', '3-5': '3-5 篇', '6-10': '6-10 篇', '11+': '11+ 篇'
               }
-              const maxHist = Math.max(...Object.values(s.insightCoverageHist).map(Number), 1)
+              const histData = s.insightCoverageHist || { '0': 0, '1-2': 0, '3-5': 0, '6-10': 0, '11+': 0 }
+              const maxHist = Math.max(...Object.values(histData).map(Number), 1)
               return (
                 <>
                   {/* Today Stats Banner */}
@@ -933,7 +1117,7 @@ export default function CrawlerDashboard() {
                   {/* Insight Coverage Histogram */}
                   <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈（每個商戶被多少篇 Insight 連結）</h3>
-                    {Object.entries(s.insightCoverageHist).map(([k, v]) => (
+                    {Object.entries(histData).map(([k, v]) => (
                       <div key={k} style={{ marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
                           <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>

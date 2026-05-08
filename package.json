@@ -10,12 +10,14 @@
     "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
-    "next": "16.1.6",
+    "@anthropic-ai/sdk": "^0.90.0",
+    "next": "^16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.105.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
