@@ -1,5 +1,5 @@
 export async function GET() {
-  return new Response(process.env.BING_INDEX_NOW_KEY || 'c845f9a3c8084f01bfceb67decbc6a3d', {
+  return new Response(process.env.INDEXNOW_KEY || process.env.BING_INDEX_NOW_KEY || 'ba56701768004b66b7e64c28a1e90f9e', {
     headers: { 'Content-Type': 'text/plain' },
   })
 }
