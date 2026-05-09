@@ -13,6 +13,8 @@ import LangAwareContent from './LangAwareContent'
 // NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
 // Lang switching is handled client-side via LangAwareContent + useSearchParams().
 export const revalidate = 86400
+// Next.js 15+ changed fetch() default to no-store; restore ISR-compatible caching
+export const fetchCache = 'default-cache'
 
 interface PageProps {
   params: Promise<{ slug: string }>
