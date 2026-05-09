@@ -383,8 +383,9 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
   /* ── Schema.org ── */
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'ScholarlyArticle',
     headline: article.title,
+    abstract: article.description,
     description: article.description,
     datePublished: article.published_at || article.created_at,
     dateModified: article.updated_at,
@@ -395,6 +396,13 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/macao/insights/${slug}` },
     articleSection: ui.backLabel,
     inLanguage: lc.inLanguage,
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      citation: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'CreativeWork',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
     ...(article.og_image && { image: article.og_image }),
     ...((encyclopediaEntries.length > 0 || spiderWebInsights.length > 0) && {
       relatedLink: [
