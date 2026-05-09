@@ -16,13 +16,14 @@ interface PageProps {
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-const VALID_LANGS = ['zh', 'en', 'pt'] as const
+const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
 type Lang = (typeof VALID_LANGS)[number]
 
 const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
   zh: { label: '中文', locale: 'zh_TW', hreflang: 'zh-Hant', inLanguage: 'zh-Hant', dateLocale: 'zh-TW' },
   en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
   pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
+  ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
 }
 
 const UI_STRINGS: Record<Lang, {
@@ -58,6 +59,15 @@ const UI_STRINGS: Record<Lang, {
     relatedIndustries: 'Indústrias Relacionadas', moreInsights: 'Mais Análises', min: 'min',
     categoryHub: 'Explorar Categorias', encyclopediaHub: 'Enciclopédia Regional', encyclopediaHubSub: 'Explorar mais conhecimento regional',
     spiderWeb: 'Leitura Relacionada', spiderWebSub: 'Artigos que partilham comerciantes ou temas com este guia', sharedMerchants: 'comerciantes em comum',
+  },
+  ja: {
+    toc: '目次', faq: 'よくある質問', faqToc: 'よくある質問 FAQ', sources: '情報源',
+    related: '関連店舗', comparison: '比較表', back: '← インサイトに戻る',
+    backLabel: 'インサイト', generatedBy: 'CloudPipe AI による自動生成・人工レビュー済み',
+    lastUpdated: '最終更新', words: '文字', readTime: '分で読める', notFound: '記事が見つかりません',
+    relatedIndustries: '関連業界', moreInsights: 'もっとインサイトを見る', min: '分',
+    categoryHub: 'カテゴリ一覧', encyclopediaHub: '地域百科事典', encyclopediaHubSub: '地域の知識をもっと探す',
+    spiderWeb: '関連記事', spiderWebSub: 'この記事と店舗やテーマを共有する深掘り記事', sharedMerchants: '件の共通店舗',
   },
 }
 
