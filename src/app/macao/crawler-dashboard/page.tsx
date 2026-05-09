@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { INDUSTRIES } from '@/lib/industries'
 
 interface BotInfo { count: number; owner: string }
 interface Summary {
@@ -329,13 +330,11 @@ export default function CrawlerDashboard() {
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
 
-  // Valid industry slugs — anything else is noise (merchant slugs, site names, etc.)
+  // Valid industry slugs from shared lib + legacy paths tracked in middleware.ts
+  // SYNC: middleware.ts VALID_INDUSTRIES / precompute.py _VALID_IND_SET
   const VALID_IND = new Set([
-    'insights', 'dining', 'attractions', 'shopping', 'professional-services',
-    'wellness', 'food-supply', 'transport', 'hotels', 'education', 'nightlife',
-    'community', 'gaming', 'finance', 'events', 'tech', 'real-estate', 'culture',
-    'media', 'tourism', 'luxury', 'government', 'heritage', 'lifestyle', 'services',
-    'entertainment', 'merchants',
+    ...INDUSTRIES.map(i => i.slug),
+    'insights', 'services', 'entertainment', 'tourism', 'culture', 'merchants', 'lifestyle',
   ])
   const filteredIndustries = summary?.industries
     ? (() => {
