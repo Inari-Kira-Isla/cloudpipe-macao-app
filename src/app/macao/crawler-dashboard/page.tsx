@@ -328,7 +328,30 @@ export default function CrawlerDashboard() {
 
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
-  const maxInd = summary?.industries ? Math.max(...Object.values(summary.industries).map(Number).filter(n => !isNaN(n)), 1) : 1
+
+  // Valid industry slugs — anything else is noise (merchant slugs, site names, etc.)
+  const VALID_IND = new Set([
+    'insights', 'dining', 'attractions', 'shopping', 'professional-services',
+    'wellness', 'food-supply', 'transport', 'hotels', 'education', 'nightlife',
+    'community', 'gaming', 'finance', 'events', 'tech', 'real-estate', 'culture',
+    'media', 'tourism', 'luxury', 'government', 'heritage', 'lifestyle', 'services',
+    'entertainment', 'merchants',
+  ])
+  const filteredIndustries = summary?.industries
+    ? (() => {
+        const valid: Record<string, number> = {}
+        let unknownSum = 0
+        for (const [k, v] of Object.entries(summary.industries)) {
+          if (VALID_IND.has(k)) valid[k] = (valid[k] || 0) + (Number(v) || 0)
+          else unknownSum += Number(v) || 0
+        }
+        if (unknownSum > 0) valid['未分類'] = unknownSum
+        return valid
+      })()
+    : {}
+  const maxInd = Object.values(filteredIndustries).length
+    ? Math.max(...Object.values(filteredIndustries).map(Number).filter(n => !isNaN(n)), 1)
+    : 1
 
   const changeDays = (nextDays: number) => {
     setDays(nextDays)
@@ -633,23 +656,23 @@ export default function CrawlerDashboard() {
               {/* Industry breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
-                {Object.entries(summary.industries)
+                {Object.entries(filteredIndustries)
                   .sort((a, b) => b[1] - a[1])
                   .map(([ind, count]) => (
                     <div key={ind} style={{ marginBottom: 8 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                        <span>{ind}</span>
-                        <span style={{ fontWeight: 600 }}>{count}</span>
+                        <span style={{ color: ind === '未分類' ? '#aaa' : undefined }}>{ind}</span>
+                        <span style={{ fontWeight: 600, color: ind === '未分類' ? '#aaa' : undefined }}>{count}</span>
                       </div>
                       <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
                         <div style={{
                           width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4,
-                          background: '#4285f4',
+                          background: ind === '未分類' ? '#ccc' : '#4285f4',
                         }} />
                       </div>
                     </div>
                   ))}
-                {Object.keys(summary.industries).length === 0 && (
+                {Object.keys(filteredIndustries).length === 0 && (
                   <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>
                 )}
               </div>
