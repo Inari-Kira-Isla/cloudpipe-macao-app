@@ -13,6 +13,8 @@ type DailyCache = {
     by_site?: Record<string, number>
   }>
   industries?: Record<string, number>
+  today_industries?: Record<string, number>
+  today_industries_date?: string
 }
 
 async function readCache<T = unknown>(key: string): Promise<T | null> {
@@ -74,7 +76,9 @@ function summarizeDaily(cached: DailyCache, days: number) {
     unique_sessions: 0,
     bots,
     top_pages: {},
-    industries: cached.industries || {},
+    industries: (days <= 1 && cached.today_industries && Object.keys(cached.today_industries).length > 0)
+      ? cached.today_industries
+      : cached.industries || {},
     page_types: {},
     sites,
     daily: slicedDaily,
