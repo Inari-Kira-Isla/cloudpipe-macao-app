@@ -268,8 +268,35 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
           </div>
         )}
 
+        {/* Hub pages: topic + district crawl entry points */}
+        <section className="mt-12 p-5 bg-[#f8fafc] rounded-xl border border-gray-200">
+          <h2 className="text-sm font-bold text-[#0f4c81] mb-3 uppercase tracking-wider">
+            {lang === 'zh' ? '按地區瀏覽' : lang === 'pt' ? 'Explorar por Distrito' : 'Browse by District'}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {(['macau-peninsula', 'taipa', 'coloane', 'cotai', 'inner-harbour'] as const).map(d => {
+              const labels: Record<string, Record<Lang, string>> = {
+                'macau-peninsula': { zh: '澳門半島', en: 'Macao Peninsula', pt: 'Península de Macau' },
+                'taipa': { zh: '氹仔', en: 'Taipa', pt: 'Taipa' },
+                'coloane': { zh: '路環', en: 'Coloane', pt: 'Coloane' },
+                'cotai': { zh: '路氹城', en: 'Cotai', pt: 'Cotai' },
+                'inner-harbour': { zh: '內港', en: 'Inner Harbour', pt: 'Porto Interior' },
+              }
+              return (
+                <a
+                  key={d}
+                  href={`/macao/insights/district/${d}`}
+                  className="text-sm px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[#1a1a2e] hover:border-[#0f4c81] hover:text-[#0f4c81] transition-colors"
+                >
+                  {labels[d][lang]}
+                </a>
+              )
+            })}
+          </div>
+        </section>
+
         {/* Cross-site ecosystem links for crawler discovery */}
-        <section className="mt-14 mb-8 p-6 bg-gradient-to-r from-[#f8fafc] to-[#eef2ff] rounded-xl border border-gray-200">
+        <section className="mt-6 mb-8 p-6 bg-gradient-to-r from-[#f8fafc] to-[#eef2ff] rounded-xl border border-gray-200">
           <h2 className="text-sm font-bold text-[#0f4c81] mb-3 uppercase tracking-wider">CloudPipe AI 生態系</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <a href="https://cloudpipe-landing.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">CloudPipe AI 平台</a>
