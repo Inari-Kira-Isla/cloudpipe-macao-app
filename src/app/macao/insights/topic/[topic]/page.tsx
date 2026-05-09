@@ -90,8 +90,53 @@ interface PageProps {
   searchParams: Promise<{ lang?: string }>
 }
 
+// All known topic slugs with ≥2 published articles (auto-generated 2026-05-09)
+const KNOWN_TOPICS = [
+  'entertainment','shopping','dining','tourism','gourmet','hotel','encyclopedia',
+  'macau','transport','accommodation','guia','kobe','taiwan','guide','sendai',
+  'nightlife','turismo','entretenimento','japan','festivals','kanazawa','okinawa',
+  'restaurant','transport-guide','fukuoka','kyoto','nagoya','theme-parks','nara',
+  'enciclopedia','osaka','attractions','central','compras','lantau','causeway-bay',
+  'gastronomia','hiroshima','hokkaido','mong-kok','park','attraction-guide',
+  'hongkong','macao','stanley','tsim-sha-tsui','wan-chai','cheung-chau',
+  'horse-racing','landmark','live-music','shinkansen','street-food','tokyo',
+  'sai-kung','wellness','aberdeen','food-supply','yilan','education','electronics',
+  'jiufen','kaohsiung','kenting','tainan','taipei','tempura','budget-stays',
+  'cinema','duty-free','museum','seafood','shopping-guide','transporte',
+  'boutique-hotels','dai-pai-dong','department-stores','minshuku','sun-moon-lake',
+  'taichung','craft-markets','hotels','alishan','ferries','hot-pot','hualien',
+  'karaoke','whale-watching','festivals-matsuri','hong-kong','hot-springs-dining',
+  'matcha-sweets','restaurante','ryokan','temples-shrines','vegetarian-buddhist',
+  'bus','business-hotels','capsule-hotels','dim-sum','japao','kaiseki',
+  'love-hotels','metro-systems','night-markets','roast-goose','scenic-routes',
+  'serviced-living','souvenir-gifts','souvenir-omiyage','temples','tonkatsu',
+  'top-rating-listicle','visa-entry','wagyu','antique-shops','boutique-picks',
+  'casino-resort-package','cha-chaan-teng','cultura','daily-budget','day-trips',
+  'depachika','egg-waffles','family-entertainment','family-friendly','fine-dining',
+  'free-shuttle','gaming-arcades','izakaya','late-night-eats','local-market-guide',
+  'lojas-de-100-ienes','okonomiyaki','ramen','seafood-import','ski-resorts',
+  'tea-shops','udon-soba','wet-markets','yakitori','aboriginal-cuisine',
+  'anime-manga','bem-estar','buses','casino-beginners','cultural-heritage',
+  'cycling-routes','events','festivais-matsuri','food','gardens-parks',
+  'heritage-walking-route','historical-districts','hot-springs','hzmb-bridge',
+  'insight','island-hopping','jade-market','japanese-izakaya','japanese-seafood',
+  'jr-pass','live-houses','michelin-street-food','milk-tea','nightlife-bar-hopping',
+  'onsen','peninsula-de-macao','quioto','rental-cars','restaurantes',
+  'safety-essentials','street-markets','top20-listicle','vegetarian','viewpoints',
+  'alojamento','autocarros','bakery-gifts','best-season','bubble-tea','budget-eats',
+  'castle-towns','chinese-teahouse','cold-chain-logistics','comparison-guide',
+  'cycling','escape-rooms','family-activities','fashion','fashion-harajuku',
+  'ferry-timetable','festivais','free-things-to-do','gaming-culture','garden-parks',
+  'gift-ideas','guia-de-atracoes','guia-de-resort-de-luxo','guias','hidden-gem',
+  'integrated-resorts','ktv','live-performances','mercados-noturnos','michelin-guide',
+  'mountain-trails','museu','national-parks','nature-guide','nature-trails',
+  'outlying-islands','parque','pineapple-cakes','restaurant-supply',
+  'shows-performances','sobremesas','souvenir-top-picks','sumo','temple-stays',
+  'traditional-culture','victoria-peak','vintage-thrift','xiaolongbao',
+]
+
 export async function generateStaticParams() {
-  return []
+  return KNOWN_TOPICS.map(topic => ({ topic }))
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {

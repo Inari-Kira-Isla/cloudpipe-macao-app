@@ -6,12 +6,20 @@ import { safeJsonLd } from '@/lib/types'
 import ComparisonTable from '../ComparisonTable'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { ClickTracker } from '@/components/ClickTracker'
+import { Suspense } from 'react'
+import LangAwareContent from './LangAwareContent'
 
-export const revalidate = 86400 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
+// 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
+// NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
+// Lang switching is handled client-side via LangAwareContent + useSearchParams().
+export const revalidate = 86400
+export const fetchCache = 'default-cache'
+// Force ISR — prevent any dynamic API from accidentally opting this page out of Edge Cache
+export const dynamic = 'force-static'
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ lang?: string }>
+  // searchParams intentionally omitted — reading it forces dynamic rendering
 }
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -229,11 +237,12 @@ async function getFallbackMerchants(industries: string[]): Promise<RelatedMercha
 }
 
 
-export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = await searchParams
-  const lang = parseLang(langParam)
+  // Always generate metadata for zh (canonical version).
+  // Non-zh variants are handled client-side; their og/title will match zh server HTML.
+  const lang: Lang = 'zh'
   const lc = LANG_CONFIG[lang]
 
   const article = await getInsight(slug, lang)
@@ -271,11 +280,11 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 }
 
 
-export default async function InsightDetailPage({ params, searchParams }: PageProps) {
+export default async function InsightDetailPage({ params }: PageProps) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = await searchParams
-  const lang = parseLang(langParam)
+  // Server always renders zh (canonical). Lang switching is client-side via LangAwareContent.
+  const lang: Lang = 'zh'
   const ui = UI_STRINGS[lang]
   const lc = LANG_CONFIG[lang]
 
@@ -513,6 +522,10 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
       {claimReviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(claimReviewSchema) }} />}
       <ClickTracker pageType="insight" pageSlug={slug} />
+      {/* LangAwareContent: client-side lang switching without breaking ISR/Edge Cache */}
+      <Suspense fallback={null}>
+        <LangAwareContent slug={slug} availableLangs={availableLangs} />
+      </Suspense>
       {/* RSS Feed Discovery */}
       <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析" href={`${siteUrl}/feed.xml`} />
       {/* hreflang */}
@@ -542,7 +555,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
               {article.read_time_minutes} {ui.readTime}
             </span>
             {article.published_at && (
-              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20" data-date-field="published_at">
                 {new Date(article.published_at).toLocaleDateString(lc.dateLocale)}
               </span>
             )}
@@ -560,6 +573,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
                 <a
                   key={al}
                   href={langUrl(al)}
+                  data-lang-pill={al}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     al === lang
                       ? 'bg-white text-[#0f4c81] border-white font-bold'
@@ -880,7 +894,7 @@ export default async function InsightDetailPage({ params, searchParams }: PagePr
           <div className="flex flex-col md:flex-row justify-between gap-2">
             <div>
               <p>{ui.generatedBy.split('CloudPipe AI')[0]}<a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a>{ui.generatedBy.split('CloudPipe AI')[1]}</p>
-              <p className="mt-1">{ui.lastUpdated}：{new Date(article.updated_at).toLocaleDateString(lc.dateLocale)}</p>
+              <p className="mt-1">{ui.lastUpdated}：<span data-date-field="updated_at">{new Date(article.updated_at).toLocaleDateString(lc.dateLocale)}</span></p>
             </div>
             <div className="text-right">
               <a href="/macao/insights" className="text-[#0f4c81] hover:underline">{ui.back}</a>
