@@ -49,8 +49,8 @@ interface SpiderWebData {
 
 interface MerchantDiscoveryItem {
   slug: string; name_zh: string; name_en: string; industry: string; district: string; region: string
-  visits: number; botCount: number; bots: string[]; lastTs: string
-  insightCount: number; totalWords: number; sampleInsights: string[]
+  visits: number; botCount: number; bots?: string[]; lastTs: string
+  insightCount: number; totalWords: number; sampleInsights?: string[]
   score: number; readinessLabel: string; readinessColor: string
 }
 interface MerchantDiscovery {
@@ -80,8 +80,8 @@ interface RoutingBaseline {
   merchantsByIndustry: Record<string, number>
   totalMerchants: number
   merchantsWithReviews: number
-  merchantVisits: { total: number; uniqueSlugs: number; byBot: Record<string, number>; recentPaths: { path: string; bot: string; ts: string }[] }
-  categoryVisits: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
+  merchantVisits?: { total: number; uniqueSlugs: number; byBot: Record<string, number>; recentPaths: { path: string; bot: string; ts: string }[] }
+  categoryVisits?: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
 }
 
 const API = '/api/v1/crawler-stats?token=cloudpipe2026'
@@ -908,8 +908,9 @@ export default function CrawlerDashboard() {
             {routingLoading && <p style={{ color: '#999', textAlign: 'center', padding: 32 }}>載入路由基線數據...</p>}
             {routing && !routingLoading && (() => {
               const { tiers, topMerchants, industryTiers, merchantsByIndustry,
-                      totalMerchants, merchantsWithReviews,
-                      merchantVisits, categoryVisits } = routing
+                      totalMerchants, merchantsWithReviews } = routing
+              const merchantVisits = routing.merchantVisits ?? { total: 0, uniqueSlugs: 0, byBot: {}, recentPaths: [] }
+              const categoryVisits = routing.categoryVisits ?? { total: 0, byIndustry: {}, recentPaths: [] }
               const TIER_COLORS: Record<string, string> = { A: '#10a37f', B: '#f39c12', C: '#e67e22', D: '#e74c3c' }
               const TIER_LABELS: Record<string, string> = {
                 A: 'A — 有 Answer Hub', B: 'B — 有商戶連結', C: 'C — 弱連結', D: 'D — 無商戶'
@@ -1256,9 +1257,9 @@ export default function CrawlerDashboard() {
                                   <td style={{ padding: '7px 10px' }}>
                                     <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
                                     {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
-                                    {m.sampleInsights.length > 0 && (
+                                    {(m.sampleInsights ?? []).length > 0 && (
                                       <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>
-                                        → {m.sampleInsights[0].slice(0, 30)}{m.sampleInsights[0].length > 30 ? '…' : ''}
+                                        → {m.sampleInsights![0].slice(0, 30)}{m.sampleInsights![0].length > 30 ? '…' : ''}
                                       </div>
                                     )}
                                   </td>
@@ -1280,7 +1281,7 @@ export default function CrawlerDashboard() {
                                   </td>
                                   <td style={{ padding: '7px 10px', color: '#555' }}>
                                     {m.botCount > 0 ? (
-                                      <span title={m.bots.join(', ')}>{m.botCount}</span>
+                                      <span title={(m.bots ?? []).join(', ')}>{m.botCount}</span>
                                     ) : '—'}
                                   </td>
                                   <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>

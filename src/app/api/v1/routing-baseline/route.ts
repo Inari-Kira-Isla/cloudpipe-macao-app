@@ -197,6 +197,9 @@ export async function GET() {
       merchantsByIndustry,
       totalMerchants: totalMerchantCount || Object.keys(merchantScores).length,
       merchantsWithReviews: Object.values(merchantScores).filter(m => m.reviews > 0).length,
+      // Crawler visit baseline stubs (populated from precomputed cache when available)
+      merchantVisits: { total: 0, uniqueSlugs: 0, byBot: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; ts: string }[] },
+      categoryVisits: { total: 0, byIndustry: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; industry: string; ts: string }[] },
     }
 
     _cache = { data: result, ts: Date.now() }

@@ -346,6 +346,14 @@ export async function GET(req: NextRequest) {
     })
     if (res.ok) {
       const data = await res.json()
+      // Normalize merchants: ensure bots and sampleInsights always exist
+      if (Array.isArray(data?.merchants)) {
+        data.merchants = data.merchants.map((m: any) => ({
+          ...m,
+          bots: m.bots ?? [],
+          sampleInsights: m.sampleInsights ?? [],
+        }))
+      }
       return NextResponse.json(data, {
         headers: {
           'Access-Control-Allow-Origin': '*',
@@ -363,7 +371,15 @@ export async function GET(req: NextRequest) {
         .eq('key', `merchant-discovery-${days}`)
         .single()
       if (data?.data) {
-        return NextResponse.json(data.data, {
+        const payload = data.data
+        if (Array.isArray(payload?.merchants)) {
+          payload.merchants = payload.merchants.map((m: any) => ({
+            ...m,
+            bots: m.bots ?? [],
+            sampleInsights: m.sampleInsights ?? [],
+          }))
+        }
+        return NextResponse.json(payload, {
           headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300', 'X-Cache': 'SUPABASE' },
         })
       }

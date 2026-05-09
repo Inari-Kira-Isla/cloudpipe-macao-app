@@ -141,7 +141,20 @@ export async function GET(request: NextRequest) {
       return json([], 'CACHE_ONLY_MISS')
     }
 
-    case 'pages':
+    case 'pages': {
+      // Try to read top_pages from the precomputed summary cache
+      const summaryDays = [7, 30, 90].includes(days) ? days : 30
+      const summaryCache = await readCache<{ top_pages?: Record<string, number> }>(`crawler-stats-summary-${summaryDays}`)
+      const topPages = summaryCache?.top_pages || {}
+      if (Object.keys(topPages).length > 0) {
+        const pageList = Object.entries(topPages)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, parseInt(request.nextUrl.searchParams.get('limit') || '50', 10))
+          .map(([path, visits]) => ({ path, visits, bots: [], industry: null, page_type: 'page' }))
+        return json(pageList, 'PRECOMPUTED-TOP-PAGES')
+      }
+      return json([], 'CACHE_ONLY_MISS')
+    }
     case 'bots':
       return json([], 'CACHE_ONLY_DISABLED')
 
