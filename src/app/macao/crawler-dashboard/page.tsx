@@ -198,7 +198,6 @@ export default function CrawlerDashboard() {
 
   const [error, setError] = useState<string | null>(null)
 
-  // Google Sheet 連結（從環境變量讀取，或使用預設值）
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
   const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
@@ -206,7 +205,7 @@ export default function CrawlerDashboard() {
     const timeout = window.setTimeout(() => controller.abort(), 9000)
     try {
       const res = await fetch(url, {
-        cache: 'no-store',  // 強制不使用快取，每次都重新查詢
+        cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
         signal: controller.signal,
       })
@@ -230,7 +229,7 @@ export default function CrawlerDashboard() {
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
-      setLastUpdated(new Date())  // 記錄更新時間
+      setLastUpdated(new Date())
       if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
     } catch (e) {
       console.error(e)
@@ -239,14 +238,10 @@ export default function CrawlerDashboard() {
     setLoading(false)
   }, [days])
 
-  // 初次載入 + 當 days 改變時重新整理
   useEffect(() => { fetchData() }, [fetchData])
 
-  // 自動重新整理：每 30 秒查詢一次最新數據
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchData()
-    }, 30000)  // 30 秒
+    const interval = setInterval(() => { fetchData() }, 30000)
     return () => clearInterval(interval)
   }, [fetchData])
 
@@ -257,7 +252,6 @@ export default function CrawlerDashboard() {
     setAiRefLoading(false)
   }
 
-  // Auto-load AI referrals on mount
   useEffect(() => { loadAiReferrals() }, [days]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRouting = async () => {
@@ -330,8 +324,6 @@ export default function CrawlerDashboard() {
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
 
-  // Valid industry slugs from shared lib + legacy paths tracked in middleware.ts
-  // SYNC: middleware.ts VALID_INDUSTRIES / precompute.py _VALID_IND_SET
   const VALID_IND = new Set([
     ...INDUSTRIES.map(i => i.slug),
     'insights', 'services', 'entertainment', 'tourism', 'culture', 'merchants', 'lifestyle',
@@ -375,28 +367,12 @@ export default function CrawlerDashboard() {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              background: '#fff',
-              border: '1px solid #ddd',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: 13,
-              textDecoration: 'none',
-              color: '#333',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap',
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+              background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer',
+              fontSize: 13, textDecoration: 'none', color: '#333', transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f5f5f5'
-              e.currentTarget.style.borderColor = '#999'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#fff'
-              e.currentTarget.style.borderColor = '#ddd'
-            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#f5f5f5'; e.currentTarget.style.borderColor = '#999' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#ddd' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
@@ -406,7 +382,6 @@ export default function CrawlerDashboard() {
         </div>
       </div>
 
-      {/* Controls */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         {[1, 7, 30, 90].map(d => (
           <button key={d} onClick={() => changeDays(d)}
@@ -421,18 +396,13 @@ export default function CrawlerDashboard() {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
           {lastUpdated && (
             <span style={{ fontSize: 12, color: '#999' }}>
-              最後更新：{lastUpdated.toLocaleString('zh-TW', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-              })}
+              最後更新：{lastUpdated.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           )}
           <button onClick={fetchData} disabled={loading} style={{
             padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd',
             cursor: loading ? 'wait' : 'pointer', background: loading ? '#f5f5f5' : '#fff',
-            fontSize: 13, opacity: loading ? 0.6 : 1,
-            transition: 'all 0.2s', whiteSpace: 'nowrap'
+            fontSize: 13, opacity: loading ? 0.6 : 1, transition: 'all 0.2s', whiteSpace: 'nowrap'
           }}>
             {loading ? '⟳ 重新整理中...' : '⟳ 立即重新整理'}
           </button>
@@ -443,34 +413,17 @@ export default function CrawlerDashboard() {
       {error && <p style={{ textAlign: 'center', color: '#e74c3c', background: '#fef0f0', padding: '12px 16px', borderRadius: 8 }}>{error}</p>}
 
       {cacheHealth && cacheHealth.source_status !== 'ok' && (
-        <div style={{
-          marginBottom: 16,
-          padding: '12px 14px',
-          borderRadius: 8,
-          border: '1px solid #f59e0b',
-          background: '#fffbeb',
-          color: '#92400e',
-          fontSize: 13,
-          lineHeight: 1.5,
-        }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>
-            Cache 狀態：{cacheHealth.source_status}
-          </div>
-          <div>
-            最後數據日期：{cacheHealth.last_cache_date || 'unknown'}
-            {cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}
-          </div>
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #f59e0b', background: '#fffbeb', color: '#92400e', fontSize: 13, lineHeight: 1.5 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Cache 狀態：{cacheHealth.source_status}</div>
+          <div>最後數據日期：{cacheHealth.last_cache_date || 'unknown'}{cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}</div>
           {cacheHealth.errors?.[0] && (
-            <div style={{ color: '#a16207', marginTop: 4 }}>
-              {cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}
-            </div>
+            <div style={{ color: '#a16207', marginTop: 4 }}>{cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}</div>
           )}
         </div>
       )}
 
       {summary && !loading && (
         <>
-          {/* Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
             {[
               { label: '總訪問', value: summary.total_visits, color: '#111' },
@@ -478,21 +431,16 @@ export default function CrawlerDashboard() {
               { label: 'Sessions', value: summary.unique_sessions, color: '#4285f4' },
               { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900' },
             ].map(card => (
-              <div key={card.label} style={{
-                background: '#fafafa', borderRadius: 10, padding: '16px 14px',
-                border: '1px solid #eee',
-              }}>
+              <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                 <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Traffic Analysis: LLM vs Organic */}
           {(() => {
             const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex'])
             const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
-            // bot counts come from a sample; compute ratio within sample, then scale to total
             const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
               return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
@@ -518,7 +466,6 @@ export default function CrawlerDashboard() {
             )
           })()}
 
-          {/* ── AI 推介真人流量 ────────────────────────────────────── */}
           <div style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden' }}>
             <div style={{ padding: '14px 18px', background: 'linear-gradient(90deg,#20b2aa11,#4285f411)', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 20 }}>🎯</span>
@@ -543,7 +490,6 @@ export default function CrawlerDashboard() {
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    {/* By Source */}
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>來源平台</div>
                       {Object.entries(aiReferrals.by_source)
@@ -567,24 +513,18 @@ export default function CrawlerDashboard() {
                           )
                         })}
                     </div>
-
-                    {/* Top Pages */}
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>最多流量頁面</div>
                       {aiReferrals.top_pages.slice(0, 8).map((p, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, fontSize: 12 }}>
                           <span style={{ color: '#9ca3af', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
-                          <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {p.path}
-                          </span>
+                          <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.path}</span>
                           <span style={{ fontWeight: 700, color: '#20b2aa', flexShrink: 0 }}>{p.visits}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-
-                {/* Recent referrals */}
                 {aiReferrals.recent.length > 0 && (
                   <div style={{ marginTop: 14, borderTop: '1px solid #f3f4f6', paddingTop: 12 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>最近記錄</div>
@@ -606,7 +546,6 @@ export default function CrawlerDashboard() {
             )}
           </div>
 
-          {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
             {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
               <button key={t} onClick={() => {
@@ -623,15 +562,13 @@ export default function CrawlerDashboard() {
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蜘蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度', 'faq-conversion': '💡 FAQ 轉化' }[t]}
+                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蝶蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度', 'faq-conversion': '💡 FAQ 轉化' }[t]}
               </button>
             ))}
           </div>
 
-          {/* Overview Tab */}
           {tab === 'overview' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-              {/* Bot breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI Bot 訪問量</h3>
                 {Object.entries(summary.bots)
@@ -643,16 +580,11 @@ export default function CrawlerDashboard() {
                         <span style={{ fontWeight: 600 }}>{info.count}</span>
                       </div>
                       <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{
-                          width: `${(info.count / maxBot) * 100}%`, height: '100%', borderRadius: 4,
-                          background: BOT_COLORS[info.owner] || '#999',
-                        }} />
+                        <div style={{ width: `${(info.count / maxBot) * 100}%`, height: '100%', borderRadius: 4, background: BOT_COLORS[info.owner] || '#999' }} />
                       </div>
                     </div>
                   ))}
               </div>
-
-              {/* Industry breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
                 {Object.entries(filteredIndustries)
@@ -664,29 +596,19 @@ export default function CrawlerDashboard() {
                         <span style={{ fontWeight: 600, color: ind === '未分類' ? '#aaa' : undefined }}>{count}</span>
                       </div>
                       <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{
-                          width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4,
-                          background: ind === '未分類' ? '#ccc' : '#4285f4',
-                        }} />
+                        <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: ind === '未分類' ? '#ccc' : '#4285f4' }} />
                       </div>
                     </div>
                   ))}
-                {Object.keys(filteredIndustries).length === 0 && (
-                  <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>
-                )}
+                {Object.keys(filteredIndustries).length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>}
               </div>
-
-              {/* Page type breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', gridColumn: '1 / -1' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>頁面類型分佈</h3>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   {Object.entries(summary.page_types)
                     .sort((a, b) => b[1] - a[1])
                     .map(([type, count]) => (
-                      <div key={type} style={{
-                        background: '#fff', border: '1px solid #ddd', borderRadius: 8,
-                        padding: '10px 16px', textAlign: 'center', minWidth: 80,
-                      }}>
+                      <div key={type} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 8, padding: '10px 16px', textAlign: 'center', minWidth: 80 }}>
                         <div style={{ fontSize: 20, fontWeight: 700 }}>{count}</div>
                         <div style={{ fontSize: 11, color: '#888' }}>{type}</div>
                       </div>
@@ -696,33 +618,24 @@ export default function CrawlerDashboard() {
             </div>
           )}
 
-          {/* Pages Tab */}
           {tab === 'pages' && (
             <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>熱門頁面排名</h3>
               {pagesLoading && <p style={{ color: '#999', fontSize: 13 }}>載入頁面數據中...</p>}
               {!pagesLoading && pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
               {pages.map((p, i) => (
-                <div key={p.path} style={{
-                  padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none',
-                }}>
+                <div key={p.path} style={{ padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <code style={{ fontSize: 13, color: '#111', wordBreak: 'break-all' }}>{p.path}</code>
                     <span style={{ fontWeight: 700, fontSize: 15, marginLeft: 12, whiteSpace: 'nowrap' }}>{p.visits}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <div style={{ background: '#e5e5e5', borderRadius: 4, height: 4, flex: 1 }}>
-                      <div style={{
-                        width: `${(p.visits / maxPage) * 100}%`, height: '100%', borderRadius: 4,
-                        background: '#10a37f',
-                      }} />
+                      <div style={{ width: `${(p.visits / maxPage) * 100}%`, height: '100%', borderRadius: 4, background: '#10a37f' }} />
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {p.bots.map(b => (
-                        <span key={b} style={{
-                          fontSize: 10, background: '#e8e8e8', borderRadius: 4,
-                          padding: '1px 5px', color: '#555',
-                        }}>{b}</span>
+                        <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>
                       ))}
                     </div>
                   </div>
@@ -731,10 +644,8 @@ export default function CrawlerDashboard() {
             </div>
           )}
 
-          {/* Spider Web Tab */}
           {tab === 'spider-web' && spiderWeb && (
             <div>
-              {/* Cross-site summary cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
                 <div style={{ background: '#f0f7ff', borderRadius: 10, padding: '16px 14px', border: '1px solid #c8ddf5' }}>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#4285f4' }}>{spiderWeb.sites.length}</div>
@@ -749,8 +660,6 @@ export default function CrawlerDashboard() {
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>跨站流向</div>
                 </div>
               </div>
-
-              {/* Site breakdown */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', marginBottom: 16 }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>各站 AI 爬蟲訪問量</h3>
                 {spiderWeb.sites.map(s => {
@@ -758,64 +667,38 @@ export default function CrawlerDashboard() {
                   return (
                     <div key={s.site} style={{ marginBottom: 10 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                        <span>
-                          <strong>{s.site}</strong>
-                          {s.spider_web > 0 && (
-                            <span style={{ fontSize: 10, background: '#e8f5e9', color: '#2e7d32', padding: '1px 5px', borderRadius: 4, marginLeft: 6 }}>
-                              🕸 {s.spider_web} 跨站
-                            </span>
-                          )}
-                        </span>
+                        <span><strong>{s.site}</strong>{s.spider_web > 0 && <span style={{ fontSize: 10, background: '#e8f5e9', color: '#2e7d32', padding: '1px 5px', borderRadius: 4, marginLeft: 6 }}>🕸 {s.spider_web} 跨站</span>}</span>
                         <span style={{ fontWeight: 600 }}>{s.total}</span>
                       </div>
                       <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{
-                          width: `${(s.total / maxSite) * 100}%`, height: '100%', borderRadius: 4,
-                          background: s.site === 'cloudpipe-macao-app' ? '#10a37f' : '#4285f4',
-                        }} />
+                        <div style={{ width: `${(s.total / maxSite) * 100}%`, height: '100%', borderRadius: 4, background: s.site === 'cloudpipe-macao-app' ? '#10a37f' : '#4285f4' }} />
                       </div>
                       <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
-                        {s.bots.map(b => (
-                          <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>
-                        ))}
+                        {s.bots.map(b => <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>)}
                       </div>
                     </div>
                   )
                 })}
                 {spiderWeb.sites.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無跨站數據（需等待 Cloudflare Worker 部署）</p>}
               </div>
-
-              {/* Cross-site flows */}
               <div style={{ background: '#f0f7ff', borderRadius: 10, padding: 16, border: '1px solid #c8ddf5' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>跨站流量走向</h3>
-                {spiderWeb.flows.length === 0 && (
-                  <p style={{ color: '#999', fontSize: 13 }}>尚無跨站流向記錄。AI 爬蟲從一個站跟隨 llms.txt 連結到另一個站時會記錄在此。</p>
-                )}
+                {spiderWeb.flows.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無跨站流向記錄。AI 爬蟲從一個站跟隨 llms.txt 連結到另一個站時會記錄在此。</p>}
                 {spiderWeb.flows.map((f, i) => (
-                  <div key={i} style={{
-                    padding: '10px 0', borderBottom: i < spiderWeb.flows.length - 1 ? '1px solid #dce8f5' : 'none',
-                  }}>
+                  <div key={i} style={{ padding: '10px 0', borderBottom: i < spiderWeb.flows.length - 1 ? '1px solid #dce8f5' : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: 14 }}>
                         {f.flow.split(' → ').map((site, j) => (
                           <span key={j}>
                             {j > 0 && <span style={{ color: '#4285f4', margin: '0 6px', fontWeight: 700 }}> → </span>}
-                            <code style={{
-                              background: j === 0 ? '#e8f5e9' : '#fff3e0',
-                              padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12,
-                            }}>{site}</code>
+                            <code style={{ background: j === 0 ? '#e8f5e9' : '#fff3e0', padding: '2px 8px', borderRadius: 4, fontWeight: 600, fontSize: 12 }}>{site}</code>
                           </span>
                         ))}
                       </div>
                       <span style={{ fontWeight: 700, fontSize: 16, color: '#4285f4' }}>{f.count}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                      {f.bots.map(b => (
-                        <span key={b} style={{
-                          fontSize: 10, background: '#e8e8e8', borderRadius: 4,
-                          padding: '1px 5px', color: '#555',
-                        }}>{b}</span>
-                      ))}
+                      {f.bots.map(b => <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>)}
                     </div>
                   </div>
                 ))}
@@ -823,7 +706,6 @@ export default function CrawlerDashboard() {
             </div>
           )}
 
-          {/* Sessions Tab */}
           {tab === 'sessions' && (
             <div>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', marginBottom: 16 }}>
@@ -831,16 +713,10 @@ export default function CrawlerDashboard() {
                 {sessionsLoading && <p style={{ color: '#999', fontSize: 13 }}>載入 session 數據中...</p>}
                 {!sessionsLoading && sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據或查詢逾時，總覽數據仍可正常使用。</p>}
                 {sessions.map(s => (
-                  <div key={s.session_id} style={{
-                    padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer',
-                    background: journeySession === s.session_id ? '#f0f7ff' : 'transparent',
-                  }} onClick={() => loadJourney(s.session_id)}>
+                  <div key={s.session_id} style={{ padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer', background: journeySession === s.session_id ? '#f0f7ff' : 'transparent' }} onClick={() => loadJourney(s.session_id)}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <span style={{
-                          fontWeight: 600, fontSize: 13,
-                          color: BOT_COLORS[s.owner] || '#333',
-                        }}>{s.bot}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: BOT_COLORS[s.owner] || '#333' }}>{s.bot}</span>
                         <span style={{ color: '#999', fontSize: 11, marginLeft: 6 }}>{s.owner}</span>
                       </div>
                       <div style={{ textAlign: 'right' }}>
@@ -860,40 +736,21 @@ export default function CrawlerDashboard() {
                   </div>
                 ))}
               </div>
-
-              {/* Journey Detail */}
               {journey && (
                 <div style={{ background: '#f0f7ff', borderRadius: 10, padding: 16, border: '1px solid #c8ddf5' }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>
-                    爬蟲路徑旅程 <span style={{ fontWeight: 400, color: '#888' }}>({journey.length} 步)</span>
-                  </h3>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>爬蟲路徑旅程 <span style={{ fontWeight: 400, color: '#888' }}>({journey.length} 步)</span></h3>
                   <div style={{ position: 'relative', paddingLeft: 20 }}>
-                    {/* Vertical line */}
-                    <div style={{
-                      position: 'absolute', left: 6, top: 8, bottom: 8,
-                      width: 2, background: '#c8ddf5',
-                    }} />
+                    <div style={{ position: 'absolute', left: 6, top: 8, bottom: 8, width: 2, background: '#c8ddf5' }} />
                     {journey.map((step, i) => (
                       <div key={i} style={{ position: 'relative', paddingBottom: 16 }}>
-                        {/* Dot */}
-                        <div style={{
-                          position: 'absolute', left: -17, top: 4,
-                          width: 10, height: 10, borderRadius: '50%',
-                          background: i === 0 ? '#10a37f' : i === journey.length - 1 ? '#e74c3c' : '#4285f4',
-                          border: '2px solid #fff',
-                        }} />
+                        <div style={{ position: 'absolute', left: -17, top: 4, width: 10, height: 10, borderRadius: '50%', background: i === 0 ? '#10a37f' : i === journey.length - 1 ? '#e74c3c' : '#4285f4', border: '2px solid #fff' }} />
                         <div style={{ fontSize: 13 }}>
                           <code style={{ fontWeight: 600 }}>{step.path}</code>
-                          <span style={{
-                            fontSize: 10, marginLeft: 8, background: '#e8e8e8',
-                            padding: '1px 5px', borderRadius: 4, color: '#666',
-                          }}>{step.page_type}</span>
+                          <span style={{ fontSize: 10, marginLeft: 8, background: '#e8e8e8', padding: '1px 5px', borderRadius: 4, color: '#666' }}>{step.page_type}</span>
                         </div>
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
                           {formatTime(step.ts)}
-                          {step.referer && (
-                            <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe-macao-app.vercel.app', '')}</code></span>
-                          )}
+                          {step.referer && <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe-macao-app.vercel.app', '')}</code></span>}
                         </div>
                       </div>
                     ))}
@@ -902,107 +759,60 @@ export default function CrawlerDashboard() {
               )}
             </div>
           )}
-        {/* ─── Routing Baseline Tab ─── */}
-        {tab === 'routing' && (
-          <div>
-            {routingLoading && <p style={{ color: '#999', textAlign: 'center', padding: 32 }}>載入路由基線數據...</p>}
-            {routing && !routingLoading && (() => {
-              const { tiers, topMerchants, industryTiers, merchantsByIndustry,
-                      totalMerchants, merchantsWithReviews } = routing
-              const merchantVisits = routing.merchantVisits ?? { total: 0, uniqueSlugs: 0, byBot: {}, recentPaths: [] }
-              const categoryVisits = routing.categoryVisits ?? { total: 0, byIndustry: {}, recentPaths: [] }
-              const TIER_COLORS: Record<string, string> = { A: '#10a37f', B: '#f39c12', C: '#e67e22', D: '#e74c3c' }
-              const TIER_LABELS: Record<string, string> = {
-                A: 'A — 有 Answer Hub', B: 'B — 有商戶連結', C: 'C — 弱連結', D: 'D — 無商戶'
-              }
-              const INDUSTRY_ZH: Record<string, string> = {
-                dining: '餐飲美食', attractions: '景區觀光', hotels: '酒店住宿',
-                shopping: '購物零售', nightlife: '夜生活', wellness: '健康養生',
-                gaming: '博彩娛樂', 'food-supply': '食品供應', other: '其他',
-              }
-              const totalTier = tiers.A + tiers.B + tiers.C + tiers.D
-              return (
-                <>
-                  {/* Tier Overview */}
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📊 Insight 路由等級分佈（{totalTier.toLocaleString()} 篇 ZH）</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                      {(['A','B','C','D'] as const).map(t => {
-                        const cnt = tiers[t]
-                        const pct = totalTier > 0 ? (cnt / totalTier * 100).toFixed(1) : '0.0'
-                        return (
-                          <div key={t} style={{ background: '#fafafa', border: `2px solid ${TIER_COLORS[t]}`, borderRadius: 10, padding: '14px 12px', textAlign: 'center' }}>
-                            <div style={{ fontSize: 28, fontWeight: 700, color: TIER_COLORS[t] }}>{cnt.toLocaleString()}</div>
-                            <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>{TIER_LABELS[t]}</div>
-                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{pct}%</div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    {/* Progress bar */}
-                    <div style={{ marginTop: 12, height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', background: '#eee' }}>
-                      {(['A','B','C','D'] as const).map(t => (
-                        <div key={t} style={{ width: `${totalTier > 0 ? tiers[t]/totalTier*100 : 0}%`, background: TIER_COLORS[t], transition: 'width .4s' }} />
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Merchant Visit Baseline */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-                    <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
-                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🤖 AI 爬蟲 → 商戶頁（基線）</h4>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{merchantVisits.total}</div>
-                      <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積商戶頁訪問 · {merchantVisits.uniqueSlugs} 個唯一商戶</div>
-                      {Object.entries(merchantVisits.byBot).length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {Object.entries(merchantVisits.byBot).sort((a,b) => b[1]-a[1]).slice(0,5).map(([bot, n]) => (
-                            <div key={bot} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <div style={{ fontSize: 11, width: 90, color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bot}</div>
-                              <div style={{ flex: 1, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
-                                <div style={{ width: `${merchantVisits.total > 0 ? n/merchantVisits.total*100 : 0}%`, height: '100%', background: '#4285f4' }} />
-                              </div>
-                              <div style={{ fontSize: 11, color: '#888', width: 24, textAlign: 'right' }}>{n}</div>
+          {tab === 'routing' && (
+            <div>
+              {routingLoading && <p style={{ color: '#999', textAlign: 'center', padding: 32 }}>載入路由基線數據...</p>}
+              {routing && !routingLoading && (() => {
+                const { tiers, topMerchants, industryTiers, merchantsByIndustry, totalMerchants, merchantsWithReviews } = routing
+                const merchantVisits = routing.merchantVisits ?? { total: 0, uniqueSlugs: 0, byBot: {}, recentPaths: [] }
+                const categoryVisits = routing.categoryVisits ?? { total: 0, byIndustry: {}, recentPaths: [] }
+                const TIER_COLORS: Record<string, string> = { A: '#10a37f', B: '#f39c12', C: '#e67e22', D: '#e74c3c' }
+                const TIER_LABELS: Record<string, string> = { A: 'A — 有 Answer Hub', B: 'B — 有商戶連結', C: 'C — 弱連結', D: 'D — 無商戶' }
+                const INDUSTRY_ZH: Record<string, string> = { dining: '餐飲美食', attractions: '景區觀光', hotels: '酒店住宿', shopping: '購物零售', nightlife: '夜生活', wellness: '健康養生', gaming: '博彩娛樂', 'food-supply': '食品供應', other: '其他' }
+                const totalTier = tiers.A + tiers.B + tiers.C + tiers.D
+                return (
+                  <>
+                    <div style={{ marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📊 Insight 路由等級分佈（{totalTier.toLocaleString()} 篇 ZH）</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+                        {(['A','B','C','D'] as const).map(t => {
+                          const cnt = tiers[t]; const pct = totalTier > 0 ? (cnt / totalTier * 100).toFixed(1) : '0.0'
+                          return (
+                            <div key={t} style={{ background: '#fafafa', border: `2px solid ${TIER_COLORS[t]}`, borderRadius: 10, padding: '14px 12px', textAlign: 'center' }}>
+                              <div style={{ fontSize: 28, fontWeight: 700, color: TIER_COLORS[t] }}>{cnt.toLocaleString()}</div>
+                              <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>{TIER_LABELS[t]}</div>
+                              <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{pct}%</div>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
-                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🗂️ AI 爬蟲 → 分類頁（基線）</h4>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{categoryVisits.total}</div>
-                      <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積分類頁訪問</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {Object.entries(categoryVisits.byIndustry).sort((a,b) => b[1]-a[1]).slice(0,6).map(([ind, n]) => (
-                          <div key={ind} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <div style={{ fontSize: 11, width: 70, color: '#555' }}>{INDUSTRY_ZH[ind] || ind}</div>
-                            <div style={{ flex: 1, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
-                              <div style={{ width: `${categoryVisits.total > 0 ? n/categoryVisits.total*100 : 0}%`, height: '100%', background: '#10a37f' }} />
-                            </div>
-                            <div style={{ fontSize: 11, color: '#888', width: 24, textAlign: 'right' }}>{n}</div>
-                          </div>
+                          )
+                        })}
+                      </div>
+                      <div style={{ marginTop: 12, height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', background: '#eee' }}>
+                        {(['A','B','C','D'] as const).map(t => (
+                          <div key={t} style={{ width: `${totalTier > 0 ? tiers[t]/totalTier*100 : 0}%`, background: TIER_COLORS[t], transition: 'width .4s' }} />
                         ))}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Industry breakdown of insights */}
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📂 行業 × 路由等級（注入優先順序）</h3>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                        <thead>
-                          <tr style={{ background: '#f5f5f5' }}>
-                            {['行業','A','B','C','D','合計','進度'].map(h => (
-                              <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(industryTiers)
-                            .sort((x, y) => (y[1].a + y[1].b + y[1].c + y[1].d) - (x[1].a + x[1].b + x[1].c + x[1].d))
-                            .map(([ind, t]) => {
-                              const tot = t.a + t.b + t.c + t.d
-                              const donePct = tot > 0 ? t.a / tot * 100 : 0
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+                      <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
+                        <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🤖 AI 爬蟲 → 商戶頁（基線）</h4>
+                        <div style={{ fontSize: 28, fontWeight: 700 }}>{merchantVisits.total}</div>
+                        <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積商戶頁訪問 · {merchantVisits.uniqueSlugs} 個唯一商戶</div>
+                      </div>
+                      <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
+                        <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🗂️ AI 爬蟲 → 分類頁（基線）</h4>
+                        <div style={{ fontSize: 28, fontWeight: 700 }}>{categoryVisits.total}</div>
+                        <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積分類頁訪問</div>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📂 行業 × 路由等級（注入優先順序）</h3>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                          <thead><tr style={{ background: '#f5f5f5' }}>{['行業','A','B','C','D','合計','進度'].map(h => <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
+                          <tbody>
+                            {Object.entries(industryTiers).sort((x, y) => (y[1].a + y[1].b + y[1].c + y[1].d) - (x[1].a + x[1].b + x[1].c + x[1].d)).map(([ind, t]) => {
+                              const tot = t.a + t.b + t.c + t.d; const donePct = tot > 0 ? t.a / tot * 100 : 0
                               return (
                                 <tr key={ind} style={{ borderBottom: '1px solid #f0f0f0' }}>
                                   <td style={{ padding: '8px 12px', fontWeight: 500 }}>{INDUSTRY_ZH[ind] || ind}</td>
@@ -1022,362 +832,233 @@ export default function CrawlerDashboard() {
                                 </tr>
                               )
                             })}
-                        </tbody>
-                      </table>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Top 20 merchants */}
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>🏆 Top 20 高價值商戶（Answer Hub Layer 2 優先選）</h3>
-                    <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>
-                      評分 = (Google評價數 × 評分/5 + 類型分) × 行業權重 · 共 {totalMerchants} 家 · {merchantsWithReviews} 家有評價數據
-                    </p>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                        <thead>
-                          <tr style={{ background: '#f5f5f5' }}>
-                            {['排名','商戶名','行業','評分','Google評價','評分數','地區','頁面路徑'].map(h => (
-                              <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>
+                    <div style={{ marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>🏆 Top 20 高價値商戶</h3>
+                      <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>評分 = (Google評價數 × 評分/5 + 類型分) × 行業權重 · 共 {totalMerchants} 家 · {merchantsWithReviews} 家有評價數據</p>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                          <thead><tr style={{ background: '#f5f5f5' }}>{['排名','商戶名','行業','評分','Google評價','評分數','地區','頁面路徑'].map(h => <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: '#555', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
+                          <tbody>
+                            {topMerchants.map((m, i) => (
+                              <tr key={m.slug} style={{ borderBottom: '1px solid #f5f5f5', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                                <td style={{ padding: '6px 10px', color: i < 3 ? '#f39c12' : '#888', fontWeight: i < 3 ? 700 : 400 }}>#{i+1}</td>
+                                <td style={{ padding: '6px 10px', fontWeight: 500 }}><div>{m.name_zh || m.name_en}</div>{m.name_zh && m.name_en && <div style={{ fontSize: 10, color: '#aaa' }}>{m.name_en}</div>}</td>
+                                <td style={{ padding: '6px 10px' }}><span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span></td>
+                                <td style={{ padding: '6px 10px', fontWeight: 600, color: '#10a37f' }}>{m.score.toLocaleString()}</td>
+                                <td style={{ padding: '6px 10px', color: '#555' }}>{m.reviews > 0 ? m.reviews.toLocaleString() : '—'}</td>
+                                <td style={{ padding: '6px 10px', color: '#555' }}>{m.rating > 0 ? `⭐ ${m.rating}` : '—'}</td>
+                                <td style={{ padding: '6px 10px', color: '#888', fontSize: 11 }}>{m.district}</td>
+                                <td style={{ padding: '6px 10px' }}><a href={m.page_url} target="_blank" rel="noopener" style={{ fontSize: 10, color: '#4285f4', textDecoration: 'none', fontFamily: 'monospace' }}>{m.page_path.length > 40 ? m.page_path.slice(0, 40) + '…' : m.page_path}</a></td>
+                              </tr>
                             ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {topMerchants.map((m, i) => (
-                            <tr key={m.slug} style={{ borderBottom: '1px solid #f5f5f5', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                              <td style={{ padding: '6px 10px', color: i < 3 ? '#f39c12' : '#888', fontWeight: i < 3 ? 700 : 400 }}>#{i+1}</td>
-                              <td style={{ padding: '6px 10px', fontWeight: 500 }}>
-                                <div>{m.name_zh || m.name_en}</div>
-                                {m.name_zh && m.name_en && <div style={{ fontSize: 10, color: '#aaa' }}>{m.name_en}</div>}
-                              </td>
-                              <td style={{ padding: '6px 10px' }}>
-                                <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span>
-                              </td>
-                              <td style={{ padding: '6px 10px', fontWeight: 600, color: '#10a37f' }}>{m.score.toLocaleString()}</td>
-                              <td style={{ padding: '6px 10px', color: '#555' }}>{m.reviews > 0 ? m.reviews.toLocaleString() : '—'}</td>
-                              <td style={{ padding: '6px 10px', color: '#555' }}>{m.rating > 0 ? `⭐ ${m.rating}` : '—'}</td>
-                              <td style={{ padding: '6px 10px', color: '#888', fontSize: 11 }}>{m.district}</td>
-                              <td style={{ padding: '6px 10px' }}>
-                                <a href={m.page_url} target="_blank" rel="noopener"
-                                   style={{ fontSize: 10, color: '#4285f4', textDecoration: 'none', fontFamily: 'monospace' }}>
-                                  {m.page_path.length > 40 ? m.page_path.slice(0, 40) + '…' : m.page_path}
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
+                  </>
+                )
+              })()}
+            </div>
+          )}
 
-                  {/* Recent merchant visits */}
-                  {merchantVisits.recentPaths.length > 0 && (
-                    <div style={{ marginBottom: 16 }}>
-                      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>最近商戶頁爬取記錄</h3>
-                      <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 12, fontFamily: 'monospace', fontSize: 11 }}>
-                        {merchantVisits.recentPaths.map((r, i) => (
-                          <div key={i} style={{ color: '#aaa', marginBottom: 3 }}>
-                            <span style={{ color: '#666' }}>{formatTime(r.ts)}</span>
-                            <span style={{ color: '#10a37f', marginLeft: 8 }}>{r.bot}</span>
-                            <span style={{ color: '#ddd', marginLeft: 8 }}>{r.path}</span>
+          {tab === 'merchant-discovery' && (
+            <div>
+              {discoveryLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入商戶發現度數據...</p>}
+              {!discoveryLoading && !discovery && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
+              {discovery && (() => {
+                const s = discovery.summary
+                const HIST_LABELS: Record<string, string> = { '0': '無 Insight', '1-2': '1-2 篇', '3-5': '3-5 篇', '6-10': '6-10 篇', '11+': '11+ 篇' }
+                const histData = s.insightCoverageHist || { '0': 0, '1-2': 0, '3-5': 0, '6-10': 0, '11+': 0 }
+                const maxHist = Math.max(...Object.values(histData).map(Number), 1)
+                return (
+                  <>
+                    {discovery?.today && (
+                      <div style={{ background: 'linear-gradient(135deg, #0f4c81 0%, #1a6fb5 100%)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, color: 'white', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 13, opacity: 0.8 }}>📅 今日 ({discovery.today.date})</div>
+                        <div style={{ display: 'flex', gap: 24 }}>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.totalVisits}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>次爬取</span></div>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueMerchants}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>商戶被訪</span></div>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueBots}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>AI Bots</span></div>
+                        </div>
+                        {discovery.today.bots.length > 0 && <div style={{ fontSize: 11, opacity: 0.6 }}>{discovery.today.bots.join(' · ')}</div>}
+                      </div>
+                    )}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 24 }}>
+                      {[
+                        { label: '追蹤商戶', value: s.totalTracked, color: '#111' },
+                        { label: 'AI 已爬取', value: s.crawledByAI, color: '#10a37f' },
+                        { label: 'Insight 覆蓋', value: s.insightCovered, color: '#4285f4' },
+                        { label: '✅ AI 就緒', value: s.aiReady, color: '#16a34a' },
+                        { label: '🟡 接近就緒', value: s.nearReady, color: '#d97706' },
+                        { label: '覆蓋缺口', value: s.coverageGap, color: '#dc2626' },
+                      ].map(card => (
+                        <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                          <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.value}</div>
+                          <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈</h3>
+                      {Object.entries(histData).map(([k, v]) => (
+                        <div key={k} style={{ marginBottom: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
+                            <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>
+                            <span style={{ fontWeight: 600 }}>{v} 個商戶</span>
                           </div>
-                        ))}
-                      </div>
+                          <div style={{ background: '#e5e5e5', borderRadius: 4, height: 8 }}>
+                            <div style={{ width: `${(v / maxHist) * 100}%`, height: '100%', borderRadius: 4, background: k === '0' ? '#fca5a5' : k === '1-2' ? '#fcd34d' : k === '3-5' ? '#86efac' : '#4ade80' }} />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </>
-              )
-            })()}
-          </div>
-        )}
-        {/* Merchant Discovery Tab */}
-        {tab === 'merchant-discovery' && (
-          <div>
-            {discoveryLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入商戶發現度數據...</p>}
-            {!discoveryLoading && !discovery && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
-            {discovery && (() => {
-              const s = discovery.summary
-              const READINESS_ORDER = ['✅ 已就緒', '🟡 接近就緒', '🟠 覆蓋不足', '🔴 未被發現']
-              const HIST_LABELS: Record<string, string> = {
-                '0': '無 Insight', '1-2': '1-2 篇', '3-5': '3-5 篇', '6-10': '6-10 篇', '11+': '11+ 篇'
-              }
-              const histData = s.insightCoverageHist || { '0': 0, '1-2': 0, '3-5': 0, '6-10': 0, '11+': 0 }
-              const maxHist = Math.max(...Object.values(histData).map(Number), 1)
-              return (
-                <>
-                  {/* Today Stats Banner */}
-                  {discovery?.today && (
-                    <div style={{ background: 'linear-gradient(135deg, #0f4c81 0%, #1a6fb5 100%)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, color: 'white', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                      <div style={{ fontSize: 13, opacity: 0.8 }}>📅 今日 ({discovery.today.date})</div>
-                      <div style={{ display: 'flex', gap: 24 }}>
-                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.totalVisits}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>次爬取</span></div>
-                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueMerchants}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>商戶被訪</span></div>
-                        <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueBots}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>AI Bots</span></div>
-                      </div>
-                      {discovery.today.bots.length > 0 && (
-                        <div style={{ fontSize: 11, opacity: 0.6 }}>{discovery.today.bots.join(' · ')}</div>
-                      )}
-                    </div>
-                  )}
+                    {(() => {
+                      const REGION_LABELS: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
+                      const rs = discovery.regionStats || {}
+                      return (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+                          {['macao','hongkong','taiwan','japan'].map(r => {
+                            const d = rs[r] || { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 }
+                            const pct = d.total > 0 ? Math.round(d.ready / d.total * 100) : 0
+                            const isActive = discoveryRegion === r
+                            return (
+                              <div key={r} onClick={() => setDiscoveryRegion(isActive ? '' : r)}
+                                style={{ background: isActive ? '#eff6ff' : '#fafafa', border: `2px solid ${isActive ? '#3b82f6' : '#eee'}`, borderRadius: 10, padding: 14, cursor: 'pointer' }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{REGION_LABELS[r]}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
+                                  <div><span style={{ color: '#888' }}>商戶 </span><b>{d.total}</b></div>
+                                  <div><span style={{ color: '#888' }}>AI爬 </span><b style={{ color: d.crawled > 0 ? '#10a37f' : '#999' }}>{d.crawled}</b></div>
+                                  <div><span style={{ color: '#888' }}>已就緒 </span><b style={{ color: '#16a34a' }}>{d.ready}</b></div>
+                                  <div><span style={{ color: '#888' }}>接近 </span><b style={{ color: '#d97706' }}>{d.nearReady}</b></div>
+                                </div>
+                                <div style={{ marginTop: 8, background: '#e5e5e5', borderRadius: 4, height: 6 }}>
+                                  <div style={{ width: `${pct}%`, background: pct >= 50 ? '#16a34a' : pct >= 20 ? '#d97706' : '#fca5a5', height: '100%', borderRadius: 4 }} />
+                                </div>
+                                <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>就緒率 {pct}%</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
+                    {(() => {
+                      const allIndustries = [...new Set(discovery.merchants.map(m => m.industry).filter(Boolean))].sort()
+                      const filtered = discovery.merchants.filter(m =>
+                        (!discoveryRegion || m.region === discoveryRegion) &&
+                        (!discoveryIndustry || m.industry === discoveryIndustry)
+                      )
+                      const DISTRICT_ZH: Record<string, string> = { peninsula: '澳門半島', taipa: '氹仔', cotai: '路氹城', coloane: '路環' }
+                      const INDUSTRY_ZH2: Record<string, string> = { dining: '餐飲', hotels: '住宿', shopping: '購物', attractions: '景點', wellness: '健康', gaming: '博彩', nightlife: '夜生活', entertainment: '娛樂', transport: '交通', services: '服務', other: '其他' }
+                      const REGION_ZH: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
+                      return (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                            <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>🏪 商戶發現度排行（{filtered.length} 個）</h3>
+                            <select value={discoveryRegion} onChange={e => setDiscoveryRegion(e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}>
+                              <option value=''>全部地區</option>
+                              <option value='macao'>🇲🇴 澳門</option>
+                              <option value='hongkong'>🇭🇰 香港</option>
+                              <option value='taiwan'>🇹🇼 台灣</option>
+                              <option value='japan'>🇯🇵 日本</option>
+                            </select>
+                            <select value={discoveryIndustry} onChange={e => setDiscoveryIndustry(e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}>
+                              <option value=''>全部行業</option>
+                              {allIndustries.map(ind => <option key={ind} value={ind}>{INDUSTRY_ZH2[ind] || ind}</option>)}
+                            </select>
+                            {(discoveryRegion || discoveryIndustry) && (
+                              <button onClick={() => { setDiscoveryRegion(''); setDiscoveryIndustry('') }} style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#f5f5f5', cursor: 'pointer' }}>清除篩選</button>
+                            )}
+                          </div>
+                          <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                              <thead><tr style={{ background: '#f5f5f5' }}>{['商戶','地區/區域','行業','AI 爬取','Bot 數','Insight 數','總字數','AI 就緒度','分數','最近爬取'].map(h => <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
+                              <tbody>
+                                {filtered.slice(0, 80).map((m, i) => (
+                                  <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                                    <td style={{ padding: '7px 10px' }}>
+                                      <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
+                                      {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
+                                      {(m.sampleInsights ?? []).length > 0 && <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>→ {m.sampleInsights![0].slice(0, 30)}{m.sampleInsights![0].length > 30 ? '…' : ''}</div>}
+                                    </td>
+                                    <td style={{ padding: '7px 10px' }}>
+                                      <div style={{ fontSize: 10, marginBottom: 2 }}><span style={{ background: '#e0f2fe', color: '#0369a1', padding: '1px 5px', borderRadius: 3 }}>{REGION_ZH[m.region] || m.region}</span></div>
+                                      {m.district && <span style={{ fontSize: 10, color: '#888' }}>{DISTRICT_ZH[m.district] || m.district}</span>}
+                                    </td>
+                                    <td style={{ padding: '7px 10px' }}><span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH2[m.industry] || m.industry}</span></td>
+                                    <td style={{ padding: '7px 10px', fontWeight: 600, color: m.visits > 0 ? '#10a37f' : '#ccc' }}>{m.visits > 0 ? m.visits : '—'}</td>
+                                    <td style={{ padding: '7px 10px', color: '#555' }}>{m.botCount > 0 ? <span title={(m.bots ?? []).join(', ')}>{m.botCount}</span> : '—'}</td>
+                                    <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>{m.insightCount}</td>
+                                    <td style={{ padding: '7px 10px', color: '#555' }}>{m.totalWords > 0 ? `${(m.totalWords / 1000).toFixed(1)}k` : '—'}</td>
+                                    <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}><span style={{ color: m.readinessColor, fontWeight: 600, fontSize: 11 }}>{m.readinessLabel}</span></td>
+                                    <td style={{ padding: '7px 10px', fontWeight: 700 }}>{m.score}</td>
+                                    <td style={{ padding: '7px 10px', color: '#999', fontSize: 10 }}>{m.lastTs ? formatTime(m.lastTs) : '—'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                  </>
+                )
+              })()}
+            </div>
+          )}
 
-                  {/* Summary Cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 24 }}>
+          {tab === 'faq-conversion' && (
+            <div>
+              {faqConvLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入 FAQ 轉化數據...</p>}
+              {!faqConvLoading && !faqConversions && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
+              {faqConversions && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: '追蹤商戶', value: s.totalTracked, color: '#111' },
-                      { label: 'AI 已爬取', value: s.crawledByAI, color: '#10a37f' },
-                      { label: 'Insight 覆蓋', value: s.insightCovered, color: '#4285f4' },
-                      { label: '✅ AI 就緒', value: s.aiReady, color: '#16a34a' },
-                      { label: '🟡 接近就緒', value: s.nearReady, color: '#d97706' },
-                      { label: '覆蓋缺口', value: s.coverageGap, color: '#dc2626' },
+                      { label: `累計 FAQ 點擊（${days}天）`, value: faqConversions.total, color: '#0f4c81' },
+                      { label: '今日 FAQ 點擊', value: faqConversions.today, color: '#10a37f' },
+                      { label: '涉及商戶數', value: faqConversions.topMerchants.length, color: '#c5a572' },
                     ].map(card => (
                       <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
-                        <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.value}</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
                       </div>
                     ))}
                   </div>
-
-                  {/* Insight Coverage Histogram */}
-                  <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈（每個商戶被多少篇 Insight 連結）</h3>
-                    {Object.entries(histData).map(([k, v]) => (
-                      <div key={k} style={{ marginBottom: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
-                          <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>
-                          <span style={{ fontWeight: 600 }}>{v} 個商戶</span>
-                        </div>
-                        <div style={{ background: '#e5e5e5', borderRadius: 4, height: 8 }}>
-                          <div style={{
-                            width: `${(v / maxHist) * 100}%`, height: '100%', borderRadius: 4,
-                            background: k === '0' ? '#fca5a5' : k === '1-2' ? '#fcd34d' : k === '3-5' ? '#86efac' : '#4ade80',
-                          }} />
-                        </div>
-                      </div>
-                    ))}
-                    <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
-                      AI 引用閾值：≥3 篇 Insight + ≥1000 總字數 = 足夠讓 AI 發現並引用此商戶
-                    </p>
-                  </div>
-
-                  {/* 4-Region Stats */}
-                  {(() => {
-                    const REGION_LABELS: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
-                    const rs = discovery.regionStats || {}
-                    return (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-                        {['macao','hongkong','taiwan','japan'].map(r => {
-                          const d = rs[r] || { total: 0, crawled: 0, covered: 0, ready: 0, nearReady: 0, gap: 0 }
-                          const pct = d.total > 0 ? Math.round(d.ready / d.total * 100) : 0
-                          const isActive = discoveryRegion === r
-                          return (
-                            <div key={r}
-                              onClick={() => setDiscoveryRegion(isActive ? '' : r)}
-                              style={{ background: isActive ? '#eff6ff' : '#fafafa', border: `2px solid ${isActive ? '#3b82f6' : '#eee'}`, borderRadius: 10, padding: 14, cursor: 'pointer' }}
-                            >
-                              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{REGION_LABELS[r]}</div>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
-                                <div><span style={{ color: '#888' }}>商戶 </span><b>{d.total}</b></div>
-                                <div><span style={{ color: '#888' }}>AI爬 </span><b style={{ color: d.crawled > 0 ? '#10a37f' : '#999' }}>{d.crawled}</b></div>
-                                <div><span style={{ color: '#888' }}>已就緒 </span><b style={{ color: '#16a34a' }}>{d.ready}</b></div>
-                                <div><span style={{ color: '#888' }}>接近 </span><b style={{ color: '#d97706' }}>{d.nearReady}</b></div>
-                              </div>
-                              <div style={{ marginTop: 8, background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                                <div style={{ width: `${pct}%`, background: pct >= 50 ? '#16a34a' : pct >= 20 ? '#d97706' : '#fca5a5', height: '100%', borderRadius: 4 }} />
-                              </div>
-                              <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>就緒率 {pct}%</div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )
-                  })()}
-
-                  {/* Merchant Table */}
-                  {(() => {
-                    const allIndustries = [...new Set(discovery.merchants.map(m => m.industry).filter(Boolean))].sort()
-                    const filtered = discovery.merchants.filter(m =>
-                      (!discoveryRegion || m.region === discoveryRegion) &&
-                      (!discoveryIndustry || m.industry === discoveryIndustry)
-                    )
-                    const DISTRICT_ZH: Record<string, string> = {
-                      peninsula: '澳門半島', taipa: '氹仔', cotai: '路氹城', coloane: '路環',
-                    }
-                    const INDUSTRY_ZH: Record<string, string> = {
-                      dining: '餐飲', hotels: '住宿', shopping: '購物', attractions: '景點',
-                      wellness: '健康', gaming: '博彩', nightlife: '夜生活', entertainment: '娛樂',
-                      transport: '交通', services: '服務', other: '其他',
-                    }
-                    const REGION_ZH: Record<string, string> = { macao: '🇲🇴 澳門', hongkong: '🇭🇰 香港', taiwan: '🇹🇼 台灣', japan: '🇯🇵 日本' }
-                    return (
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-                          <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>
-                            🏪 商戶發現度排行（{filtered.length} 個）
-                          </h3>
-                          <select
-                            value={discoveryRegion}
-                            onChange={e => setDiscoveryRegion(e.target.value)}
-                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}
-                          >
-                            <option value=''>全部地區</option>
-                            <option value='macao'>🇲🇴 澳門</option>
-                            <option value='hongkong'>🇭🇰 香港</option>
-                            <option value='taiwan'>🇹🇼 台灣</option>
-                            <option value='japan'>🇯🇵 日本</option>
-                          </select>
-                          <select
-                            value={discoveryIndustry}
-                            onChange={e => setDiscoveryIndustry(e.target.value)}
-                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#fff' }}
-                          >
-                            <option value=''>全部行業</option>
-                            {allIndustries.map(ind => (
-                              <option key={ind} value={ind}>{INDUSTRY_ZH[ind] || ind}</option>
-                            ))}
-                          </select>
-                          {(discoveryRegion || discoveryIndustry) && (
-                            <button
-                              onClick={() => { setDiscoveryRegion(''); setDiscoveryIndustry('') }}
-                              style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', background: '#f5f5f5', cursor: 'pointer' }}
-                            >清除篩選</button>
-                          )}
-                        </div>
-                        <div style={{ overflowX: 'auto' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                            <thead>
-                              <tr style={{ background: '#f5f5f5' }}>
-                                {['商戶', '地區/區域', '行業', 'AI 爬取', 'Bot 數', 'Insight 數', '總字數', 'AI 就緒度', '分數', '最近爬取'].map(h => (
-                                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filtered.slice(0, 80).map((m, i) => (
-                                <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                                  <td style={{ padding: '7px 10px' }}>
-                                    <div style={{ fontWeight: 500 }}>{m.name_zh || m.slug}</div>
-                                    {m.name_en && <div style={{ fontSize: 10, color: '#999' }}>{m.name_en}</div>}
-                                    {(m.sampleInsights ?? []).length > 0 && (
-                                      <div style={{ fontSize: 10, color: '#4285f4', marginTop: 2 }}>
-                                        → {m.sampleInsights![0].slice(0, 30)}{m.sampleInsights![0].length > 30 ? '…' : ''}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: '7px 10px' }}>
-                                    <div style={{ fontSize: 10, marginBottom: 2 }}>
-                                      <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '1px 5px', borderRadius: 3 }}>
-                                        {REGION_ZH[m.region] || m.region}
-                                      </span>
-                                    </div>
-                                    {m.district && (
-                                      <span style={{ fontSize: 10, color: '#888' }}>{DISTRICT_ZH[m.district] || m.district}</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: '7px 10px' }}>
-                                    <span style={{ fontSize: 10, background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>{INDUSTRY_ZH[m.industry] || m.industry}</span>
-                                  </td>
-                                  <td style={{ padding: '7px 10px', fontWeight: 600, color: m.visits > 0 ? '#10a37f' : '#ccc' }}>
-                                    {m.visits > 0 ? m.visits : '—'}
-                                  </td>
-                                  <td style={{ padding: '7px 10px', color: '#555' }}>
-                                    {m.botCount > 0 ? (
-                                      <span title={(m.bots ?? []).join(', ')}>{m.botCount}</span>
-                                    ) : '—'}
-                                  </td>
-                                  <td style={{ padding: '7px 10px', fontWeight: 600, color: m.insightCount >= 3 ? '#16a34a' : m.insightCount > 0 ? '#d97706' : '#dc2626' }}>
-                                    {m.insightCount}
-                                  </td>
-                                  <td style={{ padding: '7px 10px', color: '#555' }}>
-                                    {m.totalWords > 0 ? `${(m.totalWords / 1000).toFixed(1)}k` : '—'}
-                                  </td>
-                                  <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
-                                    <span style={{ color: m.readinessColor, fontWeight: 600, fontSize: 11 }}>{m.readinessLabel}</span>
-                                  </td>
-                                  <td style={{ padding: '7px 10px', fontWeight: 700 }}>{m.score}</td>
-                                  <td style={{ padding: '7px 10px', color: '#999', fontSize: 10 }}>
-                                    {m.lastTs ? formatTime(m.lastTs) : '—'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <p style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
-                          分數 = AI爬取×2 + 不同Bot×5 + Insight數×10 + 總字數/200 ｜ 閾值 ≥100分 + ≥5篇 Insight = ✅ 已就緒
-                        </p>
-                      </div>
-                    )
-                  })()}
-                </>
-              )
-            })()}
-          </div>
-        )}
-
-        {/* FAQ Conversion Tab */}
-        {tab === 'faq-conversion' && (
-          <div>
-            {faqConvLoading && <p style={{ textAlign: 'center', color: '#999' }}>載入 FAQ 轉化數據...</p>}
-            {!faqConvLoading && !faqConversions && <p style={{ color: '#e74c3c' }}>載入失敗，請重試</p>}
-            {faqConversions && (
-              <>
-                {/* Summary Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
-                  {[
-                    { label: `累計 FAQ 點擊（${days}天）`, value: faqConversions.total, color: '#0f4c81' },
-                    { label: '今日 FAQ 點擊', value: faqConversions.today, color: '#10a37f' },
-                    { label: '涉及商戶數', value: faqConversions.topMerchants.length, color: '#c5a572' },
-                  ].map(card => (
-                    <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
-                      <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
-                      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Top Merchants */}
-                <h3 style={{ fontSize: 14, color: '#0f4c81', marginBottom: 8 }}>熱門 FAQ 點擊商戶</h3>
-                <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>用戶點擊 FAQ 答案連結後抵達的商戶頁面（utm_source=faq）</p>
-                {faqConversions.topMerchants.length === 0 ? (
-                  <p style={{ color: '#999', fontSize: 13 }}>尚無數據 — FAQ 連結剛部署，等待首批點擊</p>
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr style={{ background: '#f5f5f5' }}>
+                  <h3 style={{ fontSize: 14, color: '#0f4c81', marginBottom: 8 }}>熱門 FAQ 點擊商戶</h3>
+                  <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>用戶點擊 FAQ 答案連結後抵達的商戶頁面（utm_source=faq）</p>
+                  {faqConversions.topMerchants.length === 0 ? (
+                    <p style={{ color: '#999', fontSize: 13 }}>尚無數據 — FAQ 連結剛部署，等待首批點擊</p>
+                  ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead><tr style={{ background: '#f5f5f5' }}>
                         <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: '#888' }}>商戶 Slug</th>
                         <th style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, color: '#888' }}>點擊次數</th>
                         <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: '#888' }}>操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {faqConversions.topMerchants.map((m, i) => (
-                        <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '7px 12px', fontWeight: 600 }}>{i + 1}. {m.slug}</td>
-                          <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700, color: '#0f4c81' }}>{m.count}</td>
-                          <td style={{ padding: '7px 12px' }}>
-                            <a href={`/macao/search?q=${m.slug}`} target="_blank" rel="noopener noreferrer"
-                              style={{ fontSize: 11, color: '#4285f4' }}>查看頁面 →</a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                <div style={{ marginTop: 24, padding: '12px 16px', background: '#f9f9f9', borderRadius: 8, fontSize: 12, color: '#666' }}>
-                  <strong>數據來源：</strong>middleware 捕捉 utm_source=faq 的所有到訪，寫入 analytics_events。
-                  覆蓋人類點擊 + AI bot 跟連結兩種情況。
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
+                      </tr></thead>
+                      <tbody>
+                        {faqConversions.topMerchants.map((m, i) => (
+                          <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                            <td style={{ padding: '7px 12px', fontWeight: 600 }}>{i + 1}. {m.slug}</td>
+                            <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700, color: '#0f4c81' }}>{m.count}</td>
+                            <td style={{ padding: '7px 12px' }}><a href={`/macao/search?q=${m.slug}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#4285f4' }}>查看頁面 →</a></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
 
       <div style={{ marginTop: 32, padding: '12px 0', borderTop: '1px solid #eee', fontSize: 11, color: '#bbb', textAlign: 'center' }}>
-        CloudPipe AI 爬蟲追蹤 — 偵測 25+ AI Bot · 即時記錄 · Session 重建 · 蜘蛛網跨站追蹤
+        CloudPipe AI 爬蟲追蹤 — 偵測 25+ AI Bot · 即時記錄 · Session 重建 · 蝶蛛網跨站追蹤
         <br />API: <code>/api/v1/crawler-stats?view=summary|bots|pages|sessions|journey|spider-web</code>
         {' '}｜ <code>/api/v1/merchant-discovery</code>
       </div>
