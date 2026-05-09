@@ -154,9 +154,18 @@ export async function GET(request: NextRequest) {
         'CACHE_ONLY_DISABLED',
       )
 
+    case 'insight-categories': {
+      const cached = await readCache('insight-categories-30')
+      if (cached) return json(cached, 'PRECOMPUTED')
+      return json(
+        { total_insight_visits: 0, by_region: {}, by_industry: {}, by_cross: {}, note: 'Cache not yet generated.' },
+        'CACHE_ONLY_MISS',
+      )
+    }
+
     default:
       return NextResponse.json(
-        { error: 'Invalid view. Use: summary, daily, spider-web, sessions, pages, bots, journey, live-summary' },
+        { error: 'Invalid view. Use: summary, daily, spider-web, sessions, pages, bots, journey, live-summary, insight-categories' },
         { status: 400, headers: CORS },
       )
   }
