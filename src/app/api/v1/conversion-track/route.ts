@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Conversion Track API — receives user visit + action beacons from brand sites
  * Writes to analytics_events table (matching existing schema).

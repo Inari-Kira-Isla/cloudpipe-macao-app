@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const dynamic = 'force-dynamic'
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 // Simple auth: use a shared secret in query param
 const REVIEW_SECRET = process.env.AUDIT_REVIEW_SECRET
@@ -29,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   // Fetch pending reviews from the audit_reviews "virtual table"
   // stored as JSON in crawler_visits with page_type='audit_review'
-  const { data } = await supabase
+  const { data } = await getSupabase()
     .from('crawler_visits')
     .select('*')
     .eq('page_type', 'audit_review')
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Store review decision
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('crawler_visits')
       .insert({
         bot_name: 'audit_review',
