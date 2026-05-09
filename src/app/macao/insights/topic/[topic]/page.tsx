@@ -151,7 +151,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     pt: `${label} Análises — Diretório de Macau | CloudPipe AI`,
   }
   const descs = {
-    zh: `澳門${label}主題深度分析文章合集。CloudPipe AI 精選數據驅動的行業洞察、平台比較與行動指南。`,
+    zh: `澳門${label}主題深度分析文章合集。CloudPipe AI 精選數据驅動的行業洞察、平台比較與行動指南。`,
     en: `Curated in-depth analysis articles on ${label} in Macao. Data-driven insights, platform comparisons and action guides by CloudPipe AI.`,
     pt: `Artigos de análise sobre ${label} em Macau. Insights baseados em dados, comparações de plataformas e guias de ação da CloudPipe AI.`,
   }
