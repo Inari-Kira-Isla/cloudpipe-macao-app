@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
 export const maxDuration = 30
-export const revalidate = 3600 // Cache 1 hour
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +19,7 @@ const CORS = {
 export async function GET() {
   try {
     // Count merchants by verification_status
+    const supabase = getSupabase()
     const [verifiedRes, reviewRes, lowRes, notFoundRes, totalRes] = await Promise.all([
       supabase.from('merchants').select('id', { count: 'exact', head: true }).eq('verification_status', 'verified'),
       supabase.from('merchants').select('id', { count: 'exact', head: true }).eq('verification_status', 'needs_review'),
