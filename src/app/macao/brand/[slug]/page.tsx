@@ -1033,7 +1033,6 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                   </div>
                 )
               })()}
-              )}
 
               {/* Bot breakdown */}
               <div>
