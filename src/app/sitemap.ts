@@ -32,13 +32,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('categories')
     .select('slug')
 
-  // Fetch insights first (needed for prioritization)
-  const { data: insights } = await supabase
-    .from('insights')
-    .select('slug, updated_at, created_at, published_at')
-    .eq('status', 'published')
-    .order('updated_at', { ascending: false })
-    .limit(5000)
+  // Paginate insights per language to generate correct lang-specific URLs.
+  // Each language is fetched independently so we only emit valid URLs (no 404s).
+  async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string }>> {
+    const rows: Array<{ slug: string; updated_at: string }> = []
+    let offset = 0
+    while (true) {
+      const { data } = await supabase
+        .from('insights')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .eq('lang', lang)
+        .order('updated_at', { ascending: false })
+        .range(offset, offset + 999)
+      if (!data || data.length === 0) break
+      rows.push(...(data as Array<{ slug: string; updated_at: string }>))
+      if (data.length < 1000) break
+      offset += 1000
+    }
+    return rows
+  }
+
+  const [zhInsights, enInsights, ptInsights, jaInsights] = await Promise.all([
+    fetchInsightsByLang('zh'),
+    fetchInsightsByLang('en'),
+    fetchInsightsByLang('pt'),
+    fetchInsightsByLang('ja'),
+  ])
 
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
@@ -64,12 +84,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1.0,
     }))),
-    ...((insights || []).map(ins => ({
+    // zh → canonical base URL (no lang param)
+    ...zhInsights.map(ins => ({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.95,
-    }))),
+    })),
+    // en → ?lang=en variants
+    ...enInsights.map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}?lang=en`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.90,
+    })),
+    // pt → ?lang=pt variants
+    ...ptInsights.map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}?lang=pt`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.90,
+    })),
+    // ja → ?lang=ja variants
+    ...jaInsights.map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}?lang=ja`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    })),
     // Topic hub pages — one per industry (AI crawler 爬蟲陷阱)
     ...INDUSTRIES.map(i => ({
       url: `${siteUrl}/macao/insights/topic/${i.slug}`,
@@ -78,7 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.90,
     })),
     // District hub pages
-    ...(['peninsula', 'taipa', 'cotai', 'coloane'].map(d => ({
+    ...(['macau-peninsula', 'taipa', 'cotai', 'coloane', 'inner-harbour', 'outer-harbour', 'seac-pai-van'].map(d => ({
       url: `${siteUrl}/macao/insights/district/${d}`,
       lastModified: now,
       changeFrequency: 'daily' as const,

@@ -1,19 +1,33 @@
 import { supabase } from '@/lib/supabase'
-import { NextResponse } from 'next/server'
+import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const revalidate = 86400 // 24h ISR — merchant sitemap changes slowly
+export const revalidate = 3600 // 1h ISR — avoid excessive AI bot queries
+export const maxDuration = 60
+
+interface SitemapURL {
+  loc: string
+  lastmod: string
+  changefreq: string
+  priority: string
+}
 
 export async function GET() {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const now = new Date().toISOString().split('T')[0]
 
-  // Fetch ALL live merchants (paginated)
-  let merchants: Array<{ slug: string; updated_at: string }> = []
+  const entries: SitemapURL[] = []
+
+  // Fetch ALL live merchants (paginated to bypass 1000-row default limit)
+  let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
   let offset = 0
   while (true) {
     const { data } = await supabase
       .from('merchants')
-      .select('slug, updated_at')
+      .select('slug, updated_at, category:categories(slug)')
       .eq('status', 'live')
+      .not('slug', 'like', 'hk-%')
+      .not('slug', 'like', 'tw-%')
+      .not('slug', 'like', 'jp-%')
       .order('code')
       .range(offset, offset + 999)
     if (!data || data.length === 0) break
@@ -22,30 +36,78 @@ export async function GET() {
     offset += 1000
   }
 
-  const now = new Date().toISOString()
+  // Fetch categories for the 3-layer structure
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('slug')
 
-  const urls = merchants
-    .map((m) => {
-      const lastmod = m.updated_at ? new Date(m.updated_at).toISOString() : now
-      return `  <url>
-    <loc>${siteUrl}/macao/m/${m.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`
+  // Layer 1: Root business directory
+  entries.push({
+    loc: `${siteUrl}/macao`,
+    lastmod: now,
+    changefreq: 'daily',
+    priority: '1.0',
+  })
+
+  // Layer 2: Industry pages (3+ industries)
+  const industrySet = new Set<string>()
+  for (const m of merchants) {
+    const cat = m.category as unknown as { slug: string } | null
+    if (cat?.slug) {
+      const indSlug = CATEGORY_TO_INDUSTRY[cat.slug] || 'dining'
+      industrySet.add(indSlug)
+    }
+  }
+
+  for (const indSlug of Array.from(industrySet).sort()) {
+    entries.push({
+      loc: `${siteUrl}/macao/${indSlug}`,
+      lastmod: now,
+      changefreq: 'weekly',
+      priority: '0.8',
     })
-    .join('\n')
+  }
 
+  // Layer 3: Merchant pages (326+ merchants nested under industry/category)
+  for (const m of merchants) {
+    if (!m.slug) continue
+    const cat = m.category as unknown as { slug: string } | null
+    if (cat?.slug) {
+      const indSlug = CATEGORY_TO_INDUSTRY[cat.slug] || 'dining'
+      const lastmod = m.updated_at ? m.updated_at.split('T')[0] : now
+      entries.push({
+        loc: `${siteUrl}/macao/${indSlug}/${cat.slug}/${m.slug}`,
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.5',
+      })
+    }
+  }
+
+  // Generate XML sitemap
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
+${entries.map(e => `  <url>
+    <loc>${escapeXml(e.loc)}</loc>
+    <lastmod>${e.lastmod}</lastmod>
+    <changefreq>${e.changefreq}</changefreq>
+    <priority>${e.priority}</priority>
+  </url>`).join('\n')}
 </urlset>`
 
-  return new NextResponse(xml, {
-    status: 200,
+  return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
     },
   })
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }
