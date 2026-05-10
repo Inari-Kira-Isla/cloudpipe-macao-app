@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 7200 // 2h ISR — sitemap 不需即時，避免 AI bot 每次爬都觸發 SSR
-export const maxDuration = 60
+export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()

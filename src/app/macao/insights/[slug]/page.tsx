@@ -8,6 +8,7 @@ import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { ClickTracker } from '@/components/ClickTracker'
 
 export const revalidate = 86400 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ slug: string }>

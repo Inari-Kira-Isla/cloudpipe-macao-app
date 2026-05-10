@@ -4,7 +4,7 @@ import { BRAND_CONFIGS } from '@/lib/brand-visibility'
 import { calculateRankScore, calculateMarketShare } from '@/lib/ai-search-baseline'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 120
 
 /**
  * GET /api/v1/ai-search-baseline?slug=inari-global-foods

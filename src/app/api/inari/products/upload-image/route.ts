@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { createClient } from '@supabase/supabase-js'
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cloudpipe2026'
 const TARGET_SIZE = 1200

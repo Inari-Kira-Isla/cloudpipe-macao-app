@@ -97,3 +97,115 @@
 - **下個 session**: F001 — 修復佔位子分類（最高優先）
 - **注意**: 數據寫入需通過 Supabase API，生成腳本在 `~/.openclaw/workspace/skills/aeo-macao-content/scripts/`
 - **App 狀態**: 線上正常運行，無需修復
+
+## [2026-04-30 00:50] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:50] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:52] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:53] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:53] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:54] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:56] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:57] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 00:59] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:01] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:04] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:04] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:07] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:07] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:10] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)
+
+## [2026-04-30 01:14] Auto-checkpoint
+Git: e3acca7 Updated merchant count: 13,512 (JP 4,234 + HK 4,454 + MO 4,824) after JP/HK live rescue; IndexNow pushed
+e8b59a0 feat: 加入品牌儀表板第三 Tab「🎯 AEO 路線圖」
+45eb696 chore: refresh sitemap 2026-04-29T10:17Z (auto DB-recovery run)
+1de94b0 chore: refresh sitemap 2026-04-29T09:09Z (auto DB-recovery run)
+6f91dc7 chore: refresh sitemap 2026-04-29T07:18Z (auto DB-recovery run)

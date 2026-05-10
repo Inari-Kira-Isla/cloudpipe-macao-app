@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 120
 
 const BUCKET = 'brand-assets'
 const MAX_FILE_SIZE = 20 * 1024 * 1024  // 20MB

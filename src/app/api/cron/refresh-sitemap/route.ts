@@ -7,7 +7,7 @@
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const maxDuration = 60; // 60s timeout
+export const maxDuration = 120; // 120s timeout
 
 // ── 產業和分類映射 ────────────────────────────────────────────────────────────
 const INDUSTRIES = [

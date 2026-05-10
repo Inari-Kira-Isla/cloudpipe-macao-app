@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
 
 export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
