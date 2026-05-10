@@ -70,6 +70,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.95,
     }))),
+    // Topic hub pages — one per industry (AI crawler 爬蟲陷阱)
+    ...INDUSTRIES.map(i => ({
+      url: `${siteUrl}/macao/insights/topic/${i.slug}`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.90,
+    })),
+    // District hub pages
+    ...(['peninsula', 'taipa', 'cotai', 'coloane'].map(d => ({
+      url: `${siteUrl}/macao/insights/district/${d}`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.90,
+    }))),
   ]
 
   // Industry pages
