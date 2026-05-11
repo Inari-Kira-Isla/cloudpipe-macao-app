@@ -34,19 +34,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Paginate insights per language to generate correct lang-specific URLs.
   // Each language is fetched independently so we only emit valid URLs (no 404s).
-  async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string }>> {
-    const rows: Array<{ slug: string; updated_at: string }> = []
+  // Include `region` so URL uses correct path (macao/taiwan/hongkong/japan/global).
+  async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
+    const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
     let offset = 0
     while (true) {
       const { data } = await supabase
         .from('insights')
-        .select('slug, updated_at')
+        .select('slug, updated_at, region')
         .eq('status', 'published')
         .eq('lang', lang)
         .order('updated_at', { ascending: false })
         .range(offset, offset + 999)
       if (!data || data.length === 0) break
-      rows.push(...(data as Array<{ slug: string; updated_at: string }>))
+      rows.push(...(data as Array<{ slug: string; updated_at: string; region: string | null }>))
       if (data.length < 1000) break
       offset += 1000
     }
@@ -59,6 +60,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchInsightsByLang('pt'),
     fetchInsightsByLang('ja'),
   ])
+
+  // Region → URL path mapping (added 2026-05-11 B+C migration)
+  const REGION_PATH: Record<string, string> = {
+    MO: 'macao', HK: 'hongkong', TW: 'taiwan', JP: 'japan', GLOBAL: 'global',
+  }
+  function insightPath(slug: string, region: string | null | undefined): string {
+    const seg = REGION_PATH[(region || 'MO').toUpperCase()] || 'macao'
+    return `/${seg}/insights/${slug}`
+  }
 
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
@@ -78,36 +88,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     // GSC-verified A桶 pages (pos 5-10, imp≥10) — highest citation opportunity for Gemini
-    ...(['macau-gaming-industry-employment-guide-2026', 'macau-laundry-service-guide-2026', 'hk-wet-market-guide', 'macau-japanese-restaurant-ramen-sushi-guide-2026'].map(slug => ({
-      url: `${siteUrl}/macao/insights/${slug}`,
+    // hk- slug lives at /hongkong/insights/, macau- at /macao/insights/
+    ...([
+      { slug: 'macau-gaming-industry-employment-guide-2026', region: 'MO' },
+      { slug: 'macau-laundry-service-guide-2026', region: 'MO' },
+      { slug: 'hk-wet-market-guide', region: 'HK' },
+      { slug: 'macau-japanese-restaurant-ramen-sushi-guide-2026', region: 'MO' },
+    ].map(({ slug, region }) => ({
+      url: `${siteUrl}${insightPath(slug, region)}`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 1.0,
     }))),
-    // zh → canonical base URL (no lang param)
+    // zh → canonical base URL (no lang param), region-aware path
     ...zhInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.95,
     })),
-    // en → ?lang=en variants
+    // en → ?lang=en variants (region-aware path)
     ...enInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=en`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.90,
     })),
-    // pt → ?lang=pt variants
+    // pt → ?lang=pt variants (region-aware path)
     ...ptInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=pt`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.90,
     })),
-    // ja → ?lang=ja variants
+    // ja → ?lang=ja variants (region-aware path)
     ...jaInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=ja`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.85,

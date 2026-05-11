@@ -169,6 +169,26 @@ const nextConfig: NextConfig = {
     // Special: /macao/tourism/:slug (Phase 1 flat → current canonical)
     redirects.push({ source: `/macao/tourism/:slug`, destination: `/macao/professional-services/tourism/:slug`, permanent: true })
 
+    // ── B+C migration 2026-05-11: /macao/insights/<slug> → region-specific routes ──
+    // Region detection by slug prefix (DB rows already classified into TW/HK/JP/GLOBAL).
+    // Brand articles (region=MO; slugs like upgrade-/inari-/mind-/asc-/after-school-) stay on /macao/.
+    redirects.push(
+      { source: '/macao/insights/:slug(tw-.*)', destination: '/taiwan/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(taiwan-.*)', destination: '/taiwan/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(jp-.*)', destination: '/japan/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(japan-.*)', destination: '/japan/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(hk-.*)', destination: '/hongkong/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(hongkong-.*)', destination: '/hongkong/insights/:slug', permanent: true },
+      // GLOBAL article slug patterns (~7-8 fixed prefixes)
+      { source: '/macao/insights/:slug(faq-schema-ai-citation.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(llms-txt-5x-ai-traffic.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(nerdwallet-traffic-down.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(toggl-geo-7m-impressions.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(zicy-74-percent.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(apollo-io-reddit-ai.*)', destination: '/global/insights/:slug', permanent: true },
+      { source: '/macao/insights/:slug(ai-referral-3x-conversion.*)', destination: '/global/insights/:slug', permanent: true },
+    )
+
     return redirects
   },
   typescript: {

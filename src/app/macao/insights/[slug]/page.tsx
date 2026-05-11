@@ -85,12 +85,14 @@ function parseLang(raw?: string): Lang {
 }
 
 async function getInsight(slug: string, lang: Lang) {
+  // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
   const { data } = await supabase
     .from('insights')
     .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
     .eq('status', 'published')
+    .eq('region', 'MO')
     .maybeSingle()
   return data as InsightArticle | null
 }
@@ -101,6 +103,7 @@ async function getAvailableLangs(slug: string): Promise<Lang[]> {
     .select('lang')
     .eq('slug', slug)
     .eq('status', 'published')
+    .eq('region', 'MO')
   if (!data) return []
   return data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l))
 }
