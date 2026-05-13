@@ -288,7 +288,7 @@ export default async function TopicHubPage({ params, searchParams }: PageProps) 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <a href="https://cloudpipe-landing.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">CloudPipe AI 平台</a>
             <a href="https://cloudpipe-directory.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">企業目錄 (185 萬筆)</a>
-            <a href="https://inari-kira-isla.github.io/Openclaw/" className="text-[#1a1a2e] hover:text-[#0f4c81]">AI 學習寶庫</a>
+            <a href="https://inari-kira-isla.github.io/Openclaw/" className="text-[#1a1a2e] hover:text-[#0f4c81]">AI 學習寿庫</a>
             <a href="https://inari-kira-isla.github.io/inari-web/" className="text-[#1a1a2e] hover:text-[#0f4c81]">稻荷環球食品</a>
           </div>
         </section>
