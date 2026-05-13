@@ -24,7 +24,7 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
 const IMAGE_SUBTYPES: Record<string, string> = {
   'product_photo': '產品照',
   'logo':          'Logo',
-  'menu_scan':     '菜單/目錄掃描',
+  'menu_scan':     '菜单/目錄揃描',
   'catalog':       '產品目錄',
   'business_card': '名片',
   'scene_photo':   '場景/環境照',
@@ -43,10 +43,8 @@ export async function POST(request: NextRequest) {
 
     if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
-    // Handle URL-only upload (no file)
     if (!file && sourceUrl) {
       const supabase = createServiceClient()
-      // Detect if this is a full website (root URL) vs single page
       const isWebsite = formData.get('is_website') === 'true'
       const { data, error } = await supabase.from('brand_ops_assets').insert({
         brand_slug: slug,
@@ -67,28 +65,22 @@ export async function POST(request: NextRequest) {
 
     if (!file) return NextResponse.json({ error: 'file or source_url required' }, { status: 400 })
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: `File too large. Max ${MAX_FILE_SIZE / 1024 / 1024}MB` }, { status: 400 })
     }
 
-    // Validate MIME type
     const mimeType = file.type || 'application/octet-stream'
     const assetType = ALLOWED_MIME_TYPES[mimeType]
     if (!assetType) {
       return NextResponse.json({ error: `Unsupported file type: ${mimeType}` }, { status: 400 })
     }
 
-    // Read file content
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-
-    // Compute hash for deduplication
     const fileHash = crypto.createHash('sha256').update(buffer).digest('hex')
 
     const supabase = createServiceClient()
 
-    // Check duplicate
     const { data: existing } = await supabase
       .from('brand_ops_assets')
       .select('id, brand_slug, original_filename')
@@ -104,26 +96,17 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Generate storage path
     const ext = file.name.split('.').pop() || 'bin'
     const uuid = crypto.randomUUID()
     const storagePath = `brands/${slug}/assets/${uuid}.${ext}`
 
-    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(storagePath, buffer, {
-        contentType: mimeType,
-        upsert: false,
-      })
+      .upload(storagePath, buffer, { contentType: mimeType, upsert: false })
 
     if (uploadError) {
-      // If bucket doesn't exist, try to create it
       if (uploadError.message?.includes('not found') || uploadError.message?.includes('Bucket')) {
-        await supabase.storage.createBucket(BUCKET, {
-          public: false,
-          fileSizeLimit: MAX_FILE_SIZE,
-        })
+        await supabase.storage.createBucket(BUCKET, { public: false, fileSizeLimit: MAX_FILE_SIZE })
         const { error: retryError } = await supabase.storage
           .from(BUCKET)
           .upload(storagePath, buffer, { contentType: mimeType })
@@ -133,7 +116,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Insert asset record
     const { data: asset, error: dbError } = await supabase
       .from('brand_ops_assets')
       .insert({
@@ -162,7 +144,6 @@ export async function POST(request: NextRequest) {
       size: file.size,
       message: `${file.name} 上傳成功，排入 AI 解析佇列`,
     })
-
   } catch (err) {
     console.error('[brand-ops/upload]', err)
     return NextResponse.json(
