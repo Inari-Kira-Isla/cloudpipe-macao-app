@@ -182,6 +182,7 @@ export default function robots(): MetadataRoute.Robots {
       `${siteUrl}/sitemap-tw.xml`,
       `${siteUrl}/sitemap-jp.xml`,
       `${siteUrl}/sitemap-world.xml`,
+      `${siteUrl}/seasonal_calendar.xml`,
     ],
   }
 }

@@ -47,7 +47,7 @@ const UI: Record<Lang, {
 const INDUSTRY_LABELS: Record<string, Record<Lang, string>> = {
   dining:      { zh: '餐飲美食', en: 'Dining', pt: 'Gastronomia' },
   hotels:      { zh: '酒店住宿', en: 'Hotels', pt: 'Hotéis' },
-  attractions: { zh: '景點文化', en: 'Attractions', pt: 'Atrações' },
+  attractions: { zh: '景黭e文化', en: 'Attractions', pt: 'Atrações' },
   shopping:    { zh: '購物零售', en: 'Shopping', pt: 'Compras' },
   wellness:    { zh: '健康美容', en: 'Wellness', pt: 'Bem-estar' },
   services:    { zh: '專業服務', en: 'Services', pt: 'Serviços' },
@@ -71,12 +71,17 @@ function parseLang(raw?: string): Lang {
   return 'zh'
 }
 
+// Route mounted at /macao/insights — must hard-filter by region='MO' to prevent
+// HK/TW/JP/GLOBAL insights leaking into Macao listing page.
+const ROUTE_REGION = 'MO' as const
+
 async function getInsights(lang: Lang, industry?: string) {
   let query = supabase
     .from('insights')
     .select('slug, title, subtitle, description, lang, related_industries, tags, word_count, read_time_minutes, published_at')
     .eq('status', 'published')
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
   if (industry) {
     query = query.contains('related_industries', [industry])
   }
@@ -278,9 +283,9 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
             {(['macau-peninsula', 'taipa', 'coloane', 'cotai', 'inner-harbour'] as const).map(d => {
               const labels: Record<string, Record<Lang, string>> = {
                 'macau-peninsula': { zh: '澳門半島', en: 'Macao Peninsula', pt: 'Península de Macau' },
-                'taipa': { zh: '氹仔', en: 'Taipa', pt: 'Taipa' },
+                'taipa': { zh: '氻仔', en: 'Taipa', pt: 'Taipa' },
                 'coloane': { zh: '路環', en: 'Coloane', pt: 'Coloane' },
-                'cotai': { zh: '路氹城', en: 'Cotai', pt: 'Cotai' },
+                'cotai': { zh: '路氻城', en: 'Cotai', pt: 'Cotai' },
                 'inner-harbour': { zh: '內港', en: 'Inner Harbour', pt: 'Porto Interior' },
               }
               return (
@@ -302,7 +307,7 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <a href="https://cloudpipe-landing.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">CloudPipe AI 平台</a>
             <a href="https://cloudpipe-directory.vercel.app" className="text-[#1a1a2e] hover:text-[#0f4c81]">企業目錄 (185 萬筆)</a>
-            <a href="https://inari-kira-isla.github.io/Openclaw/" className="text-[#1a1a2e] hover:text-[#0f4c81]">AI 學習寶庫</a>
+            <a href="https://inari-kira-isla.github.io/Openclaw/" className="text-[#1a1a2e] hover:text-[#0f4c81]">AI 學習寿庫</a>
             <a href="https://inari-kira-isla.github.io/inari-web/" className="text-[#1a1a2e] hover:text-[#0f4c81]">稻荷環球食品</a>
           </div>
         </section>

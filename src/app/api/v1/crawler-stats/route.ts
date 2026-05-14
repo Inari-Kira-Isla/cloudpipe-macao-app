@@ -146,7 +146,6 @@ export async function GET(request: NextRequest) {
     }
 
     case 'pages': {
-      // Try to read top_pages from the precomputed summary cache
       const summaryDays = [7, 30, 90].includes(days) ? days : 30
       const summaryCache = await readCache<{ top_pages?: Record<string, number> }>(`crawler-stats-summary-${summaryDays}`)
       const topPages = summaryCache?.top_pages || {}
