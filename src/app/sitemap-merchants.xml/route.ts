@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 3600 // 1h ISR — avoid excessive AI bot queries
@@ -17,11 +17,15 @@ export async function GET() {
 
   const entries: SitemapURL[] = []
 
-  // Fetch ALL live merchants (paginated to bypass 1000-row default limit)
+  // Fetch ALL live MO merchants (paginated to bypass 1000-row default limit).
+  // 2026-05-13 fix: switched from anon `supabase` client to service-role
+  // `createServiceClient()` — RLS on merchants table blocks anon SELECT and
+  // was returning 0 rows (sitemap collapsed to 1 URL → AI-crawler -99% drop).
+  // Service-role mirrors what src/app/sitemap.ts already does.
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
   let offset = 0
   while (true) {
-    const { data } = await supabase
+    const { data } = await createServiceClient()
       .from('merchants')
       .select('slug, updated_at, category:categories(slug)')
       .eq('status', 'live')
@@ -37,7 +41,7 @@ export async function GET() {
   }
 
   // Fetch categories for the 3-layer structure
-  const { data: categories } = await supabase
+  const { data: categories } = await createServiceClient()
     .from('categories')
     .select('slug')
 
