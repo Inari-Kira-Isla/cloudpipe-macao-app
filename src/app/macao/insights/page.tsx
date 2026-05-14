@@ -71,12 +71,17 @@ function parseLang(raw?: string): Lang {
   return 'zh'
 }
 
+// Route mounted at /macao/insights — must hard-filter by region='MO' to prevent
+// HK/TW/JP/GLOBAL insights leaking into Macao listing page.
+const ROUTE_REGION = 'MO' as const
+
 async function getInsights(lang: Lang, industry?: string) {
   let query = supabase
     .from('insights')
     .select('slug, title, subtitle, description, lang, related_industries, tags, word_count, read_time_minutes, published_at')
     .eq('status', 'published')
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
   if (industry) {
     query = query.contains('related_industries', [industry])
   }

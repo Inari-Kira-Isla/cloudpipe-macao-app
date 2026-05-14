@@ -73,12 +73,17 @@ interface InsightRow {
   published_at?: string
 }
 
+// Route mounted at /macao/insights/topic/[topic] — hard-filter region='MO'
+// so e.g. tag 'tokyo' on Macao topic page does NOT pull in JP insights.
+const ROUTE_REGION = 'MO' as const
+
 async function getInsightsByTopic(topic: string, lang: Lang): Promise<InsightRow[]> {
   const { data } = await supabase
     .from('insights')
     .select('slug, title, subtitle, description, related_industries, tags, word_count, read_time_minutes, published_at')
     .eq('status', 'published')
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
     .contains('tags', [topic])
     .order('published_at', { ascending: false })
     .limit(60)

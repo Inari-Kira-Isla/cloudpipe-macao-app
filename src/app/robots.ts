@@ -173,6 +173,8 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: [
       `${siteUrl}/sitemap.xml`,
       `${siteUrl}/sitemap-merchants.xml`,
+      `${siteUrl}/sitemap_index.xml`,
+      `${siteUrl}/seasonal_calendar.xml`,
     ],
   }
 }
