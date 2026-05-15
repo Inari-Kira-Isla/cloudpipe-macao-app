@@ -234,6 +234,22 @@ export default async function CategoryPage({ params }: PageProps) {
       })),
       relatedLink: insights.map((i: { slug: string }) => `${siteUrl}/macao/insights/${i.slug}`),
     },
+    // ItemList Schema for merchant list (GPTBot spider-web crawling)
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `澳門${category.name_zh}商戶列表`,
+      description: `完整的澳門${category.name_zh}商戶目錄，包含 ${merchants.length} 家商戶信息`,
+      url: `${siteUrl}/macao/${indSlug}/${catSlug}`,
+      numberOfItems: merchants.length,
+      itemListElement: merchants.filter(m => m.slug).slice(0, 50).map((m, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${indSlug}/${catSlug}/${m.slug}`,
+        description: m.name_en || `澳門${category.name_zh}商戶`,
+      })),
+    },
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',

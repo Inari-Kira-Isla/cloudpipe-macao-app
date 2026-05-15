@@ -161,6 +161,22 @@ export default async function IndustryPage({ params }: PageProps) {
         })),
       },
     },
+    // Merchant ItemList Schema for GPTBot spider-web crawling (71.7% of bot crawl behavior)
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `澳門${industry.name_zh}商戶目錄`,
+      description: `澳門${industry.name_zh}行業完整商戶目錄，共 ${merchants.length} 家商戶`,
+      url: `${siteUrl}/macao/${slug}`,
+      numberOfItems: merchants.length,
+      itemListElement: merchants.filter(m => m.slug).slice(0, 50).map((m, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${slug}/${m.category?.slug || 'other'}/${m.slug}`,
+        description: `${m.category?.name_zh || '商戶'} - ${m.name_en || m.name_zh}`,
+      })),
+    },
     {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
