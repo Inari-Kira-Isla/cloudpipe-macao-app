@@ -2,6 +2,7 @@ import { safeJsonLd } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
+import { STATIC_INSIGHTS } from '@/data/static-insights'
 
 export const revalidate = 3600
 export const dynamic = 'force-dynamic'
@@ -86,7 +87,15 @@ async function getInsights(lang: Lang, industry?: string) {
     query = query.contains('related_industries', [industry])
   }
   const { data } = await query.order('published_at', { ascending: false })
-  return (data || []) as (Pick<InsightArticle, 'slug' | 'title' | 'subtitle' | 'description' | 'related_industries' | 'tags' | 'word_count' | 'read_time_minutes' | 'published_at'> & { lang: string })[]
+  const dbInsights = (data || []) as (Pick<InsightArticle, 'slug' | 'title' | 'subtitle' | 'description' | 'related_industries' | 'tags' | 'word_count' | 'read_time_minutes' | 'published_at'> & { lang: string })[]
+  const seen = new Set(dbInsights.map(article => article.slug))
+  const staticInsights = STATIC_INSIGHTS
+    .filter(article => article.lang === lang && !seen.has(article.slug))
+    .filter(article => !industry || article.related_industries.includes(industry))
+    .map(({ slug, title, subtitle, description, lang, related_industries, tags, word_count, read_time_minutes, published_at }) => ({
+      slug, title, subtitle, description, lang, related_industries, tags, word_count, read_time_minutes, published_at,
+    }))
+  return [...staticInsights, ...dbInsights]
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {

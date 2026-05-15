@@ -1,6 +1,7 @@
 import { supabase, createServiceClient } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { STATIC_INSIGHTS } from '@/data/static-insights'
 
 export const revalidate = 7200
 export const maxDuration = 120
@@ -67,6 +68,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchInsightsByLang('pt'),
     fetchInsightsByLang('ja'),
   ])
+  const zhInsightSlugs = new Set(zhInsights.map(ins => ins.slug))
+  const staticZhInsights = STATIC_INSIGHTS
+    .filter(ins => ins.lang === 'zh' && !zhInsightSlugs.has(ins.slug))
+    .map(ins => ({ slug: ins.slug, updated_at: ins.updated_at }))
 
   const REGION_PATH: Record<string, string> = {
     MO: 'macao', HK: 'hongkong', TW: 'taiwan', JP: 'japan', GLOBAL: 'global',
@@ -112,6 +117,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.95,
     })),
+    ...staticZhInsights.map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
+    // en → ?lang=en variants
     ...enInsights.map(ins => ({
       url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
