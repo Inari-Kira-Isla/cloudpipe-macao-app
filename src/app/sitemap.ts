@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, createServiceClient } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
   let offset = 0
   while (true) {
-    const { data } = await supabase
+    const { data } = await createServiceClient()
       .from('merchants')
       .select('slug, updated_at, category:categories(slug)')
       .eq('status', 'live')
@@ -27,15 +27,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     offset += 1000
   }
 
-  const { data: categories } = await supabase
+  const { data: categories } = await createServiceClient()
     .from('categories')
     .select('slug')
 
+  // Macao seasonal calendar entries (MO region only) — added 2026-05-11
+  // Provides AI crawlers structured access to all 16 public holidays + cultural festivals
+  const { data: calendarRows } = await createServiceClient()
+    .from('seasonal_calendar')
+    .select('slug, updated_at')
+    .eq('region', 'MO')
+    .order('date_start', { ascending: true })
+
+  // Paginate insights per language to generate correct lang-specific URLs.
+  // Each language is fetched independently so we only emit valid URLs (no 404s).
+  // Include `region` so URL uses correct path (macao/taiwan/hongkong/japan/global).
   async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
     const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
     let offset = 0
     while (true) {
-      const { data } = await supabase
+      const { data } = await createServiceClient()
         .from('insights')
         .select('slug, updated_at, region')
         .eq('status', 'published')
@@ -130,6 +141,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.90,
+    }))),
+    // Macao seasonal calendar index — 2026-05-11
+    {
+      url: `${siteUrl}/macao/calendar`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.95,
+    },
+    // Macao seasonal calendar detail pages — one per holiday slug
+    ...((calendarRows || []).map(c => ({
+      url: `${siteUrl}/macao/calendar/${c.slug}`,
+      lastModified: c.updated_at ? new Date(c.updated_at) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
     }))),
   ]
 
