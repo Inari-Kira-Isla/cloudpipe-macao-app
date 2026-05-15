@@ -76,8 +76,8 @@ async function getMerchant(slug: string, industrySlug: string) {
 
   const [{ data: content }, { data: faqs }, { data: enFaqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }, { data: brandEcosystem }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
-    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('sort_order'),
-    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'en').order('sort_order'),
+    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('faq_type', { ascending: false }).order('sort_order').limit(12),
+    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'en').order('faq_type', { ascending: false }).order('sort_order').limit(6),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
       .contains('related_merchant_slugs', [slug])
@@ -110,8 +110,8 @@ async function getMerchant(slug: string, industrySlug: string) {
   return {
     merchant: merchant as Merchant & { category: Category },
     content: content as MerchantContent | null,
-    faqs: (faqs || []) as MerchantFAQ[],
-    enFaqs: (enFaqs || []) as MerchantFAQ[],
+    faqs: Array.from(new Map((faqs || []).map((f: MerchantFAQ) => [f.question, f])).values()) as MerchantFAQ[],
+    enFaqs: Array.from(new Map((enFaqs || []).map((f: MerchantFAQ) => [f.question, f])).values()) as MerchantFAQ[],
     insights,
     relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
     brandEcosystem: ((brandEcosystem || []) as any[]).map((b: any) => ({
