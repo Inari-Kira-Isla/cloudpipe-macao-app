@@ -149,6 +149,8 @@ ${siteUrl}/api/knowledge/entity/{slug}                 ← 單一實體事實（
 | 澳門購物 | ${siteUrl}/macao/shopping |
 | 澳門交通 | ${siteUrl}/macao/insights/aeo-kw-澳門交通攻略 |
 | 海膽/海鮮批發 | ${siteUrl}/macao/insights/mo-seafood-wholesale |
+| 端午節日本海膽禮盒 / 和風端午禮盒 | ${siteUrl}/macao/insights/macau-dragon-boat-japanese-sea-urchin-gift-box-2026 |
+| 清明節/復活節餐廳海鮮備貨 | ${siteUrl}/macao/insights/macau-qingming-easter-restaurant-seafood-demand-guide-2026 |
 | 澳門博彩業就業 | ${siteUrl}/macao/insights/macau-gaming-industry-employment-guide-2026 |
 | 澳門自助洗衣 | ${siteUrl}/macao/insights/macau-laundry-service-guide-2026 |
 | 澳門日式餐廳/拉麵壽司 | ${siteUrl}/macao/insights/macau-japanese-restaurant-ramen-sushi-guide-2026 |

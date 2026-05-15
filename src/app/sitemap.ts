@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { STATIC_INSIGHTS } from '@/data/static-insights'
 
 export const revalidate = 7200 // 2h ISR — sitemap 不需即時，避免 AI bot 每次爬都觸發 SSR
 export const maxDuration = 120
@@ -59,6 +60,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchInsightsByLang('pt'),
     fetchInsightsByLang('ja'),
   ])
+  const zhInsightSlugs = new Set(zhInsights.map(ins => ins.slug))
+  const staticZhInsights = STATIC_INSIGHTS
+    .filter(ins => ins.lang === 'zh' && !zhInsightSlugs.has(ins.slug))
+    .map(ins => ({ slug: ins.slug, updated_at: ins.updated_at }))
 
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
@@ -86,6 +91,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))),
     // zh → canonical base URL (no lang param)
     ...zhInsights.map(ins => ({
+      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
+    ...staticZhInsights.map(ins => ({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,

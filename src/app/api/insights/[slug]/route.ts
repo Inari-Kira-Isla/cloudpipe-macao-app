@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
 import type { InsightArticle } from '@/lib/types'
+import { getStaticInsight } from '@/data/static-insights'
 
 const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
 type Lang = (typeof VALID_LANGS)[number]
@@ -30,12 +31,13 @@ export async function GET(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-  if (!data) {
+  const article = (data as InsightArticle | null) || getStaticInsight(slug, lang)
+  if (!article) {
     return NextResponse.json({ error: 'not found' }, { status: 404 })
   }
 
   return NextResponse.json(
-    { data: data as InsightArticle },
+    { data: article },
     {
       headers: {
         // Cache at edge for 1 hour — lang variants are also relatively stable

@@ -8,6 +8,7 @@ import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { ClickTracker } from '@/components/ClickTracker'
 import { Suspense } from 'react'
 import LangAwareContent from './LangAwareContent'
+import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
 
 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
 // NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
@@ -92,7 +93,7 @@ async function getInsight(slug: string, lang: Lang) {
     .eq('lang', lang)
     .eq('status', 'published')
     .maybeSingle()
-  return data as InsightArticle | null
+  return (data as InsightArticle | null) || getStaticInsight(slug, lang)
 }
 
 async function getAvailableLangs(slug: string): Promise<Lang[]> {
@@ -102,7 +103,11 @@ async function getAvailableLangs(slug: string): Promise<Lang[]> {
     .eq('slug', slug)
     .eq('status', 'published')
   if (!data) return []
-  return data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l))
+  const langs = new Set<Lang>([
+    ...data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l)),
+    ...getStaticInsightLangs(slug).filter((l): l is Lang => VALID_LANGS.includes(l as Lang)),
+  ])
+  return Array.from(langs)
 }
 
 interface RelatedMerchant {

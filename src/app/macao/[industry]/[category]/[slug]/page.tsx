@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
 import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { getMerchantFaqOverrides } from '@/lib/merchant-faq-overrides'
 import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
 import { ClickTracker } from '@/components/ClickTracker'
@@ -107,10 +108,16 @@ async function getMerchant(slug: string, industrySlug: string) {
     if (!seen.has(a.slug) && insights.length < 6) { seen.add(a.slug); insights.push(a as InsightLink) }
   }
 
+  const faqOverrides = getMerchantFaqOverrides(slug, merchant.id)
+  const mergedFaqs = [
+    ...((faqs || []) as MerchantFAQ[]),
+    ...faqOverrides.filter(override => !(faqs || []).some(f => f.question === override.question && f.lang === override.lang)),
+  ].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+
   return {
     merchant: merchant as Merchant & { category: Category },
     content: content as MerchantContent | null,
-    faqs: (faqs || []) as MerchantFAQ[],
+    faqs: mergedFaqs,
     enFaqs: (enFaqs || []) as MerchantFAQ[],
     insights,
     relatedMerchants: (relatedMerchants || []) as { slug: string; name_zh: string; name_en?: string; google_rating?: number; district?: string }[],
