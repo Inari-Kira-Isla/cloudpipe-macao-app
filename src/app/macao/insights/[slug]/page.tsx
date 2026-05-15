@@ -85,13 +85,21 @@ function parseLang(raw?: string): Lang {
   return 'zh'
 }
 
+// Route mounted at /macao/insights/[slug] — must hard-filter by region='MO' to prevent
+// cross-region leakage (HK/TW/JP/GLOBAL slugs were previously reachable via this route).
+// GLOBAL articles (e.g., faq-schema-ai-citation-2026) live under a future /global hub.
+const ROUTE_REGION = 'MO' as const
+
 async function getInsight(slug: string, lang: Lang) {
+  // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
   const { data } = await supabase
     .from('insights')
     .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
     .eq('status', 'published')
+    .eq('region', 'MO')
     .maybeSingle()
   return (data as InsightArticle | null) || getStaticInsight(slug, lang)
 }
@@ -101,7 +109,9 @@ async function getAvailableLangs(slug: string): Promise<Lang[]> {
     .from('insights')
     .select('lang')
     .eq('slug', slug)
+    .eq('region', ROUTE_REGION)
     .eq('status', 'published')
+    .eq('region', 'MO')
   if (!data) return []
   const langs = new Set<Lang>([
     ...data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l)),
@@ -173,12 +183,14 @@ async function getSpiderWebInsights(
   const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
   if (!validSlugs.length && !industries.length) return []
 
-  // Fetch candidate insights (same lang, published, not self)
+  // Fetch candidate insights (same lang + same region, published, not self).
+  // region filter prevents cross-region spider-web leakage (MO insight → HK/TW/JP candidate)
   const { data: candidates } = await supabase
     .from('insights')
     .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
     .eq('status', 'published')
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
     .neq('slug', currentSlug)
     .not('related_merchant_slugs', 'is', null)
     .limit(200)
@@ -317,6 +329,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
     supabase.from('insights')
       .select('slug, title, subtitle, read_time_minutes, tags, related_industries')
       .eq('status', 'published').eq('lang', lang)
+      .eq('region', ROUTE_REGION)
       .neq('slug', slug)
       .order('published_at', { ascending: false }).limit(4),
   ])

@@ -51,33 +51,18 @@ async function generateSitemapContent() {
   ];
 
   for (const page of staticPages) {
-    entries.push(`  <url>
-    <loc>${SITE_URL}${page.loc}</loc>
-    <lastmod>${TODAY}</lastmod>
-    <changefreq>${page.freq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`);
+    entries.push(`  <url>\n    <loc>${SITE_URL}${page.loc}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${page.freq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>`);
   }
 
   // 行業頁面
   for (const ind of INDUSTRIES) {
-    entries.push(`  <url>
-    <loc>${SITE_URL}/macao/${ind.slug}</loc>
-    <lastmod>${TODAY}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`);
+    entries.push(`  <url>\n    <loc>${SITE_URL}/macao/${ind.slug}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   }
 
   // 分類頁面
   for (const ind of INDUSTRIES) {
     for (const cat of ind.categories) {
-      entries.push(`  <url>
-    <loc>${SITE_URL}/macao/${ind.slug}/${cat}</loc>
-    <lastmod>${TODAY}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`);
+      entries.push(`  <url>\n    <loc>${SITE_URL}/macao/${ind.slug}/${cat}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
     }
   }
 
@@ -97,12 +82,7 @@ async function generateSitemapContent() {
         for (const ins of insights) {
           if (ins.slug) {
             const lastmod = ins.updated_at ? ins.updated_at.split('T')[0] : TODAY;
-            entries.push(`  <url>
-    <loc>${SITE_URL}/macao/insights/${ins.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>`);
+            entries.push(`  <url>\n    <loc>${SITE_URL}/macao/insights/${ins.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.95</priority>\n  </url>`);
           }
         }
       }
@@ -120,12 +100,7 @@ async function generateSitemapContent() {
             if (catSlug) {
               const indSlug = CATEGORY_TO_INDUSTRY[catSlug] || 'dining';
               const lastmod = m.updated_at ? m.updated_at.split('T')[0] : TODAY;
-              entries.push(`  <url>
-    <loc>${SITE_URL}/macao/${indSlug}/${catSlug}/${m.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>`);
+              entries.push(`  <url>\n    <loc>${SITE_URL}/macao/${indSlug}/${catSlug}/${m.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.5</priority>\n  </url>`);
             }
           }
         }
@@ -135,11 +110,7 @@ async function generateSitemapContent() {
     }
   }
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated: ${new Date().toISOString()} | Total URLs: ${entries.length} -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries.join('\n')}
-</urlset>`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Generated: ${new Date().toISOString()} | Total URLs: ${entries.length} -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join('\n')}\n</urlset>`;
 
   return { xml, entryCount: entries.length };
 }

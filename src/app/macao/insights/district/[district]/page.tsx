@@ -130,12 +130,18 @@ interface InsightRow {
   published_at?: string
 }
 
+// Route mounted at /macao/insights/district/[district] — hard-filter region='MO'.
+// District slugs (taipa, macau-peninsula, coloane…) are Macao-only by design but
+// region filter prevents accidental TW/HK/JP slugs entering via the same tag.
+const ROUTE_REGION = 'MO' as const
+
 async function getInsightsByDistrict(district: string, lang: Lang): Promise<InsightRow[]> {
   const { data } = await supabase
     .from('insights')
     .select('slug, title, subtitle, description, related_industries, tags, word_count, read_time_minutes, published_at')
     .eq('status', 'published')
     .eq('lang', lang)
+    .eq('region', ROUTE_REGION)
     .contains('tags', [district])
     .order('published_at', { ascending: false })
     .limit(60)

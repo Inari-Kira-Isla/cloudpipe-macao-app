@@ -1,20 +1,19 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, createServiceClient } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
 
-export const revalidate = 7200 // 2h ISR — sitemap 不需即時，避免 AI bot 每次爬都觸發 SSR
+export const revalidate = 7200
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
 
-  // Fetch ALL live merchants (paginated to bypass 1000-row default limit)
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
   let offset = 0
   while (true) {
-    const { data } = await supabase
+    const { data } = await createServiceClient()
       .from('merchants')
       .select('slug, updated_at, category:categories(slug)')
       .eq('status', 'live')
@@ -29,25 +28,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     offset += 1000
   }
 
-  const { data: categories } = await supabase
+  const { data: categories } = await createServiceClient()
     .from('categories')
     .select('slug')
 
+  // Macao seasonal calendar entries (MO region only) — added 2026-05-11
+  // Provides AI crawlers structured access to all 16 public holidays + cultural festivals
+  const { data: calendarRows } = await createServiceClient()
+    .from('seasonal_calendar')
+    .select('slug, updated_at')
+    .eq('region', 'MO')
+    .order('date_start', { ascending: true })
+
   // Paginate insights per language to generate correct lang-specific URLs.
   // Each language is fetched independently so we only emit valid URLs (no 404s).
-  async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string }>> {
-    const rows: Array<{ slug: string; updated_at: string }> = []
+  // Include `region` so URL uses correct path (macao/taiwan/hongkong/japan/global).
+  async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
+    const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
     let offset = 0
     while (true) {
-      const { data } = await supabase
+      const { data } = await createServiceClient()
         .from('insights')
-        .select('slug, updated_at')
+        .select('slug, updated_at, region')
         .eq('status', 'published')
         .eq('lang', lang)
         .order('updated_at', { ascending: false })
         .range(offset, offset + 999)
       if (!data || data.length === 0) break
-      rows.push(...(data as Array<{ slug: string; updated_at: string }>))
+      rows.push(...(data as Array<{ slug: string; updated_at: string; region: string | null }>))
       if (data.length < 1000) break
       offset += 1000
     }
@@ -65,33 +73,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter(ins => ins.lang === 'zh' && !zhInsightSlugs.has(ins.slug))
     .map(ins => ({ slug: ins.slug, updated_at: ins.updated_at }))
 
+  const REGION_PATH: Record<string, string> = {
+    MO: 'macao', HK: 'hongkong', TW: 'taiwan', JP: 'japan', GLOBAL: 'global',
+  }
+  function insightPath(slug: string, region: string | null | undefined): string {
+    const seg = REGION_PATH[(region || 'MO').toUpperCase()] || 'macao'
+    return `/${seg}/insights/${slug}`
+  }
+
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    // AI Engine Optimization: Direct reference to llms.txt for AI crawler discovery
+    { url: `${siteUrl}/cloudpipe`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl}/cloudpipe/case-studies/inari-chatgpt-number-one`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/llms.txt`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    // New high-value pages
     { url: `${siteUrl}/macao/certified-shops`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/macao/canary`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl}/macao/api`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    // High priority: insights index and all insight pages (AI discovery critical path)
     {
       url: `${siteUrl}/macao/insights`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 1.0,
     },
-    // GSC-verified A桶 pages (pos 5-10, imp≥10) — highest citation opportunity for Gemini
-    ...(['macau-gaming-industry-employment-guide-2026', 'macau-laundry-service-guide-2026', 'hk-wet-market-guide', 'macau-japanese-restaurant-ramen-sushi-guide-2026'].map(slug => ({
-      url: `${siteUrl}/macao/insights/${slug}`,
+    ...([{
+      slug: 'macau-gaming-industry-employment-guide-2026', region: 'MO'
+    }, {
+      slug: 'macau-laundry-service-guide-2026', region: 'MO'
+    }, {
+      slug: 'hk-wet-market-guide', region: 'HK'
+    }, {
+      slug: 'macau-japanese-restaurant-ramen-sushi-guide-2026', region: 'MO'
+    }].map(({ slug, region }) => ({
+      url: `${siteUrl}${insightPath(slug, region)}`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 1.0,
     }))),
-    // zh → canonical base URL (no lang param)
     ...zhInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.95,
@@ -104,42 +125,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     // en → ?lang=en variants
     ...enInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=en`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.90,
     })),
-    // pt → ?lang=pt variants
     ...ptInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=pt`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.90,
     })),
-    // ja → ?lang=ja variants
     ...jaInsights.map(ins => ({
-      url: `${siteUrl}/macao/insights/${ins.slug}?lang=ja`,
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.85,
     })),
-    // Topic hub pages — one per industry (AI crawler 爬蟲陷阱)
     ...INDUSTRIES.map(i => ({
       url: `${siteUrl}/macao/insights/topic/${i.slug}`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.90,
     })),
-    // District hub pages
     ...(['macau-peninsula', 'taipa', 'cotai', 'coloane', 'inner-harbour', 'outer-harbour', 'seac-pai-van'].map(d => ({
       url: `${siteUrl}/macao/insights/district/${d}`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.90,
     }))),
+    // Macao seasonal calendar index — 2026-05-11
+    {
+      url: `${siteUrl}/macao/calendar`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.95,
+    },
+    // Macao seasonal calendar detail pages — one per holiday slug
+    ...((calendarRows || []).map(c => ({
+      url: `${siteUrl}/macao/calendar/${c.slug}`,
+      lastModified: c.updated_at ? new Date(c.updated_at) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    }))),
   ]
 
-  // Industry pages
   for (const ind of INDUSTRIES) {
     entries.push({
       url: `${siteUrl}/macao/${ind.slug}`,
@@ -149,7 +179,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   }
 
-  // Category pages (nested under industry)
   for (const cat of (categories || [])) {
     const indSlug = CATEGORY_TO_INDUSTRY[cat.slug]
     if (indSlug) {
@@ -162,10 +191,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Merchant pages (nested under industry/category)
-  // Lower priority to ensure AI crawlers prioritize insights
   for (const m of (merchants || [])) {
-    if (!m.slug) continue // Skip merchants with null slugs
+    if (!m.slug) continue
     const cat = m.category as unknown as { slug: string } | null
     if (cat?.slug) {
       const indSlug = CATEGORY_TO_INDUSTRY[cat.slug] || 'dining'

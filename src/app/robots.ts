@@ -171,8 +171,18 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: [
+      // 2026-05-13: added sitemap_index.xml + 6 region sub-sitemaps after
+      // commit 9c438c3 split /macao/insights/ into 5 region routes.
+      `${siteUrl}/sitemap_index.xml`,
       `${siteUrl}/sitemap.xml`,
       `${siteUrl}/sitemap-merchants.xml`,
+      `${siteUrl}/sitemap-insights.xml`,
+      `${siteUrl}/sitemap-mo.xml`,
+      `${siteUrl}/sitemap-hk.xml`,
+      `${siteUrl}/sitemap-tw.xml`,
+      `${siteUrl}/sitemap-jp.xml`,
+      `${siteUrl}/sitemap-world.xml`,
+      `${siteUrl}/seasonal_calendar.xml`,
     ],
   }
 }

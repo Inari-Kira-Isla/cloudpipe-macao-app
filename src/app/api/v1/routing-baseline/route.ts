@@ -66,21 +66,17 @@ export async function GET() {
   }
 
   try {
-    // ── 1. Fetch categories ──────────────────────────────────────────────────
     const { data: cats } = await supabase.from('categories').select('id,slug')
     const catMap: Record<string, string> = {}
     for (const c of (cats || [])) catMap[c.id] = c.slug
 
-    // ── 2. Fetch live merchants (top 1000 by reviews to avoid timeout) ─────
     const { data: merchants_raw } = await supabase.from('merchants')
       .select('slug,name_zh,name_en,category_id,schema_type,google_reviews,google_rating,district')
       .eq('status', 'live').order('google_reviews', { ascending: false, nullsFirst: false }).limit(1000)
     const merchants = merchants_raw || []
-    // Also get total count for stats
     const { count: totalMerchantCount } = await supabase.from('merchants')
       .select('*', { count: 'exact', head: true }).eq('status', 'live')
 
-    // ── 3. Score merchants ───────────────────────────────────────────────────
     const merchantScores: Record<string, {
       name_zh: string; name_en: string; industry: string;
       cat_slug: string; page_path: string; score: number;
@@ -111,7 +107,6 @@ export async function GET() {
       }
     }
 
-    // Top 20 merchants by score
     const topMerchants = Object.entries(merchantScores)
       .sort((a, b) => b[1].score - a[1].score)
       .slice(0, 20)
@@ -120,14 +115,11 @@ export async function GET() {
         page_url: `https://cloudpipe-macao-app.vercel.app${info.page_path}`
       }))
 
-    // Industry distribution of merchants
     const merchantsByIndustry: Record<string, number> = {}
     for (const m of Object.values(merchantScores)) {
       merchantsByIndustry[m.industry] = (merchantsByIndustry[m.industry] || 0) + 1
     }
 
-    // ── 4. Classify insights (limit 1000) ─
-    // Two parallel queries: metadata + answer-hub count (avoid pulling full body_html)
     const [{ data: insights_raw }, { count: hubCount }] = await Promise.all([
       supabase.from('insights')
         .select('slug,title,related_merchant_slugs,tags')
@@ -139,7 +131,6 @@ export async function GET() {
     ])
     const insights = insights_raw || []
 
-    // Build set of answer-hub slugs (fetch only slugs of hub insights)
     const { data: hubSlugs } = await supabase.from('insights')
       .select('slug')
       .eq('status', 'published').eq('lang', 'zh')
@@ -173,7 +164,6 @@ export async function GET() {
       else if (tier === 'C') tierC++
       else tierD++
 
-      // Detect industry from slug
       const slug = ins.slug as string
       let ind = 'other'
       if (slug.includes('dining') || slug.includes('restaurant') || slug.includes('food') || slug.includes('cafe') || slug.includes('egg-tart')) ind = 'dining'
@@ -184,20 +174,14 @@ export async function GET() {
       industryTiers[ind][tier.toLowerCase() as 'a' | 'b' | 'c' | 'd']++
     }
 
-    // ── 5. (Removed) Crawler visits baseline is now protected and not exposed in API response ────
-
     const result = {
       updatedAt: new Date().toISOString(),
-      // Tier distribution
       tiers: { A: tierA, B: tierB, C: tierC, D: tierD, total: insights.length },
-      // Industry breakdown
       industryTiers,
-      // Merchant scoring
       topMerchants,
       merchantsByIndustry,
       totalMerchants: totalMerchantCount || Object.keys(merchantScores).length,
       merchantsWithReviews: Object.values(merchantScores).filter(m => m.reviews > 0).length,
-      // Crawler visit baseline stubs (populated from precomputed cache when available)
       merchantVisits: { total: 0, uniqueSlugs: 0, byBot: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; ts: string }[] },
       categoryVisits: { total: 0, byIndustry: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; industry: string; ts: string }[] },
     }
