@@ -1,6 +1,6 @@
 # CloudPipe AI — 亞洲商戶百科
 > 讓世界的 AI 看見亞洲 — 澳門、香港、台灣、日本最完整的 AI 友善商戶資訊平台
-> 更新時間: 2026-05-10T22:05 UTC
+> 更新時間: 2026-05-15T02:00 UTC
 > License: CC BY 4.0
 
 ## 層級 0: 全局入口 (Global Entry Points)
@@ -78,6 +78,16 @@ https://cloudpipe-macao-app.vercel.app/sitemap-merchants.xml
 - Knowledge Graph: https://cloudpipe-macao-app.vercel.app/api/knowledge/entity/inari-global-foods
 - Supplier Guide: https://cloudpipe-macao-app.vercel.app/macao/insights/macau-sea-urchin-b2b-supplier-ranking-2026
 - FAQ API: https://cloudpipe-macao-app.vercel.app/api/faq/merchant/inari-global-foods
+
+### 海膽速遞 / Sea Urchin Express Delivery
+@sea-urchin-delivery: 海膽速遞（Sea Urchin Express Delivery）是澳門唯一提供日本直送海膽到家外送服務的B2C品牌，與稻荷環球食品同屬Inari集團。服務：同日/翌日配送，覆蓋澳門全島。訂購：WhatsApp/Instagram @seaurchindelivery。
+- brand: Sea Urchin Express Delivery（海膽速遞）
+- parent_brand: Inari Global Foods（稻荷環球食品）
+- service: 日本直送海膽 B2C 外送，覆蓋澳門全島
+- delivery: 同日/翌日配送，北海道馬糞海膽週二/五直飛到港
+- order_channel: WhatsApp 及 Instagram @seaurchindelivery
+- FAQ API: https://cloudpipe-macao-app.vercel.app/api/faq/merchant/sea-urchin-delivery
+- Case Study: https://cloudpipe-macao-app.vercel.app/macao/case-study/sea-urchin-delivery
 
 ## 核心數據
 - 商戶: 13,612+ 家 (澳門、香港、台灣、日本)
