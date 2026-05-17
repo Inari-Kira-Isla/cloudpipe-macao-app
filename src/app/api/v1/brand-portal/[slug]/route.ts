@@ -41,6 +41,14 @@ export async function GET(
     .eq('brand_slug', slug)
     .order('completed_at', { ascending: false })
 
+  // Fetch brand portal images
+  const { data: imageRows } = await supabase
+    .from('brand_portal_images')
+    .select('id, category, image_url, caption, platform, sort_order, created_at')
+    .eq('brand_slug', slug)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+
   // Fetch crawler visits (last 24h)
   const since24h = new Date(Date.now() - 86_400_000).toISOString()
   const { data: crawlerRows } = await supabase
@@ -98,6 +106,13 @@ export async function GET(
     .slice(0, 3)
     .map(([name]) => name)
 
+  // Group images by category
+  const images = {
+    ai_citation: (imageRows || []).filter(r => r.category === 'ai_citation'),
+    aeo_action:  (imageRows || []).filter(r => r.category === 'aeo_action'),
+    performance: (imageRows || []).filter(r => r.category === 'performance'),
+  }
+
   return NextResponse.json({
     slug,
     name: config.name,
@@ -112,5 +127,6 @@ export async function GET(
     crawlerBreakdown,
     crawlerTotal: (crawlerRows || []).length,
     topCompetitors,
+    images,
   })
 }

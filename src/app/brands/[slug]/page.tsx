@@ -22,19 +22,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 interface TrendPoint { date: string; day: number; mentionCount: number; totalChecks: number }
+interface PortalImage { id: string; category: string; image_url: string; caption: string | null; platform: string | null; created_at: string }
 
 async function fetchBrandData(config: BrandPortalConfig) {
   const supabase = createServiceClient()
   const joinDate = new Date(config.joinDate)
   const dayNumber = Math.max(1, Math.floor((Date.now() - joinDate.getTime()) / 86_400_000) + 1)
 
-  const [searchRes, actionRes, crawlerRes] = await Promise.all([
+  const [searchRes, actionRes, crawlerRes, imageRes] = await Promise.all([
     supabase.from('ai_search_results').select('timestamp,mentioned,competitor_name,query')
       .eq('brand_slug', config.slug).order('timestamp', { ascending: true }),
     supabase.from('brand_aeo_actions').select('title,status,priority,completed_at')
       .eq('brand_slug', config.slug).order('completed_at', { ascending: false }),
     supabase.from('crawler_visits').select('bot_name')
       .eq('site', config.slug).gte('ts', new Date(Date.now() - 86_400_000).toISOString()),
+    supabase.from('brand_portal_images').select('id,category,image_url,caption,platform,created_at')
+      .eq('brand_slug', config.slug).order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
   ])
 
   // Build trend
@@ -73,6 +76,13 @@ async function fetchBrandData(config: BrandPortalConfig) {
   }
   const crawlerTotal = (crawlerRes.data || []).length
 
+  const allImages = (imageRes.data || []) as PortalImage[]
+  const images = {
+    ai_citation: allImages.filter(r => r.category === 'ai_citation'),
+    aeo_action:  allImages.filter(r => r.category === 'aeo_action'),
+    performance: allImages.filter(r => r.category === 'performance'),
+  }
+
   // Competitors from ai_search_results
   const compCounts: Record<string, number> = {}
   for (const row of searchRes.data || []) {
@@ -84,7 +94,7 @@ async function fetchBrandData(config: BrandPortalConfig) {
     .slice(0, 4)
     .map(([name, count]) => ({ name, count }))
 
-  return { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking }
+  return { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images }
 }
 
 // ── SVG trend chart (server-rendered) ─────────────────────────────
@@ -170,7 +180,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
   const config = getBrandConfig(slug)
   if (!config) notFound()
 
-  const { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking } = await fetchBrandData(config)
+  const { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images } = await fetchBrandData(config)
 
   const mentionedEngines = config.engines.filter(e => e.mentioned).length
   const aeoPercent = aeoActions.total > 0 ? Math.round(aeoActions.done / aeoActions.total * 100) : 0
@@ -487,6 +497,100 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
             </div>
           )}
         </div>
+
+        {/* VISUAL EVIDENCE */}
+        {(() => {
+          const totalImages = images.ai_citation.length + images.aeo_action.length + images.performance.length
+          const sections: { key: 'ai_citation' | 'aeo_action' | 'performance'; label: string; tag: string; tagColor: string }[] = [
+            { key: 'ai_citation', label: 'AI 平台引用截圖',  tag: '引用證明', tagColor: '#4ADE80' },
+            { key: 'aeo_action',  label: 'AEO 行動成果',    tag: '行動紀錄', tagColor: '#60A5FA' },
+            { key: 'performance', label: '每週成效圖表',     tag: '成效報告', tagColor: '#F5C842' },
+          ]
+          return (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ ...s.sectionLabel, marginBottom: 14 }}>視覺成效記錄</div>
+              {totalImages === 0 ? (
+                <div style={{
+                  background: '#0C1B32', border: '1px dashed rgba(255,255,255,0.1)',
+                  borderRadius: 13, padding: '32px 24px', textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.35 }}>📸</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(220,230,244,0.5)', marginBottom: 6 }}>
+                    尚未上傳截圖
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(220,230,244,0.3)', lineHeight: 1.6, maxWidth: 420, margin: '0 auto' }}>
+                    可透過 Supabase 後台將 AI 平台截圖、AEO 成果圖片、成效圖表上傳至<br/>
+                    <span style={{ fontFamily: 'var(--font-geist-mono)', color: 'rgba(220,230,244,0.5)', fontSize: 10 }}>brand_portal_images</span> 表，即時顯示於此頁面
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {sections.map(sec => {
+                    const imgs = images[sec.key]
+                    if (imgs.length === 0) return null
+                    return (
+                      <div key={sec.key}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(220,230,244,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase' as const }}>
+                            {sec.label}
+                          </span>
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                            padding: '2px 7px', borderRadius: 100,
+                            background: `${sec.tagColor}12`, border: `1px solid ${sec.tagColor}22`,
+                            color: sec.tagColor,
+                          }}>
+                            {sec.tag}
+                          </span>
+                          <span style={{ fontSize: 10, color: 'rgba(220,230,244,0.25)', fontFamily: 'var(--font-geist-mono)' }}>
+                            {imgs.length} 張
+                          </span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+                          {imgs.map(img => (
+                            <div key={img.id} style={{
+                              background: '#0C1B32', border: '1px solid rgba(255,255,255,0.06)',
+                              borderRadius: 10, overflow: 'hidden',
+                            }}>
+                              <a href={img.image_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={img.image_url}
+                                  alt={img.caption || sec.label}
+                                  style={{ width: '100%', display: 'block', maxHeight: 200, objectFit: 'cover', background: '#102038' }}
+                                />
+                              </a>
+                              <div style={{ padding: '10px 12px' }}>
+                                {img.platform && (
+                                  <div style={{
+                                    display: 'inline-block', marginBottom: 5,
+                                    fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' as const,
+                                    padding: '2px 7px', borderRadius: 100,
+                                    background: `${sec.tagColor}10`, color: sec.tagColor,
+                                  }}>
+                                    {img.platform}
+                                  </div>
+                                )}
+                                {img.caption && (
+                                  <div style={{ fontSize: 11, color: 'rgba(220,230,244,0.55)', lineHeight: 1.45 }}>
+                                    {img.caption}
+                                  </div>
+                                )}
+                                <div style={{ marginTop: 5, fontSize: 10, color: 'rgba(220,230,244,0.25)', fontFamily: 'var(--font-geist-mono)' }}>
+                                  {(img.created_at as string).slice(0, 10)}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
       </main>
     </div>
