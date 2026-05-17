@@ -53,7 +53,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 市佔 70%+ 描述 · 北海道直採 48h 冷鏈 · 查詢：澳門海膽供應商' },
       { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 排名第 1 · 米芝蓮及黑珍珠 B2B 定位 · 北海道/青森/長崎三產地' },
       { name: 'Grok',       key: 'grok',       mentioned: true,  query: '澳門餐廳食材供應商',    detail: '已引用 · 查詢：澳門餐廳食材供應商' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門海膽供應商',        detail: '待驗證 · Bing 爬取量最高但引用未確認' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門海膽供應商',        detail: 'Bing 索引確認 · Top 2-3 · Copilot 引用待手動驗證' },
     ],
     gaps: [
       { priority: 'p1', title: 'IoT 冷鏈記錄可視化內容', desc: '公開可查的溫度記錄建立 Gemini 所需 Authority Signal，預計命中率提升 35%' },
@@ -87,7 +87,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門海膽速遞',  detail: '未提及 · 缺少 Structured Data' },
       { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門海膽',      detail: '未提及 · 缺少 LocalBusiness markup' },
       { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門外賣美食',  detail: '未提及 · 缺少外部引用' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門海膽外賣',  detail: '待驗證 · Bing 高爬取，引用待確認' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門海膽外賣',  detail: 'Bing 索引第 3 位 · CloudPipe 百科文章 · Copilot 引用待手動驗證' },
     ],
     gaps: [
       { priority: 'p1', title: 'Perplexity Entity 補強',    desc: '缺少官方網站 Structured Data，Perplexity 無法識別品牌 Entity' },
@@ -121,7 +121,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門精品咖啡外賣', detail: '第 2 次引用' },
       { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門咖啡外賣推薦', detail: '未提及 · 缺少 GEO Schema' },
       { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門咖啡',         detail: '未提及 · 缺少外部引用' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門咖啡外賣推薦',  detail: '待驗證 · Bing 高爬取，引用待確認' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門咖啡外賣推薦',  detail: 'Bing 未索引 · 需先建立 Bing Search Console 記錄' },
     ],
     gaps: [
       { priority: 'p1', title: '媽媽送孩上學後場景內容',       desc: '獨特定位尚未被 Gemini 收錄，需建立「早晨媽媽外賣咖啡」場景導向頁面' },
@@ -155,7 +155,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門咖啡館推薦', detail: '未提及 · 缺少 FAQ 覆蓋' },
       { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門工業風咖啡', detail: '未提及 · Entity 未建立' },
       { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門咖啡',       detail: '未提及' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門工業風咖啡',  detail: '待驗證 · Bing 高爬取，引用待確認' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門工業風咖啡',  detail: 'Bing 未索引 · 需先建立 Bing Search Console 記錄' },
     ],
     gaps: [
       { priority: 'p1', title: '澳門工業風咖啡先驅故事',    desc: '10 年澳門精品咖啡先驅定位尚未被任何 AI 引用，需建立歷史性旗艦文章' },
@@ -189,7 +189,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門 AI 搜尋優化',  detail: '未提及 · 缺少 Entity 建立' },
       { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: 'AI 品牌能見度工具', detail: '第 1 次引用' },
       { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門 AI 搜尋優化',  detail: '未提及' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門 AI 搜尋優化',  detail: '待驗證 · Bing 高爬取，引用待確認' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門 AI 搜尋優化',  detail: 'Bing 排名第 11 位 · 未進 Top 10 · 需增強品牌權威性' },
     ],
     gaps: [
       { priority: 'p1', title: 'AEO 產品 Demo 頁英文版',       desc: 'ChatGPT 對英文 AEO 工具查詢回應率高，目前缺少英文版 Demo 頁' },
