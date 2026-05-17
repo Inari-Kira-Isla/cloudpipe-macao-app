@@ -65,6 +65,68 @@ interface OverallStats {
   updatedAt: string
 }
 
+// ── Optimization Types ────────────────────────────────────────────────────────
+interface EngineActivity {
+  engine: string
+  visits_1d: number
+  visits_7d: number
+  visits_30d: number
+  trend: string
+  priority_score: number
+}
+interface ActionRec {
+  action_type: string
+  engine_driver: string
+  reason: string
+  score: number
+  citation_gap: string | null
+}
+interface CrawlerAnalysis {
+  engine_activities: EngineActivity[]
+  engine_rules: Record<string, { label: string; tip: string; color: string; priority: number; actions: string[] }>
+  brand_recommendations: Record<string, ActionRec[]>
+  active_brand_count: number
+}
+
+// ── Sprint Types ──────────────────────────────────────────────────────────────
+interface SprintAction {
+  day: number
+  date: string
+  brand_slug: string
+  action_type: string
+  status: string
+  insight_slug: string | null
+  milestone: string | null
+  trust_score: number | null
+  faq_count: number | null
+}
+interface SprintTodayAction {
+  day: number
+  date: string
+  brand_slug: string
+  action_type: string
+  title_zh: string
+  title_en: string
+  status: string
+  milestone: string | null
+  notes: string
+}
+interface SprintBrandInfo {
+  mode: string
+  weight_pct: number
+  name_zh: string
+}
+interface SprintStatus {
+  sprint_id: string
+  current_day: number
+  total_days: number
+  today_action: SprintTodayAction | null
+  actions: SprintAction[]
+  brands: { [slug: string]: SprintBrandInfo }
+  milestone_results: { [milestone: string]: boolean | null }
+  stop_loss_triggered: boolean
+}
+
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function trendIcon(trend: string) {
   if (trend === 'up') return { icon: '↑', color: CP.green }
@@ -400,6 +462,592 @@ function StatsBar({ stats }: { stats: OverallStats }) {
   )
 }
 
+// ── Sprint Tracker ────────────────────────────────────────────────────────────
+function SprintTracker() {
+  const [data, setData] = useState<SprintStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/v1/sprint-status', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) throw new Error(d.error)
+        setData(d)
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 0', color: CP.muted }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+        載入 Sprint 數據中…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: 20, background: CP.redBg, border: `1px solid ${CP.redBorder}`, borderRadius: 12, color: CP.red }}>
+        載入失敗：{error}
+      </div>
+    )
+  }
+
+  if (!data) return null
+
+  const { current_day, total_days, today_action, actions, brands, milestone_results, stop_loss_triggered } = data
+
+  // Build day-dot array
+  const dayDots: Array<{ day: number; status: string; milestone: string | null }> = []
+  for (let d = 1; d <= total_days; d++) {
+    const action = actions.find(a => a.day === d)
+    const status = action ? action.status : d < current_day ? 'completed' : d === current_day ? 'in_progress' : 'pending'
+    const milestone = action ? action.milestone : null
+    dayDots.push({ day: d, status, milestone })
+  }
+
+  function dotEmoji(status: string) {
+    if (status === 'completed') return '✅'
+    if (status === 'in_progress') return '🟡'
+    return '⬜'
+  }
+
+  function milestoneColor(result: boolean | null) {
+    if (result === true) return CP.green
+    if (result === false) return CP.red
+    return CP.muted
+  }
+
+  function milestoneLabel(result: boolean | null) {
+    if (result === true) return '✅ Pass'
+    if (result === false) return '❌ Fail'
+    return '⬜ Not Yet'
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Stop-loss warning */}
+      {stop_loss_triggered && (
+        <div style={{
+          padding: '14px 18px',
+          background: CP.redBg,
+          border: `1px solid ${CP.redBorder}`,
+          borderRadius: 12,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          <span style={{ fontSize: 20 }}>🚨</span>
+          <div>
+            <div style={{ color: CP.red, fontWeight: 700, fontSize: 15 }}>Stop-Loss 已觸發</div>
+            <div style={{ color: CP.red, fontSize: 13, opacity: 0.8, marginTop: 2 }}>Sprint 提前終止，請檢查各品牌 AEO 表現</div>
+          </div>
+        </div>
+      )}
+
+      {/* Day progress header */}
+      <div style={{
+        background: CP.glass,
+        border: `1px solid ${CP.glassBorder}`,
+        borderRadius: 16,
+        padding: 20,
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>21 日 Sprint 進度</div>
+            <div style={{ color: CP.muted, fontSize: 13, marginTop: 2 }}>Day {current_day} / {total_days}</div>
+          </div>
+          <div style={{
+            background: CP.goldDim,
+            border: `1px solid ${CP.gold}44`,
+            borderRadius: 10,
+            padding: '8px 16px',
+            color: CP.gold,
+            fontWeight: 700,
+            fontSize: 20,
+          }}>
+            {Math.round((current_day / total_days) * 100)}%
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginBottom: 16 }}>
+          <div style={{
+            height: '100%',
+            width: `${Math.round((current_day / total_days) * 100)}%`,
+            borderRadius: 3,
+            background: `linear-gradient(90deg, ${CP.gold}, ${CP.gold}cc)`,
+            transition: 'width 0.6s ease',
+          }} />
+        </div>
+
+        {/* Day dots */}
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {dayDots.map(dot => (
+            <div
+              key={dot.day}
+              title={`Day ${dot.day}${dot.milestone ? ` · ${dot.milestone}` : ''}`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 2,
+                cursor: 'default',
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>{dotEmoji(dot.status)}</span>
+              {dot.milestone && (
+                <span style={{ fontSize: 8, color: CP.gold, fontWeight: 700, lineHeight: 1 }}>{dot.milestone}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Today's action card */}
+      {today_action && (
+        <div style={{
+          background: CP.glass,
+          border: `1px solid ${CP.gold}44`,
+          borderRadius: 16,
+          padding: 20,
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ color: CP.gold, fontWeight: 700, fontSize: 14 }}>今日任務</span>
+            {today_action.milestone && (
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: CP.navy,
+                background: CP.gold,
+                padding: '2px 8px',
+                borderRadius: 6,
+              }}>
+                {today_action.milestone}
+              </span>
+            )}
+          </div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 17, marginBottom: 6, lineHeight: 1.3 }}>
+            {today_action.title_zh}
+          </div>
+          <div style={{ color: CP.muted, fontSize: 13, marginBottom: 12 }}>{today_action.title_en}</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{
+              fontSize: 12,
+              padding: '3px 10px',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.06)',
+              border: `1px solid ${CP.glassBorder}`,
+              color: CP.muted,
+            }}>
+              {today_action.brand_slug}
+            </span>
+            <span style={{
+              fontSize: 12,
+              padding: '3px 10px',
+              borderRadius: 8,
+              background: CP.blueBg,
+              border: `1px solid rgba(96,165,250,0.2)`,
+              color: CP.blue,
+            }}>
+              {today_action.action_type}
+            </span>
+            <span style={{
+              fontSize: 12,
+              padding: '3px 10px',
+              borderRadius: 8,
+              background: today_action.status === 'completed' ? CP.greenBg : today_action.status === 'in_progress' ? CP.blueBg : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${today_action.status === 'completed' ? CP.greenBorder : today_action.status === 'in_progress' ? 'rgba(96,165,250,0.2)' : CP.glassBorder}`,
+              color: today_action.status === 'completed' ? CP.green : today_action.status === 'in_progress' ? CP.blue : CP.muted,
+            }}>
+              {today_action.status}
+            </span>
+          </div>
+          {today_action.notes && (
+            <div style={{ marginTop: 12, color: CP.faint, fontSize: 12, lineHeight: 1.5, borderTop: `1px solid ${CP.glassBorder}`, paddingTop: 12 }}>
+              {today_action.notes}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Two-column: brand table + milestones */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        {/* 5-brand allocation table */}
+        <div style={{
+          background: CP.glass,
+          border: `1px solid ${CP.glassBorder}`,
+          borderRadius: 16,
+          padding: 20,
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ color: CP.gold, fontWeight: 700, fontSize: 14, marginBottom: 14 }}>品牌分配</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Object.entries(brands).map(([slug, info]) => (
+              <div key={slug} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 12px',
+                borderRadius: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: `1px solid ${CP.glassBorder}`,
+              }}>
+                <div>
+                  <div style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{info.name_zh}</div>
+                  <div style={{ color: CP.muted, fontSize: 11, marginTop: 1 }}>{slug}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{
+                    fontSize: 11,
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                    background: info.mode === 'active' ? CP.greenBg : CP.blueBg,
+                    border: `1px solid ${info.mode === 'active' ? CP.greenBorder : 'rgba(96,165,250,0.2)'}`,
+                    color: info.mode === 'active' ? CP.green : CP.blue,
+                  }}>
+                    {info.mode === 'active' ? '🟢 active' : '🔵 maintenance'}
+                  </span>
+                  <span style={{ color: CP.gold, fontWeight: 700, fontSize: 13 }}>{info.weight_pct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Milestone status */}
+        <div style={{
+          background: CP.glass,
+          border: `1px solid ${CP.glassBorder}`,
+          borderRadius: 16,
+          padding: 20,
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ color: CP.gold, fontWeight: 700, fontSize: 14, marginBottom: 14 }}>里程碑狀態</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {['D7', 'D14', 'D21'].map(ms => {
+              const result = milestone_results[ms] ?? null
+              return (
+                <div key={ms} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  background: result === true ? CP.greenBg : result === false ? CP.redBg : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${result === true ? CP.greenBorder : result === false ? CP.redBorder : CP.glassBorder}`,
+                }}>
+                  <div>
+                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{ms}</div>
+                    <div style={{ color: CP.muted, fontSize: 11, marginTop: 1 }}>
+                      {ms === 'D7' ? 'Day 7 評估' : ms === 'D14' ? 'Day 14 中期' : 'Day 21 終評'}
+                    </div>
+                  </div>
+                  <span style={{ color: milestoneColor(result), fontWeight: 700, fontSize: 13 }}>
+                    {milestoneLabel(result)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Engine color map ─────────────────────────────────────────────────────────
+const ENGINE_COLORS: Record<string, string> = {
+  anthropic: '#F5A623',
+  perplexity: '#4ADE80',
+  openai: '#60A5FA',
+  google: '#F87171',
+  yandex: '#A78BFA',
+}
+
+const ENGINE_LABELS: Record<string, string> = {
+  anthropic: 'Anthropic',
+  perplexity: 'Perplexity',
+  openai: 'OpenAI',
+  google: 'Google',
+  yandex: 'Yandex',
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  insight_flagship: '旗艦文章',
+  insight_en: '英文 Insight',
+  insight_comparison: '比較文章',
+  insight_seasonal: '季節性文章',
+  insight_restaurant: '餐廳 Insight',
+  insight_logistics: '物流 Insight',
+  schema_faqpage: 'FAQPage Schema',
+  faq_deepened: 'FAQ 深化',
+  faq_brand: '品牌 FAQ',
+  llms_txt: 'llms.txt 更新',
+}
+
+// ── Optimization Panel ────────────────────────────────────────────────────────
+function OptimizationPanel() {
+  const [data, setData] = useState<CrawlerAnalysis | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/v1/crawler-analysis', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) throw new Error(d.error)
+        setData(d)
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 0', color: CP.muted }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
+        載入引擎分析中…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: 20, background: CP.redBg, border: `1px solid ${CP.redBorder}`, borderRadius: 12, color: CP.red }}>
+        載入失敗：{error}
+      </div>
+    )
+  }
+
+  if (!data) return null
+
+  const { engine_activities, brand_recommendations } = data
+
+  // Compute max for bar scaling
+  const maxVisits7d = Math.max(...engine_activities.map(e => e.visits_7d), 1)
+
+  function trendArrow(trend: string) {
+    if (trend === 'rising') return { arrow: '↑', color: CP.green }
+    if (trend === 'declining') return { arrow: '↓', color: CP.red }
+    return { arrow: '→', color: CP.muted }
+  }
+
+  const brandSlugs = Object.keys(brand_recommendations)
+
+  const BRAND_DISPLAY: Record<string, { emoji: string; name: string }> = {
+    'inari-global-foods': { emoji: '🦔', name: '稻荷全球食品' },
+    'sea-urchin-delivery': { emoji: '🌊', name: '海膽速遞' },
+    'cloudpipe': { emoji: '⚡', name: 'CloudPipe' },
+    'mind-cafe': { emoji: '☕', name: 'Mind Cafe' },
+    'after-school-coffee': { emoji: '🎓', name: 'After School Coffee' },
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+      {/* Section A: Engine Activity */}
+      <div style={{
+        background: CP.glass,
+        border: `1px solid ${CP.glassBorder}`,
+        borderRadius: 20,
+        padding: 24,
+        backdropFilter: 'blur(20px)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <span style={{ fontSize: 20 }}>🤖</span>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>AI 引擎活躍度</div>
+            <div style={{ color: CP.muted, fontSize: 12, marginTop: 2 }}>基於 7 日爬蟲訪問量排序 · 越高優先度越高</div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {engine_activities.map((eng, idx) => {
+            const color = ENGINE_COLORS[eng.engine] || '#fff'
+            const label = ENGINE_LABELS[eng.engine] || eng.engine
+            const { arrow, color: arrowColor } = trendArrow(eng.trend)
+            const barPct = Math.round((eng.visits_7d / maxVisits7d) * 100)
+            const isTop = idx === 0
+
+            return (
+              <div key={eng.engine} style={{
+                padding: '14px 16px',
+                borderRadius: 14,
+                background: isTop ? `rgba(${color === '#F5A623' ? '245,166,35' : '255,255,255'},0.06)` : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${isTop ? color + '44' : CP.glassBorder}`,
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {/* Rank badge */}
+                <div style={{
+                  position: 'absolute', top: 10, right: 12,
+                  fontSize: 11, fontWeight: 700,
+                  color: isTop ? color : CP.muted,
+                  background: isTop ? color + '22' : 'rgba(255,255,255,0.05)',
+                  padding: '2px 8px', borderRadius: 8,
+                  border: `1px solid ${isTop ? color + '33' : CP.glassBorder}`,
+                }}>
+                  #{idx + 1}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0, boxShadow: `0 0 8px ${color}88` }} />
+                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{label}</span>
+                  <span style={{ color: arrowColor, fontWeight: 700, fontSize: 16 }}>{arrow}</span>
+                </div>
+
+                {/* Bar chart */}
+                <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginBottom: 10 }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${barPct}%`,
+                    borderRadius: 3,
+                    background: `linear-gradient(90deg, ${color}, ${color}88)`,
+                    transition: 'width 0.8s ease',
+                  }} />
+                </div>
+
+                {/* Metrics row */}
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  {[
+                    { label: '1日', value: eng.visits_1d.toLocaleString() },
+                    { label: '7日', value: eng.visits_7d.toLocaleString() },
+                    { label: '30日', value: eng.visits_30d.toLocaleString() },
+                    { label: '優先分', value: eng.priority_score.toLocaleString() },
+                  ].map(m => (
+                    <div key={m.label}>
+                      <div style={{ color: CP.muted, fontSize: 11 }}>{m.label}</div>
+                      <div style={{ color: color, fontWeight: 700, fontSize: 14 }}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Section B: Brand Recommendations */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <span style={{ fontSize: 20 }}>🎯</span>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>品牌行動建議</div>
+            <div style={{ color: CP.muted, fontSize: 12, marginTop: 2 }}>根據引擎爬蟲活躍度計算的最優行動組合</div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {brandSlugs.map(slug => {
+            const recs = brand_recommendations[slug] || []
+            const display = BRAND_DISPLAY[slug] || { emoji: '🏷️', name: slug }
+
+            return (
+              <div key={slug} style={{
+                background: CP.glass,
+                border: `1px solid ${CP.glassBorder}`,
+                borderRadius: 18,
+                padding: 20,
+                backdropFilter: 'blur(16px)',
+              }}>
+                {/* Brand header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10, fontSize: 18,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: `1px solid ${CP.glassBorder}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    {display.emoji}
+                  </div>
+                  <div>
+                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{display.name}</div>
+                    <div style={{ color: CP.muted, fontSize: 11, marginTop: 1 }}>{slug}</div>
+                  </div>
+                </div>
+
+                {/* Action recommendations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {recs.length === 0 ? (
+                    <div style={{ color: CP.muted, fontSize: 13, textAlign: 'center', padding: '12px 0' }}>無建議資料</div>
+                  ) : recs.map((rec, i) => {
+                    const engColor = ENGINE_COLORS[rec.engine_driver] || CP.muted
+                    const actionLabel = ACTION_LABELS[rec.action_type] || rec.action_type
+
+                    return (
+                      <div key={rec.action_type} style={{
+                        padding: '10px 12px',
+                        borderRadius: 10,
+                        background: i === 0 ? 'rgba(245,200,66,0.06)' : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${i === 0 ? CP.gold + '33' : CP.glassBorder}`,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                          <span style={{
+                            fontSize: 11, fontWeight: 700,
+                            color: i === 0 ? CP.gold : CP.muted,
+                            background: i === 0 ? CP.goldDim : 'rgba(255,255,255,0.05)',
+                            padding: '1px 6px', borderRadius: 6,
+                            border: `1px solid ${i === 0 ? CP.gold + '33' : CP.glassBorder}`,
+                            flexShrink: 0,
+                          }}>
+                            P{i + 1}
+                          </span>
+                          <span style={{ color: '#fff', fontWeight: 600, fontSize: 13 }}>{actionLabel}</span>
+                          {/* Engine badge */}
+                          <span style={{
+                            marginLeft: 'auto',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: engColor,
+                            background: engColor + '18',
+                            padding: '1px 7px',
+                            borderRadius: 6,
+                            border: `1px solid ${engColor}33`,
+                            flexShrink: 0,
+                          }}>
+                            {ENGINE_LABELS[rec.engine_driver] || rec.engine_driver}
+                          </span>
+                        </div>
+                        <div style={{ color: CP.muted, fontSize: 11, lineHeight: 1.4 }}>{rec.reason}</div>
+                        {rec.citation_gap && (
+                          <div style={{ marginTop: 4, color: CP.red, fontSize: 11 }}>⚠ {rec.citation_gap}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Footer note */}
+      <div style={{
+        padding: '14px 18px',
+        background: CP.glass,
+        border: `1px solid ${CP.glassBorder}`,
+        borderRadius: 12,
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+      }}>
+        <span style={{ fontSize: 16 }}>ℹ️</span>
+        <div style={{ color: CP.muted, fontSize: 12, lineHeight: 1.5 }}>
+          建議基於 256,354 條真實爬蟲訪問數據（2026-05-16）+ AI_ENGINE_STANDARDS。每 5 分鐘自動刷新。
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 function Dashboard() {
   const [brands, setBrands] = useState<BrandSummary[]>([])
@@ -407,6 +1055,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'brands' | 'sprint' | 'optimize'>('brands')
 
   useEffect(() => {
     fetch('/api/v1/brands-summary')
@@ -454,50 +1103,97 @@ function Dashboard() {
         {/* Stats bar */}
         {stats && <StatsBar stats={stats} />}
 
-        {/* Loading / Error */}
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: CP.muted }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-            載入品牌數據中…
-          </div>
-        )}
-        {error && (
-          <div style={{ padding: '20px', background: CP.redBg, border: `1px solid ${CP.redBorder}`, borderRadius: 12, color: CP.red, marginBottom: 24 }}>
-            載入失敗：{error}
-          </div>
-        )}
+        {/* Tab bar */}
+        <div style={{
+          display: 'flex',
+          gap: 0,
+          borderBottom: `1px solid ${CP.glassBorder}`,
+          marginBottom: 28,
+        }}>
+          {([
+            { key: 'brands', label: '品牌 AEO' },
+            { key: 'sprint', label: 'Sprint 進度' },
+            { key: 'optimize', label: '⚡ 優化建議' },
+          ] as const).map(tab => {
+            const isActive = activeTab === tab.key
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: '10px 20px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: isActive ? `2px solid ${CP.gold}` : '2px solid transparent',
+                  color: isActive ? CP.gold : CP.muted,
+                  fontWeight: isActive ? 700 : 400,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  transition: 'color 0.2s, border-color 0.2s',
+                  marginBottom: -1,
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
 
-        {/* Brand grid */}
-        {!loading && brands.length > 0 && (
+        {/* Sprint tab */}
+        {activeTab === 'sprint' && <SprintTracker />}
+
+        {/* Optimize tab */}
+        {activeTab === 'optimize' && <OptimizationPanel />}
+
+        {/* Brands tab */}
+        {activeTab === 'brands' && (
           <>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: 16,
-            }}>
-              {brands.map(brand => (
-                <BrandCard
-                  key={brand.slug}
-                  brand={brand}
-                  expanded={expandedSlug === brand.slug}
-                  onToggle={() => setExpandedSlug(prev => prev === brand.slug ? null : brand.slug)}
-                />
-              ))}
-            </div>
+            {/* Loading / Error */}
+            {loading && (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: CP.muted }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+                載入品牌數據中…
+              </div>
+            )}
+            {error && (
+              <div style={{ padding: '20px', background: CP.redBg, border: `1px solid ${CP.redBorder}`, borderRadius: 12, color: CP.red, marginBottom: 24 }}>
+                載入失敗：{error}
+              </div>
+            )}
 
-            {/* Footer links */}
-            <div style={{ marginTop: 40, padding: '20px', background: CP.glass, border: `1px solid ${CP.glassBorder}`, borderRadius: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              <span style={{ color: CP.muted, fontSize: 13, flex: 1 }}>
-                點擊任意品牌卡片展開詳情 · 點擊「詳細資料」進入完整品牌頁
-              </span>
-              <a href={`${APP_URL}/macao/report`} target="_blank" rel="noopener noreferrer"
-                style={{ color: CP.gold, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                爬蟲監控報告 →
-              </a>
-              <a href="/macao/crawler-dashboard" style={{ color: CP.blue, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                Crawler Dashboard →
-              </a>
-            </div>
+            {/* Brand grid */}
+            {!loading && brands.length > 0 && (
+              <>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: 16,
+                }}>
+                  {brands.map(brand => (
+                    <BrandCard
+                      key={brand.slug}
+                      brand={brand}
+                      expanded={expandedSlug === brand.slug}
+                      onToggle={() => setExpandedSlug(prev => prev === brand.slug ? null : brand.slug)}
+                    />
+                  ))}
+                </div>
+
+                {/* Footer links */}
+                <div style={{ marginTop: 40, padding: '20px', background: CP.glass, border: `1px solid ${CP.glassBorder}`, borderRadius: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ color: CP.muted, fontSize: 13, flex: 1 }}>
+                    點擊任意品牌卡片展開詳情 · 點擊「詳細資料」進入完整品牌頁
+                  </span>
+                  <a href={`${APP_URL}/macao/report`} target="_blank" rel="noopener noreferrer"
+                    style={{ color: CP.gold, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    爬蟲監控報告 →
+                  </a>
+                  <a href="/macao/crawler-dashboard" style={{ color: CP.blue, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    Crawler Dashboard →
+                  </a>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
