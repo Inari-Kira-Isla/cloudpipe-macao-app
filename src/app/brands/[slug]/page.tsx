@@ -195,6 +195,13 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
     sectionLabel: { fontSize: 11, fontWeight: 600, color: 'rgba(220,230,244,0.45)', letterSpacing: '0.09em', textTransform: 'uppercase' as const, marginBottom: 10 },
   }
 
+  const engineQuickFix: Record<string, string[]> = {
+    perplexity: ['商戶頁加 FAQ Section (2-4 條)', 'LocalBusiness Schema 完整標記'],
+    chatgpt:    ['建立旗艦文章 1500+ 字', 'Organization + Logo Schema'],
+    gemini:     ['完善 GEO LocalBusiness Schema', 'NAP 結構化資料齊備'],
+    grok:       ['高 DA 媒體引用 ≥3 個', '外部品牌反向連結建立'],
+  }
+
   return (
     <div style={s.bg}>
       {/* Header */}
@@ -281,7 +288,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {[
                 { val: `${mentionedEngines}/4`, label: 'AI 引用中', color: mentionColor },
-                { val: config.engines[0] ? String(config.engines.filter(e => e.mentioned).length) + '/4' : '—', label: 'AI 引擎', color: '#DCE6F4' },
+                { val: `${config.contentAudit.score}%`, label: '網站完整度', color: config.contentAudit.score >= 70 ? '#4ADE80' : config.contentAudit.score >= 50 ? '#FBBF24' : '#F87171' },
                 { val: String(crawlerTotal), label: '爬蟲 / 24h', color: '#DCE6F4' },
                 { val: `${aeoPercent}%`, label: 'AEO 完成', color: '#DCE6F4' },
               ].map(({ val, label, color }) => (
@@ -323,6 +330,29 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
               </div>
             ))}
           </div>
+
+          {/* Per-engine quick-fix (only when some engines not yet citing) */}
+          {config.engines.some(e => !e.mentioned) && (
+            <div style={{ marginTop: 12, padding: '14px 18px', background: 'rgba(245,200,66,0.03)', border: '1px solid rgba(245,200,66,0.07)', borderRadius: 11 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(245,200,66,0.55)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
+                未引用引擎 · 補充優先項
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {config.engines.filter(e => !e.mentioned).map(e => (
+                  <div key={e.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(220,230,244,0.45)', flexShrink: 0, width: 78 }}>{e.name}</span>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {(engineQuickFix[e.key] || []).map((tip, i) => (
+                        <span key={i} style={{ fontSize: 10, padding: '3px 9px', background: '#102038', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, color: 'rgba(220,230,244,0.55)' }}>
+                          {tip}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* CHARTS GRID */}
@@ -430,6 +460,71 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* CONTENT AUDIT */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={s.sectionLabel}>品牌資料完整度</div>
+          <div style={s.surface}>
+            {/* Score header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+              <div style={{ position: 'relative', width: 70, height: 70, flexShrink: 0 }}>
+                <svg viewBox="0 0 70 70" style={{ width: 70, height: 70, transform: 'rotate(-90deg)' }}>
+                  <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                  <circle cx="35" cy="35" r="28" fill="none"
+                    stroke={config.contentAudit.score >= 70 ? '#4ADE80' : config.contentAudit.score >= 50 ? '#FBBF24' : '#F87171'}
+                    strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={`${(config.contentAudit.score / 100 * 2 * Math.PI * 28).toFixed(1)} 175.9`}
+                  />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: 15, fontWeight: 600, color: '#DCE6F4' }}>
+                    {config.contentAudit.score}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: '#DCE6F4', marginBottom: 5 }}>
+                  {config.contentAudit.score >= 70 ? '資料齊全' : config.contentAudit.score >= 50 ? '部分欠缺' : '急需補充'}
+                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(220,230,244,0.35)', marginLeft: 8 }}>/100</span>
+                </div>
+                <div style={{ display: 'flex', gap: 14, fontSize: 11 }}>
+                  <span style={{ color: '#4ADE80' }}>✓ {config.contentAudit.items.filter(i => i.status === 'pass').length} 通過</span>
+                  <span style={{ color: '#FBBF24' }}>~ {config.contentAudit.items.filter(i => i.status === 'partial').length} 部分</span>
+                  <span style={{ color: '#F87171' }}>✗ {config.contentAudit.items.filter(i => i.status === 'fail').length} 缺失</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Checklist grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              {config.contentAudit.items.map((item, idx) => {
+                const c = item.status === 'pass' ? '#4ADE80' : item.status === 'partial' ? '#FBBF24' : '#F87171'
+                return (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    padding: '10px 12px', borderRadius: 8,
+                    background: `${c}08`, border: `1px solid ${c}1A`,
+                  }}>
+                    <div style={{
+                      flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
+                      background: `${c}18`, color: c,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, fontWeight: 700, marginTop: 1,
+                    }}>
+                      {item.status === 'pass' ? '✓' : item.status === 'partial' ? '~' : '✗'}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(220,230,244,0.82)' }}>{item.label}</div>
+                      {item.note && (
+                        <div style={{ fontSize: 10, color: 'rgba(220,230,244,0.35)', marginTop: 2, lineHeight: 1.45 }}>{item.note}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
 

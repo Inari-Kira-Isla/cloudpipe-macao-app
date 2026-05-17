@@ -15,6 +15,17 @@ export interface BrandGap {
   desc: string
 }
 
+export interface ContentCheckItem {
+  label: string
+  status: 'pass' | 'partial' | 'fail'
+  note?: string
+}
+
+export interface BrandContentAudit {
+  score: number
+  items: ContentCheckItem[]
+}
+
 export interface BrandPortalConfig {
   slug: string
   name: string
@@ -25,6 +36,7 @@ export interface BrandPortalConfig {
   queries: string[]
   engines: BrandEngineStatus[]
   gaps: BrandGap[]
+  contentAudit: BrandContentAudit
 }
 
 export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
@@ -47,6 +59,19 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { priority: 'p1', title: 'Omakase 餐廳客戶案例頁', desc: 'ChatGPT 已引用「Omakase/板前壽司」推薦，建立真實米芝蓮客戶案例可強化引用頻率' },
       { priority: 'p2', title: '北海道產季採購指南 2026', desc: 'ChatGPT 對季節性採購查詢回應率升，搶先建立「產季→採購決策」內容閉環' },
     ],
+    contentAudit: {
+      score: 63,
+      items: [
+        { label: '官方網站 + SSL',     status: 'pass',    note: '網站已上線，SSL 憑證有效' },
+        { label: '聯絡資訊完整度',      status: 'pass',    note: 'B2B 聯絡資訊、WhatsApp 均可找到' },
+        { label: 'Schema.org 標記',    status: 'partial', note: '需加強 B2B Product + Offer Schema' },
+        { label: 'FAQPage 結構化資料', status: 'partial', note: '已有部分 FAQ，需擴展至 20+ 條' },
+        { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 允許 GPTBot/ClaudeBot' },
+        { label: '外部媒體引用',        status: 'partial', note: '米芝蓮/黑珍珠平台需增加書面引用' },
+        { label: '品牌 Entity',         status: 'fail',    note: '未建立 Wikidata/Wikipedia 條目' },
+        { label: '旗艦品牌內容頁',      status: 'partial', note: 'IoT 冷鏈頁和 Omakase 案例頁待建' },
+      ],
+    },
   },
   {
     slug: 'sea-urchin-delivery',
@@ -67,6 +92,19 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { priority: 'p1', title: '外賣平台連結建設',            desc: 'ChatGPT 已引用但缺少外部 Authority 連結，需 3–5 個高 DA 網站提及' },
       { priority: 'p2', title: '海膽季節與鮮度消費者指南',    desc: '1264 條 FAQ 高覆蓋，可進一步優化至 Gemini 收錄' },
     ],
+    contentAudit: {
+      score: 31,
+      items: [
+        { label: '官方網站 + SSL',     status: 'partial', note: '網站內容較為簡單，需補充詳細資訊' },
+        { label: '聯絡資訊完整度',      status: 'partial', note: '地址和送達範圍不夠清晰' },
+        { label: 'Schema.org 標記',    status: 'fail',    note: '缺少 LocalBusiness + Delivery markup' },
+        { label: 'FAQPage 結構化資料', status: 'partial', note: 'FAQ 內容需加入 Schema 標記才能被 AI 辨識' },
+        { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 設定正常' },
+        { label: '外部媒體引用',        status: 'fail',    note: '需 3-5 個高 DA 網站（美食/外賣平台）提及品牌' },
+        { label: '品牌 Entity',         status: 'fail',    note: 'Perplexity 無法識別品牌，Entity 未建立' },
+        { label: '旗艦品牌內容頁',      status: 'fail',    note: '缺少海膽外賣場景文章和鮮度消費者指南' },
+      ],
+    },
   },
   {
     slug: 'after-school-coffee',
@@ -87,6 +125,19 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { priority: 'p1', title: 'Gemini LocalBusiness Schema',   desc: '目前缺少 GEO-specific Schema 標記，需加入 LocalBusiness + Offer markup' },
       { priority: 'p2', title: '澳門媽媽社群關鍵字擴展',        desc: '1355 條 FAQ 覆蓋率高，但關鍵字多樣性不足，重新聚焦職場媽媽社群' },
     ],
+    contentAudit: {
+      score: 50,
+      items: [
+        { label: '官方網站 + SSL',     status: 'partial', note: '網站需加強內容深度和場景描述' },
+        { label: '聯絡資訊完整度',      status: 'pass',    note: '地址、營業時間、聯絡方式齊全' },
+        { label: 'Schema.org 標記',    status: 'fail',    note: '缺少 LocalBusiness + Offer markup，Gemini 無法索引' },
+        { label: 'FAQPage 結構化資料', status: 'pass',    note: '1355 條 FAQ 高覆蓋率，已有 Schema 標記' },
+        { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 設定正常' },
+        { label: '外部媒體引用',        status: 'partial', note: '親子/媽媽媒體引用待建立，目前引用數偏少' },
+        { label: '品牌 Entity',         status: 'fail',    note: '未在媒體或目錄建立可被 AI 辨識的品牌 Entity' },
+        { label: '旗艦品牌內容頁',      status: 'fail',    note: '需建立「早晨媽媽外賣咖啡」場景導向旗艦頁' },
+      ],
+    },
   },
   {
     slug: 'mind-cafe',
@@ -103,10 +154,23 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門咖啡',       detail: '未提及' },
     ],
     gaps: [
-      { priority: 'p1', title: '澳門工業風咖啡先驅故事',   desc: '10 年澳門精品咖啡先驅定位尚未被任何 AI 引用，需建立歷史性旗艦文章' },
+      { priority: 'p1', title: '澳門工業風咖啡先驅故事',    desc: '10 年澳門精品咖啡先驅定位尚未被任何 AI 引用，需建立歷史性旗艦文章' },
       { priority: 'p1', title: 'FAQPage 覆蓋率提升至 800+', desc: '目前 457 條 FAQ 偏低，競品平均 800+，需增加咖啡知識型問答' },
       { priority: 'p1', title: 'ChatGPT 旗艦文章創建',      desc: '澳門咖啡館推薦類查詢 ChatGPT 回應率高，此類內容缺口最大' },
     ],
+    contentAudit: {
+      score: 44,
+      items: [
+        { label: '官方網站 + SSL',     status: 'pass',    note: '10 年品牌，官網已建立' },
+        { label: '聯絡資訊完整度',      status: 'pass',    note: '地址、電話、營業時間齊全' },
+        { label: 'Schema.org 標記',    status: 'fail',    note: '缺少 LocalBusiness Schema，AI 無法識別 Entity' },
+        { label: 'FAQPage 結構化資料', status: 'partial', note: '目前 457 條 FAQ，競品平均 800+，需補充' },
+        { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 設定正常' },
+        { label: '外部媒體引用',        status: 'fail',    note: '0 個 AI 引擎引用，需建立媒體/部落格引用' },
+        { label: '品牌 Entity',         status: 'fail',    note: '未在任何 AI 引擎建立可識別 Entity' },
+        { label: '旗艦品牌內容頁',      status: 'fail',    note: '10 年先驅故事旗艦文章尚未建立，是最大缺口' },
+      ],
+    },
   },
   {
     slug: 'cloudpipe',
@@ -117,16 +181,29 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
     primaryQuery: '澳門 AI 搜尋優化',
     queries: ['澳門 AI 搜尋優化', '澳門品牌 AI 能見度提升', 'AEO 澳門服務'],
     engines: [
-      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門 AI 搜尋優化',    detail: '第 1 次引用' },
-      { name: 'Perplexity', key: 'perplexity', mentioned: false, query: 'AEO 澳門服務',        detail: '未提及 · 缺少 Entity 建立' },
-      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: 'AI 品牌能見度工具',   detail: '第 1 次引用' },
-      { name: 'Grok',       key: 'grok',       mentioned: false, query: 'AEO 服務澳門',        detail: '未提及' },
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門 AI 搜尋優化',  detail: '第 1 次引用' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門 AI 搜尋優化',  detail: '未提及 · 缺少 Entity 建立' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: 'AI 品牌能見度工具', detail: '第 1 次引用' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門 AI 搜尋優化',  detail: '未提及' },
     ],
     gaps: [
       { priority: 'p1', title: 'AEO 產品 Demo 頁英文版',       desc: 'ChatGPT 對英文 AEO 工具查詢回應率高，目前缺少英文版 Demo 頁' },
       { priority: 'p1', title: 'Perplexity 品牌 Entity 建立',   desc: '需加入 Wikipedia/Wikidata 或高 DA 媒體報導，讓 Perplexity 可辨識' },
       { priority: 'p2', title: '客戶成效案例研究',               desc: 'Case study 內容可顯著提升 4 個 AI 引擎的引用信任度' },
     ],
+    contentAudit: {
+      score: 50,
+      items: [
+        { label: '官方網站 + SSL',     status: 'pass',    note: 'cloudpipe.ai 已上線，SSL 有效' },
+        { label: '聯絡資訊完整度',      status: 'pass',    note: 'Email + Demo 請求表單均可使用' },
+        { label: 'Schema.org 標記',    status: 'partial', note: '需加入 SoftwareApplication + Organization Schema' },
+        { label: 'FAQPage 結構化資料', status: 'partial', note: 'FAQ 覆蓋中等，需補充英文版查詢內容' },
+        { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 允許所有主流 AI 爬蟲' },
+        { label: '外部媒體引用',        status: 'fail',    note: '需 Wikipedia/Wikidata 或科技媒體報導建立權威性' },
+        { label: '品牌 Entity',         status: 'fail',    note: 'Perplexity 無法辨識品牌，需建立 Entity 資料' },
+        { label: '旗艦品牌內容頁',      status: 'partial', note: '中文版已有，英文版 AEO Demo 頁缺失' },
+      ],
+    },
   },
 ]
 
