@@ -39,8 +39,8 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
     engines: [
       { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門海膽供應商',    detail: '第 3 次引用 · 查詢：澳門日本海膽批發' },
       { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門日本海膽批發',  detail: '第 1 次引用 · 查詢：澳門海膽供應商' },
-      { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門海膽供應商',    detail: '未提及 · 缺少 Entity 連結' },
-      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門餐廳食材供應商', detail: '未提及 · 缺少 B2B 頁面索引' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: '澳門海膽供應商',    detail: '已引用 · 查詢：澳門海膽供應商' },
+      { name: 'Grok',       key: 'grok',       mentioned: true,  query: '澳門餐廳食材供應商', detail: '已引用 · 查詢：澳門餐廳食材供應商' },
     ],
     gaps: [
       { priority: 'p1', title: 'IoT 冷鏈記錄可視化內容', desc: '公開可查的溫度記錄建立 Gemini 所需 Authority Signal，預計命中率提升 35%' },
