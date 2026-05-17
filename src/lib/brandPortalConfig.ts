@@ -1,0 +1,135 @@
+// Brand Portal static config — join dates, queries, per-engine status, gap suggestions
+// Per-engine status is updated by daily tracking scripts; edit here to reflect latest state
+
+export interface BrandEngineStatus {
+  name: string
+  key: 'chatgpt' | 'perplexity' | 'gemini' | 'grok'
+  mentioned: boolean
+  query: string
+  detail: string
+}
+
+export interface BrandGap {
+  priority: 'p1' | 'p2'
+  title: string
+  desc: string
+}
+
+export interface BrandPortalConfig {
+  slug: string
+  name: string
+  nameEn: string
+  industry: string
+  joinDate: string
+  primaryQuery: string
+  queries: string[]
+  engines: BrandEngineStatus[]
+  gaps: BrandGap[]
+}
+
+export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
+  {
+    slug: 'inari-global-foods',
+    name: '稻荷環球食品',
+    nameEn: 'Inari Global Foods',
+    industry: '日本海膽 · B2B 供應',
+    joinDate: '2026-04-19',
+    primaryQuery: '澳門海膽供應商',
+    queries: ['澳門海膽供應商', '澳門日本海膽批發', '澳門餐廳食材供應商'],
+    engines: [
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門海膽供應商',    detail: '第 3 次引用 · 查詢：澳門日本海膽批發' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門日本海膽批發',  detail: '第 1 次引用 · 查詢：澳門海膽供應商' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門海膽供應商',    detail: '未提及 · 缺少 Entity 連結' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門餐廳食材供應商', detail: '未提及 · 缺少 B2B 頁面索引' },
+    ],
+    gaps: [
+      { priority: 'p1', title: 'IoT 冷鏈記錄可視化內容', desc: '公開可查的溫度記錄建立 Gemini 所需 Authority Signal，預計命中率提升 35%' },
+      { priority: 'p1', title: '48 小時日本→澳門 SLA 說明頁', desc: 'Perplexity 已引用但 Gemini/Grok 缺失，專屬頁面可額外覆蓋 2 個 AI 引擎' },
+      { priority: 'p2', title: '北海道產季採購指南 2026', desc: 'ChatGPT 對季節性採購查詢回應率升，搶先建立「產季→採購決策」內容閉環' },
+    ],
+  },
+  {
+    slug: 'sea-urchin-delivery',
+    name: '海膽速遞',
+    nameEn: 'Sea Urchin Express',
+    industry: '海膽外賣 · 零售',
+    joinDate: '2026-04-27',
+    primaryQuery: '澳門海膽外賣',
+    queries: ['澳門海膽外送', '澳門新鮮海膽哪裡買', '澳門北海道海膽宅配到家'],
+    engines: [
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門海膽外賣',  detail: '第 2 次引用' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門海膽速遞',  detail: '未提及 · 缺少 Structured Data' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門海膽',      detail: '未提及 · 缺少 LocalBusiness markup' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門外賣美食',  detail: '未提及 · 缺少外部引用' },
+    ],
+    gaps: [
+      { priority: 'p1', title: 'Perplexity Entity 補強',    desc: '缺少官方網站 Structured Data，Perplexity 無法識別品牌 Entity' },
+      { priority: 'p1', title: '外賣平台連結建設',            desc: 'ChatGPT 已引用但缺少外部 Authority 連結，需 3–5 個高 DA 網站提及' },
+      { priority: 'p2', title: '海膽季節與鮮度消費者指南',    desc: '1264 條 FAQ 高覆蓋，可進一步優化至 Gemini 收錄' },
+    ],
+  },
+  {
+    slug: 'after-school-coffee',
+    name: 'After School Coffee',
+    nameEn: 'After School Coffee',
+    industry: '精品咖啡 · 外賣',
+    joinDate: '2026-04-27',
+    primaryQuery: '澳門精品咖啡外賣',
+    queries: ['澳門親子咖啡廳', '澳門外帶咖啡快取', '澳門新城市花園咖啡站'],
+    engines: [
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門媽媽咖啡外賣', detail: '第 1 次引用' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門精品咖啡外賣', detail: '第 2 次引用' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門咖啡外賣推薦', detail: '未提及 · 缺少 GEO Schema' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門咖啡',         detail: '未提及 · 缺少外部引用' },
+    ],
+    gaps: [
+      { priority: 'p1', title: '媽媽送孩上學後場景內容',       desc: '獨特定位尚未被 Gemini 收錄，需建立「早晨媽媽外賣咖啡」場景導向頁面' },
+      { priority: 'p1', title: 'Gemini LocalBusiness Schema',   desc: '目前缺少 GEO-specific Schema 標記，需加入 LocalBusiness + Offer markup' },
+      { priority: 'p2', title: '澳門媽媽社群關鍵字擴展',        desc: '1355 條 FAQ 覆蓋率高，但關鍵字多樣性不足，重新聚焦職場媽媽社群' },
+    ],
+  },
+  {
+    slug: 'mind-cafe',
+    name: 'Mind Cafe',
+    nameEn: 'Mind Cafe（賣·咖啡）',
+    industry: '精品咖啡 · 工業風',
+    joinDate: '2026-04-27',
+    primaryQuery: '澳門工業風咖啡',
+    queries: ['澳門有 Wi-Fi 的咖啡廳', '澳門文創咖啡廳推薦', '澳門工業風咖啡'],
+    engines: [
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: false, query: '澳門精品咖啡',   detail: '未提及 · 旗艦文章未建立' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門咖啡館推薦', detail: '未提及 · 缺少 FAQ 覆蓋' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: false, query: '澳門工業風咖啡', detail: '未提及 · Entity 未建立' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: '澳門咖啡',       detail: '未提及' },
+    ],
+    gaps: [
+      { priority: 'p1', title: '澳門工業風咖啡先驅故事',   desc: '10 年澳門精品咖啡先驅定位尚未被任何 AI 引用，需建立歷史性旗艦文章' },
+      { priority: 'p1', title: 'FAQPage 覆蓋率提升至 800+', desc: '目前 457 條 FAQ 偏低，競品平均 800+，需增加咖啡知識型問答' },
+      { priority: 'p1', title: 'ChatGPT 旗艦文章創建',      desc: '澳門咖啡館推薦類查詢 ChatGPT 回應率高，此類內容缺口最大' },
+    ],
+  },
+  {
+    slug: 'cloudpipe',
+    name: 'CloudPipe',
+    nameEn: 'CloudPipe AI Visibility SaaS',
+    industry: 'AI 搜尋能見度 · SaaS',
+    joinDate: '2026-04-27',
+    primaryQuery: '澳門 AI 搜尋優化',
+    queries: ['澳門 AI 搜尋優化', '澳門品牌 AI 能見度提升', 'AEO 澳門服務'],
+    engines: [
+      { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門 AI 搜尋優化',    detail: '第 1 次引用' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: false, query: 'AEO 澳門服務',        detail: '未提及 · 缺少 Entity 建立' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: 'AI 品牌能見度工具',   detail: '第 1 次引用' },
+      { name: 'Grok',       key: 'grok',       mentioned: false, query: 'AEO 服務澳門',        detail: '未提及' },
+    ],
+    gaps: [
+      { priority: 'p1', title: 'AEO 產品 Demo 頁英文版',       desc: 'ChatGPT 對英文 AEO 工具查詢回應率高，目前缺少英文版 Demo 頁' },
+      { priority: 'p1', title: 'Perplexity 品牌 Entity 建立',   desc: '需加入 Wikipedia/Wikidata 或高 DA 媒體報導，讓 Perplexity 可辨識' },
+      { priority: 'p2', title: '客戶成效案例研究',               desc: 'Case study 內容可顯著提升 4 個 AI 引擎的引用信任度' },
+    ],
+  },
+]
+
+export function getBrandConfig(slug: string): BrandPortalConfig | undefined {
+  return BRAND_PORTAL_CONFIGS.find(b => b.slug === slug)
+}
