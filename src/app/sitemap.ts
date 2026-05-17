@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
 
-export const revalidate = 7200
+export const revalidate = 1800 // 30min — 日均100+新文章，每2h太慢，降至30min讓爬蟲持續發現新URL
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -81,6 +81,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return `/${seg}/insights/${slug}`
   }
 
+  // 按文章新舊分層：7天內=daily+0.98；30天內=daily+0.95；更舊=weekly+0.85
+  // 讓 AI 爬蟲每日持續抓新文章，而非每週才回來
+  function insightFreqAndPriority(updatedAt: string | null): { freq: 'daily' | 'weekly'; pri: number } {
+    if (!updatedAt) return { freq: 'daily', pri: 0.95 }
+    const ageMs = now.getTime() - new Date(updatedAt).getTime()
+    const ageDays = ageMs / 86400000
+    if (ageDays < 7)  return { freq: 'daily', pri: 0.98 }
+    if (ageDays < 30) return { freq: 'daily', pri: 0.95 }
+    return { freq: 'weekly', pri: 0.85 }
+  }
+
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/cloudpipe`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
@@ -111,37 +122,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1.0,
     }))),
-    ...zhInsights.map(ins => ({
-      url: `${siteUrl}${insightPath(ins.slug, ins.region)}`,
-      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.95,
-    })),
+    ...zhInsights.map(ins => {
+      const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      return {
+        url: `${siteUrl}${insightPath(ins.slug, ins.region)}`,
+        lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+        changeFrequency: freq as 'daily' | 'weekly',
+        priority: pri,
+      }
+    }),
     ...staticZhInsights.map(ins => ({
       url: `${siteUrl}/macao/insights/${ins.slug}`,
       lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
       changeFrequency: 'weekly' as const,
-      priority: 0.95,
-    })),
-    // en → ?lang=en variants
-    ...enInsights.map(ins => ({
-      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
-      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.90,
-    })),
-    ...ptInsights.map(ins => ({
-      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
-      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.90,
-    })),
-    ...jaInsights.map(ins => ({
-      url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
-      lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
-      changeFrequency: 'weekly' as const,
       priority: 0.85,
     })),
+    // en → ?lang=en variants
+    ...enInsights.map(ins => {
+      const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      return {
+        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
+        lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+        changeFrequency: freq as 'daily' | 'weekly',
+        priority: Math.max(pri - 0.05, 0.80),
+      }
+    }),
+    ...ptInsights.map(ins => {
+      const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      return {
+        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
+        lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+        changeFrequency: freq as 'daily' | 'weekly',
+        priority: Math.max(pri - 0.05, 0.80),
+      }
+    }),
+    ...jaInsights.map(ins => {
+      const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      return {
+        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
+        lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
+        changeFrequency: freq as 'daily' | 'weekly',
+        priority: Math.max(pri - 0.10, 0.75),
+      }
+    }),
     ...INDUSTRIES.map(i => ({
       url: `${siteUrl}/macao/insights/topic/${i.slug}`,
       lastModified: now,

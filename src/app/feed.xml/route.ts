@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 
 function escapeXml(str: string): string {
   return str
@@ -12,11 +12,12 @@ function escapeXml(str: string): string {
 export async function GET() {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-  const { data: insights } = await supabase
+  const { data: insights } = await createServiceClient()
     .from('insights')
     .select('slug, title, description, published_at, updated_at')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
+    .limit(500) // RSS 訂閱最新500篇即可，避免回傳全部32K
 
   const allInsights = insights || []
   const now = new Date().toUTCString()
@@ -48,7 +49,7 @@ ${items}
   return new Response(feed, {
     headers: {
       'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600',
     },
   })
 }

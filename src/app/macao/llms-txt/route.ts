@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
 import { notifySitemaps } from '@/lib/notify-crawlers'
 
-export const revalidate = 7200 // 2h ISR — AI bot 高頻抓 llms.txt，必須 cache
+export const revalidate = 1800 // 30min ISR — anon→serviceClient 修復後數字準確，降至30min同步新文章計數
 export const maxDuration = 30
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -12,23 +12,24 @@ export async function GET() {
   // This ensures Google/Bing/Yandex discover new content within <1 hour
   notifySitemaps().catch(err => console.error('[llms-txt notify error]', err))
   // Parallel fetch: top insights + merchant count + categories
+  const db = createServiceClient()
   const [{ data: topInsights }, { count: merchantCount }, { count: insightCount }, { data: cats }] = await Promise.all([
-    supabase
+    db
       .from('insights')
       .select('slug, title, word_count, related_industries')
       .eq('status', 'published')
       .eq('lang', 'zh')
       .order('word_count', { ascending: false })
       .limit(50),
-    supabase
+    db
       .from('merchants')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'live'),
-    supabase
+    db
       .from('insights')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'published'),
-    supabase
+    db
       .from('categories')
       .select('slug, name_zh, name_en')
       .order('sort_order'),

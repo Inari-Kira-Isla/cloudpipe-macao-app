@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 3600 // 1h ISR
+export const revalidate = 1800 // 30min ISR — 日均100+新文章，降至30min讓AI爬蟲持續發現
 export const maxDuration = 120
 
 interface AllInsightRow {
@@ -53,6 +53,7 @@ export async function GET() {
 
   const rows = await fetchAllPublishedInsights()
 
+  const nowMs = Date.now()
   const urls = rows
     .filter((r): r is AllInsightRow & { slug: string } => Boolean(r.slug))
     .map((r) => {
@@ -61,11 +62,21 @@ export async function GET() {
       // — DB has 169 NULL-region rows as of 2026-05-13).
       const region: SitemapRegion = (regionUpper in REGION_PATH ? regionUpper : 'MO') as SitemapRegion
       const lang = r.lang || 'zh'
+
+      // 按文章新舊分層 changefreq：7天內=daily；30天內=daily；更舊=weekly
+      // 確保 AI 爬蟲每日持續抓新文章而非每週才回來
+      const ageDays = r.updated_at
+        ? (nowMs - new Date(r.updated_at).getTime()) / 86400000
+        : 999
+      const changefreq = ageDays < 30 ? 'daily' : 'weekly'
+      const basePri = lang === 'zh' ? (ageDays < 7 ? 0.98 : ageDays < 30 ? 0.95 : 0.85)
+                                    : (ageDays < 7 ? 0.93 : ageDays < 30 ? 0.90 : 0.80)
+
       return {
         loc: buildInsightLoc(siteUrl, region, r.slug, lang),
         lastmod: r.updated_at ? r.updated_at.split('T')[0] : now,
-        changefreq: 'weekly',
-        priority: lang === 'zh' ? '0.95' : '0.90',
+        changefreq,
+        priority: basePri.toFixed(2),
       }
     })
 
