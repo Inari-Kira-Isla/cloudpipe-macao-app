@@ -183,8 +183,9 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
   const { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images } = await fetchBrandData(config)
 
   const mentionedEngines = config.engines.filter(e => e.mentioned).length
+  const totalEngines = config.engines.length
   const aeoPercent = aeoActions.total > 0 ? Math.round(aeoActions.done / aeoActions.total * 100) : 0
-  const mentionColor = mentionedEngines >= 3 ? '#4ADE80' : mentionedEngines >= 2 ? '#FBBF24' : mentionedEngines >= 1 ? '#F5C842' : '#F87171'
+  const mentionColor = mentionedEngines >= Math.ceil(totalEngines * 0.75) ? '#4ADE80' : mentionedEngines >= Math.ceil(totalEngines * 0.5) ? '#FBBF24' : mentionedEngines >= 1 ? '#F5C842' : '#F87171'
 
   const otherBrands = BRAND_PORTAL_CONFIGS.filter(b => b.slug !== slug)
 
@@ -287,7 +288,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
             {/* KPI cards */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {[
-                { val: `${mentionedEngines}/4`, label: 'AI 引用中', color: mentionColor },
+                { val: `${mentionedEngines}/${totalEngines}`, label: 'AI 引用中', color: mentionColor },
                 { val: `${config.contentAudit.score}%`, label: '網站完整度', color: config.contentAudit.score >= 70 ? '#4ADE80' : config.contentAudit.score >= 50 ? '#FBBF24' : '#F87171' },
                 { val: String(crawlerTotal), label: '爬蟲 / 24h', color: '#DCE6F4' },
                 { val: `${aeoPercent}%`, label: 'AEO 完成', color: '#DCE6F4' },
@@ -301,7 +302,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
           </div>
 
           {/* AI Engine Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 10 }}>
             {config.engines.map(e => (
               <div key={e.key} style={{
                 background: e.mentioned
@@ -393,7 +394,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
             {/* Self + competitors */}
             {[
               { name: config.name, score: mentionedEngines, self: true },
-              ...competitorRanking.slice(0, 3).map(c => ({ name: c.name, score: Math.min(3, Math.round(c.count / 5)), self: false })),
+              ...competitorRanking.slice(0, 3).map(c => ({ name: c.name, score: Math.min(totalEngines - 1, Math.round(c.count / 5)), self: false })),
             ].map(c => (
               <div key={c.name} style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
@@ -401,13 +402,13 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
                     {c.name}{c.self ? ' ← 您' : ''}
                   </span>
                   <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: 10, color: 'rgba(220,230,244,0.4)', flexShrink: 0, marginLeft: 8 }}>
-                    {c.score}/4 AI
+                    {c.score}/{totalEngines} AI
                   </span>
                 </div>
                 <div style={{ height: 5, background: '#102038', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%', borderRadius: 3,
-                    width: `${(c.score / 4) * 100}%`,
+                    width: `${(c.score / totalEngines) * 100}%`,
                     background: c.self ? '#F5C842' : 'rgba(96,165,250,0.65)',
                     transition: 'width 0.8s ease',
                   }} />
@@ -417,7 +418,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
 
             <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ fontSize: 10, color: 'rgba(220,230,244,0.3)', lineHeight: 1.55 }}>
-                分數 = 過去 7 天 AI 查詢中，品牌被提及的引擎數量（滿分 4 分）
+                分數 = 過去 7 天 AI 查詢中，品牌被提及的引擎數量（滿分 {totalEngines} 分）
               </div>
             </div>
           </div>
