@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 
+interface DashData {
+  visibility: any
+  aeoActions: any
+  lifecycle: any
+}
+
 interface VerifyResult {
   valid: boolean
   brand_slug?: string
@@ -32,6 +38,8 @@ export default function PortalPage() {
   const [authState, setAuthState] = useState<AuthState>('loading')
   const [session, setSession] = useState<PortalSession | null>(null)
   const [errorMsg, setErrorMsg] = useState<string>('')
+  const [dashData, setDashData] = useState<DashData | null>(null)
+  const [dashLoading, setDashLoading] = useState(false)
 
   useEffect(() => {
     async function authenticate() {
@@ -106,6 +114,21 @@ export default function PortalPage() {
   }, [brandSlug])
 
   const brandName = BRAND_DISPLAY_NAMES[brandSlug] ?? brandSlug
+
+  // ── Fetch dashboard data after auth ──────────────────────────────
+  useEffect(() => {
+    if (authState !== 'authenticated' || !brandSlug) return
+    setDashLoading(true)
+    Promise.all([
+      fetch(`/api/v1/brands-summary?brand=${brandSlug}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/v1/brand-aeo-score/${brandSlug}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/v1/brand-lifecycle?brand=${brandSlug}`).then(r => r.json()).catch(() => null),
+    ]).then(([visibility, aeoActions, lifecycle]) => {
+      setDashData({ visibility, aeoActions, lifecycle })
+    }).catch(() => {
+      setDashData(null)
+    }).finally(() => setDashLoading(false))
+  }, [authState, brandSlug])
 
   // ── Shared design tokens ──────────────────────────────────────────
   const bg: React.CSSProperties = {
@@ -262,43 +285,176 @@ export default function PortalPage() {
             margin: 0,
             lineHeight: 1.65,
           }}>
-            Brand Portal 載入中…<br />
-            Phase 2 將在此提供 AI 能見度控制台、AEO 行動管理與直播報告。
+            管理品牌的 AI 能見度、AEO 行動計劃與週度報告。
           </p>
         </div>
 
-        {/* Placeholder cards */}
+        {/* Dashboard cards */}
+        <style>{`
+          @keyframes cp-pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
+          @keyframes cp-spin { to { transform: rotate(360deg); } }
+        `}</style>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
-          {[
-            { icon: '📊', title: 'AI 能見度儀表板', desc: '即時監控 Perplexity、ChatGPT、Gemini、Grok 的品牌引用狀態', badge: '即將推出' },
-            { icon: '🎯', title: 'AEO 行動計劃', desc: '查看待完成的 AEO 優化行動、進度追蹤與優先排序', badge: '即將推出' },
-            { icon: '💬', title: 'AI Agent 對話', desc: '與品牌專屬 AI 助理對話，獲得個人化 AEO 建議', badge: '即將推出' },
-            { icon: '📈', title: '週度報告', desc: '每週自動生成品牌 AI 能見度提升成效報告', badge: '即將推出' },
-          ].map((card) => (
-            <div key={card.title} style={{
-              background: '#0C1B32',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: 13,
-              padding: '22px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              opacity: 0.72,
-            }}>
-              <div style={{ fontSize: 24 }}>{card.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#DCE6F4' }}>{card.title}</div>
-              <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.4)', lineHeight: 1.55, flex: 1 }}>{card.desc}</div>
-              <div style={{
-                display: 'inline-block', width: 'fit-content',
-                fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                padding: '3px 9px', borderRadius: 100,
-                background: 'rgba(245,200,66,0.07)', border: '1px solid rgba(245,200,66,0.12)',
-                color: 'rgba(245,200,66,0.6)',
-              }}>
-                {card.badge}
+
+          {/* Card 1: AI 能見度儀表板 */}
+          <div style={{
+            background: '#0C1B32',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 13,
+            padding: '22px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}>
+            <div style={{ fontSize: 24 }}>📊</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#DCE6F4' }}>AI 能見度儀表板</div>
+            {dashLoading ? (
+              <div style={{ height: 60, borderRadius: 8, background: 'rgba(255,255,255,0.04)', animation: 'cp-pulse 1.5s ease-in-out infinite' }} />
+            ) : dashData?.visibility && !dashData.visibility.error ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                {(['chatgpt', 'perplexity', 'gemini', 'grok'] as const).map(platform => {
+                  const vis = dashData.visibility
+                  const mentioned = vis[platform]?.mentioned ?? vis?.platforms?.[platform]?.mentioned ?? false
+                  return (
+                    <div key={platform} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 12, color: 'rgba(220,230,244,0.6)', textTransform: 'capitalize' }}>{platform}</span>
+                      <span style={{ fontSize: 13 }}>{mentioned ? '✅' : '❌'}</span>
+                    </div>
+                  )
+                })}
               </div>
+            ) : (
+              <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.4)', flex: 1, lineHeight: 1.55 }}>
+                數據載入中
+              </div>
+            )}
+          </div>
+
+          {/* Card 2: AEO 行動計劃 */}
+          <div style={{
+            background: '#0C1B32',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 13,
+            padding: '22px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}>
+            <div style={{ fontSize: 24 }}>🎯</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#DCE6F4' }}>AEO 行動計劃</div>
+            {dashLoading ? (
+              <div style={{ height: 60, borderRadius: 8, background: 'rgba(255,255,255,0.04)', animation: 'cp-pulse 1.5s ease-in-out infinite' }} />
+            ) : dashData?.aeoActions && !dashData.aeoActions.error ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                {(() => {
+                  const d = dashData.aeoActions
+                  const pending = d.pending_count ?? d.actions?.filter((a: any) => a.status === 'pending')?.length ?? 0
+                  const actions: any[] = d.actions?.slice(0, 2) ?? []
+                  return (
+                    <>
+                      <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.5)' }}>
+                        待完成行動：<span style={{ color: '#F5C842', fontWeight: 700 }}>{pending}</span> 項
+                      </div>
+                      {actions.map((a: any, i: number) => (
+                        <div key={i} style={{
+                          fontSize: 11, color: 'rgba(220,230,244,0.6)',
+                          background: 'rgba(255,255,255,0.04)',
+                          borderRadius: 6, padding: '4px 8px',
+                          lineHeight: 1.4,
+                        }}>
+                          {a.title ?? a.action_title ?? a.action ?? '行動項'}
+                        </div>
+                      ))}
+                    </>
+                  )
+                })()}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.4)', flex: 1, lineHeight: 1.55 }}>
+                暫無行動項
+              </div>
+            )}
+          </div>
+
+          {/* Card 3: AI Agent 對話 */}
+          <div style={{
+            background: '#0C1B32',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 13,
+            padding: '22px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}>
+            <div style={{ fontSize: 24 }}>💬</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#DCE6F4' }}>AI Agent 對話</div>
+            <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.5)', flex: 1, lineHeight: 1.55 }}>
+              品牌專屬 AI 助理已就緒
             </div>
-          ))}
+            <a
+              href={`/macao/brand/${brandSlug}?tab=ops`}
+              style={{
+                display: 'inline-block',
+                background: '#F5C842',
+                color: '#08111F',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 14px',
+                fontWeight: 600,
+                fontSize: 12,
+                cursor: 'pointer',
+                textDecoration: 'none',
+                textAlign: 'center',
+                width: 'fit-content',
+              }}
+            >
+              前往管理後台對話
+            </a>
+          </div>
+
+          {/* Card 4: 週度報告 */}
+          <div style={{
+            background: '#0C1B32',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 13,
+            padding: '22px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}>
+            <div style={{ fontSize: 24 }}>📈</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#DCE6F4' }}>週度報告</div>
+            {dashLoading ? (
+              <div style={{ height: 50, borderRadius: 8, background: 'rgba(255,255,255,0.04)', animation: 'cp-pulse 1.5s ease-in-out infinite' }} />
+            ) : dashData?.lifecycle && !dashData.lifecycle.error ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                {(() => {
+                  const lc = dashData.lifecycle
+                  const citations = lc.total_citations ?? lc.weekly_citations ?? lc.ai_citations ?? null
+                  const updated = lc.updated_at ?? lc.last_updated ?? null
+                  return (
+                    <>
+                      {citations != null && (
+                        <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.5)' }}>
+                          本週 AI 引用：<span style={{ color: '#F5C842', fontWeight: 700 }}>{citations}</span> 次
+                        </div>
+                      )}
+                      {updated && (
+                        <div style={{ fontSize: 11, color: 'rgba(220,230,244,0.35)' }}>
+                          最後更新：{String(updated).slice(0, 10)}
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.4)', flex: 1, lineHeight: 1.55 }}>
+                下次週報：每週一 09:00
+              </div>
+            )}
+          </div>
+
         </div>
 
       </main>

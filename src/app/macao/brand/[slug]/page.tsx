@@ -7,8 +7,12 @@ import BrandOpsTab from '@/components/BrandOpsTab'
 import KnowledgeGraphBlock from '@/components/KnowledgeGraphBlock'
 import BrandLifecycleTracker from '@/components/BrandLifecycleTracker'
 import AeoQuestTab from './AeoQuestTab'
+import BrandProfileEditor from './BrandProfileEditor'
+import BrandFaqEditor from './BrandFaqEditor'
+import BrandProductsEditor from './BrandProductsEditor'
 
 const PASSWORD = 'cloudpipe2026'
+const APP_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CompetitorEntry {
@@ -427,8 +431,8 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [slug, setSlug] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'aeo' | 'ops' | 'roadmap'>('aeo')
-  const [prevTab, setPrevTab] = useState<'aeo' | 'ops' | 'roadmap'>('aeo')
+  const [activeTab, setActiveTab] = useState<'aeo' | 'ops' | 'roadmap' | 'profile' | 'faq' | 'products'>('aeo')
+  const [prevTab, setPrevTab] = useState<'aeo' | 'ops' | 'roadmap' | 'profile' | 'faq' | 'products'>('aeo')
 
   useEffect(() => {
     params.then(p => {
@@ -481,7 +485,7 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
     }).catch(e => { setError(e.message); setLoading(false) })
   }, [authed, slug, brandConfig])
 
-  const changeTab = (t: 'aeo' | 'ops' | 'roadmap') => {
+  const changeTab = (t: 'aeo' | 'ops' | 'roadmap' | 'profile' | 'faq' | 'products') => {
     if (t === activeTab) return
     setPrevTab(activeTab)
     setActiveTab(t)
@@ -686,7 +690,10 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
                 { id: 'aeo', icon: '📊', label: 'AI 分析報告' },
                 { id: 'ops', icon: '⚙️', label: '品牌操作台' },
                 { id: 'roadmap', icon: '⚔️', label: '14日任務' },
-              ] as { id: 'aeo' | 'ops' | 'roadmap'; icon: string; label: string }[]).map(t => {
+                { id: 'profile', icon: '🏢', label: '品牌資料' },
+                { id: 'faq', icon: '❓', label: 'FAQ 管理' },
+                { id: 'products', icon: '📦', label: '產品/服務' },
+              ] as { id: 'aeo' | 'ops' | 'roadmap' | 'profile' | 'faq' | 'products'; icon: string; label: string }[]).map(t => {
                 const isActive = activeTab === t.id
                 return (
                   <button
@@ -743,6 +750,21 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
           {/* ════════════ ROADMAP TAB ════════════ */}
           {activeTab === 'roadmap' && slug && (
             <AeoQuestTab brandSlug={slug} />
+          )}
+
+          {/* ════════════ PROFILE TAB ════════════ */}
+          {activeTab === 'profile' && slug && (
+            <BrandProfileEditor slug={slug} />
+          )}
+
+          {/* ════════════ FAQ TAB ════════════ */}
+          {activeTab === 'faq' && slug && (
+            <BrandFaqEditor slug={slug} />
+          )}
+
+          {/* ════════════ PRODUCTS TAB ════════════ */}
+          {activeTab === 'products' && slug && (
+            <BrandProductsEditor slug={slug} />
           )}
 
           {/* ════════════ AEO TAB ════════════ */}
@@ -1536,6 +1558,37 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         }}>
           CloudPipe AI · 知識圖譜生態系 · {new Date().getFullYear()}
         </footer>
+      {/* ── Brand ClaimReview Schema ──────────────────────────────────────── */}
+      {brandConfig && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ClaimReview",
+          "url": `${APP_URL}/macao/brand/${slug}`,
+          "claimReviewed": `${brandConfig.displayName} - ${brandConfig.description}`,
+          "datePublished": data?.period.since || new Date().toISOString(),
+          "author": {
+            "@type": "Organization",
+            "name": "CloudPipe AI Encyclopedia",
+            "url": APP_URL
+          },
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": data?.totalVisits || 0,
+            "bestRating": Math.max(data?.totalVisits || 1, 100),
+            "worstRating": 0,
+            "alternateName": "Brand Citation Rate"
+          },
+          "itemReviewed": {
+            "@type": "Claim",
+            "name": `${brandConfig.displayName} - ${brandConfig.description}`,
+            "author": {
+              "@type": "Organization",
+              "name": brandConfig.displayName
+            },
+            "datePublished": data?.period.since || new Date().toISOString()
+          }
+        }) }} />
+      )}
       </div>
     </main>
   )
