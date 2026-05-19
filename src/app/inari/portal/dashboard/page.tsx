@@ -1,23 +1,16 @@
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getB2bCustomer, getProducts } from '@/lib/inari-supabase'
 import { TIER_DISCOUNT, TIER_LABEL } from '@/types/inari'
 
 export const dynamic = 'force-dynamic'
 
 async function getAuthUser() {
-  const cookieStore = cookies()
-  const accessToken = cookieStore.get('sb-access-token')?.value
-  if (!accessToken) return null
   try {
-    const client = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    )
-    const { data } = await client.auth.getUser(accessToken)
-    return data.user
+    const supabase = await createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
   } catch {
     return null
   }

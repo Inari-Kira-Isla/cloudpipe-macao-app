@@ -1,27 +1,37 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  if (!code) return NextResponse.redirect(new URL('/inari/portal?error=no_code', req.url))
 
-  const client = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const { data, error } = await client.auth.exchangeCodeForSession(code)
-  if (error || !data.session) {
-    return NextResponse.redirect(new URL('/inari/portal?error=auth_failed', req.url))
+  if (!code) {
+    return NextResponse.redirect(new URL('/inari/portal?error=no_code', request.url))
   }
 
-  const res = NextResponse.redirect(new URL('/inari/portal/dashboard', req.url))
-  res.cookies.set('sb-access-token', data.session.access_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60, // 1 hour
-    path: '/',
-  })
-  return res
+  const response = NextResponse.redirect(new URL('/inari/portal/dashboard', request.url))
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
+  if (error) {
+    return NextResponse.redirect(new URL('/inari/portal?error=auth_failed', request.url))
+  }
+
+  return response
 }

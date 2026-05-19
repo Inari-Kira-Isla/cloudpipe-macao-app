@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 // AI platform referrers — humans clicking from AI answers
 // Match on hostname only (not full URL) — avoid utm_source=chatgpt.com false positives
@@ -210,6 +211,47 @@ export async function middleware(request: NextRequest) {
 
   const referer = request.headers.get('referer') || undefined
 
+  // --- Supabase session refresh (required for @supabase/ssr) ---
+  let supabaseResponse = NextResponse.next({ request })
+
+  const supabaseAuthClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // Refresh session — must call getUser() to trigger cookie refresh
+  const { data: { user } } = await supabaseAuthClient.auth.getUser()
+
+  // Protect /inari/portal/dashboard and sub-routes
+  if (
+    path.startsWith('/inari/portal/dashboard') ||
+    path.startsWith('/inari/portal/products') ||
+    path.startsWith('/inari/portal/order')
+  ) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/inari/portal'
+      return NextResponse.redirect(url)
+    }
+  }
+  // --- End Supabase session refresh ---
+
   const bot = detectBot(ua)
   if (bot && supabaseUrl && supabaseKey) {
     trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer)
@@ -232,12 +274,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return supabaseResponse
 }
 
 export const config = {
   matcher: [
     // 排除 static files 和 API routes（只追蹤頁面）
+    // 加入 inari portal 受保護路由以確保 session refresh
     '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }

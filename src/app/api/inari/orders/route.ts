@@ -1,18 +1,33 @@
 import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { createClient } from '@supabase/supabase-js'
 import { createOrder, getB2bCustomer } from '@/lib/inari-supabase'
 
 export async function POST(req: Request) {
-  const cookieStore = cookies()
-  const token = cookieStore.get('sb-access-token')?.value
-  if (!token) return NextResponse.json({ error: '未授權' }, { status: 401 })
+  const cookieStore = await cookies()
 
-  const client = createClient(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Route Handler — cookie setting handled by middleware
+          }
+        },
+      },
+    }
   )
-  const { data: { user } } = await client.auth.getUser(token)
+
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return NextResponse.json({ error: '未授權' }, { status: 401 })
 
   const customer = await getB2bCustomer(user.email)
