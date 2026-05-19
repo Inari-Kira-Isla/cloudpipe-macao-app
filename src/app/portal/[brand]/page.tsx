@@ -589,7 +589,9 @@ function FaqScreen({ brandSlug }: { brandSlug: string }) {
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    fetch(`/api/v1/brand-faqs/${brandSlug}`)
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+    fetch(`/api/v1/brand-faqs/${brandSlug}`, { headers })
       .then(r => r.json())
       .then(data => {
         const faqs: FaqItem[] = (data.faqs ?? data ?? []).map((f: Record<string, unknown>) => ({
@@ -608,13 +610,18 @@ function FaqScreen({ brandSlug }: { brandSlug: string }) {
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 1800) }
   const cancel = () => { setShowAdd(false); setEditingId(null); setDraft({ q: '', a: '' }) }
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   const save = async () => {
     if (!draft.q.trim() || !draft.a.trim()) return
     try {
       if (editingId) {
         await fetch(`/api/v1/brand-faqs/${brandSlug}/${editingId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({ question: draft.q, answer: draft.a }),
         })
         setItems(arr => arr.map(it => it.id === editingId ? { ...it, question: draft.q, answer: draft.a } : it))
@@ -622,7 +629,7 @@ function FaqScreen({ brandSlug }: { brandSlug: string }) {
       } else {
         const res = await fetch(`/api/v1/brand-faqs/${brandSlug}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({ question: draft.q, answer: draft.a, lang: 'zh', is_published: true }),
         })
         const created = await res.json()
@@ -638,7 +645,7 @@ function FaqScreen({ brandSlug }: { brandSlug: string }) {
 
   const del = async (id: string | number) => {
     try {
-      await fetch(`/api/v1/brand-faqs/${brandSlug}/${id}`, { method: 'DELETE' })
+      await fetch(`/api/v1/brand-faqs/${brandSlug}/${id}`, { method: 'DELETE', headers: getAuthHeaders() })
       setItems(arr => arr.filter(it => it.id !== id))
       setConfirmDel(null)
       showToast('已刪除 FAQ')
@@ -760,7 +767,7 @@ function FaqScreen({ brandSlug }: { brandSlug: string }) {
           </div>
           <button className="btn btn-ghost btn-sm" onClick={async () => {
             try {
-              await fetch(`/api/v1/brand-faqs/${brandSlug}/inject`, { method: 'POST' })
+              await fetch(`/api/v1/brand-faqs/${brandSlug}/inject`, { method: 'POST', headers: getAuthHeaders() })
               showToast(`已注入 ${items.length} 條 FAQ ✓`)
             } catch { showToast('注入失敗') }
           }}>注入</button>
@@ -783,8 +790,13 @@ function ProductsScreen({ brandSlug }: { brandSlug: string }) {
   const [toast, setToast] = useState<string | null>(null)
   const [draft, setDraft] = useState({ name: '', price: '', min: '', desc: '', flagship: false })
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   useEffect(() => {
-    fetch(`/api/v1/brand-products/${brandSlug}`)
+    fetch(`/api/v1/brand-products/${brandSlug}`, { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(data => {
         const prods: ProductItem[] = (data.products ?? data ?? []).map((p: Record<string, unknown>) => ({
@@ -812,7 +824,7 @@ function ProductsScreen({ brandSlug }: { brandSlug: string }) {
       if (editingId) {
         await fetch(`/api/v1/brand-products/${brandSlug}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({ id: editingId, ...body }),
         })
         setItems(arr => arr.map(it => it.id === editingId ? { ...it, name_zh: draft.name, price_mop: body.price_mop, min_order: draft.min, description: draft.desc, is_flagship: draft.flagship } : it))
@@ -820,7 +832,7 @@ function ProductsScreen({ brandSlug }: { brandSlug: string }) {
       } else {
         const res = await fetch(`/api/v1/brand-products/${brandSlug}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify(body),
         })
         const created = await res.json()
@@ -833,7 +845,7 @@ function ProductsScreen({ brandSlug }: { brandSlug: string }) {
 
   const del = async (id: string | number) => {
     try {
-      await fetch(`/api/v1/brand-products/${brandSlug}?id=${id}`, { method: 'DELETE' })
+      await fetch(`/api/v1/brand-products/${brandSlug}?id=${id}`, { method: 'DELETE', headers: getAuthHeaders() })
       setItems(arr => arr.filter(it => it.id !== id))
       setConfirmDel(null)
       showToast('已刪除產品')
@@ -984,8 +996,13 @@ function ProfileScreen({ brandSlug, userEmail, onLogout }: {
   const [savingPhase, setSavingPhase] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [dirty, setDirty] = useState(false)
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   useEffect(() => {
-    fetch(`/api/v1/brand-profile/${brandSlug}`)
+    fetch(`/api/v1/brand-profile/${brandSlug}`, { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(data => {
         const profile = data.profile ?? data ?? {}
@@ -1006,7 +1023,7 @@ function ProfileScreen({ brandSlug, userEmail, onLogout }: {
     try {
       await fetch(`/api/v1/brand-profile/${brandSlug}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(form),
       })
       setInitial(form)
