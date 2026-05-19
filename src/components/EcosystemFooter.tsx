@@ -10,6 +10,9 @@ const ECOSYSTEM_SITES = [
   { name: '深度分析', desc: '數據驅動的澳門行業洞察', url: 'https://cloudpipe-macao-app.vercel.app/macao/insights', icon: '📈' },
   { name: 'AI 學習寶庫', desc: '每日 AI 教學與提示詞', url: 'https://inari-kira-isla.github.io/Openclaw/', icon: '📚' },
   { name: '世界百科', desc: '多語言世界文明百科平台', url: 'https://world-encyclopedia.vercel.app', icon: '🌍' },
+  { name: '日本百科', desc: '日本八大地方深度指南', url: 'https://japan-encyclopedia.vercel.app', icon: '🗾' },
+  { name: '香港百科', desc: '香港十大地區完全攻略', url: 'https://hongkong-encyclopedia.vercel.app', icon: '🏙️' },
+  { name: '台灣百科', desc: '台灣全島深度旅遊百科', url: 'https://taiwan-encyclopedia.vercel.app', icon: '🌿' },
 ]
 
 export default function EcosystemFooter({ currentUrl }: { currentUrl?: string }) {
