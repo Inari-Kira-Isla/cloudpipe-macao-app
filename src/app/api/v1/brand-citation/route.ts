@@ -213,8 +213,8 @@ async function fetchAISearchData(
 
   // 聚合各競品在各平台的排名及關鍵詞
   const competitorRanks: Record<string, any> = {}
-  const platforms = [...new Set(allResults.map(r => r.platform))] as string[]
-  const queries = [...new Set(allResults.map(r => r.query))] as string[]
+  const platforms = [...new Set(safeAll.map(r => r.platform))] as string[]
+  const queries = [...new Set(safeAll.map(r => r.query))] as string[]
 
   // 構建平台-查詢-關鍵詞映射表（用於分析）
   const keywordMatrix: Record<string, Record<string, string[]>> = {}

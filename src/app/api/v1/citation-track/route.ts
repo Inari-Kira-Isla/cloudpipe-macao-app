@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase'
 
 interface CitationEvent {
   timestamp: string
   source_type: string // 'llm-txt', 'merchant-page', 'insight-page'
   merchant_id?: string
   merchant_name?: string
+  brand_slug?: string
+  query?: string
   region: string // 'macao', 'hongkong', 'taiwan', 'japan'
   ai_model: string // detected from user agent
   path: string
@@ -30,6 +33,7 @@ export async function POST(request: NextRequest) {
       source_type: body.source_type || 'merchant-page',
       merchant_id: body.merchant_id,
       merchant_name: body.merchant_name,
+      brand_slug: body.brand_slug,
       region: body.region || 'macao',
       ai_model: aiModel,
       path: body.path || request.nextUrl.pathname,
@@ -38,12 +42,26 @@ export async function POST(request: NextRequest) {
       authority_sources: body.authority_sources,
     }
 
-    // Log to console (in production, would write to database/file)
     console.log(`[CITATION] ${aiModel} accessing ${citationEvent.path}`)
-
-    // Store in environment variable for later aggregation
-    // In production, this would be stored in a database
     storeEvent(citationEvent)
+
+    // Persist to Supabase (best-effort, non-blocking)
+    if (body.brand_slug || aiModel !== 'other') {
+      try {
+        const supabase = createServiceClient()
+        await supabase.from('brand_ai_citations').insert({
+          brand_slug: body.brand_slug ?? null,
+          ai_model: aiModel,
+          query: body.query ?? null,
+          source_type: citationEvent.source_type,
+          path: citationEvent.path,
+          region: citationEvent.region,
+          confidence_score: body.confidence_score ?? null,
+        })
+      } catch {
+        // non-fatal
+      }
+    }
 
     return NextResponse.json({
       success: true,
