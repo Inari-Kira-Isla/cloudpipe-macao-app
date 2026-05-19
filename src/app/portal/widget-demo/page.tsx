@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 
-export const metadata = undefined // handled via generateMetadata below — client component uses head injection
 
 const DEMO_SLUG = 'inari-global-foods'
 
