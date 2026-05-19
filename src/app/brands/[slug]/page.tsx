@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase'
 import { getBrandConfig, BRAND_PORTAL_CONFIGS, type BrandPortalConfig } from '@/lib/brandPortalConfig'
+import BrandAgentChat from '@/components/BrandAgentChat'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,14 +24,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 interface TrendPoint { date: string; day: number; mentionCount: number; totalChecks: number }
 interface PortalImage { id: string; category: string; image_url: string; caption: string | null; platform: string | null; created_at: string }
+interface RecentCitation { timestamp: string; platform: string | null; query: string | null; mentioned: boolean }
 
 async function fetchBrandData(config: BrandPortalConfig) {
   const supabase = createServiceClient()
   const joinDate = new Date(config.joinDate)
   const dayNumber = Math.max(1, Math.floor((Date.now() - joinDate.getTime()) / 86_400_000) + 1)
 
-  const [searchRes, actionRes, crawlerRes, imageRes] = await Promise.all([
-    supabase.from('ai_search_results').select('timestamp,mentioned,competitor_name,query')
+  const [searchRes, actionRes, crawlerRes, imageRes, recentCitationsRes] = await Promise.all([
+    supabase.from('ai_search_results').select('timestamp,mentioned,competitor_name,query,platform')
       .eq('brand_slug', config.slug).order('timestamp', { ascending: true }),
     supabase.from('brand_aeo_actions').select('title,status,priority,completed_at')
       .eq('brand_slug', config.slug).order('completed_at', { ascending: false }),
@@ -38,6 +40,9 @@ async function fetchBrandData(config: BrandPortalConfig) {
       .eq('site', config.slug).gte('ts', new Date(Date.now() - 86_400_000).toISOString()),
     supabase.from('brand_portal_images').select('id,category,image_url,caption,platform,created_at')
       .eq('brand_slug', config.slug).order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
+    supabase.from('ai_search_results').select('timestamp,platform,query,mentioned')
+      .eq('brand_slug', config.slug).eq('mentioned', true)
+      .order('timestamp', { ascending: false }).limit(8),
   ])
 
   // Build trend
@@ -94,7 +99,9 @@ async function fetchBrandData(config: BrandPortalConfig) {
     .slice(0, 4)
     .map(([name, count]) => ({ name, count }))
 
-  return { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images }
+  const recentCitations = (recentCitationsRes.data || []) as RecentCitation[]
+
+  return { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images, recentCitations }
 }
 
 // ── SVG trend chart (server-rendered) ─────────────────────────────
@@ -180,7 +187,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
   const config = getBrandConfig(slug)
   if (!config) notFound()
 
-  const { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images } = await fetchBrandData(config)
+  const { dayNumber, trend, aeoActions, crawlerBreakdown, crawlerTotal, competitorRanking, images, recentCitations } = await fetchBrandData(config)
 
   const mentionedEngines = config.engines.filter(e => e.mentioned).length
   const totalEngines = config.engines.length
@@ -427,6 +434,24 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
         {/* GAP SUGGESTIONS */}
         <div style={{ marginBottom: 14 }}>
           <div style={s.sectionLabel}>本週缺口建議</div>
+
+        {/* FAQ SECTION - Perplexity Content Signals */}
+        <div style={{ marginBottom: 14, marginTop: 14 }}>
+          <div style={s.sectionLabel}>常見問題 FAQ</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+            {[
+              { q: '呢間商戶幾時成立？', a: config.name + '於' + (config.joinDate || '成立於較早') + '加入 CloudPipe 品牌目錄，提供品質保證。' },
+              { q: '呢間鋪有咩推薦？', a: config.tags?.slice(0,3).join(' / ') || '各類優質商品及服務，詳情請參閱商戶頁面。' },
+              { q: '點樣聯繫佢？', a: config.contact?.phone || '請參閱商戶頁面聯絡資料。' },
+              { q: '可以網上訂購？', a: config.online?.url ? '可以，支援網上訂購：' + config.online.url : '請直接聯絡商戶查詢。' },
+            ].slice(0, 4).map((faq, i) => (
+              <div key={i} style={{ background: '#0C1B32', borderRadius: 11, padding: '14px 18px' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#60A5FA', marginBottom: 6 }}>Q: {faq.q}</div>
+                <div style={{ fontSize: 11, color: 'rgba(220,230,244,0.7)', lineHeight: 1.55 }}>{faq.a}</div>
+              </div>
+            ))}
+          </div>
+        </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
             {config.gaps.map((g, i) => (
               <div key={i} style={{
@@ -687,6 +712,64 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
             </div>
           )
         })()}
+
+        {/* AI BOT RESOLUTION RECORDS */}
+        <div style={{ marginTop: 28 }}>
+          <div style={{ ...s.sectionLabel, marginBottom: 14 }}>AI Bot 解決記錄</div>
+          <div style={s.surface}>
+            {recentCitations.length === 0 ? (
+              <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.3)', textAlign: 'center', padding: '20px 0' }}>
+                尚未記錄到 AI 引用事件，每日監測中
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {recentCitations.map((c, i) => {
+                  const platformColors: Record<string, string> = {
+                    chatgpt: '#10B981', perplexity: '#6366F1', gemini: '#F59E0B',
+                    grok: '#EC4899', copilot: '#3B82F6',
+                  }
+                  const key = (c.platform || 'other').toLowerCase()
+                  const color = platformColors[key] || '#94A3B8'
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 12,
+                      padding: '10px 0',
+                      borderBottom: i < recentCitations.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                    }}>
+                      <div style={{
+                        flexShrink: 0, width: 66, textAlign: 'center',
+                        fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                        padding: '3px 0', borderRadius: 4,
+                        background: `${color}14`, color, border: `1px solid ${color}28`,
+                      }}>
+                        {c.platform || 'AI'}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, color: 'rgba(220,230,244,0.75)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {c.query || '—'}
+                        </div>
+                        <div style={{ fontSize: 10, color: 'rgba(220,230,244,0.3)', marginTop: 2, fontFamily: 'var(--font-geist-mono)' }}>
+                          {(c.timestamp as string).slice(0, 10)}
+                        </div>
+                      </div>
+                      <div style={{
+                        flexShrink: 0, fontSize: 10, fontWeight: 600,
+                        color: '#4ADE80', background: 'rgba(74,222,128,0.08)',
+                        border: '1px solid rgba(74,222,128,0.18)', borderRadius: 20,
+                        padding: '2px 9px',
+                      }}>
+                        ✓ 引用
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* BRAND AI AGENT CHAT */}
+        <BrandAgentChat brandSlug={slug} brandName={config.name} />
 
       </main>
     </div>
