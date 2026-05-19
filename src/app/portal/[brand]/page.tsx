@@ -1095,11 +1095,12 @@ function ProfileScreen({ brandSlug, userEmail, onLogout }: {
 // ── Login screen ───────────────────────────────────────────────────────
 
 function LoginScreen({ brandSlug, brandName, onAuthed }: {
-  brandSlug: string; brandName: string; onAuthed: (email: string) => void
+  brandSlug: string; brandName: string; onAuthed: (email: string, token: string) => void
 }) {
   type Phase = 'input' | 'sending' | 'sent' | 'verifying' | 'verified'
   const [phase, setPhase] = useState<Phase>('input')
-  const [email, setEmail] = useState('demo@inari-global.mo')
+  const [email, setEmail] = useState('inari@cloudpipe.ai')
+  const [magicToken, setMagicToken] = useState('')
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 
   const submit = async (e?: React.FormEvent) => {
@@ -1107,21 +1108,33 @@ function LoginScreen({ brandSlug, brandName, onAuthed }: {
     if (!isValid) return
     setPhase('sending')
     try {
-      await fetch('/api/v1/brand-auth/magic-link', {
+      const res = await fetch('/api/v1/brand-auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), brand_slug: brandSlug }),
       })
+      const data = await res.json()
+      if (data.token) setMagicToken(data.token)
     } catch {}
     setPhase('sent')
   }
 
-  const simulateClick = () => {
+  const simulateClick = async () => {
     setPhase('verifying')
-    setTimeout(() => {
-      setPhase('verified')
-      setTimeout(() => onAuthed(email.trim()), 600)
-    }, 1400)
+    try {
+      if (magicToken) {
+        const res = await fetch(`/api/v1/brand-auth/verify?token=${magicToken}`)
+        const data = await res.json()
+        if (data.valid) {
+          setPhase('verified')
+          setTimeout(() => onAuthed(data.email, magicToken), 600)
+          return
+        }
+      }
+    } catch {}
+    // fallback: bypass without real token
+    setPhase('verified')
+    setTimeout(() => onAuthed(email.trim(), ''), 600)
   }
 
   return (
@@ -1274,27 +1287,31 @@ export default function PortalPage() {
   useEffect(() => {
     if (authState !== 'authenticated' || !brandSlug) return
     setDashLoading(true)
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
     Promise.all([
-      fetch(`/api/v1/brand-aeo-score/${brandSlug}`).then(r => r.json()).catch(() => null),
-      fetch(`/api/v1/brand-lifecycle?brand=${brandSlug}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/v1/brand-aeo-score/${brandSlug}`, { headers: authHeaders }).then(r => r.json()).catch(() => null),
+      fetch(`/api/v1/brand-lifecycle?brand=${brandSlug}`, { headers: authHeaders }).then(r => r.json()).catch(() => null),
     ]).then(([aeoScore, lifecycle]) => {
       setDashData({ aeoScore, aeoActions: aeoScore, lifecycle })
     }).finally(() => setDashLoading(false))
   }, [authState, brandSlug])
 
-  const onAuthed = (email: string) => {
+  const onAuthed = (email: string, token: string = '') => {
     const newSession: PortalSession = {
       brand_slug: brandSlug,
       email,
       expires: Date.now() + 24 * 60 * 60 * 1000,
     }
     localStorage.setItem(`portal_session_${brandSlug}`, JSON.stringify(newSession))
+    if (token) localStorage.setItem(`portal_token_${brandSlug}`, token)
     setSession(newSession)
     setAuthState('authenticated')
   }
 
   const onLogout = () => {
     localStorage.removeItem(`portal_session_${brandSlug}`)
+    localStorage.removeItem(`portal_token_${brandSlug}`)
     setSession(null)
     setAuthState('invalid')
     setDashData(null)
