@@ -292,19 +292,21 @@ interface DashData {
 function DashboardScreen({ brandSlug, brandName, dashData, dashLoading, onNav }: {
   brandSlug: string; brandName: string; dashData: DashData | null; dashLoading: boolean; onNav: (t: TabKey) => void
 }) {
-  const score = dashData?.aeoScore?.score ?? 72
-  const scoreDelta = dashData?.aeoScore?.score_delta ?? 0
-  const platforms = dashData?.aeoScore?.platforms ?? {}
+  // API returns: total_score, dimensions.ai_engine_coverage.checks, priority_fixes
+  const aeoRaw = dashData?.aeoScore as Record<string, unknown> | null
+  const score = (aeoRaw?.total_score as number) ?? (aeoRaw?.score as number) ?? 72
+  const scoreDelta = (aeoRaw?.score_delta as number) ?? 0
+  const engineChecks = ((aeoRaw?.dimensions as Record<string, unknown>)?.ai_engine_coverage as Record<string, unknown>)?.checks as Array<Record<string, unknown>> ?? []
   const platformList = [
-    { key: 'chatgpt',    name: 'ChatGPT',    ok: platforms.chatgpt ?? false },
-    { key: 'perplexity', name: 'Perplexity', ok: platforms.perplexity ?? false },
-    { key: 'gemini',     name: 'Gemini',     ok: platforms.gemini ?? false },
-    { key: 'grok',       name: 'Grok',       ok: platforms.grok ?? false },
+    { key: 'chatgpt',    name: 'ChatGPT',    ok: engineChecks.find(c => c.engine === 'chatgpt')?.score as number > 0 },
+    { key: 'perplexity', name: 'Perplexity', ok: engineChecks.find(c => c.engine === 'perplexity')?.score as number > 0 },
+    { key: 'gemini',     name: 'Gemini',     ok: engineChecks.find(c => c.engine === 'gemini')?.score as number > 0 },
+    { key: 'grok',       name: 'Grok',       ok: engineChecks.find(c => c.engine === 'grok')?.score as number > 0 },
   ]
   const okCount = platformList.filter(p => p.ok).length
-  const actions = dashData?.aeoActions?.actions ?? []
-  const pendingCount = dashData?.aeoActions?.pending_count ?? actions.filter(a => a.status !== 'done').length
-  const p1Count = actions.filter(a => (a.priority === 'P1' || a.priority === 'p1')).length
+  const priorityFixes = (aeoRaw?.priority_fixes as unknown[]) ?? []
+  const pendingCount = priorityFixes.length
+  const p1Count = priorityFixes.filter((f: unknown) => (f as Record<string, number>).potential_gain >= 10).length
   const citations = dashData?.lifecycle?.total_citations ?? dashData?.lifecycle?.weekly_citations ?? 47
   const firstWord = brandName.split(/[\s（(]/)[0]
 
@@ -437,11 +439,24 @@ function AeoScreen({ brandSlug }: { brandSlug: string }) {
   const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/v1/brand-aeo-score/${brandSlug}`)
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+    fetch(`/api/v1/brand-aeo-score/${brandSlug}`, { headers })
       .then(r => r.json())
       .then(data => {
-        const acts: AeoAction[] = data.actions ?? data.aeo_actions ?? []
-        setActions(acts)
+        // API returns priority_fixes: [{id, name, potential_gain, action, difficulty}]
+        const fixes: AeoAction[] = (data.priority_fixes ?? data.actions ?? data.aeo_actions ?? []).map(
+          (f: Record<string, unknown>, i: number) => ({
+            id: f.id ?? i,
+            priority: (f.potential_gain as number) >= 10 ? 'P1' : (f.potential_gain as number) >= 5 ? 'P2' : 'P3',
+            title: f.name ?? f.action_title ?? f.title,
+            description: f.action ?? f.description ?? '',
+            category: f.difficulty ?? f.category ?? f.cat ?? '',
+            due_date: f.due_date as string ?? '',
+            status: f.status as string ?? 'pending',
+          })
+        )
+        setActions(fixes)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
