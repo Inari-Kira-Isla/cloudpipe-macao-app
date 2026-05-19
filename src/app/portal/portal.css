@@ -1,5 +1,23 @@
 /* CloudPipe Brand Portal — Design System */
 
+/* ── Portal body isolation ───────────────────────────────────────────────
+   Override root layout body styles when portal is active.
+   Uses :has() which is supported in Chrome 105+, Safari 15.4+, Firefox 121+.
+──────────────────────────────────────────────────────────────────────── */
+
+html:has(.cp-portal-root),
+body:has(.cp-portal-root) {
+  background: #08111F !important;
+  color: #DCE6F4 !important;
+  min-height: 100vh;
+}
+
+/* Hide public footer, Baidu tracker, AI pixel on portal pages */
+body:has(.cp-portal-root) > footer,
+body:has(.cp-portal-root) > img[width="1"] {
+  display: none !important;
+}
+
 :root {
   --cp-navy: #08111F;
   --cp-navy-2: #0C1B32;
