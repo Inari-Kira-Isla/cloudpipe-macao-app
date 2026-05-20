@@ -538,6 +538,64 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
   )
 }
 
+// ── ContentAuditRow (with notify button) ───────────────────────────────────
+
+interface ContentAuditItem { label: string; status: 'pass' | 'partial' | 'fail'; note?: string }
+
+function ContentAuditRow({ item, isLast, brandSlug, showToast }: {
+  item: ContentAuditItem; isLast: boolean
+  brandSlug: string; showToast: (msg: string) => void
+}) {
+  const [notified, setNotified] = useState(false)
+  const [notifying, setNotifying] = useState(false)
+
+  const handleNotify = async () => {
+    setNotifying(true)
+    try {
+      await fetch('/api/v1/brand-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_slug: brandSlug,
+          message: `請為「${item.label}」生成具體優化建議，並列出3個立即可執行的步驟。現況：${item.note ?? '需要優化'}`,
+        }),
+      })
+      setNotified(true)
+      showToast(`已通知 AI 顧問分析「${item.label}」`)
+    } catch {
+      showToast('通知失敗，請稍後再試')
+    }
+    setNotifying(false)
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: isLast ? 'none' : '1px solid var(--line)' }}>
+      <span style={{
+        flexShrink: 0, width: 18, height: 18, borderRadius: 4, marginTop: 2,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+        background: item.status === 'pass' ? 'rgba(26,139,62,0.10)' : item.status === 'partial' ? 'rgba(180,114,0,0.10)' : 'rgba(196,37,37,0.10)',
+        color: item.status === 'pass' ? 'var(--green)' : item.status === 'partial' ? 'var(--amber)' : 'var(--red)',
+      }}>
+        {item.status === 'pass' ? '✓' : item.status === 'partial' ? '~' : '✗'}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 2 }}>{item.label}</div>
+        {item.note && <div className="small" style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{item.note}</div>}
+      </div>
+      {item.status !== 'pass' && (
+        <button
+          className="btn btn-ghost btn-sm"
+          style={{ flexShrink: 0, fontSize: 11, color: notified ? 'var(--green)' : 'var(--gold)', borderColor: notified ? 'var(--green)' : undefined, whiteSpace: 'nowrap' }}
+          onClick={handleNotify}
+          disabled={notifying || notified}
+        >
+          {notified ? '✓ 已通知' : notifying ? '…' : '通知平台優化'}
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ── SectionAEO ─────────────────────────────────────────────────────────────
 
 function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: number) => void }) {
@@ -699,20 +757,7 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
                 <span className="tag tag-gold">{auditScore} 分</span>
               </div>
               {items.map((item, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: i < items.length - 1 ? '1px solid var(--line)' : 'none' }}>
-                  <span style={{
-                    flexShrink: 0, width: 18, height: 18, borderRadius: 4, marginTop: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
-                    background: item.status === 'pass' ? 'rgba(26,139,62,0.10)' : item.status === 'partial' ? 'rgba(180,114,0,0.10)' : 'rgba(196,37,37,0.10)',
-                    color: item.status === 'pass' ? 'var(--green)' : item.status === 'partial' ? 'var(--amber)' : 'var(--red)',
-                  }}>
-                    {item.status === 'pass' ? '✓' : item.status === 'partial' ? '~' : '✗'}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 2 }}>{item.label}</div>
-                    {item.note && <div className="small" style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{item.note}</div>}
-                  </div>
-                </div>
+                <ContentAuditRow key={i} item={item} isLast={i === items.length - 1} brandSlug={brandSlug} showToast={(msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }} />
               ))}
             </div>
           </div>
