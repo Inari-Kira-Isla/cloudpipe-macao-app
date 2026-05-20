@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   const effectiveSlug = requestedSlug || owner.brand_slug
 
   const token = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24h to match portal session
 
   const { error: insertError } = await supabase
     .from('brand_auth_tokens')

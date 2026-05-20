@@ -1177,15 +1177,15 @@ function SectionProducts({ brandSlug, onLoad }: { brandSlug: string; onLoad: (co
 // ── SectionProfile ─────────────────────────────────────────────────────────
 
 const PROFILE_FIELDS = [
-  { key: 'name_zh',       label: '品牌名稱 (中文)',  placeholder: '稻荷環球食品' },
-  { key: 'name_en',       label: '品牌名稱 (英文)',  placeholder: 'Inari Global Foods' },
-  { key: 'tagline',       label: '品牌標語',          placeholder: '一句話說明你的品牌' },
-  { key: 'description',   label: '品牌簡介',          placeholder: '詳述品牌故事、目標客戶、核心價值', type: 'textarea' as const },
-  { key: 'phone',         label: '聯絡電話',          placeholder: '+853 2871 0000' },
-  { key: 'address',       label: '地址',              placeholder: '澳門氹仔' },
-  { key: 'website_url',   label: '網站',              placeholder: 'https://' },
-  { key: 'instagram_url', label: 'Instagram',         placeholder: '@yourbrand' },
-  { key: 'facebook_url',  label: 'Facebook',          placeholder: 'fb.com/yourbrand' },
+  { key: 'name_zh',          label: '品牌名稱 (中文)',  placeholder: '稻荷環球食品' },
+  { key: 'name_en',          label: '品牌名稱 (英文)',  placeholder: 'Inari Global Foods' },
+  { key: 'tagline',          label: '品牌標語',          placeholder: '一句話說明你的品牌' },
+  { key: 'about_zh',         label: '品牌簡介',          placeholder: '詳述品牌故事、目標客戶、核心價值', type: 'textarea' as const },
+  { key: 'phone',            label: '聯絡電話',          placeholder: '+853 2871 0000' },
+  { key: 'address_full',     label: '地址',              placeholder: '澳門氹仔' },
+  { key: 'website_url',      label: '網站',              placeholder: 'https://' },
+  { key: 'social_instagram', label: 'Instagram',         placeholder: '@yourbrand' },
+  { key: 'social_facebook',  label: 'Facebook',          placeholder: 'fb.com/yourbrand' },
 ]
 
 function SectionProfile({ brandSlug, userEmail, onLogout }: { brandSlug: string; userEmail: string; onLogout: () => void }) {
@@ -1223,7 +1223,7 @@ function SectionProfile({ brandSlug, userEmail, onLogout }: { brandSlug: string;
     setSavingPhase('saving')
     try {
       await fetch(`/api/v1/brand-profile/${brandSlug}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(form),
       })
