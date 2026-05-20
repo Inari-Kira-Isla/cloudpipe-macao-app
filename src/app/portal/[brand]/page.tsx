@@ -158,6 +158,8 @@ function ScoreRing({ value }: { value: number }) {
 const SPARKLINE_DATA = [12, 14, 11, 18, 16, 22, 20, 24, 22, 28, 32, 30, 35, 38, 42, 39, 44, 47]
 
 function Sparkline({ data }: { data: number[] }) {
+  const [drawn, setDrawn] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setDrawn(true), 120); return () => clearTimeout(t) }, [])
   const w = 300, h = 60
   const max = Math.max(...data), min = Math.min(...data), range = max - min || 1
   const pts = data.map((d, i) => [(i / (data.length - 1)) * w, h - ((d - min) / range) * (h - 8) - 4] as [number, number])
@@ -168,7 +170,7 @@ function Sparkline({ data }: { data: number[] }) {
   }
   const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
   return (
-    <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
+    <svg className={`sparkline${drawn ? ' draw' : ''}`} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
       style={{ '--len': len.toFixed(1) } as React.CSSProperties}>
       <path d={path} fill="none" stroke="#B8923A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3" fill="#B8923A" />
