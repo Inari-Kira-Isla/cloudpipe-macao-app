@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { BRAND_PORTAL_CONFIGS } from '@/lib/brandPortalConfig'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -396,19 +397,17 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
   const aeoRaw = dashData?.aeoScore ?? null
   const score = (aeoRaw?.total_score as number) ?? (aeoRaw?.score as number) ?? 72
   const scoreDelta = (aeoRaw?.score_delta as number) ?? 0
-  const engineChecks = ((aeoRaw?.dimensions as Record<string, unknown>)?.ai_engine_coverage as Record<string, unknown>)?.checks as Array<Record<string, unknown>> ?? []
-  const platforms = [
-    { name: 'ChatGPT',    ok: (engineChecks.find(c => c.engine === 'chatgpt')?.score as number ?? 0) > 0 },
-    { name: 'Perplexity', ok: (engineChecks.find(c => c.engine === 'perplexity')?.score as number ?? 0) > 0 },
-    { name: 'Gemini',     ok: (engineChecks.find(c => c.engine === 'gemini')?.score as number ?? 0) > 0 },
-    { name: 'Grok',       ok: (engineChecks.find(c => c.engine === 'grok')?.score as number ?? 0) > 0 },
-  ]
-  const okCount = platforms.filter(p => p.ok).length
   const priorityFixes = (aeoRaw?.priority_fixes as unknown[]) ?? []
   const pendingCount = priorityFixes.length
   const p1Count = priorityFixes.filter((f: unknown) => (f as Record<string, number>).potential_gain >= 10).length
   const citations = dashData?.lifecycle?.total_citations ?? dashData?.lifecycle?.weekly_citations ?? 47
   const firstName = brandName.split(/[\s（(]/)[0]
+
+  // Use BRAND_PORTAL_CONFIGS for engine data (includes Copilot + detail text)
+  const brandConfig = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+  const engines = brandConfig?.engines ?? []
+  const okCount = engines.filter(e => e.mentioned).length
+  const totalEngines = engines.length || 5
 
   return (
     <section id="overview" ref={reveal.ref} className={`anchor ${reveal.className}`}>
@@ -421,7 +420,7 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
           歡迎回來，<span className="serif" style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--gold)' }}>{firstName}</span>。
         </h1>
         <p className="body" style={{ fontSize: 16.5, maxWidth: 640, margin: 0 }}>
-          您的品牌在 <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{okCount}/4</strong> 個 AI 平台已被收錄
+          您的品牌在 <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{okCount}/{totalEngines}</strong> 個 AI 平台已被收錄
           {scoreDelta > 0 && <>，本週分數成長 <strong style={{ color: 'var(--green)', fontWeight: 600 }}>+{scoreDelta}</strong></>}。
         </p>
       </div>
@@ -452,20 +451,29 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
               <ScoreRing value={score} />
             </div>
             <hr className="divider" style={{ margin: '24px 0 4px' }} />
-            {platforms.map(p => (
-              <div key={p.name} className="platform-row">
+            {engines.length > 0 ? engines.map(e => (
+              <div key={e.key} className="platform-row">
                 <div className="row gap-12" style={{ minWidth: 0 }}>
-                  <div className="platform-icon">{p.name[0]}</div>
+                  <div className="platform-icon">{e.name[0]}</div>
                   <div style={{ minWidth: 0 }}>
-                    <div className="platform-name">{p.name}</div>
-                    <div className="platform-stat">{p.ok ? '已被引用' : '尚未被引用'}</div>
+                    <div className="platform-name">{e.name}</div>
+                    <div className="platform-stat" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {e.mentioned ? e.detail : '尚未被引用 · ' + e.query}
+                    </div>
                   </div>
                 </div>
-                {p.ok
+                {e.mentioned
                   ? <span className="status-pill ok"><Icon name="check" size={11} stroke={2.6} /> 提及</span>
                   : <span className="status-pill miss">未提及</span>}
               </div>
-            ))}
+            )) : (
+              ['ChatGPT', 'Perplexity', 'Gemini', 'Grok', 'Copilot'].map(name => (
+                <div key={name} className="platform-row">
+                  <div className="row gap-12"><div className="platform-icon">{name[0]}</div><div className="platform-name">{name}</div></div>
+                  <span className="status-pill miss">未提及</span>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Stats grid */}
@@ -642,6 +650,71 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
           )}
         </div>
       )}
+
+      {/* Gaps from brand config */}
+      {(() => {
+        const cfg = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+        if (!cfg?.gaps?.length) return null
+        return (
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">缺口分析 · 本週建議</span>
+            </div>
+            <div className="card" style={{ padding: '8px 22px' }}>
+              {cfg.gaps.map((g, i) => (
+                <div key={i} className="aeo-item">
+                  <div className={`aeo-pri-mark ${g.priority}`} style={{ flexShrink: 0, marginTop: 2 }}>{g.priority.toUpperCase()}</div>
+                  <div>
+                    <div className="h4" style={{ fontWeight: 500, marginBottom: 4 }}>{g.title}</div>
+                    <div className="small" style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{g.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Content audit from brand config */}
+      {(() => {
+        const cfg = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+        if (!cfg?.contentAudit) return null
+        const { score: auditScore, items } = cfg.contentAudit
+        const passCount = items.filter(i => i.status === 'pass').length
+        return (
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">內容審核 · AI 收錄準備度</span>
+            </div>
+            <div className="card" style={{ padding: '20px 24px' }}>
+              <div className="row between" style={{ marginBottom: 16, alignItems: 'center' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                  已通過 <strong style={{ color: 'var(--text)' }}>{passCount}/{items.length}</strong> 項檢查
+                </div>
+                <span className="tag tag-gold">{auditScore} 分</span>
+              </div>
+              {items.map((item, i) => (
+                <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: i < items.length - 1 ? '1px solid var(--line)' : 'none' }}>
+                  <span style={{
+                    flexShrink: 0, width: 18, height: 18, borderRadius: 4, marginTop: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+                    background: item.status === 'pass' ? 'rgba(26,139,62,0.10)' : item.status === 'partial' ? 'rgba(180,114,0,0.10)' : 'rgba(196,37,37,0.10)',
+                    color: item.status === 'pass' ? 'var(--green)' : item.status === 'partial' ? 'var(--amber)' : 'var(--red)',
+                  }}>
+                    {item.status === 'pass' ? '✓' : item.status === 'partial' ? '~' : '✗'}
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 2 }}>{item.label}</div>
+                    {item.note && <div className="small" style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{item.note}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
 
       {toast && <div className="toast">{toast}</div>}
     </section>

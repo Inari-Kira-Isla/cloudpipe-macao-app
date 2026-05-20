@@ -53,7 +53,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 市佔 70%+ 描述 · 北海道直採 48h 冷鏈 · 查詢：澳門海膽供應商' },
       { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 排名第 1 · 米芝蓮及黑珍珠 B2B 定位 · 北海道/青森/長崎三產地' },
       { name: 'Grok',       key: 'grok',       mentioned: true,  query: '澳門餐廳食材供應商',    detail: '已引用 · 查詢：澳門餐廳食材供應商' },
-      { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門海膽供應商',        detail: 'Bing 索引確認 · Top 2-3 · Copilot 引用待手動驗證' },
+      { name: 'Copilot',    key: 'copilot',    mentioned: true,  query: '澳門海膽供應商',        detail: 'D5 命中 ✓ · Sprint D5 比預期早 9-10 天 · 引用為澳門海膽主要供應商 · 查詢：澳門海膽供應商' },
     ],
     gaps: [
       { priority: 'p1', title: 'IoT 冷鏈記錄可視化內容', desc: '公開可查的溫度記錄建立 Gemini 所需 Authority Signal，預計命中率提升 35%' },
