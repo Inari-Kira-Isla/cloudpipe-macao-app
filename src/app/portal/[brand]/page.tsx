@@ -158,6 +158,15 @@ function ScoreRing({ value }: { value: number }) {
 
 const SPARKLINE_DATA = [12, 14, 11, 18, 16, 22, 20, 24, 22, 28, 32, 30, 35, 38, 42, 39, 44, 47]
 
+const EXEC_LABELS: Record<string, string> = {
+  expand_faq:         'FAQ 擴充（5 題）',
+  expand_profile:     '品牌簡介重寫',
+  generate_key_stats: '關鍵數據生成',
+  generate_schema:    'Schema.org 標記',
+  create_insight:     '深度文章生成',
+  indexnow_ping:      'IndexNow 索引通知',
+}
+
 function Sparkline({ data }: { data: number[] }) {
   const [drawn, setDrawn] = useState(false)
   useEffect(() => { const t = setTimeout(() => setDrawn(true), 120); return () => clearTimeout(t) }, [])
@@ -538,6 +547,97 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
   )
 }
 
+// ── inferActionType ────────────────────────────────────────────────────────
+
+function inferActionType(title: string, desc: string): string {
+  const text = `${title} ${desc}`.toLowerCase()
+  if (text.includes('faq') || text.includes('常見問題')) return 'expand_faq'
+  if (text.includes('簡介') || text.includes('about') || text.includes('品牌介紹')) return 'expand_profile'
+  if (text.includes('schema') || text.includes('結構化') || text.includes('json-ld')) return 'generate_schema'
+  if (text.includes('indexnow') || text.includes('索引') || text.includes('ping')) return 'indexnow_ping'
+  if (text.includes('數字') || text.includes('數據') || text.includes('統計')) return 'generate_key_stats'
+  return 'create_insight'
+}
+
+// ── ExecuteButton ──────────────────────────────────────────────────────────
+
+function ExecuteButton({ brandSlug, actionType, context, shortLabel }: {
+  brandSlug: string; actionType: string; context?: string; shortLabel?: string
+}) {
+  type Phase = 'idle' | 'confirm' | 'running' | 'done' | 'error'
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [result, setResult] = useState('')
+
+  const run = async () => {
+    setPhase('running')
+    try {
+      const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers.Authorization = `Bearer ${token}`
+      const res = await fetch('/api/v1/brand-execute', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ brand_slug: brandSlug, action_type: actionType, context }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? '執行失敗')
+      setResult(data.preview ?? data.label ?? '已完成')
+      setPhase('done')
+    } catch (err) {
+      setResult(String(err))
+      setPhase('error')
+    }
+  }
+
+  if (phase === 'idle') return (
+    <button
+      className="btn btn-ghost btn-sm"
+      style={{ fontSize: 11, color: 'var(--gold)', borderColor: 'rgba(184,146,58,0.35)', whiteSpace: 'nowrap' }}
+      onClick={() => setPhase('confirm')}
+    >
+      ✦ {shortLabel ?? 'AI 執行'}
+    </button>
+  )
+
+  if (phase === 'confirm') return (
+    <div style={{ padding: '8px 10px', background: 'rgba(184,146,58,0.07)', border: '1px solid rgba(184,146,58,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 8 }}>
+        AI 將執行：<strong style={{ color: 'var(--text)' }}>{EXEC_LABELS[actionType] ?? actionType}</strong>
+        {context && <><br /><span style={{ color: 'var(--text-3)', fontSize: 11 }}>主題：{context.slice(0, 38)}{context.length > 38 ? '…' : ''}</span></>}
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button
+          className="btn btn-sm"
+          style={{ fontSize: 11, background: 'var(--gold)', color: 'white', border: 'none', padding: '4px 12px', borderRadius: 6 }}
+          onClick={run}
+        >確認執行</button>
+        <button className="btn btn-ghost btn-sm" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => setPhase('idle')}>取消</button>
+      </div>
+    </div>
+  )
+
+  if (phase === 'running') return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', color: 'var(--text-2)', fontSize: 12 }}>
+      <div className="spinner" style={{ width: 13, height: 13, borderWidth: 2 }} />
+      AI 執行中…
+    </div>
+  )
+
+  if (phase === 'done') return (
+    <div style={{ padding: '6px 10px', background: 'rgba(26,139,62,0.07)', border: '1px solid rgba(26,139,62,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 11.5, color: 'var(--green)', fontWeight: 600, marginBottom: 2 }}>✓ 已完成</div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{result}</div>
+    </div>
+  )
+
+  return (
+    <div style={{ padding: '6px 10px', background: 'rgba(196,37,37,0.07)', border: '1px solid rgba(196,37,37,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 11.5, color: 'var(--red)', marginBottom: 4 }}>✗ 執行失敗</div>
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setPhase('idle')}>重試</button>
+    </div>
+  )
+}
+
 // ── ContentAuditRow (with notify button) ───────────────────────────────────
 
 interface ContentAuditItem { label: string; status: 'pass' | 'partial' | 'fail'; note?: string }
@@ -697,9 +797,12 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
                   </div>
                   {desc && <div className="small" style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</div>}
                 </div>
-                <button className="btn btn-ghost btn-sm" onClick={() => markDone(a.id)} disabled={done}>
-                  {done ? '✓' : '完成'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+                  {!done && <ExecuteButton brandSlug={brandSlug} actionType={inferActionType(title, desc)} context={title} />}
+                  <button className="btn btn-ghost btn-sm" onClick={() => markDone(a.id)} disabled={done}>
+                    {done ? '✓' : '完成'}
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -726,10 +829,11 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
               {cfg.gaps.map((g, i) => (
                 <div key={i} className="aeo-item">
                   <div className={`aeo-pri-mark ${g.priority}`} style={{ flexShrink: 0, marginTop: 2 }}>{g.priority.toUpperCase()}</div>
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="h4" style={{ fontWeight: 500, marginBottom: 4 }}>{g.title}</div>
                     <div className="small" style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{g.desc}</div>
                   </div>
+                  <ExecuteButton brandSlug={brandSlug} actionType="create_insight" context={g.title} />
                 </div>
               ))}
             </div>
@@ -1470,6 +1574,7 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([])
   const [chatLoading, setChatLoading] = useState(false)
+  const [showExecPanel, setShowExecPanel] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -1503,6 +1608,7 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
       })
       const data = await res.json()
       setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '抱歉，暫時無法回應。' }])
+      setShowExecPanel(true)
     } catch {
       setChatMessages(m => [...m, { role: 'ai', text: '連線錯誤，請稍後再試。' }])
     }
@@ -1666,6 +1772,21 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
                   <Icon name="arrow-right" size={15} stroke={2} />
                 </button>
               </div>
+
+              {showExecPanel && (
+                <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--line)' }}>
+                  <div className="small" style={{ color: 'var(--text-3)', fontSize: 11.5, marginBottom: 10 }}>
+                    ✦ 與顧問確認方向後，一鍵執行：
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    <ExecuteButton brandSlug={brandSlug} actionType="expand_faq" shortLabel="FAQ 擴充" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="expand_profile" shortLabel="品牌簡介重寫" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="generate_schema" shortLabel="Schema 標記" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="create_insight" shortLabel="生成深度文章" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="indexnow_ping" shortLabel="IndexNow Ping" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>
