@@ -61,11 +61,12 @@ type AuthState = 'loading' | 'authenticated' | 'invalid'
 // ── Sections ───────────────────────────────────────────────────────────────
 
 const SECTIONS = [
-  { id: 'overview', label: '總覽' },
-  { id: 'aeo',      label: '行動' },
-  { id: 'faq',      label: 'FAQ' },
-  { id: 'products', label: '產品' },
-  { id: 'profile',  label: '品牌資料' },
+  { id: 'overview',  label: '總覽' },
+  { id: 'aeo',       label: '行動' },
+  { id: 'faq',       label: 'FAQ' },
+  { id: 'products',  label: '產品' },
+  { id: 'evidence',  label: '成效記錄' },
+  { id: 'profile',   label: '品牌資料' },
 ]
 
 // ── Brand meta ─────────────────────────────────────────────────────────────
@@ -1410,6 +1411,224 @@ function LoginScreen({ brandSlug, brandName, onAuthed }: {
   )
 }
 
+// ── SectionEvidence ────────────────────────────────────────────────────────
+
+interface PortalImage { id: string; category: string; image_url: string; caption: string | null; platform: string | null; created_at: string }
+interface RecentCitation { timestamp: string; platform: string | null; query: string | null; mentioned: boolean }
+
+function SectionEvidence({ brandSlug }: { brandSlug: string }) {
+  const reveal = useReveal()
+  const [images, setImages] = useState<{ ai_citation: PortalImage[]; aeo_action: PortalImage[]; performance: PortalImage[] }>({ ai_citation: [], aeo_action: [], performance: [] })
+  const [citations, setCitations] = useState<RecentCitation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatInput, setChatInput] = useState('')
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/v1/brand-images?brand_slug=${brandSlug}`).then(r => r.json()),
+      fetch(`/api/v1/brand-recent-citations?brand_slug=${brandSlug}&limit=12`).then(r => r.json()),
+    ]).then(([imgData, citData]) => {
+      const all: PortalImage[] = imgData.images ?? []
+      setImages({
+        ai_citation: all.filter(i => i.category === 'ai_citation'),
+        aeo_action:  all.filter(i => i.category === 'aeo_action'),
+        performance: all.filter(i => i.category === 'performance'),
+      })
+      setCitations(citData.citations ?? [])
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [brandSlug])
+
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages, chatLoading])
+
+  const sendChat = async () => {
+    const msg = chatInput.trim()
+    if (!msg || chatLoading) return
+    setChatInput('')
+    setChatMessages(m => [...m, { role: 'user', text: msg }])
+    setChatLoading(true)
+    try {
+      const res = await fetch('/api/v1/brand-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brand_slug: brandSlug, message: msg }),
+      })
+      const data = await res.json()
+      setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '抱歉，暫時無法回應。' }])
+    } catch {
+      setChatMessages(m => [...m, { role: 'ai', text: '連線錯誤，請稍後再試。' }])
+    }
+    setChatLoading(false)
+  }
+
+  const PLATFORM_COLORS: Record<string, string> = {
+    chatgpt: '#1A8B3E', perplexity: '#5B6EE1', gemini: '#B47200',
+    grok: '#C42525', copilot: '#2D67B0', system_snapshot: '#5E6168', ai_checker: '#8A8D94',
+  }
+
+  const IMAGE_SECTIONS: { key: 'ai_citation' | 'aeo_action' | 'performance'; label: string; tag: string; color: string }[] = [
+    { key: 'ai_citation', label: 'AI 平台引用截圖',  tag: '引用證明', color: 'var(--green)' },
+    { key: 'aeo_action',  label: 'AEO 行動成果',    tag: '行動紀錄', color: 'var(--blue)' },
+    { key: 'performance', label: '每週成效圖表',     tag: '成效報告', color: 'var(--gold)' },
+  ]
+
+  const totalImages = images.ai_citation.length + images.aeo_action.length + images.performance.length
+
+  const SUGGESTED = ['目前最大的 AEO 缺口是什麼？', '如何讓 Perplexity 開始引用我們？', '有什麼可以提升 Copilot 引用率的內容？', '現在最應該優先做哪個 AEO 行動？']
+
+  return (
+    <section id="evidence" ref={reveal.ref} className={`anchor ${reveal.className}`}>
+      <hr className="sec-break" />
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+        <span className="gold-thin-rule" />
+        <span className="label">05 · 視覺成效記錄</span>
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+          <div className="spinner" />
+        </div>
+      ) : (
+        <>
+          {/* Image gallery */}
+          {totalImages === 0 ? (
+            <div className="card" style={{ padding: '32px 24px', textAlign: 'center', border: '1.5px dashed var(--line-strong)' }}>
+              <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.4 }}>📸</div>
+              <div className="label" style={{ marginBottom: 6 }}>尚未上傳截圖</div>
+              <div className="small" style={{ color: 'var(--text-3)', lineHeight: 1.6, maxWidth: 420, margin: '0 auto' }}>
+                可透過 Supabase 後台將 AI 平台截圖、AEO 成果圖片上傳至
+                <br /><code style={{ fontSize: 11, color: 'var(--muted)' }}>brand_portal_images</code> 表
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {IMAGE_SECTIONS.map(sec => {
+                const imgs = images[sec.key]
+                if (imgs.length === 0) return null
+                return (
+                  <div key={sec.key}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <span className="label">{sec.label}</span>
+                      <span className="tag" style={{ color: sec.color, borderColor: sec.color, background: `color-mix(in srgb, ${sec.color} 8%, transparent)` }}>{sec.tag}</span>
+                      <span className="small" style={{ color: 'var(--faint)' }}>{imgs.length} 張</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+                      {imgs.map(img => (
+                        <div key={img.id} className="card card-hover" style={{ padding: 0, overflow: 'hidden' }}>
+                          <a href={img.image_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img.image_url} alt={img.caption ?? sec.label}
+                              style={{ width: '100%', display: 'block', maxHeight: 180, objectFit: 'cover', background: 'var(--bg-2)' }} />
+                          </a>
+                          <div style={{ padding: '10px 14px' }}>
+                            {img.platform && (
+                              <span className="tag" style={{ marginBottom: 6, display: 'inline-block', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.06em' }}>
+                                {img.platform}
+                              </span>
+                            )}
+                            {img.caption && <div className="small" style={{ lineHeight: 1.5, marginBottom: 4 }}>{img.caption}</div>}
+                            <div className="small" style={{ fontSize: 11, color: 'var(--faint)' }}>{img.created_at.slice(0, 10)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* AI citation records */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">AI Bot 解決記錄</span>
+            </div>
+            <div className="card" style={{ padding: '8px 20px' }}>
+              {citations.length === 0 ? (
+                <div className="small" style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>尚未記錄到 AI 引用事件，每日監測中</div>
+              ) : citations.map((c, i) => {
+                const key = (c.platform || 'other').toLowerCase().replace(/[^a-z_]/g, '')
+                const color = PLATFORM_COLORS[key] ?? '#8A8D94'
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < citations.length - 1 ? '1px solid var(--line)' : 'none' }}>
+                    <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, background: `color-mix(in srgb, ${color} 10%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 20%, transparent)`, minWidth: 70, textAlign: 'center' }}>
+                      {c.platform ?? 'AI'}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.query ?? '—'}</div>
+                      <div className="small" style={{ fontSize: 11, color: 'var(--faint)' }}>{c.timestamp.slice(0, 10)}</div>
+                    </div>
+                    <span className="status-pill ok" style={{ flexShrink: 0 }}><Icon name="check" size={11} stroke={2.6} /> 引用</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Inline AI strategy chat */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">AI 策略顧問</span>
+              <span className="status-pill ok" style={{ marginLeft: 10, fontSize: 11 }}>在線</span>
+            </div>
+            <div className="card" style={{ padding: '20px 22px' }}>
+              <div className="small" style={{ color: 'var(--text-3)', marginBottom: 16, lineHeight: 1.6 }}>
+                我係您品牌的專屬 AI 策略顧問，可以分析 AEO 缺口、規劃內容策略。
+              </div>
+
+              {!chatOpen && chatMessages.length === 0 ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {SUGGESTED.map(q => (
+                    <button key={q} className="btn btn-ghost btn-sm" style={{ textAlign: 'left', height: 'auto', padding: '7px 12px', lineHeight: 1.4 }}
+                      onClick={() => { setChatOpen(true); setChatInput(q) }}>
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto', marginBottom: 12 }}>
+                  {chatMessages.map((m, i) => (
+                    <div key={i} style={{
+                      alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%', padding: '9px 13px', borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      background: m.role === 'user' ? 'var(--gold)' : 'var(--bg-2)',
+                      color: m.role === 'user' ? '#fff' : 'var(--text)',
+                      fontSize: 13.5, lineHeight: 1.55,
+                    }}>
+                      {m.text}
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div style={{ alignSelf: 'flex-start', padding: '9px 13px', borderRadius: '12px 12px 12px 2px', background: 'var(--bg-2)', display: 'flex', gap: 4 }}>
+                      {[0,1,2].map(i => <div key={i} className="bot-typing-dot" style={{ animationDelay: `${i * 0.15}s` }} />)}
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8, marginTop: chatMessages.length > 0 ? 0 : 12 }}>
+                <input className="input" style={{ flex: 1 }} placeholder="問我任何 AEO / 內容策略問題…"
+                  value={chatInput} onChange={e => setChatInput(e.target.value)}
+                  onFocus={() => setChatOpen(true)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendChat()} />
+                <button className="btn btn-primary btn-sm" onClick={sendChat} disabled={!chatInput.trim() || chatLoading}>
+                  <Icon name="arrow-right" size={15} stroke={2} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export default function PortalPage() {
@@ -1574,6 +1793,7 @@ export default function PortalPage() {
             <SectionAEO brandSlug={brandSlug} onLoad={setAeoCount} />
             <SectionFAQ brandSlug={brandSlug} onLoad={setFaqCount} />
             <SectionProducts brandSlug={brandSlug} onLoad={setProductCount} />
+            <SectionEvidence brandSlug={brandSlug} />
             <SectionProfile brandSlug={brandSlug} userEmail={userEmail} onLogout={onLogout} />
 
             <footer style={{ marginTop: 80, paddingTop: 32, borderTop: '1px solid var(--line)', textAlign: 'center' }}>
