@@ -1218,7 +1218,7 @@ function LoginScreen({ brandSlug, brandName, onAuthed }: {
 }) {
   type Phase = 'input' | 'sending' | 'sent' | 'verifying' | 'verified'
   const [phase, setPhase] = useState<Phase>('input')
-  const [email, setEmail] = useState('inari@cloudpipe.ai')
+  const [email, setEmail] = useState('')
   const [magicToken, setMagicToken] = useState('')
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 

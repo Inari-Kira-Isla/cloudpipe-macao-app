@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  let body: { email?: string }
+  let body: { email?: string; brand_slug?: string }
   try {
     body = await req.json()
   } catch {
@@ -12,13 +12,14 @@ export async function POST(req: NextRequest) {
   }
 
   const email = (body.email ?? '').trim().toLowerCase()
+  const requestedSlug = (body.brand_slug ?? '').trim()
   if (!email) {
     return NextResponse.json({ error: 'email 為必填項' }, { status: 400 })
   }
 
   const supabase = createServiceClient()
 
-  // Check if email is a registered brand owner
+  // Check if email is a registered brand owner (any brand)
   const { data: owner, error: ownerError } = await supabase
     .from('brand_owners')
     .select('email, brand_slug, display_name')
@@ -34,16 +35,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '此 email 未在系統中' }, { status: 403 })
   }
 
-  // Generate a unique token (Phase 1: no actual email sending, return token directly for demo)
+  // Use requested brand_slug if provided; fall back to the registered one
+  const effectiveSlug = requestedSlug || owner.brand_slug
+
   const token = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
   const { error: insertError } = await supabase
     .from('brand_auth_tokens')
     .insert({
       token,
       email: owner.email,
-      brand_slug: owner.brand_slug,
+      brand_slug: effectiveSlug,
       expires_at: expiresAt,
     })
 
@@ -52,15 +55,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '無法生成登入連結，請稍後再試' }, { status: 500 })
   }
 
-  const redirectUrl = `/portal/${owner.brand_slug}?token=${token}`
+  const redirectUrl = `/portal/${effectiveSlug}?token=${token}`
 
-  // Phase 1: return token directly (dev/demo mode — production should email the link instead)
   return NextResponse.json({
     success: true,
     message: '登入連結已發送',
-    // dev fields — remove or gate behind NODE_ENV check in production
     token,
-    brand_slug: owner.brand_slug,
+    brand_slug: effectiveSlug,
     redirect: redirectUrl,
     expires_at: expiresAt,
   })
