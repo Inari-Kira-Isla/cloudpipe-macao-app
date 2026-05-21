@@ -22,7 +22,7 @@ interface FormState {
 /* ============================================================
    Constants
    ============================================================ */
-const WA_LINK = 'https://wa.me/85362854078?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E6%9F%A5%E8%A9%A2%E6%B5%B7%E8%86%BD%E5%A5%97%E8%A3%9D';
+const WA_LINK = 'https://wa.me/85362823037?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E6%9F%A5%E8%A9%A2%E6%B5%B7%E8%86%BD%E5%A5%97%E8%A3%9D';
 const WA_PHONE = '+853 6285 4078';
 
 const FAQS: FaqItem[] = [
@@ -199,7 +199,7 @@ interface ProductData {
 
 function ProductCard({ p }: { p: ProductData }) {
   const ref = useReveal();
-  const waHref = `https://wa.me/85362854078?text=${p.waText}`;
+  const waHref = `https://wa.me/85362823037?text=${p.waText}`;
   return (
     <div
       ref={ref}
@@ -596,7 +596,7 @@ function Footer() {
 
       <div className="sue-footer-links">
         <a
-          href={`https://wa.me/85362854078`}
+          href={`https://wa.me/85362823037`}
           target="_blank"
           rel="noopener noreferrer"
           className="sue-footer-link"
