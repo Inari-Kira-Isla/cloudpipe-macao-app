@@ -1575,6 +1575,8 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([])
   const [chatLoading, setChatLoading] = useState(false)
   const [showExecPanel, setShowExecPanel] = useState(false)
+  const [pendingConfirm, setPendingConfirm] = useState<{ action_type: string; context?: string; label: string } | null>(null)
+  const [confirming, setConfirming] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -1592,27 +1594,70 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
     }).catch(() => {}).finally(() => setLoading(false))
   }, [brandSlug])
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages, chatLoading])
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages, chatLoading, pendingConfirm])
+
+  const getAgentHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    const h: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (token) h.Authorization = `Bearer ${token}`
+    return h
+  }
 
   const sendChat = async () => {
     const msg = chatInput.trim()
     if (!msg || chatLoading) return
     setChatInput('')
+    setChatOpen(true)
+    setPendingConfirm(null)
+
+    const history = chatMessages.slice(-6).map(m => ({ role: m.role, content: m.text }))
     setChatMessages(m => [...m, { role: 'user', text: msg }])
     setChatLoading(true)
+
     try {
-      const res = await fetch('/api/v1/brand-chat', {
+      const res = await fetch('/api/v1/brand-agent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand_slug: brandSlug, message: msg }),
+        headers: getAgentHeaders(),
+        body: JSON.stringify({ brand_slug: brandSlug, message: msg, history }),
       })
       const data = await res.json()
       setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '抱歉，暫時無法回應。' }])
-      setShowExecPanel(true)
+
+      if (data.needs_confirm && data.action_type) {
+        setPendingConfirm({ action_type: data.action_type, context: data.context, label: data.label })
+      } else {
+        setShowExecPanel(true)
+      }
     } catch {
       setChatMessages(m => [...m, { role: 'ai', text: '連線錯誤，請稍後再試。' }])
     }
     setChatLoading(false)
+  }
+
+  const confirmExecute = async () => {
+    if (!pendingConfirm || confirming) return
+    const pending = pendingConfirm
+    setConfirming(true)
+    setPendingConfirm(null)
+    setChatMessages(m => [...m, { role: 'user', text: `確認執行：${pending.label}` }])
+
+    try {
+      const res = await fetch('/api/v1/brand-agent', {
+        method: 'POST',
+        headers: getAgentHeaders(),
+        body: JSON.stringify({
+          brand_slug: brandSlug,
+          confirm: true,
+          pending_action: pending.action_type,
+          pending_context: pending.context,
+        }),
+      })
+      const data = await res.json()
+      setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '✅ 執行完成！' }])
+    } catch {
+      setChatMessages(m => [...m, { role: 'ai', text: '執行失敗，請稍後再試。' }])
+    }
+    setConfirming(false)
   }
 
   const PLATFORM_COLORS: Record<string, string> = {
@@ -1763,17 +1808,45 @@ function SectionEvidence({ brandSlug }: { brandSlug: string }) {
                 </div>
               )}
 
+              {/* Pending confirm bar — appears after AI detects execute intent */}
+              {(pendingConfirm || confirming) && (
+                <div style={{ margin: '8px 0 10px', padding: '11px 14px', background: 'rgba(184,146,58,0.08)', border: '1px solid rgba(184,146,58,0.28)', borderRadius: 10 }}>
+                  {confirming ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)' }}>
+                      <div className="spinner" style={{ width: 13, height: 13, borderWidth: 2 }} />
+                      AI 執行中，請稍候…
+                    </div>
+                  ) : pendingConfirm && (
+                    <>
+                      <div style={{ fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 10 }}>
+                        ✦ AI 建議執行：<strong style={{ color: 'var(--text)' }}>{pendingConfirm.label}</strong>
+                        {pendingConfirm.context && <><br /><span style={{ fontSize: 11, color: 'var(--text-3)' }}>主題：{pendingConfirm.context}</span></>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          className="btn btn-sm"
+                          style={{ fontSize: 12, background: 'var(--gold)', color: 'white', border: 'none', padding: '5px 16px', borderRadius: 6 }}
+                          onClick={confirmExecute}
+                        >確認執行</button>
+                        <button className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}
+                          onClick={() => setPendingConfirm(null)}>不了，繼續討論</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: 8, marginTop: chatMessages.length > 0 ? 0 : 12 }}>
                 <input className="input" style={{ flex: 1 }} placeholder="問我任何 AEO / 內容策略問題…"
                   value={chatInput} onChange={e => setChatInput(e.target.value)}
                   onFocus={() => setChatOpen(true)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendChat()} />
-                <button className="btn btn-primary btn-sm" onClick={sendChat} disabled={!chatInput.trim() || chatLoading}>
+                <button className="btn btn-primary btn-sm" onClick={sendChat} disabled={!chatInput.trim() || chatLoading || confirming}>
                   <Icon name="arrow-right" size={15} stroke={2} />
                 </button>
               </div>
 
-              {showExecPanel && (
+              {showExecPanel && !pendingConfirm && (
                 <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--line)' }}>
                   <div className="small" style={{ color: 'var(--text-3)', fontSize: 11.5, marginBottom: 10 }}>
                     ✦ 與顧問確認方向後，一鍵執行：
