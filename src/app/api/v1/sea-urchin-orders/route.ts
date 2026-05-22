@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
   // Update customer order count if linked
   if (customerId) {
-    await supabase.rpc('increment_customer_orders', { cid: customerId }).catch(() => {})
+    await supabase.rpc('increment_customer_orders', { cid: customerId }).then(() => {}, () => {})
   }
 
   return NextResponse.json({

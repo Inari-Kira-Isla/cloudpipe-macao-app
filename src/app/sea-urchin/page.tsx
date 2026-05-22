@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Script from 'next/script'
 import './page.css'
+
+const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
 const WA = 'https://wa.me/85362823037'
 const WA_ORDER = (product: string) =>
@@ -58,6 +61,15 @@ export default function SeaUrchinPage() {
   const [form, setForm] = useState({ name: '', phone: '', date: DATES[0] ?? '', notes: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [utmSource, setUtmSource] = useState('facebook_ad')
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    const src = p.get('utm_source') || 'facebook_ad'
+    const campaign = p.get('utm_campaign') || ''
+    const medium = p.get('utm_medium') || ''
+    setUtmSource([src, campaign, medium].filter(Boolean).join('|'))
+  }, [])
 
   const pick = (id: string) => {
     setSelected(id)
@@ -82,11 +94,18 @@ export default function SeaUrchinPage() {
           name: form.name,
           phone: form.phone,
           notes: `產品：${product?.name}｜配送：${form.date}｜備注：${form.notes}`,
-          source: 'landing_page',
+          source: utmSource,
           customer_type: selected === 'restaurant' ? 'restaurant' : 'retail',
         }),
       })
       setPhase('done')
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        ;(window as any).fbq('track', 'Lead', {
+          currency: 'MOP',
+          content_name: product?.name,
+          content_category: selected === 'restaurant' ? 'B2B' : 'Retail',
+        })
+      }
     } catch {
       setError('提交失敗，請直接 WhatsApp 聯絡我們')
     }
@@ -223,6 +242,19 @@ export default function SeaUrchinPage() {
         <a href={WA} target="_blank" rel="noopener noreferrer">+853 6282 3037</a>
         &nbsp;·&nbsp;澳門唯一海膽直送服務
       </footer>
+
+      {/* Facebook Pixel — only loads when NEXT_PUBLIC_FB_PIXEL_ID is set */}
+      {FB_PIXEL_ID && (
+        <Script id="fb-pixel" strategy="afterInteractive">{`
+          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+          n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+          document,'script','https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init','${FB_PIXEL_ID}');
+          fbq('track','PageView');
+        `}</Script>
+      )}
     </div>
   )
 }

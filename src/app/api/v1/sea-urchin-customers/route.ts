@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         points: 10,
         metadata: { source: row.source },
       })
-      .catch(() => {})
+      .then(() => {}, () => {})
   } else {
     // Phone-only: just insert (no upsert key)
     const { data, error } = await supabase
