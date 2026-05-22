@@ -7,8 +7,10 @@ import './page.css'
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
 const WA = 'https://wa.me/85362823037'
-const WA_ORDER = (product: string) =>
-  `${WA}?text=${encodeURIComponent(`你好，我想訂購「${product}」`)}`
+const WA_ORDER = (product: string, name?: string, date?: string) => {
+  const msg = `你好！我剛在網站落咗單，想確認以下訂購詳情：\n\n套裝：${product}\n配送：${date ?? '待確認'}\n姓名：${name ?? '—'}\n\n請確認，謝謝！`
+  return `${WA}?text=${encodeURIComponent(msg)}`
+}
 
 const PRODUCTS = [
   {
@@ -135,13 +137,21 @@ export default function SeaUrchinPage() {
           <div className="sue-success">
             <div className="sue-success-icon">✓</div>
             <h2>訂單已收到！</h2>
-            <p>我們會在 24 小時內 WhatsApp 確認訂單詳情。</p>
-            <p className="sue-success-sub">
-              {product?.name} · {form.date}
-            </p>
-            <a href={WA_ORDER(product?.name ?? '海膽套裝')} target="_blank" rel="noopener noreferrer" className="sue-btn sue-btn-outline">
-              直接 WhatsApp 跟進
+            <p>我們會在 <strong>24 小時內</strong> WhatsApp 確認。</p>
+            <div className="sue-success-summary">
+              <div className="sue-success-row"><span>套裝</span><span>{product?.name}</span></div>
+              <div className="sue-success-row"><span>配送</span><span>{form.date}</span></div>
+              <div className="sue-success-row"><span>聯絡</span><span>{form.phone}</span></div>
+            </div>
+            <a
+              href={WA_ORDER(product?.name ?? '海膽套裝', form.name, form.date)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sue-btn sue-btn-wa"
+            >
+              WhatsApp 即時確認訂單
             </a>
+            <p className="sue-success-hint">點擊後發送即可，我們會立即回覆</p>
           </div>
         ) : (
           <>

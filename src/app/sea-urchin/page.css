@@ -260,6 +260,30 @@
 .sue-success p { font-size: 15px; color: #6B6560; line-height: 1.6; margin-bottom: 6px }
 .sue-success-sub { font-size: 13.5px; color: #C8963C; font-weight: 600; margin-bottom: 24px !important }
 
+.sue-success-summary {
+  width: 100%;
+  background: #F5F3F0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sue-success-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+.sue-success-row span:first-child { color: #A8A4A0 }
+.sue-success-row span:last-child { font-weight: 600; color: #1A1A1A }
+.sue-success-hint {
+  font-size: 12px !important;
+  color: #A8A4A0 !important;
+  margin-top: 8px !important;
+  text-align: center;
+}
+
 /* Footer */
 .sue-footer {
   text-align: center;

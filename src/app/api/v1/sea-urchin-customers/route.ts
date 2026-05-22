@@ -5,6 +5,17 @@ export const dynamic = 'force-dynamic'
 
 const ADMIN_KEY = 'sue-admin-2026'
 
+async function notifyTelegram(msg: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  const chatId = process.env.TELEGRAM_CHAT_ID
+  if (!token || !chatId) return
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' }),
+  }).catch(() => {})
+}
+
 export async function POST(req: NextRequest) {
   let body: {
     name?: string
@@ -85,6 +96,18 @@ export async function POST(req: NextRequest) {
     }
     result = data
   }
+
+  // Telegram order notification (fire-and-forget)
+  const typeLabel = row.customer_type === 'restaurant' ? '🏪 餐廳採購' : '🏠 零售'
+  const srcLabel = row.source && row.source !== 'landing_page' ? `\n📊 來源：${row.source}` : ''
+  const notesLabel = row.notes ? `\n📝 ${row.notes}` : ''
+  notifyTelegram(
+    `🦔 <b>海膽速遞 — 新訂單</b>\n\n` +
+    `👤 ${row.name ?? '未填姓名'}\n` +
+    `📱 ${row.phone ?? row.email ?? '—'}\n` +
+    `${typeLabel}${srcLabel}${notesLabel}\n\n` +
+    `⚡ 請 WhatsApp 確認訂單詳情`
+  )
 
   return NextResponse.json({
     success: true,
