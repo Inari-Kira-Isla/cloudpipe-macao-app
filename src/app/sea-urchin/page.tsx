@@ -53,9 +53,38 @@ function deliverySlots(): string[] {
 const DATES = deliverySlots()
 
 // ─────────────────────────────────────────────
-// Types
+// Types & default data for all configurable sections
 // ─────────────────────────────────────────────
 type OrderData = { sizeName: string; weight: string; total: number; date: string; name: string }
+type SizeItem = { id: string; name: string; weight: string; price: number; sub: string; isB2B: boolean }
+type StepItem = { lbl: string; name: string; desc: string }
+type ArchiveItem = { no: string; name: string; date: string; sold: number; time: string; available?: boolean; price?: number; weight?: string }
+type ReviewItem = { q: string; n: string; m: string; a: string }
+type FaqItem = { q: string; a: string }
+
+const STEPS_DATA: StepItem[] = [
+  { lbl: 'RELEASE', name: '預告掉落', desc: '每週三在 Facebook 公布本週秘寶預告，記得開啟通知提早鎖定。' },
+  { lbl: 'SECURE',  name: '鎖定下單', desc: '每週六 23:59 截單，下單後 24H 內 WhatsApp 確認，售完即止。' },
+  { lbl: 'DROP',    name: '空運直送', desc: '北海道捕撈後封箱，經香港轉口直運澳門，全程冷鏈不間斷。' },
+  { lbl: 'UNBOX',   name: '即食開箱', desc: '已完整去殼處理，掃 QR 解鎖履歷儀表板，開盒即食。' },
+]
+const ARCHIVE_DATA: ArchiveItem[] = [
+  { no: '023', name: '利尻馬糞海膽', date: '2026.05.09', sold: 23, time: '31 分鐘售罄', available: false },
+  { no: '022', name: '禮文島紫海膽', date: '2026.05.02', sold: 20, time: '45 分鐘售罄', available: false },
+  { no: '021', name: '積丹半島馬糞', date: '2026.04.25', sold: 23, time: '28 分鐘售罄', available: false },
+]
+const REVIEWS_DATA: ReviewItem[] = [
+  { q: '開箱嗰一刻所有人都拍曬相，新鮮程度完全唔輸日本當地！', n: 'C.K.', m: 'DROP 022 · 馬糞 100g', a: 'C' },
+  { q: '冷鏈追蹤好安心，一直保持 −1.4°C，比好多餐廳食嘅更新鮮。', n: 'M.L.', m: 'DROP 021 · 主廚精選', a: 'M' },
+  { q: '海膽鮮甜完全無腥味，配清酒係神仙享受，下週繼續訂！', n: 'V.W.', m: 'DROP 023 · 家庭套裝', a: 'V' },
+]
+const FAQ_DATA: FaqItem[] = [
+  { q: '海膽幾時到貨？截單時間係幾時？', a: '每週一新鮮到貨，截單時間為每週六 23:59。如未能及時截單，可提前預訂下週。' },
+  { q: '配送範圍及費用？', a: '免費配送至澳門半島、氹仔及路環全區。週一到貨後 WhatsApp 確認送達時段（上午或下午）。' },
+  { q: '如何付款？', a: '支持 MBway、轉數快、現金（送貨時付款）。確認訂單後提供付款詳情。' },
+  { q: '限量數量是多少？為何這麼少？', a: '每週僅放出 50 盒，以確保頂級鮮度及品質。每週六截單，售完即止。提早截單更有保障。' },
+  { q: '到貨品質不符預期怎麼辦？', a: '我們提供 100% 鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
+]
 
 // ─────────────────────────────────────────────
 // TopBar
@@ -224,13 +253,13 @@ function Hero() {
 // ─────────────────────────────────────────────
 // OrderForm
 // ─────────────────────────────────────────────
-function OrderForm({ onSubmit, utmSource }: { onSubmit: (d: OrderData) => void; utmSource: string }) {
-  const [sizeId, setSizeId] = useState('wood')
+function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) => void; utmSource: string; sizes: SizeItem[] }) {
+  const [sizeId, setSizeId] = useState(() => sizes.find(s => !s.isB2B)?.id ?? 'wood')
   const [form, setForm] = useState({ name: '', phone: '', date: DATES[0] ?? '', notes: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const size = SIZES.find(s => s.id === sizeId)!
+  const size = (sizes.find(s => s.id === sizeId) ?? sizes[0])!
   const total = size.price
 
   const submit = async (e: React.FormEvent) => {
@@ -281,7 +310,7 @@ function OrderForm({ onSubmit, utmSource }: { onSubmit: (d: OrderData) => void; 
               <div className="col">
                 <label>SIZE / 選擇套裝</label>
                 <div className="ud-size-pills">
-                  {SIZES.map(s => (
+                  {sizes.map(s => (
                     <button
                       key={s.id}
                       type="button"
@@ -540,13 +569,7 @@ function Dashboard() {
 // ─────────────────────────────────────────────
 // Steps
 // ─────────────────────────────────────────────
-function Steps() {
-  const steps = [
-    { lbl: 'RELEASE', name: '預告掉落', desc: '每週三在 Facebook 公布本週秘寶預告，記得開啟通知提早鎖定。' },
-    { lbl: 'SECURE',  name: '鎖定下單', desc: '週四 21:00 開放，24 小時限量釋出，截單週三 23:59，售完即止。' },
-    { lbl: 'DROP',    name: '空運直送', desc: '北海道捕撈後封箱，經香港轉口直運澳門，全程冷鏈不間斷。' },
-    { lbl: 'UNBOX',   name: '即食開箱', desc: '已完整去殼處理，掃 QR 解鎖履歷儀表板，開盒即食。' },
-  ]
+function Steps({ steps = STEPS_DATA }: { steps?: StepItem[] }) {
   return (
     <section className="ud-section">
       <div className="ud-wrap">
@@ -578,12 +601,8 @@ function Steps() {
 // ─────────────────────────────────────────────
 // Archive
 // ─────────────────────────────────────────────
-function Archive() {
-  const drops = [
-    { no: '023', name: '利尻馬糞海膽', date: '2026.05.09', sold: 23, time: '31 分鐘售罄' },
-    { no: '022', name: '禮文島紫海膽', date: '2026.05.02', sold: 20, time: '45 分鐘售罄' },
-    { no: '021', name: '積丹半島馬糞', date: '2026.04.25', sold: 23, time: '28 分鐘售罄' },
-  ]
+function Archive({ drops = ARCHIVE_DATA }: { drops?: ArchiveItem[] }) {
+  const totalSold = drops.reduce((s, d) => s + (d.sold ?? 0), 0) + (DROP_INFO.qtyTotal - DROP_INFO.qtyLeft)
   return (
     <section className="ud-section" id="archive">
       <div className="ud-wrap">
@@ -592,12 +611,16 @@ function Archive() {
             <div className="ud-eyebrow">ARCHIVE / 05 · 過往掉落紀錄</div>
             <h2>每一次<br /><span className="ud-accent">都是限量</span></h2>
           </div>
-          <div className="right"><span>· 累積掉落 {(23 + 20 + 23 + DROP_INFO.qtyTotal - DROP_INFO.qtyLeft)} 盒</span></div>
+          <div className="right"><span>· 累積掉落 {totalSold} 盒</span></div>
         </div>
         <div className="ud-archive-grid">
           {drops.map(d => (
             <div className="ud-archive-card" key={d.no}>
-              <div className="ud-stamp-sold">SOLD OUT</div>
+              {d.available ? (
+                <div className="ud-stamp-avail">仍可訂購</div>
+              ) : (
+                <div className="ud-stamp-sold">SOLD OUT</div>
+              )}
               <div className="ud-archive-img"><div className="ud-archive-circle" /></div>
               <div className="ud-archive-head">
                 <span>DROP <b>NO. {d.no}</b></span>
@@ -606,7 +629,18 @@ function Archive() {
               <div className="ud-archive-name">{d.name}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 'auto' }}>
                 <div className="ud-archive-row"><span>QTY</span><span className="v">{d.sold} 盒</span></div>
-                <div className="ud-archive-row"><span>SELL OUT</span><span className="v" style={{ color: 'var(--accent)' }}>{d.time}</span></div>
+                {d.available ? (
+                  <a
+                    href={WA(`你好！我想訂購 DROP NO.${d.no} ${d.name}${d.weight ? ` (${d.weight})` : ''}${d.price ? `，MOP$${d.price}` : ''}，請問仲有貨嗎？`)}
+                    target="_blank" rel="noopener noreferrer"
+                    className="ud-btn-wa"
+                    style={{ marginTop: 8, padding: '10px 14px', fontSize: 11, textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                  >
+                    WhatsApp 立即訂購 →
+                  </a>
+                ) : (
+                  <div className="ud-archive-row"><span>SELL OUT</span><span className="v" style={{ color: 'var(--accent)' }}>{d.time}</span></div>
+                )}
               </div>
             </div>
           ))}
@@ -619,12 +653,7 @@ function Archive() {
 // ─────────────────────────────────────────────
 // Reviews
 // ─────────────────────────────────────────────
-function Reviews() {
-  const items = [
-    { q: '開箱嗰一刻所有人都拍曬相，新鮮程度完全唔輸日本當地！', n: 'C.K.', m: 'DROP 022 · 馬糞 100g', a: 'C' },
-    { q: '冷鏈追蹤好安心，一直保持 −1.4°C，比好多餐廳食嘅更新鮮。', n: 'M.L.', m: 'DROP 021 · 主廚精選', a: 'M' },
-    { q: '海膽鮮甜完全無腥味，配清酒係神仙享受，下週繼續訂！', n: 'V.W.', m: 'DROP 023 · 家庭套裝', a: 'V' },
-  ]
+function Reviews({ items = REVIEWS_DATA }: { items?: ReviewItem[] }) {
   return (
     <section className="ud-section">
       <div className="ud-wrap">
@@ -661,15 +690,8 @@ function Reviews() {
 // ─────────────────────────────────────────────
 // FAQ
 // ─────────────────────────────────────────────
-function FAQ() {
+function FAQ({ items = FAQ_DATA }: { items?: FaqItem[] }) {
   const [openIdx, setOpenIdx] = useState(0)
-  const items = [
-    { q: '海膽幾時到貨？截單時間係幾時？', a: '每週一新鮮到貨，截單時間為每週六 23:59。如未能及時截單，可提前預訂下週。' },
-    { q: '配送範圍及費用？', a: '免費配送至澳門半島、氹仔及路環全區。週一到貨後 WhatsApp 確認送達時段（上午或下午）。' },
-    { q: '如何付款？', a: '支持 MBway、轉數快、現金（送貨時付款）。確認訂單後提供付款詳情。' },
-    { q: '限量數量是多少？為何這麼少？', a: '每週僅放出 50 盒，以確保頂級鮮度及品質。每週六截單，售完即止。提早截單更有保障。' },
-    { q: '到貨品質不符預期怎麼辦？', a: '我們提供 100% 鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
-  ]
   return (
     <section className="ud-section" id="faq">
       <div className="ud-wrap">
@@ -775,7 +797,7 @@ function SuccessModal({ open, order, onClose }: { open: boolean; order: OrderDat
           <div className="ud-modal-row"><span className="k">ORDER NO.</span><span className="v">#{orderNo.current}</span></div>
           <div className="ud-modal-row"><span className="k">PRODUCT</span><span className="v v-dark">{order?.sizeName}</span></div>
           <div className="ud-modal-row"><span className="k">DELIVERY</span><span className="v v-dark">{order?.date}</span></div>
-          {order && !SIZES.find(s => s.name === order.sizeName)?.isB2B && (
+          {order && order.total > 0 && (
             <div className="ud-modal-row"><span className="k">TOTAL</span><span className="v">MOP$ {order.total.toLocaleString()}</span></div>
           )}
           <div className="ud-modal-actions">
@@ -797,6 +819,26 @@ export default function SeaUrchinPage() {
   const [utmSource, setUtmSource] = useState('facebook_ad')
   const [order, setOrder] = useState<OrderData | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+
+  // Dynamic config from Supabase (falls back to module-level defaults)
+  const [liveSizes, setLiveSizes] = useState<SizeItem[]>(SIZES)
+  const [liveSteps, setLiveSteps] = useState<StepItem[]>(STEPS_DATA)
+  const [liveArchive, setLiveArchive] = useState<ArchiveItem[]>(ARCHIVE_DATA)
+  const [liveReviews, setLiveReviews] = useState<ReviewItem[]>(REVIEWS_DATA)
+  const [liveFaq, setLiveFaq] = useState<FaqItem[]>(FAQ_DATA)
+
+  useEffect(() => {
+    fetch('/api/v1/sea-urchin-config')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.sizes)   && data.sizes.length)   setLiveSizes(data.sizes)
+        if (Array.isArray(data.steps)   && data.steps.length)   setLiveSteps(data.steps)
+        if (Array.isArray(data.archive) && data.archive.length) setLiveArchive(data.archive)
+        if (Array.isArray(data.reviews) && data.reviews.length) setLiveReviews(data.reviews)
+        if (Array.isArray(data.faq)     && data.faq.length)     setLiveFaq(data.faq)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
@@ -834,12 +876,12 @@ export default function SeaUrchinPage() {
       <Marquee />
 
       <div className="ud-reveal"><Hero /></div>
-      <div className="ud-reveal"><OrderForm onSubmit={handleOrder} utmSource={utmSource} /></div>
+      <div className="ud-reveal"><OrderForm onSubmit={handleOrder} utmSource={utmSource} sizes={liveSizes} /></div>
       <div className="ud-reveal"><Dashboard /></div>
-      <div className="ud-reveal"><Steps /></div>
-      <div className="ud-reveal"><Archive /></div>
-      <div className="ud-reveal"><Reviews /></div>
-      <div className="ud-reveal"><FAQ /></div>
+      <div className="ud-reveal"><Steps steps={liveSteps} /></div>
+      <div className="ud-reveal"><Archive drops={liveArchive} /></div>
+      <div className="ud-reveal"><Reviews items={liveReviews} /></div>
+      <div className="ud-reveal"><FAQ items={liveFaq} /></div>
       <Footer />
 
       <SuccessModal open={modalOpen} order={order} onClose={() => setModalOpen(false)} />
