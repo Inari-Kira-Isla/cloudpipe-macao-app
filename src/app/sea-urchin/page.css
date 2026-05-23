@@ -1009,3 +1009,38 @@
   0% { transform: scale(0); }
   100% { transform: scale(1); }
 }
+
+/* ── NOTICE BANNER ── */
+.ud-notice {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  text-transform: uppercase;
+}
+
+/* ── FLOATING EDIT FAB ── */
+.ud-edit-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  z-index: 9999;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.ud-edit-fab:hover { opacity: 1; transform: scale(1.1); }

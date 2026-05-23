@@ -23,28 +23,28 @@ const DROP_INFO = {
 }
 
 const SIZES = [
-  { id: 'family',     name: '家庭鑑賞套裝', weight: '100g',       price: 380,  sub: '1–2 人',  isB2B: false },
-  { id: 'chef',       name: '主廚精選套裝', weight: '各 100g × 2', price: 680,  sub: '2–4 人',  isB2B: false },
-  { id: 'restaurant', name: '餐廳採購',     weight: '1kg 起訂',    price: 0,    sub: '歡迎查詢', isB2B: true  },
+  { id: 'wood',       name: '木板海膽',   weight: '100g',       price: 308,  sub: '1–2 人',  isB2B: false },
+  { id: 'double',     name: '兩板優惠',   weight: '100g × 2',   price: 598,  sub: '2–4 人',  isB2B: false },
+  { id: 'restaurant', name: '餐廳採購',   weight: '1kg 起訂',   price: 0,    sub: '歡迎查詢', isB2B: true  },
 ]
 
-// Next Wednesday 23:59 cutoff
+// Next Saturday 23:59 cutoff (for Monday delivery)
 function nextCutoff(): number {
   const d = new Date()
   const day = d.getDay()           // 0=Sun … 6=Sat
-  const daysUntilWed = (3 - day + 7) % 7 || 7
-  d.setDate(d.getDate() + daysUntilWed)
+  const daysUntilSat = (6 - day + 7) % 7 || 7
+  d.setDate(d.getDate() + daysUntilSat)
   d.setHours(23, 59, 0, 0)
   return d.getTime()
 }
 
-// Next 4 Friday delivery slots
+// Next 4 Monday delivery slots
 function deliverySlots(): string[] {
   const slots: string[] = []
   const d = new Date()
   for (let i = 0; slots.length < 4; i++) {
     d.setDate(d.getDate() + 1)
-    if (d.getDay() === 5) {
+    if (d.getDay() === 1) {
       slots.push(d.toLocaleDateString('zh-HK', { month: 'long', day: 'numeric', weekday: 'short' }))
     }
   }
@@ -91,7 +91,7 @@ function Marquee() {
   const items = [
     `DROP NO. ${DROP_INFO.no}`, 'LIVE — 利尻島直送', '深海秘寶．秒速掉落',
     'DEEP SEA TREASURE', `限量 ${DROP_INFO.qtyTotal} 盒`, '北海道 → 澳門直送',
-    `COLD CHAIN ${DROP_INFO.temp}°C`, 'BAFUN UNI SEASON', '每週五到貨 · 週三截單',
+    `COLD CHAIN ${DROP_INFO.temp}°C`, 'BAFUN UNI SEASON', '每週一到貨 · 週六截單',
   ]
   return (
     <div className="ud-marquee">
@@ -212,7 +212,7 @@ function Hero() {
             </div>
             <div className="ud-data-chip ud-chip-2">
               <div className="k">DELIVERY</div>
-              <div className="v">每週五 · 澳門全區</div>
+              <div className="v">每週一 · 澳門全區</div>
             </div>
           </div>
         </div>
@@ -225,7 +225,7 @@ function Hero() {
 // OrderForm
 // ─────────────────────────────────────────────
 function OrderForm({ onSubmit, utmSource }: { onSubmit: (d: OrderData) => void; utmSource: string }) {
-  const [sizeId, setSizeId] = useState('family')
+  const [sizeId, setSizeId] = useState('wood')
   const [form, setForm] = useState({ name: '', phone: '', date: DATES[0] ?? '', notes: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -268,8 +268,8 @@ function OrderForm({ onSubmit, utmSource }: { onSubmit: (d: OrderData) => void; 
             <h2>立即輸入<br /><span className="ud-accent">解鎖寶箱</span></h2>
           </div>
           <div className="right">
-            <span>● 每週五到貨</span>
-            <span>· 週三 23:59 截單</span>
+            <span>● 每週一到貨</span>
+            <span>· 週六 23:59 截單</span>
           </div>
         </div>
 
@@ -391,7 +391,7 @@ function OrderForm({ onSubmit, utmSource }: { onSubmit: (d: OrderData) => void; 
             </div>
 
             <div className="ud-trust-strip">
-              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', 'IAM 認證'], ['◆', '週五到貨']].map(([icon, txt]) => (
+              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', 'IAM 認證'], ['◆', '週一到貨']].map(([icon, txt]) => (
                 <div key={txt} className="ud-trust-cell"><span className="icon">{icon}</span>{txt}</div>
               ))}
             </div>
@@ -664,10 +664,10 @@ function Reviews() {
 function FAQ() {
   const [openIdx, setOpenIdx] = useState(0)
   const items = [
-    { q: '海膽幾時到貨？截單時間係幾時？', a: '每週五新鮮到貨，截單時間為每週三 23:59。如未能及時截單，可提前預訂下週。' },
-    { q: '配送範圍及費用？', a: '免費配送至澳門半島、氹仔及路環全區。週五到貨後 WhatsApp 確認送達時段（上午或下午）。' },
+    { q: '海膽幾時到貨？截單時間係幾時？', a: '每週一新鮮到貨，截單時間為每週六 23:59。如未能及時截單，可提前預訂下週。' },
+    { q: '配送範圍及費用？', a: '免費配送至澳門半島、氹仔及路環全區。週一到貨後 WhatsApp 確認送達時段（上午或下午）。' },
     { q: '如何付款？', a: '支持 MBway、轉數快、現金（送貨時付款）。確認訂單後提供付款詳情。' },
-    { q: '限量數量是多少？為何這麼少？', a: '每週僅放出 50 盒，以確保頂級鮮度及品質。週四 21:00 開放，售完即止。提早截單更有保障。' },
+    { q: '限量數量是多少？為何這麼少？', a: '每週僅放出 50 盒，以確保頂級鮮度及品質。每週六截單，售完即止。提早截單更有保障。' },
     { q: '到貨品質不符預期怎麼辦？', a: '我們提供 100% 鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
   ]
   return (
@@ -830,6 +830,7 @@ export default function SeaUrchinPage() {
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
       <TopBar />
+      <div className="ud-notice">🧊 週一新鮮到貨 · 截單：每週六 23:59 · 澳門全區免費配送</div>
       <Marquee />
 
       <div className="ud-reveal"><Hero /></div>
@@ -842,6 +843,9 @@ export default function SeaUrchinPage() {
       <Footer />
 
       <SuccessModal open={modalOpen} order={order} onClose={() => setModalOpen(false)} />
+
+      {/* Floating admin edit button */}
+      <a href="/admin/sea-urchin" className="ud-edit-fab" title="Edit page content" aria-label="Admin edit">✏️</a>
 
       {FB_PIXEL_ID && (
         <Script id="fb-pixel" strategy="afterInteractive">{`

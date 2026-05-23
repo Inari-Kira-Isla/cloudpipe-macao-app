@@ -2,6 +2,30 @@
 
 import { useEffect, useState } from 'react'
 
+// ─── Page-content editor types ────────────────────────────────
+type SizeEntry = { id: string; name: string; weight: string; price: number; sub: string; isB2B: boolean }
+type DropConfig = { no: string; name: string; origin: string; qtyLeft: number; qtyTotal: number; temp: number }
+type PageConfig = {
+  notice: string
+  drop: DropConfig
+  sizes: SizeEntry[]
+  delivery_day: number
+  cutoff_day: number
+}
+
+const DAYS = ['週日', '週一', '週二', '週三', '週四', '週五', '週六']
+const DEFAULT_PAGE_CONFIG: PageConfig = {
+  notice: '🧊 週一新鮮到貨 · 截單：每週六 23:59',
+  drop: { no: '024', name: '北海道馬糞海膽', origin: '北海道 / 利尻島', qtyLeft: 23, qtyTotal: 50, temp: -1.4 },
+  sizes: [
+    { id: 'wood',       name: '木板海膽', weight: '100g',     price: 308, sub: '1–2 人',  isB2B: false },
+    { id: 'double',     name: '兩板優惠', weight: '100g × 2', price: 598, sub: '2–4 人',  isB2B: false },
+    { id: 'restaurant', name: '餐廳採購', weight: '1kg 起訂', price: 0,   sub: '歡迎查詢', isB2B: true  },
+  ],
+  delivery_day: 1,
+  cutoff_day: 6,
+}
+
 interface Customer {
   id: string
   name: string | null
@@ -27,6 +51,7 @@ interface Stats {
 const ADMIN_KEY = 'sue-admin-2026'
 
 export default function SeaUrchinAdminPage() {
+  const [tab, setTab] = useState<'customers' | 'content'>('content')
   const [customers, setCustomers] = useState<Customer[]>([])
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -38,6 +63,71 @@ export default function SeaUrchinAdminPage() {
   const [filter, setFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Page content editor state
+  const [cfg, setCfg] = useState<PageConfig>(DEFAULT_PAGE_CONFIG)
+  const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/v1/sea-urchin-config')
+      .then(r => r.json())
+      .then((data: Partial<PageConfig>) => {
+        setCfg(c => ({
+          ...c,
+          ...(data.notice !== undefined && { notice: data.notice }),
+          ...(data.drop !== undefined && { drop: data.drop }),
+          ...(data.sizes !== undefined && { sizes: data.sizes }),
+          ...(data.delivery_day !== undefined && { delivery_day: Number(data.delivery_day) }),
+          ...(data.cutoff_day !== undefined && { cutoff_day: Number(data.cutoff_day) }),
+        }))
+      })
+      .catch(() => {})
+  }, [])
+
+  const saveConfig = async (key: string, value: unknown) => {
+    setSaving(true); setSaveStatus(null)
+    try {
+      const res = await fetch('/api/v1/sea-urchin-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+        body: JSON.stringify({ key, value }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      setSaveStatus({ type: 'ok', msg: `✓ 已儲存 "${key}"` })
+    } catch (err) {
+      setSaveStatus({ type: 'err', msg: `✗ 失敗: ${err}` })
+    }
+    setSaving(false)
+  }
+
+  const saveAll = async () => {
+    setSaving(true); setSaveStatus(null)
+    try {
+      const res = await fetch('/api/v1/sea-urchin-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+        body: JSON.stringify({ updates: [
+          { key: 'notice',       value: cfg.notice },
+          { key: 'drop',         value: cfg.drop },
+          { key: 'sizes',        value: cfg.sizes },
+          { key: 'delivery_day', value: cfg.delivery_day },
+          { key: 'cutoff_day',   value: cfg.cutoff_day },
+        ]}),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      setSaveStatus({ type: 'ok', msg: '✓ 全部設定已儲存' })
+    } catch (err) {
+      setSaveStatus({ type: 'err', msg: `✗ 失敗: ${err}` })
+    }
+    setSaving(false)
+  }
+
+  const setDrop = (field: keyof DropConfig, val: string | number) =>
+    setCfg(c => ({ ...c, drop: { ...c.drop, [field]: val } }))
+
+  const setSize = (idx: number, field: keyof SizeEntry, val: string | number | boolean) =>
+    setCfg(c => ({ ...c, sizes: c.sizes.map((s, i) => (i === idx ? { ...s, [field]: val } : s)) }))
 
   useEffect(() => {
     fetchCustomers()
@@ -141,10 +231,145 @@ export default function SeaUrchinAdminPage() {
     <div className="min-h-screen bg-zinc-950 text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-amber-400 mb-2">海膽速遞 • 客戶管理</h1>
-          <p className="text-zinc-400">⚠️ 管理員頁面 · 請勿分享此 URL</p>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-amber-400 mb-2">海膽速遞 • 後台管理</h1>
+            <p className="text-zinc-400">⚠️ 管理員頁面 · 請勿分享此 URL · <a href="/sea-urchin" target="_blank" className="text-amber-400 underline">前往網站 →</a></p>
+          </div>
         </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-zinc-800">
+          {(['content', 'customers'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-5 py-2 font-semibold text-sm transition border-b-2 -mb-px ${tab === t ? 'border-amber-400 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'}`}
+            >
+              {t === 'content' ? '📝 頁面內容' : '👥 客戶管理'}
+            </button>
+          ))}
+        </div>
+
+        {/* ── CONTENT TAB ── */}
+        {tab === 'content' && (
+          <div style={{ fontFamily: 'system-ui', color: '#f4f4f5' }}>
+            {saveStatus && (
+              <div className={`p-3 rounded-lg mb-4 text-sm font-semibold ${saveStatus.type === 'ok' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+                {saveStatus.msg}
+              </div>
+            )}
+
+            {/* Notice */}
+            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-3">📢 公告橫幅</h2>
+              <div className="flex gap-3 items-center flex-wrap">
+                <input
+                  className="flex-1 min-w-60 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                  value={cfg.notice}
+                  onChange={e => setCfg(c => ({ ...c, notice: e.target.value }))}
+                />
+                <button disabled={saving} onClick={() => saveConfig('notice', cfg.notice)} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存</button>
+              </div>
+              <div className="mt-2 text-xs text-zinc-500">預覽：<span className="bg-orange-600 text-white px-2 py-0.5 rounded text-xs">{cfg.notice}</span></div>
+            </div>
+
+            {/* Drop Info */}
+            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">🎯 本週 DROP</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                {([
+                  ['no', 'DROP 編號', 'text'],
+                  ['name', '商品名稱', 'text'],
+                  ['origin', '產地', 'text'],
+                  ['qtyLeft', '剩餘數量', 'number'],
+                  ['qtyTotal', '總數量', 'number'],
+                  ['temp', '冷鏈溫度 (°C)', 'number'],
+                ] as [keyof DropConfig, string, string][]).map(([field, label, type]) => (
+                  <div key={field}>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{label}</label>
+                    <input
+                      type={type}
+                      step={type === 'number' ? '0.1' : undefined}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                      value={cfg.drop[field]}
+                      onChange={e => setDrop(field, type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+              <button disabled={saving} onClick={() => saveConfig('drop', cfg.drop)} className="mt-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存 DROP 資訊</button>
+            </div>
+
+            {/* Delivery */}
+            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">📅 配送設定</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">到貨日</label>
+                  <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={cfg.delivery_day} onChange={e => setCfg(c => ({ ...c, delivery_day: parseInt(e.target.value) }))}>
+                    {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">截單日</label>
+                  <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={cfg.cutoff_day} onChange={e => setCfg(c => ({ ...c, cutoff_day: parseInt(e.target.value) }))}>
+                    {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                  </select>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-zinc-500">⚠️ 更改此設定後需重新部署網站才能反映倒數計時</p>
+              <button disabled={saving} onClick={() => saveConfig('delivery_day', cfg.delivery_day).then(() => saveConfig('cutoff_day', cfg.cutoff_day))} className="mt-3 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存配送設定</button>
+            </div>
+
+            {/* Sizes */}
+            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">📦 產品規格及定價</h2>
+              {cfg.sizes.map((size, idx) => (
+                <div key={size.id} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold text-amber-400 uppercase">{size.id}</span>
+                    {size.isB2B && <span className="text-xs bg-yellow-900 text-yellow-200 px-2 py-0.5 rounded">B2B</span>}
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">名稱</label>
+                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.name} onChange={e => setSize(idx, 'name', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">規格</label>
+                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.weight} onChange={e => setSize(idx, 'weight', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">說明</label>
+                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.sub} onChange={e => setSize(idx, 'sub', e.target.value)} />
+                    </div>
+                    {!size.isB2B && (
+                      <div>
+                        <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">價格 (MOP$)</label>
+                        <input type="number" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.price} onChange={e => setSize(idx, 'price', parseInt(e.target.value))} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <button disabled={saving} onClick={() => saveConfig('sizes', cfg.sizes)} className="mt-5 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存產品規格</button>
+            </div>
+
+            {/* Save All */}
+            <button
+              onClick={saveAll}
+              disabled={saving}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl text-sm uppercase tracking-wider transition"
+            >
+              {saving ? '儲存中…' : '💾 全部儲存'}
+            </button>
+          </div>
+        )}
+
+        {/* ── CUSTOMERS TAB ── */}
+        {tab === 'customers' && (
+          <div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -316,6 +541,9 @@ export default function SeaUrchinAdminPage() {
         <div className="mt-8 pt-6 border-t border-zinc-800 text-xs text-zinc-500">
           <p>顯示 {filtered.length} 名客戶 (篩選後) · 總計 {stats.total} 名</p>
         </div>
+          </div>
+        )}
+
       </div>
     </div>
   )
