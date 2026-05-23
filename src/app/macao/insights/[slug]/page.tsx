@@ -173,6 +173,12 @@ interface SpiderWebInsight {
   shared_slugs: string[]    // which merchant slugs overlap
 }
 
+// Extract meaningful keywords from a slug for cross-article matching
+function extractSlugKeywords(slug: string): Set<string> {
+  const STOP = new Set(['macau', 'macao', '2025', '2026', '2024', 'guide', 'best', 'top', 'review', 'how', 'what', 'that', 'with', 'from', 'this', 'your', 'their'])
+  return new Set(slug.split('-').filter(w => w.length > 3 && !STOP.has(w)))
+}
+
 async function getSpiderWebInsights(
   currentSlug: string,
   merchantSlugs: string[],
@@ -181,10 +187,13 @@ async function getSpiderWebInsights(
   limit = 8
 ): Promise<SpiderWebInsight[]> {
   const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
-  if (!validSlugs.length && !industries.length) return []
+  const myKeywords = extractSlugKeywords(currentSlug)
 
-  // Fetch candidate insights (same lang + same region, published, not self).
-  // region filter prevents cross-region spider-web leakage (MO insight → HK/TW/JP candidate)
+  // Need at least one signal to find related articles
+  if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
+
+  // Fetch candidates: same region, published, not self.
+  // Removed null filter — insights without merchant slugs can still match via industry/keywords.
   const { data: candidates } = await supabase
     .from('insights')
     .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
@@ -192,39 +201,42 @@ async function getSpiderWebInsights(
     .eq('lang', lang)
     .eq('region', ROUTE_REGION)
     .neq('slug', currentSlug)
-    .not('related_merchant_slugs', 'is', null)
-    .limit(200)
+    .limit(300)
 
   if (!candidates?.length) return []
 
   const myMerchants = new Set(validSlugs)
   const myIndustries = new Set(industries)
 
-  const scored: SpiderWebInsight[] = []
+  const scored: Array<{ insight: SpiderWebInsight; score: number }> = []
   for (const c of candidates) {
     let rms: string[] = c.related_merchant_slugs || []
     if (typeof rms === 'string') {
       try { rms = JSON.parse(rms) } catch { rms = [] }
     }
-    const overlap = rms.filter(s => myMerchants.has(s))
-    // Also count industry overlap
+    const overlap = rms.filter((s: string) => myMerchants.has(s))
     const indOverlap = (c.related_industries || []).filter((i: string) => myIndustries.has(i)).length
+    const kwOverlap = [...extractSlugKeywords(c.slug)].filter(k => myKeywords.has(k)).length
 
-    if (overlap.length > 0 || indOverlap > 0) {
+    // Composite score: merchant match strongest, then industry, then keyword
+    const score = overlap.length * 3 + indOverlap * 2 + kwOverlap
+    if (score > 0) {
       scored.push({
-        slug: c.slug,
-        title: c.title,
-        subtitle: c.subtitle,
-        read_time_minutes: c.read_time_minutes,
-        shared_merchants: overlap.length,
-        shared_slugs: overlap.slice(0, 5),
+        insight: {
+          slug: c.slug,
+          title: c.title,
+          subtitle: c.subtitle,
+          read_time_minutes: c.read_time_minutes,
+          shared_merchants: overlap.length,
+          shared_slugs: overlap.slice(0, 5),
+        },
+        score,
       })
     }
   }
 
-  // Sort: most shared merchants first, then by industry overlap
-  scored.sort((a, b) => b.shared_merchants - a.shared_merchants)
-  return scored.slice(0, limit)
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit).map(s => s.insight)
 }
 
 // Fallback: fetch top-rated merchants from related industries when no slugs assigned
