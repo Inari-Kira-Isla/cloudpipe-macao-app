@@ -240,8 +240,8 @@ function Hero() {
               <div className="v"><span className="ud-pulse-dot" />{DROP_INFO.temp}°C</div>
             </div>
             <div className="ud-data-chip ud-chip-2">
-              <div className="k">DELIVERY</div>
-              <div className="v">每週一 · 澳門全區</div>
+              <div className="k">ROUTE</div>
+              <div className="v">NRT → MFM 週一</div>
             </div>
           </div>
         </div>
@@ -470,11 +470,11 @@ function Dashboard() {
               <h3><span className="ud-pulse-dot" />配送軌跡 / DELIVERY ROUTE</h3>
               <div className="ud-track-route">
                 {[
-                  { cls: 'done',   ico: '✓', name: '利尻港 · 海女捕撈',   when: 'RISHIRI HARBOR · HARVEST',  time: '04:22 JST' },
-                  { cls: 'done',   ico: '✓', name: '板付出貨 · 冷鏈封箱', when: 'PACKING · −1.5°C SEALED',   time: '07:08 JST' },
-                  { cls: 'active', ico: '●', name: '香港機場 · 空運轉口',  when: 'HKG TRANSIT → MFM',         time: '09:40 JST' },
-                  { cls: '',       ico: '04', name: '澳門關閘 · 通關提領', when: 'MFM CUSTOMS · ETA',          time: '13:00 JST' },
-                  { cls: '',       ico: '05', name: '指定地址 · 完成掉落', when: 'YOUR DOOR · DROP COMPLETE',  time: '15:00 JST' },
+                  { cls: 'done',   ico: '✓', name: '利尻港 · 漁船捕撈',   when: 'RISHIRI HARBOR · HARVEST',  time: '04:00 JST' },
+                  { cls: 'done',   ico: '✓', name: '板付出貨 · 冷鏈封箱', when: 'PACKING · −1.5°C SEALED',   time: '07:00 JST' },
+                  { cls: 'active', ico: '●', name: '東京成田 · 空運直飛',  when: 'NRT → MFM AIR FREIGHT',     time: '10:00 JST' },
+                  { cls: '',       ico: '04', name: '澳門機場 · 清關提領', when: 'MFM AIRPORT · CUSTOMS',      time: '週一上午' },
+                  { cls: '',       ico: '05', name: '指定地址 · 完成掉落', when: 'YOUR DOOR · DROP COMPLETE',  time: '週一下午' },
                 ].map((step, i) => (
                   <div key={i} className={`ud-track-step ${step.cls}`}>
                     <div className="ico">{step.ico}</div>
@@ -547,10 +547,10 @@ function Dashboard() {
               </div>
               <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { k: '海女', v: '藤原 由紀 #017' },
-                  { k: '船號', v: 'RISHIRI-MARU II' },
-                  { k: '撈獲深度', v: '8.4 m' },
-                  { k: '進口商', v: '稻荷環球食品 · IAM' },
+                  { k: '捕獲海域', v: '利尻島沿岸' },
+                  { k: '空運路線', v: 'NRT → MFM' },
+                  { k: '冷藏標準', v: '−2°C ~ 0°C 全程' },
+                  { k: '進口商',   v: '稻荷環球食品 · IAM' },
                 ].map(r => (
                   <div key={r.k} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em' }}>
                     <span style={{ color: 'var(--ink-3)' }}>{r.k}</span>

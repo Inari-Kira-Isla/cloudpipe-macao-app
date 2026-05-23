@@ -502,7 +502,7 @@
 .ud-field input::placeholder { color: var(--ink-3); }
 .ud-field select { -webkit-appearance: none; appearance: none; }
 
-.ud-size-pills { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.ud-size-pills { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 10px; }
 .ud-size-pill {
   border: 1px solid var(--line-2);
   background: transparent;
