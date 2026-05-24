@@ -23,7 +23,7 @@ interface PageProps {
   // searchParams intentionally omitted — reading it forces dynamic rendering
 }
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
 type Lang = (typeof VALID_LANGS)[number]

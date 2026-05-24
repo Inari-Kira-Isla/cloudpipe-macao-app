@@ -141,7 +141,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { merchant, content } = data
   const title = content?.og_title || `${merchant.name_zh} — 澳門百科 | CloudPipe`
   const description = content?.og_description || content?.description || `${merchant.name_zh} 的完整資訊、評價、FAQ`
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
   return {
     title,
@@ -210,7 +210,7 @@ export default async function MerchantPage({ params }: PageProps) {
   const { merchant, content, faqs, enFaqs, insights, relatedMerchants, brandEcosystem } = data
   const cat = merchant.category
   const industry = getIndustry(indSlug)
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
   const socialLinks = (merchant as any).social_links as Record<string, string> | null

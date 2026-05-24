@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 export const metadata: Metadata = {
   title: '澳門交通完整攻略 2026 — 入境方式、本地巴士、免費穿梭車全指南 | CloudPipe 澳門百科',

@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 export const metadata: Metadata = {
   title: '澳門景點完整清單 2026 — 世遺、博物館、主題公園全收錄 | CloudPipe 澳門百科',

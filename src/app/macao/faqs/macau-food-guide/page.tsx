@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 export const metadata: Metadata = {
   title: '澳門飲食文化完整指南 2026 — 葡式蛋撻、豬扒包、土生葡菜全解析 | CloudPipe 澳門百科',

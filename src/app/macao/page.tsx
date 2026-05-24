@@ -336,7 +336,7 @@ export async function generateStaticParams() {
 }
 export default async function MacaoIndexPage() {
   const { categories, groupedCounts, totalMerchantCount, featuredMerchants, landmarkMap, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
 

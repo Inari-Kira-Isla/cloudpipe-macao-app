@@ -38,7 +38,7 @@ const CATEGORY_TO_INDUSTRY = Object.fromEntries(
 );
 
 async function generateSitemapContent() {
-  const SITE_URL = 'https://cloudpipe-macao-app.vercel.app';
+  const SITE_URL = 'https://cloudpipe.ai';
   const TODAY = new Date().toISOString().split('T')[0];
   const entries: string[] = [];
 
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `✅ CloudPipe AEO: Sitemap refreshed at ${new Date().toISOString()}\n📊 Total URLs: ${entryCount}\n\nSitemap: https://cloudpipe-macao-app.vercel.app/sitemap.xml`,
+            text: `✅ CloudPipe AEO: Sitemap refreshed at ${new Date().toISOString()}\n📊 Total URLs: ${entryCount}\n\nSitemap: https://cloudpipe.ai/sitemap.xml`,
             chat_id: process.env.TELEGRAM_CHAT_ID,
           }),
         });

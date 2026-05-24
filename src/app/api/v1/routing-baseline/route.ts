@@ -112,7 +112,7 @@ export async function GET() {
       .slice(0, 20)
       .map(([slug, info]) => ({
         slug, ...info,
-        page_url: `https://cloudpipe-macao-app.vercel.app${info.page_path}`
+        page_url: `https://cloudpipe.ai${info.page_path}`
       }))
 
     const merchantsByIndustry: Record<string, number> = {}

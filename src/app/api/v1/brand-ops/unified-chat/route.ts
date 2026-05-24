@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
     if (attachedText && attachedText.length > 200) {
       try {
         const analyzeRes = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cloudpipe-macao-app.vercel.app'}/api/v1/brand-ops/analyze`,
+          `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cloudpipe.ai'}/api/v1/brand-ops/analyze`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

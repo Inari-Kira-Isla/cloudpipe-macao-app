@@ -3,7 +3,7 @@ export async function GET() {
 Contact: https://github.com/Inari-Kira-Isla
 Expires: 2027-01-01T00:00:00.000Z
 Preferred-Languages: zh, en, pt
-Canonical: https://cloudpipe-macao-app.vercel.app/.well-known/security.txt
+Canonical: https://cloudpipe.ai/.well-known/security.txt
 `
 
   return new Response(body, {

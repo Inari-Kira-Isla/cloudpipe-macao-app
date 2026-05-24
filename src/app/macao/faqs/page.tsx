@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 export const metadata: Metadata = {
   title: '澳門常見問題大全 — AI 精選 FAQ 知識庫 | CloudPipe 澳門百科',

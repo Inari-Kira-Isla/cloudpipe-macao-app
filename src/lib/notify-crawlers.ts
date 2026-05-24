@@ -3,7 +3,7 @@
  * Reduces discovery delay from 24-72 hours to <1 hour
  */
 
-const SITEMAP_URL = 'https://cloudpipe-macao-app.vercel.app/sitemap.xml'
+const SITEMAP_URL = 'https://cloudpipe.ai/sitemap.xml'
 const PING_ENDPOINTS = {
   google: 'https://www.google.com/ping',
   bing: 'https://www.bing.com/ping',
@@ -44,7 +44,7 @@ export async function notifySitemaps() {
  * Future: Integrate with Feedly, Inoreader API (optional)
  */
 export async function notifyRSSAggregators() {
-  const feedUrl = 'https://cloudpipe-macao-app.vercel.app/feed.xml'
+  const feedUrl = 'https://cloudpipe.ai/feed.xml'
 
   try {
     // Optional: Ping RSS-specific services (currently basic implementation)

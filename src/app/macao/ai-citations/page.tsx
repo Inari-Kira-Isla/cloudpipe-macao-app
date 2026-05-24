@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const revalidate = 300 // 5 min ISR
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export const metadata: Metadata = {
   title: 'AI 引用情報 Dashboard — CloudPipe 澳門百科',

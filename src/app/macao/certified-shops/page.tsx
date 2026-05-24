@@ -5,7 +5,7 @@ import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 3600
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export const metadata: Metadata = {
   title: '澳門消委會誠信店完整名單 — 5,700+ 間官方認證商戶 | CloudPipe',

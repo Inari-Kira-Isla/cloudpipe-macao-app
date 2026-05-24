@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 export const metadata: Metadata = {
   title: '澳門賭場酒店選擇指南 2026 — 路氹城 vs 澳門半島完整對比 | CloudPipe 澳門百科',

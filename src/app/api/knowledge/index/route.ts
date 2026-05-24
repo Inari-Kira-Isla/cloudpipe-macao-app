@@ -14,7 +14,7 @@ import { trackBotVisit } from '@/lib/track-bot'
 export const revalidate = 3600
 export const maxDuration = 15
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

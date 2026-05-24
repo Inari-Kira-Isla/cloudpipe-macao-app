@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export const metadata: Metadata = {
   title: {
@@ -157,7 +157,7 @@ export default function RootLayout({
           }}
         />
         {children}
-        <EcosystemFooter currentUrl="https://cloudpipe-macao-app.vercel.app" />
+        <EcosystemFooter currentUrl="https://cloudpipe.ai" />
         {/* Baidu Auto-Push — submit URL on every page visit */}
         <script
           dangerouslySetInnerHTML={{

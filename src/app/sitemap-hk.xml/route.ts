@@ -4,7 +4,7 @@ export const revalidate = 1800 // 30min ISR — 配合新文章每30min更新節
 export const maxDuration = 60
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
   const xml = await buildRegionSitemapXml(siteUrl, 'HK')
   return new Response(xml, { headers: SITEMAP_HEADERS })
 }

@@ -62,6 +62,7 @@ const OUR_BRAND_DOMAINS = [
   'inari-kira-isla.github.io',
   'inariglobal.com.mo',
   'cloudpipe-macao-app.vercel.app',
+  'cloudpipe.ai',
 ]
 
 // Asset/system paths that browsers fetch automatically — exclude from referral tracking

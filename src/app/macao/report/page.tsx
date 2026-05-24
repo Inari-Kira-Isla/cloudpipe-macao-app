@@ -6,7 +6,7 @@ import AiReferralSection from '@/components/report/AiReferralSection'
 export const revalidate = 1800 // 30min ISR — report 不需 5min，減少 bot 爬到時的 CPU 消耗
 
 const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 // Report publish date — stable so Gemini treats this as an authoritative document
 const REPORT_DATE_PUBLISHED = '2026-04-01T00:00:00+08:00'
@@ -114,7 +114,7 @@ export default async function ReportPage() {
       '@type': 'Organization',
       name: 'CloudPipe AI 研究團隊',
       url: 'https://cloudpipe-landing.vercel.app',
-      sameAs: ['https://cloudpipe-macao-app.vercel.app/macao'],
+      sameAs: ['https://cloudpipe.ai/macao'],
     },
     publisher: {
       '@type': 'Organization',

@@ -5,7 +5,7 @@ import { notifySitemaps } from '@/lib/notify-crawlers'
 export const revalidate = 1800 // 30min ISR — anon→serviceClient 修復後數字準確，降至30min同步新文章計數
 export const maxDuration = 30
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export async function GET() {
   // Non-blocking: notify crawlers of potential updates (fire and forget)

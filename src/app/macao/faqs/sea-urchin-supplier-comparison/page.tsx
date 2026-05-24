@@ -2,7 +2,7 @@ import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
-const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = 'https://cloudpipe.ai'
 
 const PAGE_DATA = {
   title: '澳門海膽供應商對比：稻荷 vs Worldwide Seafood vs Kinwa Seafood',

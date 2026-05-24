@@ -6,7 +6,7 @@ import { safeJsonLd } from '@/lib/types'
 export const revalidate = 3600
 export const dynamicParams = true
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 type Lang = 'zh' | 'en' | 'pt'
 const VALID_LANGS: Lang[] = ['zh', 'en', 'pt']

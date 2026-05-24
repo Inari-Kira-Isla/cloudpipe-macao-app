@@ -4,7 +4,7 @@ import { INDUSTRIES } from '@/lib/industries'
 export const revalidate = 7200 // 2h ISR — AI bot 抓 llms.txt EN 版，必須 cache
 export const maxDuration = 30
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export async function GET() {
   const [{ data: topInsights }, { count: merchantCount }, { count: insightCount }] = await Promise.all([
