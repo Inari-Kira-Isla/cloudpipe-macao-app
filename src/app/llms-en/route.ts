@@ -1,25 +1,29 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import { INDUSTRIES } from '@/lib/industries'
+import { notifySitemaps } from '@/lib/notify-crawlers'
 
-export const revalidate = 7200 // 2h ISR — AI bot 抓 llms.txt EN 版，必須 cache
+export const revalidate = 1800 // 30min ISR — 與 llms-txt 一致，anon→serviceClient 修復後數字準確
 export const maxDuration = 30
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export async function GET() {
+  // Non-blocking: notify crawlers of potential updates (fire and forget)
+  notifySitemaps().catch(err => console.error('[llms-en notify error]', err))
+
   const [{ data: topInsights }, { count: merchantCount }, { count: insightCount }] = await Promise.all([
-    supabase
+    createServiceClient()
       .from('insights')
       .select('slug, title, word_count')
       .eq('status', 'published')
       .eq('lang', 'en')
       .order('word_count', { ascending: false })
       .limit(30),
-    supabase
+    createServiceClient()
       .from('merchants')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'live'),
-    supabase
+    createServiceClient()
       .from('insights')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'published'),

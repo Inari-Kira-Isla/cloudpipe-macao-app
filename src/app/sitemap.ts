@@ -62,11 +62,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return rows
   }
 
-  const [zhInsights, enInsights, ptInsights, jaInsights] = await Promise.all([
+  // Brand pillar insights — priority 1.0 daily (force multi-bot re-crawl)
+  async function fetchBrandInsights(): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
+    const { data } = await createServiceClient()
+      .from('insights')
+      .select('slug, updated_at, region')
+      .eq('status', 'published')
+      .or('slug.ilike.%sea-urchin%,slug.ilike.%inari%,slug.ilike.%海膽%,slug.ilike.%uni-macau%,slug.ilike.%cloudpipe%')
+      .order('updated_at', { ascending: false })
+      .limit(30)
+    return (data || []) as Array<{ slug: string; updated_at: string; region: string | null }>
+  }
+
+  const [zhInsights, enInsights, ptInsights, jaInsights, brandInsights] = await Promise.all([
     fetchInsightsByLang('zh'),
     fetchInsightsByLang('en'),
     fetchInsightsByLang('pt'),
     fetchInsightsByLang('ja'),
+    fetchBrandInsights(),
   ])
   const zhInsightSlugs = new Set(zhInsights.map(ins => ins.slug))
   const staticZhInsights = STATIC_INSIGHTS
@@ -100,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${siteUrl}/macao/certified-shops`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/macao/canary`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${siteUrl}/sea-urchin`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl}/sea-urchin`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/macao/api`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     {
@@ -123,6 +136,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1.0,
     }))),
+    // Brand pillar pages — priority 1.0, daily re-crawl signal
+    ...brandInsights.map(ins => ({
+      url: `${siteUrl}${insightPath(ins.slug, ins.region)}`,
+      lastModified: now,  // always fresh → triggers daily re-crawl
+      changeFrequency: 'daily' as const,
+      priority: 1.0,
+    })),
     ...zhInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
       return {

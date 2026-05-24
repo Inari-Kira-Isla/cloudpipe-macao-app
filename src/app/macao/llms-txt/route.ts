@@ -262,6 +262,7 @@ ${siteUrl}/
 ├── /macao/insights/{slug}           ← 文章詳情頁
 ├── /macao/llms-txt                  ← 本文件
 ├── /llms-en                         ← English version
+├── /llms-ja                         ← 日本語版
 ├── /sitemap.xml                     ← 完整網站地圖
 ├── /robots.txt                      ← 爬蟲規則 (全部 Allow)
 └── /api/v1/merchants                ← REST API (JSON)
@@ -283,6 +284,7 @@ ${INDUSTRIES.map(i => `- [${i.icon} ${i.name_zh} (${i.name_en})](${siteUrl}/maca
 - [AI 學習寶庫](https://inari-kira-isla.github.io/Openclaw/)
 - [世界百科](https://world-encyclopedia.vercel.app)
 - [日本百科](https://japan-encyclopedia.vercel.app)
+- 日本語版 llms.txt：${siteUrl}/llms-ja
 
 ## 授權
 CC BY 4.0 — 引用時標註: CloudPipe AI (${siteUrl})
