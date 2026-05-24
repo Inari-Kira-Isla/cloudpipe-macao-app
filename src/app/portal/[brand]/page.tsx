@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { BRAND_PORTAL_CONFIGS } from '@/lib/brandPortalConfig'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -60,11 +61,12 @@ type AuthState = 'loading' | 'authenticated' | 'invalid'
 // ── Sections ───────────────────────────────────────────────────────────────
 
 const SECTIONS = [
-  { id: 'overview', label: '總覽' },
-  { id: 'aeo',      label: '行動' },
-  { id: 'faq',      label: 'FAQ' },
-  { id: 'products', label: '產品' },
-  { id: 'profile',  label: '品牌資料' },
+  { id: 'overview',  label: '總覽' },
+  { id: 'aeo',       label: '行動' },
+  { id: 'faq',       label: 'FAQ' },
+  { id: 'products',  label: '產品' },
+  { id: 'evidence',  label: '成效記錄' },
+  { id: 'profile',   label: '品牌資料' },
 ]
 
 // ── Brand meta ─────────────────────────────────────────────────────────────
@@ -156,7 +158,18 @@ function ScoreRing({ value }: { value: number }) {
 
 const SPARKLINE_DATA = [12, 14, 11, 18, 16, 22, 20, 24, 22, 28, 32, 30, 35, 38, 42, 39, 44, 47]
 
+const EXEC_LABELS: Record<string, string> = {
+  expand_faq:         'FAQ 擴充（5 題）',
+  expand_profile:     '品牌簡介重寫',
+  generate_key_stats: '關鍵數據生成',
+  generate_schema:    'Schema.org 標記',
+  create_insight:     '深度文章生成',
+  indexnow_ping:      'IndexNow 索引通知',
+}
+
 function Sparkline({ data }: { data: number[] }) {
+  const [drawn, setDrawn] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setDrawn(true), 120); return () => clearTimeout(t) }, [])
   const w = 300, h = 60
   const max = Math.max(...data), min = Math.min(...data), range = max - min || 1
   const pts = data.map((d, i) => [(i / (data.length - 1)) * w, h - ((d - min) / range) * (h - 8) - 4] as [number, number])
@@ -167,7 +180,7 @@ function Sparkline({ data }: { data: number[] }) {
   }
   const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
   return (
-    <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
+    <svg className={`sparkline${drawn ? ' draw' : ''}`} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
       style={{ '--len': len.toFixed(1) } as React.CSSProperties}>
       <path d={path} fill="none" stroke="#B8923A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3" fill="#B8923A" />
@@ -396,19 +409,17 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
   const aeoRaw = dashData?.aeoScore ?? null
   const score = (aeoRaw?.total_score as number) ?? (aeoRaw?.score as number) ?? 72
   const scoreDelta = (aeoRaw?.score_delta as number) ?? 0
-  const engineChecks = ((aeoRaw?.dimensions as Record<string, unknown>)?.ai_engine_coverage as Record<string, unknown>)?.checks as Array<Record<string, unknown>> ?? []
-  const platforms = [
-    { name: 'ChatGPT',    ok: (engineChecks.find(c => c.engine === 'chatgpt')?.score as number ?? 0) > 0 },
-    { name: 'Perplexity', ok: (engineChecks.find(c => c.engine === 'perplexity')?.score as number ?? 0) > 0 },
-    { name: 'Gemini',     ok: (engineChecks.find(c => c.engine === 'gemini')?.score as number ?? 0) > 0 },
-    { name: 'Grok',       ok: (engineChecks.find(c => c.engine === 'grok')?.score as number ?? 0) > 0 },
-  ]
-  const okCount = platforms.filter(p => p.ok).length
   const priorityFixes = (aeoRaw?.priority_fixes as unknown[]) ?? []
   const pendingCount = priorityFixes.length
   const p1Count = priorityFixes.filter((f: unknown) => (f as Record<string, number>).potential_gain >= 10).length
   const citations = dashData?.lifecycle?.total_citations ?? dashData?.lifecycle?.weekly_citations ?? 47
   const firstName = brandName.split(/[\s（(]/)[0]
+
+  // Use BRAND_PORTAL_CONFIGS for engine data (includes Copilot + detail text)
+  const brandConfig = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+  const engines = brandConfig?.engines ?? []
+  const okCount = engines.filter(e => e.mentioned).length
+  const totalEngines = engines.length || 5
 
   return (
     <section id="overview" ref={reveal.ref} className={`anchor ${reveal.className}`}>
@@ -421,7 +432,7 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
           歡迎回來，<span className="serif" style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--gold)' }}>{firstName}</span>。
         </h1>
         <p className="body" style={{ fontSize: 16.5, maxWidth: 640, margin: 0 }}>
-          您的品牌在 <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{okCount}/4</strong> 個 AI 平台已被收錄
+          您的品牌在 <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{okCount}/{totalEngines}</strong> 個 AI 平台已被收錄
           {scoreDelta > 0 && <>，本週分數成長 <strong style={{ color: 'var(--green)', fontWeight: 600 }}>+{scoreDelta}</strong></>}。
         </p>
       </div>
@@ -452,20 +463,29 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
               <ScoreRing value={score} />
             </div>
             <hr className="divider" style={{ margin: '24px 0 4px' }} />
-            {platforms.map(p => (
-              <div key={p.name} className="platform-row">
+            {engines.length > 0 ? engines.map(e => (
+              <div key={e.key} className="platform-row">
                 <div className="row gap-12" style={{ minWidth: 0 }}>
-                  <div className="platform-icon">{p.name[0]}</div>
+                  <div className="platform-icon">{e.name[0]}</div>
                   <div style={{ minWidth: 0 }}>
-                    <div className="platform-name">{p.name}</div>
-                    <div className="platform-stat">{p.ok ? '已被引用' : '尚未被引用'}</div>
+                    <div className="platform-name">{e.name}</div>
+                    <div className="platform-stat" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {e.mentioned ? e.detail : '尚未被引用 · ' + e.query}
+                    </div>
                   </div>
                 </div>
-                {p.ok
+                {e.mentioned
                   ? <span className="status-pill ok"><Icon name="check" size={11} stroke={2.6} /> 提及</span>
                   : <span className="status-pill miss">未提及</span>}
               </div>
-            ))}
+            )) : (
+              ['ChatGPT', 'Perplexity', 'Gemini', 'Grok', 'Copilot'].map(name => (
+                <div key={name} className="platform-row">
+                  <div className="row gap-12"><div className="platform-icon">{name[0]}</div><div className="platform-name">{name}</div></div>
+                  <span className="status-pill miss">未提及</span>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Stats grid */}
@@ -524,6 +544,155 @@ function SectionOverview({ brandSlug, brandName, dashData, dashLoading }: {
         </>
       )}
     </section>
+  )
+}
+
+// ── inferActionType ────────────────────────────────────────────────────────
+
+function inferActionType(title: string, desc: string): string {
+  const text = `${title} ${desc}`.toLowerCase()
+  if (text.includes('faq') || text.includes('常見問題')) return 'expand_faq'
+  if (text.includes('簡介') || text.includes('about') || text.includes('品牌介紹')) return 'expand_profile'
+  if (text.includes('schema') || text.includes('結構化') || text.includes('json-ld')) return 'generate_schema'
+  if (text.includes('indexnow') || text.includes('索引') || text.includes('ping')) return 'indexnow_ping'
+  if (text.includes('數字') || text.includes('數據') || text.includes('統計')) return 'generate_key_stats'
+  return 'create_insight'
+}
+
+// ── ExecuteButton ──────────────────────────────────────────────────────────
+
+function ExecuteButton({ brandSlug, actionType, context, shortLabel }: {
+  brandSlug: string; actionType: string; context?: string; shortLabel?: string
+}) {
+  type Phase = 'idle' | 'confirm' | 'running' | 'done' | 'error'
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [result, setResult] = useState('')
+
+  const run = async () => {
+    setPhase('running')
+    try {
+      const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers.Authorization = `Bearer ${token}`
+      const res = await fetch('/api/v1/brand-execute', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ brand_slug: brandSlug, action_type: actionType, context }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? '執行失敗')
+      setResult(data.preview ?? data.label ?? '已完成')
+      setPhase('done')
+    } catch (err) {
+      setResult(String(err))
+      setPhase('error')
+    }
+  }
+
+  if (phase === 'idle') return (
+    <button
+      className="btn btn-ghost btn-sm"
+      style={{ fontSize: 11, color: 'var(--gold)', borderColor: 'rgba(184,146,58,0.35)', whiteSpace: 'nowrap' }}
+      onClick={() => setPhase('confirm')}
+    >
+      ✦ {shortLabel ?? 'AI 執行'}
+    </button>
+  )
+
+  if (phase === 'confirm') return (
+    <div style={{ padding: '8px 10px', background: 'rgba(184,146,58,0.07)', border: '1px solid rgba(184,146,58,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 8 }}>
+        AI 將執行：<strong style={{ color: 'var(--text)' }}>{EXEC_LABELS[actionType] ?? actionType}</strong>
+        {context && <><br /><span style={{ color: 'var(--text-3)', fontSize: 11 }}>主題：{context.slice(0, 38)}{context.length > 38 ? '…' : ''}</span></>}
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button
+          className="btn btn-sm"
+          style={{ fontSize: 11, background: 'var(--gold)', color: 'white', border: 'none', padding: '4px 12px', borderRadius: 6 }}
+          onClick={run}
+        >確認執行</button>
+        <button className="btn btn-ghost btn-sm" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => setPhase('idle')}>取消</button>
+      </div>
+    </div>
+  )
+
+  if (phase === 'running') return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', color: 'var(--text-2)', fontSize: 12 }}>
+      <div className="spinner" style={{ width: 13, height: 13, borderWidth: 2 }} />
+      AI 執行中…
+    </div>
+  )
+
+  if (phase === 'done') return (
+    <div style={{ padding: '6px 10px', background: 'rgba(26,139,62,0.07)', border: '1px solid rgba(26,139,62,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 11.5, color: 'var(--green)', fontWeight: 600, marginBottom: 2 }}>✓ 已完成</div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{result}</div>
+    </div>
+  )
+
+  return (
+    <div style={{ padding: '6px 10px', background: 'rgba(196,37,37,0.07)', border: '1px solid rgba(196,37,37,0.2)', borderRadius: 8, maxWidth: 240 }}>
+      <div style={{ fontSize: 11.5, color: 'var(--red)', marginBottom: 4 }}>✗ 執行失敗</div>
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setPhase('idle')}>重試</button>
+    </div>
+  )
+}
+
+// ── ContentAuditRow (with notify button) ───────────────────────────────────
+
+interface ContentAuditItem { label: string; status: 'pass' | 'partial' | 'fail'; note?: string }
+
+function ContentAuditRow({ item, isLast, brandSlug, showToast }: {
+  item: ContentAuditItem; isLast: boolean
+  brandSlug: string; showToast: (msg: string) => void
+}) {
+  const [notified, setNotified] = useState(false)
+  const [notifying, setNotifying] = useState(false)
+
+  const handleNotify = async () => {
+    setNotifying(true)
+    try {
+      await fetch('/api/v1/brand-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_slug: brandSlug,
+          message: `請為「${item.label}」生成具體優化建議，並列出3個立即可執行的步驟。現況：${item.note ?? '需要優化'}`,
+        }),
+      })
+      setNotified(true)
+      showToast(`已通知 AI 顧問分析「${item.label}」`)
+    } catch {
+      showToast('通知失敗，請稍後再試')
+    }
+    setNotifying(false)
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: isLast ? 'none' : '1px solid var(--line)' }}>
+      <span style={{
+        flexShrink: 0, width: 18, height: 18, borderRadius: 4, marginTop: 2,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+        background: item.status === 'pass' ? 'rgba(26,139,62,0.10)' : item.status === 'partial' ? 'rgba(180,114,0,0.10)' : 'rgba(196,37,37,0.10)',
+        color: item.status === 'pass' ? 'var(--green)' : item.status === 'partial' ? 'var(--amber)' : 'var(--red)',
+      }}>
+        {item.status === 'pass' ? '✓' : item.status === 'partial' ? '~' : '✗'}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 2 }}>{item.label}</div>
+        {item.note && <div className="small" style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{item.note}</div>}
+      </div>
+      {item.status !== 'pass' && (
+        <button
+          className="btn btn-ghost btn-sm"
+          style={{ flexShrink: 0, fontSize: 11, color: notified ? 'var(--green)' : 'var(--gold)', borderColor: notified ? 'var(--green)' : undefined, whiteSpace: 'nowrap' }}
+          onClick={handleNotify}
+          disabled={notifying || notified}
+        >
+          {notified ? '✓ 已通知' : notifying ? '…' : '通知平台優化'}
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -628,9 +797,12 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
                   </div>
                   {desc && <div className="small" style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</div>}
                 </div>
-                <button className="btn btn-ghost btn-sm" onClick={() => markDone(a.id)} disabled={done}>
-                  {done ? '✓' : '完成'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+                  {!done && <ExecuteButton brandSlug={brandSlug} actionType={inferActionType(title, desc)} context={title} />}
+                  <button className="btn btn-ghost btn-sm" onClick={() => markDone(a.id)} disabled={done}>
+                    {done ? '✓' : '完成'}
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -642,6 +814,59 @@ function SectionAEO({ brandSlug, onLoad }: { brandSlug: string; onLoad: (count: 
           )}
         </div>
       )}
+
+      {/* Gaps from brand config */}
+      {(() => {
+        const cfg = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+        if (!cfg?.gaps?.length) return null
+        return (
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">缺口分析 · 本週建議</span>
+            </div>
+            <div className="card" style={{ padding: '8px 22px' }}>
+              {cfg.gaps.map((g, i) => (
+                <div key={i} className="aeo-item">
+                  <div className={`aeo-pri-mark ${g.priority}`} style={{ flexShrink: 0, marginTop: 2 }}>{g.priority.toUpperCase()}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="h4" style={{ fontWeight: 500, marginBottom: 4 }}>{g.title}</div>
+                    <div className="small" style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{g.desc}</div>
+                  </div>
+                  <ExecuteButton brandSlug={brandSlug} actionType="create_insight" context={g.title} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Content audit from brand config */}
+      {(() => {
+        const cfg = BRAND_PORTAL_CONFIGS.find(c => c.slug === brandSlug)
+        if (!cfg?.contentAudit) return null
+        const { score: auditScore, items } = cfg.contentAudit
+        const passCount = items.filter(i => i.status === 'pass').length
+        return (
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">內容審核 · AI 收錄準備度</span>
+            </div>
+            <div className="card" style={{ padding: '20px 24px' }}>
+              <div className="row between" style={{ marginBottom: 16, alignItems: 'center' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                  已通過 <strong style={{ color: 'var(--text)' }}>{passCount}/{items.length}</strong> 項檢查
+                </div>
+                <span className="tag tag-gold">{auditScore} 分</span>
+              </div>
+              {items.map((item, i) => (
+                <ContentAuditRow key={i} item={item} isLast={i === items.length - 1} brandSlug={brandSlug} showToast={(msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }} />
+              ))}
+            </div>
+          </div>
+        )
+      })()}
 
       {toast && <div className="toast">{toast}</div>}
     </section>
@@ -1056,15 +1281,15 @@ function SectionProducts({ brandSlug, onLoad }: { brandSlug: string; onLoad: (co
 // ── SectionProfile ─────────────────────────────────────────────────────────
 
 const PROFILE_FIELDS = [
-  { key: 'name_zh',       label: '品牌名稱 (中文)',  placeholder: '稻荷環球食品' },
-  { key: 'name_en',       label: '品牌名稱 (英文)',  placeholder: 'Inari Global Foods' },
-  { key: 'tagline',       label: '品牌標語',          placeholder: '一句話說明你的品牌' },
-  { key: 'description',   label: '品牌簡介',          placeholder: '詳述品牌故事、目標客戶、核心價值', type: 'textarea' as const },
-  { key: 'phone',         label: '聯絡電話',          placeholder: '+853 2871 0000' },
-  { key: 'address',       label: '地址',              placeholder: '澳門氹仔' },
-  { key: 'website_url',   label: '網站',              placeholder: 'https://' },
-  { key: 'instagram_url', label: 'Instagram',         placeholder: '@yourbrand' },
-  { key: 'facebook_url',  label: 'Facebook',          placeholder: 'fb.com/yourbrand' },
+  { key: 'name_zh',          label: '品牌名稱 (中文)',  placeholder: '稻荷環球食品' },
+  { key: 'name_en',          label: '品牌名稱 (英文)',  placeholder: 'Inari Global Foods' },
+  { key: 'tagline',          label: '品牌標語',          placeholder: '一句話說明你的品牌' },
+  { key: 'about_zh',         label: '品牌簡介',          placeholder: '詳述品牌故事、目標客戶、核心價值', type: 'textarea' as const },
+  { key: 'phone',            label: '聯絡電話',          placeholder: '+853 2871 0000' },
+  { key: 'address_full',     label: '地址',              placeholder: '澳門氹仔' },
+  { key: 'website_url',      label: '網站',              placeholder: 'https://' },
+  { key: 'social_instagram', label: 'Instagram',         placeholder: '@yourbrand' },
+  { key: 'social_facebook',  label: 'Facebook',          placeholder: 'fb.com/yourbrand' },
 ]
 
 function SectionProfile({ brandSlug, userEmail, onLogout }: { brandSlug: string; userEmail: string; onLogout: () => void }) {
@@ -1102,7 +1327,7 @@ function SectionProfile({ brandSlug, userEmail, onLogout }: { brandSlug: string;
     setSavingPhase('saving')
     try {
       await fetch(`/api/v1/brand-profile/${brandSlug}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(form),
       })
@@ -1218,7 +1443,7 @@ function LoginScreen({ brandSlug, brandName, onAuthed }: {
 }) {
   type Phase = 'input' | 'sending' | 'sent' | 'verifying' | 'verified'
   const [phase, setPhase] = useState<Phase>('input')
-  const [email, setEmail] = useState('inari@cloudpipe.ai')
+  const [email, setEmail] = useState('')
   const [magicToken, setMagicToken] = useState('')
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 
@@ -1332,6 +1557,314 @@ function LoginScreen({ brandSlug, brandName, onAuthed }: {
         <a href="#" style={{ color: 'var(--text-3)' }}>隱私政策</a>
       </div>
     </div>
+  )
+}
+
+// ── SectionEvidence ────────────────────────────────────────────────────────
+
+interface PortalImage { id: string; category: string; image_url: string; caption: string | null; platform: string | null; created_at: string }
+interface RecentCitation { timestamp: string; platform: string | null; query: string | null; mentioned: boolean }
+
+function SectionEvidence({ brandSlug }: { brandSlug: string }) {
+  const reveal = useReveal()
+  const [images, setImages] = useState<{ ai_citation: PortalImage[]; aeo_action: PortalImage[]; performance: PortalImage[] }>({ ai_citation: [], aeo_action: [], performance: [] })
+  const [citations, setCitations] = useState<RecentCitation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatInput, setChatInput] = useState('')
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const [showExecPanel, setShowExecPanel] = useState(false)
+  const [pendingConfirm, setPendingConfirm] = useState<{ action_type: string; context?: string; label: string } | null>(null)
+  const [confirming, setConfirming] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/v1/brand-images?brand_slug=${brandSlug}`).then(r => r.json()),
+      fetch(`/api/v1/brand-recent-citations?brand_slug=${brandSlug}&limit=12`).then(r => r.json()),
+    ]).then(([imgData, citData]) => {
+      const all: PortalImage[] = imgData.images ?? []
+      setImages({
+        ai_citation: all.filter(i => i.category === 'ai_citation'),
+        aeo_action:  all.filter(i => i.category === 'aeo_action'),
+        performance: all.filter(i => i.category === 'performance'),
+      })
+      setCitations(citData.citations ?? [])
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [brandSlug])
+
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages, chatLoading, pendingConfirm])
+
+  const getAgentHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem(`portal_token_${brandSlug}`) ?? ''
+    const h: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (token) h.Authorization = `Bearer ${token}`
+    return h
+  }
+
+  const sendChat = async () => {
+    const msg = chatInput.trim()
+    if (!msg || chatLoading) return
+    setChatInput('')
+    setChatOpen(true)
+    setPendingConfirm(null)
+
+    const history = chatMessages.slice(-6).map(m => ({ role: m.role, content: m.text }))
+    setChatMessages(m => [...m, { role: 'user', text: msg }])
+    setChatLoading(true)
+
+    try {
+      const res = await fetch('/api/v1/brand-agent', {
+        method: 'POST',
+        headers: getAgentHeaders(),
+        body: JSON.stringify({ brand_slug: brandSlug, message: msg, history }),
+      })
+      const data = await res.json()
+      setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '抱歉，暫時無法回應。' }])
+
+      if (data.needs_confirm && data.action_type) {
+        setPendingConfirm({ action_type: data.action_type, context: data.context, label: data.label })
+      } else {
+        setShowExecPanel(true)
+      }
+    } catch {
+      setChatMessages(m => [...m, { role: 'ai', text: '連線錯誤，請稍後再試。' }])
+    }
+    setChatLoading(false)
+  }
+
+  const confirmExecute = async () => {
+    if (!pendingConfirm || confirming) return
+    const pending = pendingConfirm
+    setConfirming(true)
+    setPendingConfirm(null)
+    setChatMessages(m => [...m, { role: 'user', text: `確認執行：${pending.label}` }])
+
+    try {
+      const res = await fetch('/api/v1/brand-agent', {
+        method: 'POST',
+        headers: getAgentHeaders(),
+        body: JSON.stringify({
+          brand_slug: brandSlug,
+          confirm: true,
+          pending_action: pending.action_type,
+          pending_context: pending.context,
+        }),
+      })
+      const data = await res.json()
+      setChatMessages(m => [...m, { role: 'ai', text: data.reply ?? '✅ 執行完成！' }])
+    } catch {
+      setChatMessages(m => [...m, { role: 'ai', text: '執行失敗，請稍後再試。' }])
+    }
+    setConfirming(false)
+  }
+
+  const PLATFORM_COLORS: Record<string, string> = {
+    chatgpt: '#1A8B3E', perplexity: '#5B6EE1', gemini: '#B47200',
+    grok: '#C42525', copilot: '#2D67B0', system_snapshot: '#5E6168', ai_checker: '#8A8D94',
+  }
+
+  const IMAGE_SECTIONS: { key: 'ai_citation' | 'aeo_action' | 'performance'; label: string; tag: string; color: string }[] = [
+    { key: 'ai_citation', label: 'AI 平台引用截圖',  tag: '引用證明', color: 'var(--green)' },
+    { key: 'aeo_action',  label: 'AEO 行動成果',    tag: '行動紀錄', color: 'var(--blue)' },
+    { key: 'performance', label: '每週成效圖表',     tag: '成效報告', color: 'var(--gold)' },
+  ]
+
+  const totalImages = images.ai_citation.length + images.aeo_action.length + images.performance.length
+
+  const SUGGESTED = ['目前最大的 AEO 缺口是什麼？', '如何讓 Perplexity 開始引用我們？', '有什麼可以提升 Copilot 引用率的內容？', '現在最應該優先做哪個 AEO 行動？']
+
+  return (
+    <section id="evidence" ref={reveal.ref} className={`anchor ${reveal.className}`}>
+      <hr className="sec-break" />
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+        <span className="gold-thin-rule" />
+        <span className="label">05 · 視覺成效記錄</span>
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+          <div className="spinner" />
+        </div>
+      ) : (
+        <>
+          {/* Image gallery */}
+          {totalImages === 0 ? (
+            <div className="card" style={{ padding: '32px 24px', textAlign: 'center', border: '1.5px dashed var(--line-strong)' }}>
+              <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.4 }}>📸</div>
+              <div className="label" style={{ marginBottom: 6 }}>尚未上傳截圖</div>
+              <div className="small" style={{ color: 'var(--text-3)', lineHeight: 1.6, maxWidth: 420, margin: '0 auto' }}>
+                可透過 Supabase 後台將 AI 平台截圖、AEO 成果圖片上傳至
+                <br /><code style={{ fontSize: 11, color: 'var(--muted)' }}>brand_portal_images</code> 表
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {IMAGE_SECTIONS.map(sec => {
+                const imgs = images[sec.key]
+                if (imgs.length === 0) return null
+                return (
+                  <div key={sec.key}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <span className="label">{sec.label}</span>
+                      <span className="tag" style={{ color: sec.color, borderColor: sec.color, background: `color-mix(in srgb, ${sec.color} 8%, transparent)` }}>{sec.tag}</span>
+                      <span className="small" style={{ color: 'var(--faint)' }}>{imgs.length} 張</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+                      {imgs.map(img => (
+                        <div key={img.id} className="card card-hover" style={{ padding: 0, overflow: 'hidden' }}>
+                          <a href={img.image_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img.image_url} alt={img.caption ?? sec.label}
+                              style={{ width: '100%', display: 'block', maxHeight: 180, objectFit: 'cover', background: 'var(--bg-2)' }} />
+                          </a>
+                          <div style={{ padding: '10px 14px' }}>
+                            {img.platform && (
+                              <span className="tag" style={{ marginBottom: 6, display: 'inline-block', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.06em' }}>
+                                {img.platform}
+                              </span>
+                            )}
+                            {img.caption && <div className="small" style={{ lineHeight: 1.5, marginBottom: 4 }}>{img.caption}</div>}
+                            <div className="small" style={{ fontSize: 11, color: 'var(--faint)' }}>{img.created_at.slice(0, 10)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* AI citation records */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">AI Bot 解決記錄</span>
+            </div>
+            <div className="card" style={{ padding: '8px 20px' }}>
+              {citations.length === 0 ? (
+                <div className="small" style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>尚未記錄到 AI 引用事件，每日監測中</div>
+              ) : citations.map((c, i) => {
+                const key = (c.platform || 'other').toLowerCase().replace(/[^a-z_]/g, '')
+                const color = PLATFORM_COLORS[key] ?? '#8A8D94'
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < citations.length - 1 ? '1px solid var(--line)' : 'none' }}>
+                    <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, background: `color-mix(in srgb, ${color} 10%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 20%, transparent)`, minWidth: 70, textAlign: 'center' }}>
+                      {c.platform ?? 'AI'}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.query ?? '—'}</div>
+                      <div className="small" style={{ fontSize: 11, color: 'var(--faint)' }}>{c.timestamp.slice(0, 10)}</div>
+                    </div>
+                    <span className="status-pill ok" style={{ flexShrink: 0 }}><Icon name="check" size={11} stroke={2.6} /> 引用</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Inline AI strategy chat */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+              <span className="gold-thin-rule" />
+              <span className="label">AI 策略顧問</span>
+              <span className="status-pill ok" style={{ marginLeft: 10, fontSize: 11 }}>在線</span>
+            </div>
+            <div className="card" style={{ padding: '20px 22px' }}>
+              <div className="small" style={{ color: 'var(--text-3)', marginBottom: 16, lineHeight: 1.6 }}>
+                我係您品牌的專屬 AI 策略顧問，可以分析 AEO 缺口、規劃內容策略。
+              </div>
+
+              {!chatOpen && chatMessages.length === 0 ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {SUGGESTED.map(q => (
+                    <button key={q} className="btn btn-ghost btn-sm" style={{ textAlign: 'left', height: 'auto', padding: '7px 12px', lineHeight: 1.4 }}
+                      onClick={() => { setChatOpen(true); setChatInput(q) }}>
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto', marginBottom: 12 }}>
+                  {chatMessages.map((m, i) => (
+                    <div key={i} style={{
+                      alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%', padding: '9px 13px', borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      background: m.role === 'user' ? 'var(--gold)' : 'var(--bg-2)',
+                      color: m.role === 'user' ? '#fff' : 'var(--text)',
+                      fontSize: 13.5, lineHeight: 1.55,
+                    }}>
+                      {m.text}
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div style={{ alignSelf: 'flex-start', padding: '9px 13px', borderRadius: '12px 12px 12px 2px', background: 'var(--bg-2)', display: 'flex', gap: 4 }}>
+                      {[0,1,2].map(i => <div key={i} className="bot-typing-dot" style={{ animationDelay: `${i * 0.15}s` }} />)}
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+
+              {/* Pending confirm bar — appears after AI detects execute intent */}
+              {(pendingConfirm || confirming) && (
+                <div style={{ margin: '8px 0 10px', padding: '11px 14px', background: 'rgba(184,146,58,0.08)', border: '1px solid rgba(184,146,58,0.28)', borderRadius: 10 }}>
+                  {confirming ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)' }}>
+                      <div className="spinner" style={{ width: 13, height: 13, borderWidth: 2 }} />
+                      AI 執行中，請稍候…
+                    </div>
+                  ) : pendingConfirm && (
+                    <>
+                      <div style={{ fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 10 }}>
+                        ✦ AI 建議執行：<strong style={{ color: 'var(--text)' }}>{pendingConfirm.label}</strong>
+                        {pendingConfirm.context && <><br /><span style={{ fontSize: 11, color: 'var(--text-3)' }}>主題：{pendingConfirm.context}</span></>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          className="btn btn-sm"
+                          style={{ fontSize: 12, background: 'var(--gold)', color: 'white', border: 'none', padding: '5px 16px', borderRadius: 6 }}
+                          onClick={confirmExecute}
+                        >確認執行</button>
+                        <button className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}
+                          onClick={() => setPendingConfirm(null)}>不了，繼續討論</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8, marginTop: chatMessages.length > 0 ? 0 : 12 }}>
+                <input className="input" style={{ flex: 1 }} placeholder="問我任何 AEO / 內容策略問題…"
+                  value={chatInput} onChange={e => setChatInput(e.target.value)}
+                  onFocus={() => setChatOpen(true)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendChat()} />
+                <button className="btn btn-primary btn-sm" onClick={sendChat} disabled={!chatInput.trim() || chatLoading || confirming}>
+                  <Icon name="arrow-right" size={15} stroke={2} />
+                </button>
+              </div>
+
+              {showExecPanel && !pendingConfirm && (
+                <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--line)' }}>
+                  <div className="small" style={{ color: 'var(--text-3)', fontSize: 11.5, marginBottom: 10 }}>
+                    ✦ 與顧問確認方向後，一鍵執行：
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    <ExecuteButton brandSlug={brandSlug} actionType="expand_faq" shortLabel="FAQ 擴充" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="expand_profile" shortLabel="品牌簡介重寫" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="generate_schema" shortLabel="Schema 標記" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="create_insight" shortLabel="生成深度文章" />
+                    <ExecuteButton brandSlug={brandSlug} actionType="indexnow_ping" shortLabel="IndexNow Ping" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </section>
   )
 }
 
@@ -1499,6 +2032,7 @@ export default function PortalPage() {
             <SectionAEO brandSlug={brandSlug} onLoad={setAeoCount} />
             <SectionFAQ brandSlug={brandSlug} onLoad={setFaqCount} />
             <SectionProducts brandSlug={brandSlug} onLoad={setProductCount} />
+            <SectionEvidence brandSlug={brandSlug} />
             <SectionProfile brandSlug={brandSlug} userEmail={userEmail} onLogout={onLogout} />
 
             <footer style={{ marginTop: 80, paddingTop: 32, borderTop: '1px solid var(--line)', textAlign: 'center' }}>

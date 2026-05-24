@@ -782,6 +782,10 @@ body:has(.cp-portal-root) > img[width="1"] {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30%            { opacity: 1; transform: translateY(-4px); }
 }
+.cp-portal-root .bot-typing-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--muted);
+  animation: typing 1.2s ease-in-out infinite;
+}
 .cp-portal-root .bot-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
 .cp-portal-root .bot-chip {
   padding: 6px 11px; border-radius: 999px;

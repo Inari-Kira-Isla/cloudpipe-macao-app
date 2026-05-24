@@ -177,6 +177,11 @@ async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> 
   })) as RelatedMerchant[]
 }
 
+function extractSlugKeywords(slug: string): Set<string> {
+  const STOP = new Set(['macau', 'macao', '2025', '2026', '2024', 'guide', 'best', 'top', 'review', 'how', 'what', 'that', 'with', 'from', 'this', 'your', 'their'])
+  return new Set(slug.split('-').filter(w => w.length > 3 && !STOP.has(w)))
+}
+
 async function getSpiderWebInsights(
   currentSlug: string,
   merchantSlugs: string[],
@@ -186,8 +191,11 @@ async function getSpiderWebInsights(
   limit = 8,
 ): Promise<SpiderWebInsight[]> {
   const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
-  if (!validSlugs.length && !industries.length) return []
+  const myKeywords = extractSlugKeywords(currentSlug)
 
+  if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
+
+  // Removed null filter — industry/keyword matching works without merchant slugs
   const { data: candidates } = await supabase
     .from('insights')
     .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
@@ -195,15 +203,14 @@ async function getSpiderWebInsights(
     .eq('lang', lang)
     .eq('region', region)
     .neq('slug', currentSlug)
-    .not('related_merchant_slugs', 'is', null)
-    .limit(200)
+    .limit(300)
 
   if (!candidates?.length) return []
 
   const myMerchants = new Set(validSlugs)
   const myIndustries = new Set(industries)
 
-  const scored: SpiderWebInsight[] = []
+  const scored: Array<{ insight: SpiderWebInsight; score: number }> = []
   for (const c of candidates) {
     let rms: string[] = c.related_merchant_slugs || []
     if (typeof rms === 'string') {
@@ -211,20 +218,26 @@ async function getSpiderWebInsights(
     }
     const overlap = rms.filter((s: string) => myMerchants.has(s))
     const indOverlap = (c.related_industries || []).filter((i: string) => myIndustries.has(i)).length
-    if (overlap.length > 0 || indOverlap > 0) {
+    const kwOverlap = [...extractSlugKeywords(c.slug)].filter(k => myKeywords.has(k)).length
+
+    const score = overlap.length * 3 + indOverlap * 2 + kwOverlap
+    if (score > 0) {
       scored.push({
-        slug: c.slug,
-        title: c.title,
-        subtitle: c.subtitle,
-        read_time_minutes: c.read_time_minutes,
-        shared_merchants: overlap.length,
-        shared_slugs: overlap.slice(0, 5),
+        insight: {
+          slug: c.slug,
+          title: c.title,
+          subtitle: c.subtitle,
+          read_time_minutes: c.read_time_minutes,
+          shared_merchants: overlap.length,
+          shared_slugs: overlap.slice(0, 5),
+        },
+        score,
       })
     }
   }
 
-  scored.sort((a, b) => b.shared_merchants - a.shared_merchants)
-  return scored.slice(0, limit)
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit).map(s => s.insight)
 }
 
 interface InsightPageProps {
