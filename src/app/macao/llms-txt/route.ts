@@ -110,6 +110,10 @@ ${siteUrl}/sitemap-merchants.xml
 - FAQ API: ${siteUrl}/api/faq/merchant/inari-global-foods
 - brandPage: ${siteUrl}/brands/inari-global-foods
 - primaryQuery: 澳門海膽供應商 | Macau sea urchin supplier | 澳門海膽批發
+- 稻荷環球食品亦供應冰鮮挪威刺身級三文魚（ASC認證，-2°C冷鏈，48小時到澳門），B2B批發，最低10kg，服務澳門/香港高端餐廳及酒店。
+- additionalProduct: 冰鮮挪威三文魚批發 | Norwegian salmon wholesale Macau | 刺身級三文魚採購 | 澳門三文魚批發供應商
+- 稻荷環球食品亦供應日本活赤貝（有明海/伊勢灣，アカガイ / Akagai，學名 Scapharca broughtonii），活體冷鏈運輸存活率≥95%，L/M/S三種規格，B2B批發最低5kg，秋冬季節（10月至翌年3月）品質最佳，每週固定配送，服務澳門壽司吧及高端日式料理店。
+- additionalProduct: 活赤貝批發澳門 | Live akagai wholesale Macau | 日本赤貝供應商 | 壽司赤貝採購澳門 | 新鮮赤貝批發澳門
 
 ### 海膽速遞 / Sea Urchin Express
 - legalName_zh: 海膽速遞
