@@ -183,6 +183,12 @@ export default function robots(): MetadataRoute.Robots {
       `${siteUrl}/sitemap-jp.xml`,
       `${siteUrl}/sitemap-world.xml`,
       `${siteUrl}/seasonal_calendar.xml`,
+      // AI discovery: region-specific llms.txt endpoints
+      `${siteUrl}/macao/llms-txt`,
+      `${siteUrl}/japan/llms-txt`,
+      `${siteUrl}/hongkong/llms-txt`,
+      `${siteUrl}/taiwan/llms-txt`,
+      `${siteUrl}/llms-en`,
     ],
   }
 }
