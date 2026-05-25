@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${config.name} · AI 能見度報告 | CloudPipe`,
     description: `${config.name} 的 AI 引用狀態、趨勢分析與 AEO 行動進度報告。`,
-    robots: 'noindex',
+    robots: 'index, follow',
   }
 }
 

@@ -6,7 +6,7 @@ import { BRAND_PORTAL_CONFIGS } from '@/lib/brandPortalConfig'
 export const metadata: Metadata = {
   title: 'CloudPipe · 品牌 AI 能見度報告',
   description: '查看各品牌的 AI 引用狀態、AEO 行動進度與每週缺口建議。',
-  robots: 'noindex',
+  robots: 'index, follow',
 }
 
 export const dynamic = 'force-dynamic'
