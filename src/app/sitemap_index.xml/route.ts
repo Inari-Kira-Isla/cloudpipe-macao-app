@@ -5,7 +5,7 @@
  * Schema: <sitemapindex> not <urlset>.
  */
 
-export const revalidate = 3600 // 1h ISR
+export const revalidate = 1800 // 30min ISR — aligns with sub-sitemap revalidate window (CLAUDE.md §1)
 export const maxDuration = 60
 
 function escapeXml(str: string): string {
@@ -25,6 +25,8 @@ export async function GET() {
     'sitemap.xml',
     'sitemap-merchants.xml',
     'sitemap-insights.xml',
+    'sitemap-insights-en.xml',
+    'sitemap-insights-ja.xml',
     'sitemap-mo.xml',
     'sitemap-hk.xml',
     'sitemap-tw.xml',

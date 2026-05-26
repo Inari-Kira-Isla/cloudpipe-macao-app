@@ -106,9 +106,41 @@ ${body}
 }
 
 /**
+ * Age-based changefreq + priority for region sitemaps.
+ * Mirrors sitemap-insights.xml stratification rules (CLAUDE.md §2):
+ *   < 7 days  → daily  / 0.98 (zh) | 0.93 (other)
+ *   < 30 days → daily  / 0.95 (zh) | 0.90 (other)
+ *   >= 30 days → weekly / 0.85 (zh) | 0.80 (other)
+ *
+ * NEVER use a flat 'weekly' for all entries — it signals bots to skip for a
+ * full week, causing the "single-batch then 5-day silence" pattern observed
+ * on HK/TW/JP in the week of 2026-05-20 (root-cause: flat weekly in v1).
+ */
+function regionChangefreqAndPriority(
+  updatedAt: string | null,
+  lang: string,
+): { changefreq: string; priority: string } {
+  const nowMs = Date.now()
+  const ageDays = updatedAt
+    ? (nowMs - new Date(updatedAt).getTime()) / 86400000
+    : 999
+  const isZh = lang === 'zh'
+  if (ageDays < 7) {
+    return { changefreq: 'daily', priority: isZh ? '0.98' : '0.93' }
+  }
+  if (ageDays < 30) {
+    return { changefreq: 'daily', priority: isZh ? '0.95' : '0.90' }
+  }
+  return { changefreq: 'weekly', priority: isZh ? '0.85' : '0.80' }
+}
+
+/**
  * Build a region-scoped urlset for one of the per-region sub-sitemaps.
  * Emits one URL per (slug × lang) so all 4 language variants are surfaced
  * to AI crawlers / GSC.
+ *
+ * 2026-05-27: upgraded from flat 'weekly' to age-based stratification to fix
+ * HK/TW/JP "single-batch then 5-day silence" crawl pattern.
  */
 export async function buildRegionSitemapXml(
   siteUrl: string,
@@ -118,21 +150,28 @@ export async function buildRegionSitemapXml(
   const now = new Date().toISOString().split('T')[0]
   const urls = rows
     .filter((r) => r.slug)
-    .map((r) => ({
-      loc: buildInsightLoc(siteUrl, region, r.slug, r.lang || 'zh'),
-      lastmod: r.updated_at ? r.updated_at.split('T')[0] : now,
-      changefreq: 'weekly',
-      priority: r.lang === 'zh' ? '0.95' : '0.90',
-    }))
+    .map((r) => {
+      const lang = r.lang || 'zh'
+      const { changefreq, priority } = regionChangefreqAndPriority(r.updated_at, lang)
+      return {
+        loc: buildInsightLoc(siteUrl, region, r.slug, lang),
+        lastmod: r.updated_at ? r.updated_at.split('T')[0] : now,
+        changefreq,
+        priority,
+      }
+    })
   return renderUrlsetXml(urls)
 }
 
 /**
  * Standard response headers for sub-sitemaps.
- *   - 1h ISR with 24h stale-while-revalidate
+ *   - 30min ISR (matches revalidate = 1800) with 24h stale-while-revalidate
  *   - text/xml content-type
+ *
+ * 2026-05-27: reduced max-age from 3600→1800 to align with ISR revalidate window,
+ * so AI bots always receive fresh sitemaps within 30min of new article publication.
  */
 export const SITEMAP_HEADERS = {
   'Content-Type': 'application/xml; charset=utf-8',
-  'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+  'Cache-Control': 'public, max-age=1800, stale-while-revalidate=86400',
 } as const
