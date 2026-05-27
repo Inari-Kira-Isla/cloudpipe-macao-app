@@ -105,15 +105,22 @@ const VALID_INDUSTRIES = new Set([
   // Meta + legacy paths
   'insights', 'services', 'entertainment', 'heritage', 'tourism', 'culture',
   'merchants', 'lifestyle',
-  // Lang path segments (path-based routing: /{region}/en|ja|pt/insights/)
-  'en', 'ja', 'pt',
 ])
 
+const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt'])
+
 function getIndustryCategory(path: string): { industry: string | null; category: string | null } {
-  if (!path.startsWith('/macao/')) return { industry: null, category: null }
+  // Non-macao region insight pages: /(hongkong|japan|taiwan|global)/[lang]/insights/... or /region/insights/...
+  if (!path.startsWith('/macao/')) {
+    const regionInsightRe = /^\/(hongkong|japan|taiwan|global)(\/(?:en|ja|pt))?\/insights\//
+    if (regionInsightRe.test(path)) return { industry: 'insights', category: null }
+    return { industry: null, category: null }
+  }
   const parts = path.replace(/^\/macao\//, '').split('/').filter(Boolean)
   if (parts.length === 0) return { industry: null, category: null }
   if (parts[0] === 'faqs') return { industry: null, category: null }
+  // Lang path segments (/{region}/{lang}/insights/{slug}) — not industry slugs
+  if (LANG_PATH_SEGMENTS.has(parts[0])) return { industry: null, category: null }
   // Only accept whitelisted industry slugs — otherwise this is a merchant slug
   // at top level (e.g. /macao/cc-foo, /macao/jp-bar) and industry is unknown
   if (!VALID_INDUSTRIES.has(parts[0])) return { industry: null, category: null }
