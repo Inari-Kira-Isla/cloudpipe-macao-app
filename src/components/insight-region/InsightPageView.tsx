@@ -13,7 +13,7 @@
  * The macao page is the legacy implementation and remains as the original (with region='MO' filter).
  * For TW/HK/JP/GLOBAL we use this shared view to keep code DRY.
  */
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
@@ -137,7 +137,8 @@ function parseLang(raw?: string): Lang {
 }
 
 async function getInsight(slug: string, lang: Lang, region: RegionCode) {
-  const { data } = await supabase
+  const db = createServiceClient()
+  const { data } = await db
     .from('insights')
     .select('*')
     .eq('slug', slug)
@@ -149,7 +150,8 @@ async function getInsight(slug: string, lang: Lang, region: RegionCode) {
 }
 
 async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang[]> {
-  const { data } = await supabase
+  const db = createServiceClient()
+  const { data } = await db
     .from('insights')
     .select('lang')
     .eq('slug', slug)
@@ -182,7 +184,8 @@ interface SpiderWebInsight {
 async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
   const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
   if (!validSlugs.length) return []
-  const { data } = await supabase
+  const db = createServiceClient()
+  const { data } = await db
     .from('merchants')
     .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
     .in('slug', validSlugs)
@@ -213,7 +216,8 @@ async function getSpiderWebInsights(
   if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
 
   // Removed null filter — industry/keyword matching works without merchant slugs
-  const { data: candidates } = await supabase
+  const db = createServiceClient()
+  const { data: candidates } = await db
     .from('insights')
     .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
     .eq('status', 'published')

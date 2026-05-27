@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import { buildMetadata, renderInsightPage } from '@/components/insight-region/InsightPageView'
 
 export const revalidate = 86400
-export const dynamic = 'force-static'
 
 const VALID_LANG_PATHS = ['en', 'ja', 'pt'] as const
 type LangPath = (typeof VALID_LANG_PATHS)[number]
