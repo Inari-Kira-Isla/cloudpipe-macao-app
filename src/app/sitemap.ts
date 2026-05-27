@@ -1,4 +1,4 @@
-import { supabase, createServiceClient } from '@/lib/supabase'
+import { supabase, createServiceClient, createSitemapServiceClient } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
@@ -47,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
     let offset = 0
     while (true) {
-      const { data } = await createServiceClient()
+      const { data } = await createSitemapServiceClient()
         .from('insights')
         .select('slug, updated_at, region')
         .eq('status', 'published')
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Brand pillar insights — priority 1.0 daily (force multi-bot re-crawl)
   async function fetchBrandInsights(): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
-    const { data } = await createServiceClient()
+    const { data } = await createSitemapServiceClient()
       .from('insights')
       .select('slug, updated_at, region')
       .eq('status', 'published')

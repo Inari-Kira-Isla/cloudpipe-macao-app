@@ -11,7 +11,7 @@
  *   MO → /macao,   HK → /hongkong,   TW → /taiwan,
  *   JP → /japan,   GLOBAL → /global
  */
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 
 export type SitemapRegion = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL'
 
@@ -41,7 +41,7 @@ export async function fetchInsightsByRegion(
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createServiceClient()
+    const { data } = await createSitemapServiceClient()
       .from('insights')
       .select('slug, updated_at, region, lang')
       .eq('status', 'published')

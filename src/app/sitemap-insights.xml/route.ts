@@ -9,7 +9,7 @@
  *   TW → /taiwan/insights/{slug}       JP → /japan/insights/{slug}
  *   GLOBAL → /global/insights/{slug}
  */
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 import {
   REGION_PATH,
   buildInsightLoc,
@@ -33,7 +33,7 @@ async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createServiceClient()
+    const { data } = await createSitemapServiceClient()
       .from('insights')
       .select('slug, updated_at, region, lang')
       .eq('status', 'published')

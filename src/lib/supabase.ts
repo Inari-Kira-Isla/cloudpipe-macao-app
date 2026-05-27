@@ -23,3 +23,20 @@ export function createServiceClient() {
     }
   )
 }
+
+// Sitemap-only client: longer 30s timeout because ISR background regeneration
+// is single-threaded (no concurrent-bot problem) and needs to paginate through
+// 20K+ insight rows. The 8s limit in createServiceClient() causes every ISR
+// attempt to time out → empty sitemap cache persists indefinitely.
+export function createSitemapServiceClient() {
+  return createClient(
+    supabaseUrl,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey,
+    {
+      global: {
+        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
+          fetch(url, { ...options, signal: AbortSignal.timeout(30000) }),
+      },
+    }
+  )
+}

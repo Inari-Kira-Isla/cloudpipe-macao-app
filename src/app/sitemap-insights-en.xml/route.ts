@@ -8,7 +8,7 @@
  *
  * URLs use path-based lang routing: /{region}/en/insights/{slug}
  */
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 import {
   REGION_PATH,
   buildInsightLoc,
@@ -32,7 +32,7 @@ async function fetchEnglishPublishedInsights(): Promise<InsightRow[]> {
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createServiceClient()
+    const { data } = await createSitemapServiceClient()
       .from('insights')
       .select('slug, updated_at, region, lang')
       .eq('status', 'published')
