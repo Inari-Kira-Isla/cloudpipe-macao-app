@@ -6,7 +6,7 @@ import { getApprovedCommerceProducts } from '@/lib/commerce-supabase'
 import { buildMerchantCenterFeed, type CommerceProduct, type CommerceBrand } from '@/lib/cloudpipe-commerce'
 import type { InariProduct } from '@/types/inari'
 
-export const revalidate = 7200
+export const dynamic = 'force-dynamic'
 
 const BRAND: CommerceBrand = {
   slug: 'inari-global-foods',

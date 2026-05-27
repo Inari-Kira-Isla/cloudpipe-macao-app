@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-export const revalidate = 300  // 5 min cache
+export const dynamic = 'force-dynamic'
 
 interface EngineActivity {
   engine: string
