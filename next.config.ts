@@ -176,6 +176,19 @@ const nextConfig: NextConfig = {
     // If new non-insight pages are added under a region before their route exists,
     // add targeted redirects here. Do NOT use the catch-all /:path* pattern.
 
+    // ── ?lang= query param → /{region}/{lang}/insights/{slug} (2026-05-27) ──
+    // 301-redirect old query-param URLs so AI crawlers follow to the new path-based routes.
+    for (const region of ['macao', 'hongkong', 'taiwan', 'japan', 'global']) {
+      for (const lang of ['en', 'ja', 'pt']) {
+        redirects.push({
+          source: `/${region}/insights/:slug`,
+          has: [{ type: 'query' as const, key: 'lang', value: lang }],
+          destination: `/${region}/${lang}/insights/:slug`,
+          permanent: true,
+        })
+      }
+    }
+
     return redirects
   },
   typescript: {

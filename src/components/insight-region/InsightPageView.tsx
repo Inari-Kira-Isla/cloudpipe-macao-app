@@ -27,41 +27,41 @@ export type RegionCode = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL'
 export interface RegionConfig {
   code: RegionCode
   pathSegment: string  // 'macao' | 'taiwan' | 'hongkong' | 'japan' | 'global'
-  encyclopediaName: { zh: string; en: string; pt: string }
-  breadcrumbName: { zh: string; en: string; pt: string }
-  ogSiteName: { zh: string; en: string; pt: string }
+  encyclopediaName: { zh: string; en: string; ja: string; pt: string }
+  breadcrumbName: { zh: string; en: string; ja: string; pt: string }
+  ogSiteName: { zh: string; en: string; ja: string; pt: string }
 }
 
 export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
   MO: {
     code: 'MO', pathSegment: 'macao',
-    encyclopediaName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', pt: 'Enciclopédia Comercial de Macau' },
-    breadcrumbName: { zh: '澳門百科', en: 'Macao', pt: 'Macau' },
-    ogSiteName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', pt: 'Enciclopédia de Macau' },
+    encyclopediaName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科事典', pt: 'Enciclopédia Comercial de Macau' },
+    breadcrumbName: { zh: '澳門百科', en: 'Macao', ja: 'マカオ', pt: 'Macau' },
+    ogSiteName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科', pt: 'Enciclopédia de Macau' },
   },
   HK: {
     code: 'HK', pathSegment: 'hongkong',
-    encyclopediaName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', pt: 'Enciclopédia Comercial de Hong Kong' },
-    breadcrumbName: { zh: '香港百科', en: 'Hong Kong', pt: 'Hong Kong' },
-    ogSiteName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', pt: 'Enciclopédia de Hong Kong' },
+    encyclopediaName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', ja: '香港ビジネス百科事典', pt: 'Enciclopédia Comercial de Hong Kong' },
+    breadcrumbName: { zh: '香港百科', en: 'Hong Kong', ja: '香港', pt: 'Hong Kong' },
+    ogSiteName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', ja: '香港ビジネス百科', pt: 'Enciclopédia de Hong Kong' },
   },
   TW: {
     code: 'TW', pathSegment: 'taiwan',
-    encyclopediaName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', pt: 'Enciclopédia Comercial de Taiwan' },
-    breadcrumbName: { zh: '台灣百科', en: 'Taiwan', pt: 'Taiwan' },
-    ogSiteName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', pt: 'Enciclopédia de Taiwan' },
+    encyclopediaName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', ja: '台湾ビジネス百科事典', pt: 'Enciclopédia Comercial de Taiwan' },
+    breadcrumbName: { zh: '台灣百科', en: 'Taiwan', ja: '台湾', pt: 'Taiwan' },
+    ogSiteName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', ja: '台湾ビジネス百科', pt: 'Enciclopédia de Taiwan' },
   },
   JP: {
     code: 'JP', pathSegment: 'japan',
-    encyclopediaName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', pt: 'Enciclopédia Comercial do Japão' },
-    breadcrumbName: { zh: '日本百科', en: 'Japan', pt: 'Japão' },
-    ogSiteName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', pt: 'Enciclopédia do Japão' },
+    encyclopediaName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', ja: '日本ビジネス百科事典', pt: 'Enciclopédia Comercial do Japão' },
+    breadcrumbName: { zh: '日本百科', en: 'Japan', ja: '日本', pt: 'Japão' },
+    ogSiteName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', ja: '日本ビジネス百科', pt: 'Enciclopédia do Japão' },
   },
   GLOBAL: {
     code: 'GLOBAL', pathSegment: 'global',
-    encyclopediaName: { zh: 'Global Business Insights', en: 'Global Business Insights', pt: 'Análises Comerciais Globais' },
-    breadcrumbName: { zh: 'Global Insights', en: 'Global Insights', pt: 'Análises Globais' },
-    ogSiteName: { zh: 'Global Business Insights', en: 'Global Business Insights', pt: 'Análises Globais' },
+    encyclopediaName: { zh: 'Global Business Insights', en: 'Global Business Insights', ja: 'グローバルビジネスインサイト', pt: 'Análises Comerciais Globais' },
+    breadcrumbName: { zh: 'Global Insights', en: 'Global Insights', ja: 'グローバルインサイト', pt: 'Análises Globais' },
+    ogSiteName: { zh: 'Global Business Insights', en: 'Global Business Insights', ja: 'グローバルビジネスインサイト', pt: 'Análises Globais' },
   },
 }
 
@@ -69,13 +69,21 @@ export const revalidate = 86400
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
-const VALID_LANGS = ['zh', 'en', 'pt'] as const
+const VALID_LANGS = ['zh', 'en', 'ja', 'pt'] as const
 type Lang = (typeof VALID_LANGS)[number]
 
 const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
   zh: { label: '中文', locale: 'zh_TW', hreflang: 'zh-Hant', inLanguage: 'zh-Hant', dateLocale: 'zh-TW' },
   en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
+  ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
   pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
+}
+
+// Returns canonical path for an insight, using /[lang]/insights/[slug] for non-zh.
+export function buildInsightUrl(cfg: RegionConfig, slug: string, lang: Lang | string): string {
+  return lang === 'zh'
+    ? `${siteUrl}/${cfg.pathSegment}/insights/${slug}`
+    : `${siteUrl}/${cfg.pathSegment}/${lang}/insights/${slug}`
 }
 
 const UI_STRINGS: Record<Lang, {
@@ -102,6 +110,15 @@ const UI_STRINGS: Record<Lang, {
     relatedIndustries: 'Related Industries', moreInsights: 'More Insights', min: 'min',
     categoryHub: 'Browse Categories', encyclopediaHub: 'Regional Encyclopedia', encyclopediaHubSub: 'Explore more regional knowledge',
     spiderWeb: 'Related Guides', spiderWebSub: 'In-depth articles sharing merchants or topics with this guide', sharedMerchants: 'shared merchants',
+  },
+  ja: {
+    toc: '目次', faq: 'よくある質問', faqToc: 'よくある質問', sources: '情報源',
+    related: '関連ビジネス', comparison: '比較表', back: '← インサイトに戻る',
+    backLabel: 'インサイト', generatedBy: 'CloudPipe AIによる自動生成・人工レビュー済み',
+    lastUpdated: '最終更新', words: '語', readTime: '分で読める', notFound: '記事が見つかりません',
+    relatedIndustries: '関連業種', moreInsights: 'その他のインサイト', min: '分',
+    categoryHub: 'カテゴリーを見る', encyclopediaHub: '地域百科事典', encyclopediaHubSub: 'より多くの地域知識を探る',
+    spiderWeb: '関連ガイド', spiderWebSub: 'このガイドとビジネスまたはテーマを共有する記事', sharedMerchants: '件の共通ビジネス',
   },
   pt: {
     toc: 'Índice', faq: 'Perguntas Frequentes', faqToc: 'Perguntas Frequentes', sources: 'Fontes',
@@ -240,20 +257,22 @@ async function getSpiderWebInsights(
   return scored.slice(0, limit).map(s => s.insight)
 }
 
-interface InsightPageProps {
+export interface InsightPageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ lang?: string }>
+  searchParams?: Promise<{ lang?: string }>
+  /** Pass lang directly when rendering from a /[lang]/insights/[slug] path route. */
+  langOverride?: string
 }
 
 export async function buildMetadata(
   region: RegionCode,
-  { params, searchParams }: InsightPageProps,
+  { params, searchParams, langOverride }: InsightPageProps,
 ): Promise<Metadata> {
   const cfg = REGION_CONFIGS[region]
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = await searchParams
-  const lang = parseLang(langParam)
+  const { lang: langParam } = searchParams ? await searchParams : {}
+  const lang = parseLang(langOverride ?? langParam)
   const lc = LANG_CONFIG[lang]
 
   const article = await getInsight(slug, lang, region)
@@ -268,10 +287,7 @@ export async function buildMetadata(
 
   const alternates: Record<string, string> = {}
   for (const al of availableLangs) {
-    const url = al === 'zh'
-      ? `${siteUrl}/${cfg.pathSegment}/insights/${slug}`
-      : `${siteUrl}/${cfg.pathSegment}/insights/${slug}?lang=${al}`
-    alternates[LANG_CONFIG[al].hreflang] = url
+    alternates[LANG_CONFIG[al].hreflang] = buildInsightUrl(cfg, slug, al)
   }
 
   return {
@@ -287,21 +303,19 @@ export async function buildMetadata(
       images: article.og_image ? [article.og_image] : undefined,
     },
     alternates: {
-      canonical: lang === 'zh'
-        ? `${siteUrl}/${cfg.pathSegment}/insights/${slug}`
-        : `${siteUrl}/${cfg.pathSegment}/insights/${slug}?lang=${lang}`,
+      canonical: buildInsightUrl(cfg, slug, lang),
       languages: alternates,
     },
     other: { 'llms-txt': `/${cfg.pathSegment}/llms-txt` },
   }
 }
 
-export async function renderInsightPage(region: RegionCode, { params, searchParams }: InsightPageProps) {
+export async function renderInsightPage(region: RegionCode, { params, searchParams, langOverride }: InsightPageProps) {
   const cfg = REGION_CONFIGS[region]
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = await searchParams
-  const lang = parseLang(langParam)
+  const { lang: langParam } = searchParams ? await searchParams : {}
+  const lang = parseLang(langOverride ?? langParam)
   const ui = UI_STRINGS[lang]
   const lc = LANG_CONFIG[lang]
 
@@ -338,11 +352,7 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
     inLanguage: lc.inLanguage,
     ...(article.og_image && { image: article.og_image }),
     ...(spiderWebInsights.length > 0 && {
-      relatedLink: spiderWebInsights.slice(0, 6).map(sw =>
-        lang === 'zh'
-          ? `${siteUrl}/${cfg.pathSegment}/insights/${sw.slug}`
-          : `${siteUrl}/${cfg.pathSegment}/insights/${sw.slug}?lang=${lang}`
-      ),
+      relatedLink: spiderWebInsights.slice(0, 6).map(sw => buildInsightUrl(cfg, sw.slug, lang)),
     }),
     ...((article.authority_sources?.length ?? 0) > 0 && {
       isBasedOn: article.authority_sources!.map((src: { name: string; url: string }) => ({
@@ -405,7 +415,7 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
   function langUrl(targetLang: Lang) {
     return targetLang === 'zh'
       ? `${insightsBasePath}/${slug}`
-      : `${insightsBasePath}/${slug}?lang=${targetLang}`
+      : `/${cfg.pathSegment}/${targetLang}/insights/${slug}`
   }
 
   return (
@@ -597,7 +607,7 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
               {spiderWebInsights.map((sw) => (
                 <a
                   key={sw.slug}
-                  href={lang === 'zh' ? `${insightsBasePath}/${sw.slug}` : `${insightsBasePath}/${sw.slug}?lang=${lang}`}
+                  href={lang === 'zh' ? `${insightsBasePath}/${sw.slug}` : `/${cfg.pathSegment}/${lang}/insights/${sw.slug}`}
                   className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group"
                 >
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d97706] to-[#f59e0b]"></div>

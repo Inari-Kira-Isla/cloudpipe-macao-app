@@ -80,6 +80,10 @@ function getPageType(path: string, referer?: string): string {
     } catch { /* invalid referer URL, ignore */ }
   }
   if (path.startsWith('/macao/insights/')) return 'insight'
+  // Path-based lang routes: /{region}/{lang}/insights/{slug} (2026-05-27)
+  if (/^\/(macao|hongkong|taiwan|japan|global)\/(en|ja|pt)\/insights\//.test(path)) return 'insight'
+  // HK/TW/JP/GLOBAL insight canonical routes
+  if (/^\/(hongkong|taiwan|japan|global)\/insights\//.test(path)) return 'insight'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/[^/]+$/)) return 'merchant'
   if (path.match(/^\/macao\/[^/]+\/[^/]+\/faqs/)) return 'faqs'
   if (path.match(/^\/macao\/[^/]+\/[^/]+$/)) return 'category'
@@ -101,6 +105,8 @@ const VALID_INDUSTRIES = new Set([
   // Meta + legacy paths
   'insights', 'services', 'entertainment', 'heritage', 'tourism', 'culture',
   'merchants', 'lifestyle',
+  // Lang path segments (path-based routing: /{region}/en|ja|pt/insights/)
+  'en', 'ja', 'pt',
 ])
 
 function getIndustryCategory(path: string): { industry: string | null; category: string | null } {

@@ -4,7 +4,7 @@ import { notifySitemaps } from '@/lib/notify-crawlers'
 export const revalidate = 1800 // 30min ISR — 與 llms-en / llms-txt 一致
 export const maxDuration = 30
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
 
 export async function GET() {
   // Non-blocking: notify crawlers of potential updates (fire and forget)
@@ -40,7 +40,7 @@ export async function GET() {
 
   const insightLines = insights.map(i => {
     const seg = REGION_PATH[((i.region as string | null) || 'MO').toUpperCase()] || 'macao'
-    return `- [${i.title}](${siteUrl}/${seg}/insights/${i.slug}?lang=ja) — ${(i.word_count || 0).toLocaleString('ja-JP')}字`
+    return `- [${i.title}](${siteUrl}/${seg}/ja/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString('ja-JP')}字`
   }).join('\n')
 
   const body = `# CloudPipe AI — アジアビジネス百科事典

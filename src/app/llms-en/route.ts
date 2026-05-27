@@ -32,7 +32,7 @@ export async function GET() {
   const insights = topInsights || []
 
   const insightLines = insights.map(i =>
-    `- [${i.title}](${siteUrl}/macao/insights/${i.slug}?lang=en) — ${(i.word_count || 0).toLocaleString()} words`
+    `- [${i.title}](${siteUrl}/macao/en/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString()} words`
   ).join('\n')
 
   const industryLines = INDUSTRIES

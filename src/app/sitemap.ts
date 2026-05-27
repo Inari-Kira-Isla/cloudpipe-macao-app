@@ -159,11 +159,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.85,
     })),
-    // en → ?lang=en variants
+    // en/pt/ja → /{region}/{lang}/insights/{slug} path-based variants (2026-05-27)
     ...enInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
+        url: `${siteUrl}/${seg}/en/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.05, 0.80),
@@ -171,8 +172,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...ptInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
+        url: `${siteUrl}/${seg}/pt/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.05, 0.80),
@@ -180,8 +182,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...jaInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
+        url: `${siteUrl}/${seg}/ja/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.10, 0.75),

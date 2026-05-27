@@ -57,11 +57,11 @@ export async function fetchInsightsByRegion(
 }
 
 /**
- * URL for one insight row. Mirrors sitemap.ts insightPath():
+ * URL for one insight row — path-based lang routing (2026-05-27):
  *   zh  → /{seg}/insights/{slug}             (canonical)
- *   en  → /{seg}/insights/{slug}?lang=en
- *   pt  → /{seg}/insights/{slug}?lang=pt
- *   ja  → /{seg}/insights/{slug}?lang=ja
+ *   en  → /{seg}/en/insights/{slug}
+ *   pt  → /{seg}/pt/insights/{slug}
+ *   ja  → /{seg}/ja/insights/{slug}
  */
 export function buildInsightLoc(
   siteUrl: string,
@@ -70,8 +70,9 @@ export function buildInsightLoc(
   lang: string,
 ): string {
   const seg = REGION_PATH[region]
-  const base = `${siteUrl}/${seg}/insights/${slug}`
-  return lang === 'zh' ? base : `${base}?lang=${lang}`
+  return lang === 'zh'
+    ? `${siteUrl}/${seg}/insights/${slug}`
+    : `${siteUrl}/${seg}/${lang}/insights/${slug}`
 }
 
 export function escapeXml(str: string): string {
