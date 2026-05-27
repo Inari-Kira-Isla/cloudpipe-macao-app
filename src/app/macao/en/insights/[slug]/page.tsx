@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { buildMetadata, renderInsightPage } from '@/components/insight-region/InsightPageView'
 
 export const revalidate = 86400
+export const dynamic = 'force-static'
 
 interface PageProps {
   params: Promise<{ slug: string }>

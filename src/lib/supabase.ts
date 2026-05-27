@@ -13,6 +13,13 @@ export const supabase = createClient(supabaseUrl, activeKey)
 export function createServiceClient() {
   return createClient(
     supabaseUrl,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
+    process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey,
+    {
+      global: {
+        // Hard 8s timeout — prevents connections hanging during bot crawl spikes
+        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
+          fetch(url, { ...options, signal: AbortSignal.timeout(8000) }),
+      },
+    }
   )
 }
