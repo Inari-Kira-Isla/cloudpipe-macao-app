@@ -1,9 +1,9 @@
 import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase-server'
 import AiReferralSection from '@/components/report/AiReferralSection'
 
-export const revalidate = 1800 // 30min ISR — report 不需 5min，減少 bot 爬到時的 CPU 消耗
+export const dynamic = 'force-dynamic' // live crawler dashboard — must not statically generate
 
 const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
@@ -52,6 +52,7 @@ interface DailyEntry {
 }
 
 export default async function ReportPage() {
+  const supabase = createServiceClient()
   const [cacheRow, daily, spiderWeb, { count: totalLive }, { count: totalCertified }] = await Promise.all([
     // Primary: pull directly from crawler_stats_cache (updated every 5 min by pg_cron)
     supabase.from('crawler_stats_cache').select('*').eq('id', 1).single(),
