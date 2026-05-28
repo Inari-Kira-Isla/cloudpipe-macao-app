@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 1800 // 1h ISR — covering index makes query <1s; reduce thundering-herd from 1800s
+export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
 export const maxDuration = 120
 
 interface AllInsightRow {

@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 1800 // 30min ISR — same as sitemap-insights.xml
+export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
 export const maxDuration = 120
 
 interface InsightRow {

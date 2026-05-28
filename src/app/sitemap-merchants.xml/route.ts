@@ -1,7 +1,7 @@
 import { createServiceClient } from '@/lib/supabase'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const revalidate = 3600 // 1h ISR — avoid excessive AI bot queries
+export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
 export const maxDuration = 60
 
 interface SitemapURL {
