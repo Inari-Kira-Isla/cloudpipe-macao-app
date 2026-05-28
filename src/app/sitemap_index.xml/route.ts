@@ -5,7 +5,7 @@
  * Schema: <sitemapindex> not <urlset>.
  */
 
-export const revalidate = 3600 // 30min ISR — aligns with sub-sitemap revalidate window (CLAUDE.md §1)
+export const revalidate = 1800 // 30min ISR — aligns with sub-sitemap revalidate window (CLAUDE.md §1)
 export const maxDuration = 60
 
 function escapeXml(str: string): string {

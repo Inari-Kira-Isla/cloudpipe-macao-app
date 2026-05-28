@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 3600 // 1h ISR — covering index makes query <1s; reduce thundering-herd from 1800s
+export const revalidate = 1800 // 1h ISR — covering index makes query <1s; reduce thundering-herd from 1800s
 export const maxDuration = 120
 
 interface AllInsightRow {
