@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase-server'
 
 export const maxDuration = 30
 
@@ -103,6 +104,44 @@ export async function GET(request: NextRequest) {
 
   switch (view) {
     case 'summary': {
+      // Today view: read live from crawler_stats_cache (updated every 5 min by pg_cron)
+      if (days === 1) {
+        try {
+          const supabase = createServiceClient()
+          const today = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Hong_Kong' }).slice(0, 10)
+          const { data: cacheRow } = await supabase
+            .from('crawler_stats_cache')
+            .select('total_visits_1d,daily_by_owner_30d,industries_breakdown,sites_breakdown,unique_bots,generated_at')
+            .eq('id', 1)
+            .single()
+          if (cacheRow) {
+            // Reconstruct today's bot breakdown from daily_by_owner_30d[today]
+            const todayByOwner: Record<string, number> = (cacheRow.daily_by_owner_30d as Record<string, Record<string, number>> | null)?.[today] || {}
+            const bots: Record<string, { count: number; owner: string }> = {}
+            for (const [owner, count] of Object.entries(todayByOwner)) {
+              bots[owner] = { count: Number(count) || 0, owner }
+            }
+            const totalToday = cacheRow.total_visits_1d ?? 0
+            return json({
+              period: { since: `${today}T00:00:00+08:00`, days: 1 },
+              total_visits: totalToday,
+              today_visits: totalToday,
+              unique_bots: Object.keys(bots).length || cacheRow.unique_bots,
+              unique_sessions: 0,
+              bots,
+              top_pages: {},
+              industries: (cacheRow.industries_breakdown as Record<string, number>) || {},
+              page_types: {},
+              sites: (cacheRow.sites_breakdown as Record<string, number>) || {},
+              daily: [{ date: today, total: totalToday }],
+              generated_at: cacheRow.generated_at,
+            }, 'LIVE-CACHE')
+          }
+        } catch {
+          // fall through to GitHub cache
+        }
+      }
+
       if ([7, 30, 90].includes(days)) {
         const cached = await readCache(`crawler-stats-summary-${days}`)
         if (cached) return json(cached, 'PRECOMPUTED')
