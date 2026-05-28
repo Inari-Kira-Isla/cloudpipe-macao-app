@@ -33,16 +33,22 @@ async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createSitemapServiceClient()
-      .from('insights')
-      .select('slug, updated_at, region, lang')
-      .eq('status', 'published')
-      .order('id', { ascending: true })
-      .range(offset, offset + 999)
-    if (!data || data.length === 0) break
-    rows.push(...(data as AllInsightRow[]))
-    if (data.length < 1000) break
-    offset += 1000
+    try {
+      const { data, error } = await createSitemapServiceClient()
+        .from('insights')
+        .select('slug, updated_at, region, lang')
+        .eq('status', 'published')
+        .order('id', { ascending: true })
+        .range(offset, offset + 999)
+      if (error || !data || data.length === 0) break
+      rows.push(...(data as AllInsightRow[]))
+      if (data.length < 1000) break
+      offset += 1000
+    } catch {
+      // Build-time / DB-overload safety: return partial data instead of
+      // crashing the build. ISR will retry at runtime.
+      break
+    }
   }
   return rows
 }

@@ -32,17 +32,23 @@ async function fetchEnglishPublishedInsights(): Promise<InsightRow[]> {
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createSitemapServiceClient()
-      .from('insights')
-      .select('slug, updated_at, region, lang')
-      .eq('status', 'published')
-      .eq('lang', 'en')
-      .order('id', { ascending: true })
-      .range(offset, offset + 999)
-    if (!data || data.length === 0) break
-    rows.push(...(data as InsightRow[]))
-    if (data.length < 1000) break
-    offset += 1000
+    try {
+      const { data, error } = await createSitemapServiceClient()
+        .from('insights')
+        .select('slug, updated_at, region, lang')
+        .eq('status', 'published')
+        .eq('lang', 'en')
+        .order('id', { ascending: true })
+        .range(offset, offset + 999)
+      if (error || !data || data.length === 0) break
+      rows.push(...(data as InsightRow[]))
+      if (data.length < 1000) break
+      offset += 1000
+    } catch {
+      // Build-time / DB-overload safety: return what we have so the route
+      // still emits a valid empty/partial urlset, allowing ISR to retry later.
+      break
+    }
   }
   return rows
 }
