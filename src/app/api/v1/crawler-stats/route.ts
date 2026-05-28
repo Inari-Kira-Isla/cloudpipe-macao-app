@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase-server'
+import { createServiceClient } from '@/lib/supabase'
 
 export const maxDuration = 30
 
@@ -111,17 +111,28 @@ export async function GET(request: NextRequest) {
           const today = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Hong_Kong' }).slice(0, 10)
           const { data: cacheRow } = await supabase
             .from('crawler_stats_cache')
-            .select('total_visits_1d,daily_by_owner_30d,industries_breakdown,sites_breakdown,unique_bots,generated_at')
+            .select('total_visits_1d,total_visits_7d,daily_by_owner_30d,industries_breakdown,sites_breakdown,unique_bots,generated_at')
             .eq('id', 1)
             .single()
           if (cacheRow) {
+            const generatedAt = new Date(cacheRow.generated_at)
+            // Stale if cache was last refreshed before today's UTC midnight (= 08:00 HKT)
+            const todayUtcMidnight = new Date()
+            todayUtcMidnight.setUTCHours(0, 0, 0, 0)
+            const isStale = generatedAt < todayUtcMidnight
+
             // Reconstruct today's bot breakdown from daily_by_owner_30d[today]
             const todayByOwner: Record<string, number> = (cacheRow.daily_by_owner_30d as Record<string, Record<string, number>> | null)?.[today] || {}
             const bots: Record<string, { count: number; owner: string }> = {}
             for (const [owner, count] of Object.entries(todayByOwner)) {
               bots[owner] = { count: Number(count) || 0, owner }
             }
-            const totalToday = cacheRow.total_visits_1d ?? 0
+            // If stale, derive today total from daily_by_owner_30d[today] sum instead of total_visits_1d
+            // (daily_by_owner_30d might have been precomputed yesterday, but key "today" = UTC date = should be 0 if empty)
+            const totalToday = isStale
+              ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
+              : (cacheRow.total_visits_1d ?? 0)
+            const xCheck7d = cacheRow.total_visits_7d ?? null
             return json({
               period: { since: `${today}T00:00:00+08:00`, days: 1 },
               total_visits: totalToday,
@@ -135,7 +146,9 @@ export async function GET(request: NextRequest) {
               sites: (cacheRow.sites_breakdown as Record<string, number>) || {},
               daily: [{ date: today, total: totalToday }],
               generated_at: cacheRow.generated_at,
-            }, 'LIVE-CACHE')
+              is_stale: isStale,
+              x_check_7d: xCheck7d,
+            }, isStale ? 'STALE-CACHE' : 'LIVE-CACHE')
           }
         } catch {
           // fall through to GitHub cache

@@ -16,6 +16,9 @@ interface Summary {
   page_types: Record<string, number>
   sites: Record<string, number>
   daily?: { date: string; total: number }[]
+  generated_at?: string
+  is_stale?: boolean
+  x_check_7d?: number | null
 }
 interface CacheHealth {
   source_status: 'ok' | 'stale' | 'degraded' | 'backoff' | string
@@ -418,6 +421,26 @@ export default function CrawlerDashboard() {
           <div>最後數據日期：{cacheHealth.last_cache_date || 'unknown'}{cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}</div>
           {cacheHealth.errors?.[0] && (
             <div style={{ color: '#a16207', marginTop: 4 }}>{cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}</div>
+          )}
+        </div>
+      )}
+
+      {summary?.is_stale && days === 1 && (
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>
+          ⚠️ <strong>pg_cron 未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 08:00 HKT 之前）。今日數據可能不準確，請檢查 Supabase pg_cron 排程。
+        </div>
+      )}
+
+      {summary?.generated_at && days === 1 && !summary.is_stale && (
+        <div style={{ marginBottom: 12, fontSize: 12, color: '#888' }}>
+          數據從 <strong>08:00 HKT</strong> 起計（UTC 凌晨），快取更新於 {
+            new Date(summary.generated_at).toLocaleString('zh-TW', { timeZone: 'Asia/Hong_Kong', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          } HKT
+          {summary.x_check_7d != null && (
+            <span style={{ marginLeft: 12, color: summary.total_visits <= summary.x_check_7d ? '#10a37f' : '#ef4444' }}>
+              （7日總計 {summary.x_check_7d.toLocaleString()}，今日 {summary.total_visits.toLocaleString()}
+              {summary.total_visits > summary.x_check_7d ? ' — 今日異常高！' : ''}）
+            </span>
           )}
         </div>
       )}

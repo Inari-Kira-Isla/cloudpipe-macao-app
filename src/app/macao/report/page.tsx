@@ -1,6 +1,6 @@
 import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
-import { createServiceClient } from '@/lib/supabase-server'
+import { createServiceClient } from '@/lib/supabase'
 import AiReferralSection from '@/components/report/AiReferralSection'
 
 export const dynamic = 'force-dynamic' // live crawler dashboard — must not statically generate
