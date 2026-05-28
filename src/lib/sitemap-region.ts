@@ -13,7 +13,7 @@
  */
 import { createSitemapServiceClient } from '@/lib/supabase'
 
-export type SitemapRegion = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL'
+export type SitemapRegion = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL' | 'MY' | 'JBL'
 
 export const REGION_PATH: Record<SitemapRegion, string> = {
   MO: 'macao',
@@ -21,6 +21,12 @@ export const REGION_PATH: Record<SitemapRegion, string> = {
   TW: 'taiwan',
   JP: 'japan',
   GLOBAL: 'global',
+  // MY served from a separate Vercel project (malaysia-encyclopedia.vercel.app);
+  // path segment listed here for cross-region link/Schema parity. Sub-sitemap on main
+  // app NOT generated for MY (use external domain's own sitemap).
+  MY: 'malaysia',
+  // JBL bridge — public discovery routes under main app; sub-sitemap pending.
+  JBL: 'japan-shokuhinten',
 }
 
 export interface InsightRow {
