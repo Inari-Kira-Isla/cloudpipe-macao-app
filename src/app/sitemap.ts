@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .select('slug, updated_at, region')
         .eq('status', 'published')
         .eq('lang', lang)
-        .order('updated_at', { ascending: false })
+        .order('id', { ascending: true })
         .range(offset, offset + 999)
       if (!data || data.length === 0) break
       rows.push(...(data as Array<{ slug: string; updated_at: string; region: string | null }>))
@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at, region')
       .eq('status', 'published')
       .or('slug.ilike.%sea-urchin%,slug.ilike.%inari%,slug.ilike.%海膽%,slug.ilike.%uni-macau%,slug.ilike.%cloudpipe%')
-      .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .limit(30)
     return (data || []) as Array<{ slug: string; updated_at: string; region: string | null }>
   }

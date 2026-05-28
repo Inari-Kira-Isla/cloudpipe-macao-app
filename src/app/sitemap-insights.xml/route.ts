@@ -37,7 +37,7 @@ async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
       .from('insights')
       .select('slug, updated_at, region, lang')
       .eq('status', 'published')
-      .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .range(offset, offset + 999)
     if (!data || data.length === 0) break
     rows.push(...(data as AllInsightRow[]))
