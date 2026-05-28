@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
 
-export const revalidate = 1800 // 30min — 日均100+新文章，每2h太慢，降至30min讓爬蟲持續發現新URL
+export const revalidate = 3600 // 30min — 日均100+新文章，每2h太慢，降至30min讓爬蟲持續發現新URL
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

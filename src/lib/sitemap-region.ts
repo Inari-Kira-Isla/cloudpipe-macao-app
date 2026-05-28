@@ -174,5 +174,5 @@ export async function buildRegionSitemapXml(
  */
 export const SITEMAP_HEADERS = {
   'Content-Type': 'application/xml; charset=utf-8',
-  'Cache-Control': 'public, max-age=1800, stale-while-revalidate=86400',
+  'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
 } as const

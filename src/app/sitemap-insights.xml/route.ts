@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 1800 // 30min ISR — 日均100+新文章，降至30min讓AI爬蟲持續發現
+export const revalidate = 3600 // 1h ISR — covering index makes query <1s; reduce thundering-herd from 1800s
 export const maxDuration = 120
 
 interface AllInsightRow {
