@@ -109,22 +109,111 @@ const VALID_INDUSTRIES = new Set([
 
 const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt'])
 
+// Region+lang-aware insight path regex — captures region and slug for industry lookup.
+// Catches BOTH:
+//   /(macao|hongkong|taiwan|japan|global)/insights/{slug}
+//   /(macao|hongkong|taiwan|japan|global)/(en|ja|pt|ms)/insights/{slug}
+// (Previously only non-macao + no `ms` lang were caught, causing 1,651 NULL/day on
+// /macao/en|pt|ja/insights/* — see 2026-05-29 audit.)
+const INSIGHT_PATH_RE =
+  /^\/(macao|hongkong|taiwan|japan|global)(?:\/(en|ja|pt|ms))?\/insights\/([^/?#]+)/
+
+interface InsightPathMatch {
+  region: string // lowercased region segment (macao|hongkong|...)
+  lang: string | null
+  slug: string // url-decoded slug
+}
+
+function matchInsightPath(path: string): InsightPathMatch | null {
+  const m = path.match(INSIGHT_PATH_RE)
+  if (!m) return null
+  let slug = m[3]
+  try {
+    slug = decodeURIComponent(slug)
+  } catch {
+    /* leave as-is on malformed encoding */
+  }
+  return { region: m[1], lang: m[2] || null, slug }
+}
+
 function getIndustryCategory(path: string): { industry: string | null; category: string | null } {
-  // Non-macao region insight pages: /(hongkong|japan|taiwan|global)/[lang]/insights/... or /region/insights/...
+  // Insight pages — synchronous fallback. The actual industry (from
+  // insights.related_industries[0]) is resolved asynchronously inside
+  // trackVisit before the row is posted to crawler_visits.
+  if (matchInsightPath(path)) {
+    return { industry: 'insights', category: null }
+  }
   if (!path.startsWith('/macao/')) {
-    const regionInsightRe = /^\/(hongkong|japan|taiwan|global)(\/(?:en|ja|pt))?\/insights\//
-    if (regionInsightRe.test(path)) return { industry: 'insights', category: null }
     return { industry: null, category: null }
   }
   const parts = path.replace(/^\/macao\//, '').split('/').filter(Boolean)
   if (parts.length === 0) return { industry: null, category: null }
   if (parts[0] === 'faqs') return { industry: null, category: null }
-  // Lang path segments (/{region}/{lang}/insights/{slug}) — not industry slugs
+  // Lang path segments (/{region}/{lang}/insights/{slug}) — handled above; defensive null otherwise
   if (LANG_PATH_SEGMENTS.has(parts[0])) return { industry: null, category: null }
   // Only accept whitelisted industry slugs — otherwise this is a merchant slug
   // at top level (e.g. /macao/cc-foo, /macao/jp-bar) and industry is unknown
   if (!VALID_INDUSTRIES.has(parts[0])) return { industry: null, category: null }
   return { industry: parts[0], category: parts[1] || null }
+}
+
+// --- Insight industry LRU cache ---------------------------------------------
+// Module-level Map (per edge isolate). Resolves /(region)/(lang?)/insights/{slug}
+// to insights.related_industries[0]. Cache size capped; oldest 20% evicted on overflow.
+// Cache miss + fetch failure → fallback 'insights' (preserves prior monitoring shape).
+const INSIGHT_INDUSTRY_CACHE = new Map<string, string>()
+const INSIGHT_CACHE_MAX_SIZE = 5000
+
+// Map URL region segment → insights.region uppercase code
+const REGION_CODE_MAP: Record<string, string> = {
+  macao: 'MO',
+  hongkong: 'HK',
+  taiwan: 'TW',
+  japan: 'JP',
+  global: 'GLOBAL',
+}
+
+async function resolveInsightIndustry(
+  match: InsightPathMatch,
+  supabaseUrl: string,
+  supabaseKey: string,
+): Promise<string> {
+  const regionCode = REGION_CODE_MAP[match.region] || match.region.toUpperCase()
+  const cacheKey = `${regionCode}:${match.slug}`
+  const cached = INSIGHT_INDUSTRY_CACHE.get(cacheKey)
+  if (cached) return cached
+  try {
+    const url =
+      `${supabaseUrl}/rest/v1/insights` +
+      `?select=related_industries` +
+      `&slug=eq.${encodeURIComponent(match.slug)}` +
+      `&region=eq.${regionCode}` +
+      `&limit=1`
+    const res = await fetch(url, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        Accept: 'application/json',
+      },
+    })
+    if (!res.ok) return 'insights'
+    const rows = (await res.json()) as Array<{ related_industries?: string[] | null }>
+    const derived = rows?.[0]?.related_industries?.[0] || 'insights'
+    // Evict oldest 20% if cache is full (simple FIFO eviction — Map preserves insertion order)
+    if (INSIGHT_INDUSTRY_CACHE.size >= INSIGHT_CACHE_MAX_SIZE) {
+      const evictCount = Math.floor(INSIGHT_CACHE_MAX_SIZE * 0.2)
+      const iter = INSIGHT_INDUSTRY_CACHE.keys()
+      for (let i = 0; i < evictCount; i++) {
+        const k = iter.next().value
+        if (k === undefined) break
+        INSIGHT_INDUSTRY_CACHE.delete(k)
+      }
+    }
+    INSIGHT_INDUSTRY_CACHE.set(cacheKey, derived)
+    return derived
+  } catch {
+    return 'insights'
+  }
 }
 
 async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
@@ -159,59 +248,84 @@ async function trackAiReferral(
   supabaseUrl: string,
   supabaseKey: string,
 ) {
-  const { industry, category } = getIndustryCategory(path)
-  const row = {
-    referrer_source: referrerSource,
-    referrer_url: referrerUrl.slice(0, 500),
-    path,
-    site: 'cloudpipe-macao-app',
-    page_type: getPageType(path),
-    industry,
-    category,
-    ua_raw: ua.slice(0, 200),
-    ts: new Date().toISOString(),
-  }
-  fetch(`${supabaseUrl}/rest/v1/ai_referrals`, {
-    method: 'POST',
-    headers: {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
-    },
-    body: JSON.stringify(row),
-  }).catch(() => {})
+  const { industry: fallbackIndustry, category } = getIndustryCategory(path)
+  const insightMatch = matchInsightPath(path)
+
+  ;(async () => {
+    let industry: string | null = fallbackIndustry
+    if (insightMatch) {
+      industry = await resolveInsightIndustry(insightMatch, supabaseUrl, supabaseKey)
+    }
+    const row = {
+      referrer_source: referrerSource,
+      referrer_url: referrerUrl.slice(0, 500),
+      path,
+      site: 'cloudpipe-macao-app',
+      page_type: getPageType(path),
+      industry,
+      category,
+      ua_raw: ua.slice(0, 200),
+      ts: new Date().toISOString(),
+    }
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/ai_referrals`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(row),
+      })
+    } catch {
+      /* swallow tracking errors */
+    }
+  })().catch(() => {})
 }
 
 async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string) {
   const today = new Date().toISOString().slice(0, 10)
-  const ipSeed = ua.slice(0, 20) // lightweight pseudo-hash seed (no IP in middleware)
   const sessionId = `mw-${bot.name}-${today}`
-  const { industry, category } = getIndustryCategory(path)
-  const row = {
-    bot_name: bot.name,
-    bot_owner: bot.owner,
-    path,
-    site: 'cloudpipe-macao-app',
-    page_type: getPageType(path, referer),
-    industry,
-    category,
-    session_id: sessionId,
-    ua_raw: ua.slice(0, 200),
-    referer: referer ? referer.slice(0, 500) : null,
-    ts: new Date().toISOString(),
-  }
-  // fire-and-forget — never await, never block response
-  fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
-    method: 'POST',
-    headers: {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
-    },
-    body: JSON.stringify(row),
-  }).catch(() => {})
+  const { industry: fallbackIndustry, category } = getIndustryCategory(path)
+  const insightMatch = matchInsightPath(path)
+
+  // Fire-and-forget — caller does NOT await trackVisit, so the optional
+  // insight-industry lookup never blocks the user response, only delays
+  // the tracking write by one Supabase round-trip (cached after first hit).
+  ;(async () => {
+    let industry: string | null = fallbackIndustry
+    if (insightMatch) {
+      industry = await resolveInsightIndustry(insightMatch, supabaseUrl, supabaseKey)
+    }
+    const row = {
+      bot_name: bot.name,
+      bot_owner: bot.owner,
+      path,
+      site: 'cloudpipe-macao-app',
+      page_type: getPageType(path, referer),
+      industry,
+      category,
+      session_id: sessionId,
+      ua_raw: ua.slice(0, 200),
+      referer: referer ? referer.slice(0, 500) : null,
+      ts: new Date().toISOString(),
+    }
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(row),
+      })
+    } catch {
+      /* swallow tracking errors */
+    }
+  })().catch(() => {})
 }
 
 export async function middleware(request: NextRequest) {
