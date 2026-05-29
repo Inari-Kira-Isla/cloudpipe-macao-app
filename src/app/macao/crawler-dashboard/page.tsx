@@ -225,16 +225,17 @@ export default function CrawlerDashboard() {
     try {
       // Run all 3 fetches in parallel; health (GitHub Pages) gets a shorter timeout
       // so a blocked/slow external host never delays the main data display.
+      // 20s timeout accommodates Vercel cold starts (can take 12-15s on first request).
       const [sum, sw, health] = await Promise.all([
-        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 12000),
-        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 12000),
+        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 20000),
+        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 20000),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
       ])
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
       setLastUpdated(new Date())
-      if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
+      if (!sum) setError('數據載入中，Vercel 冷啟動需時約 15 秒，請稍候再按「立即重新整理」。')
     } catch (e) {
       console.error(e)
       setError('載入失敗，請重試。')
