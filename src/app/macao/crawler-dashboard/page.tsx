@@ -203,13 +203,12 @@ export default function CrawlerDashboard() {
 
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
-  const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
+  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000): Promise<T> => {
     const controller = new AbortController()
-    const timeout = window.setTimeout(() => controller.abort(), 9000)
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
     try {
       const res = await fetch(url, {
         cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
         signal: controller.signal,
       })
       if (!res.ok) return fallback
@@ -224,11 +223,13 @@ export default function CrawlerDashboard() {
     setLoading(true)
     setError(null)
     try {
-      const [sum, sw] = await Promise.all([
-        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
+      // Run all 3 fetches in parallel; health (GitHub Pages) gets a shorter timeout
+      // so a blocked/slow external host never delays the main data display.
+      const [sum, sw, health] = await Promise.all([
+        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 12000),
+        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 12000),
+        safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
       ])
-      const health = await safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null)
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
