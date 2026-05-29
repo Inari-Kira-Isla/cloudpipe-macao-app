@@ -31,6 +31,8 @@ interface AllInsightRow {
 async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
   const rows: AllInsightRow[] = []
   let offset = 0
+  let consecutiveErrors = 0
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -40,14 +42,23 @@ async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
         .eq('status', 'published')
         .order('id', { ascending: true })
         .range(offset, offset + 999)
-      if (error || !data || data.length === 0) break
+
+      if (error || !data) {
+        consecutiveErrors++
+        if (rows.length > 0 || consecutiveErrors >= 3) break  // return partial on transient error
+        await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+        continue
+      }
+
+      consecutiveErrors = 0
+      if (data.length === 0) break
       rows.push(...(data as AllInsightRow[]))
       if (data.length < 1000) break
       offset += 1000
     } catch {
-      // Build-time / DB-overload safety: return partial data instead of
-      // crashing the build. ISR will retry at runtime.
-      break
+      consecutiveErrors++
+      if (rows.length > 0 || consecutiveErrors >= 3) break
+      await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
     }
   }
   return rows
@@ -58,6 +69,15 @@ export async function GET() {
   const now = new Date().toISOString().split('T')[0]
 
   const rows = await fetchAllPublishedInsights()
+
+  // Guard: if DB returned critically few rows, return 503 so CDN doesn't cache
+  // an empty/broken sitemap that would tank AI crawler discovery for hours.
+  if (rows.length < 500) {
+    return new Response('Service temporarily unavailable — DB load high, retry shortly', {
+      status: 503,
+      headers: { 'Retry-After': '120', 'Content-Type': 'text/plain' },
+    })
+  }
 
   const nowMs = Date.now()
   const urls = rows

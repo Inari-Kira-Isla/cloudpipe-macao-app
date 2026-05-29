@@ -30,6 +30,7 @@ interface InsightRow {
 async function fetchEnglishPublishedInsights(): Promise<InsightRow[]> {
   const rows: InsightRow[] = []
   let offset = 0
+  let consecutiveErrors = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -40,14 +41,21 @@ async function fetchEnglishPublishedInsights(): Promise<InsightRow[]> {
         .eq('lang', 'en')
         .order('id', { ascending: true })
         .range(offset, offset + 999)
-      if (error || !data || data.length === 0) break
+      if (error || !data) {
+        consecutiveErrors++
+        if (rows.length > 0 || consecutiveErrors >= 3) break
+        await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+        continue
+      }
+      consecutiveErrors = 0
+      if (data.length === 0) break
       rows.push(...(data as InsightRow[]))
       if (data.length < 1000) break
       offset += 1000
     } catch {
-      // Build-time / DB-overload safety: return what we have so the route
-      // still emits a valid empty/partial urlset, allowing ISR to retry later.
-      break
+      consecutiveErrors++
+      if (rows.length > 0 || consecutiveErrors >= 3) break
+      await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
     }
   }
   return rows
