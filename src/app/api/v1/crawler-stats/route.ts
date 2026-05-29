@@ -104,51 +104,137 @@ export async function GET(request: NextRequest) {
 
   switch (view) {
     case 'summary': {
-      // Today view: read live from crawler_stats_cache (updated every 5 min by pg_cron)
+      // Today view: read live from MV (mv_crawler_*_30d, refreshed every 5 min by pg_cron)
+      // or legacy crawler_stats_cache table (fallback when USE_CRAWLER_MV=false)
       if (days === 1) {
+        const USE_MV = process.env.USE_CRAWLER_MV !== 'false' // default true; set false to rollback
         try {
           const supabase = createServiceClient()
           const today = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Hong_Kong' }).slice(0, 10)
-          const { data: cacheRow } = await supabase
-            .from('crawler_stats_cache')
-            .select('total_visits_1d,total_visits_7d,daily_by_owner_30d,industries_breakdown,sites_breakdown,unique_bots,generated_at')
-            .eq('id', 1)
-            .single()
-          if (cacheRow) {
-            const generatedAt = new Date(cacheRow.generated_at)
-            // Stale if cache was last refreshed before today's UTC midnight (= 08:00 HKT)
-            const todayUtcMidnight = new Date()
-            todayUtcMidnight.setUTCHours(0, 0, 0, 0)
-            const isStale = generatedAt < todayUtcMidnight
 
-            // Reconstruct today's bot breakdown from daily_by_owner_30d[today]
-            const todayByOwner: Record<string, number> = (cacheRow.daily_by_owner_30d as Record<string, Record<string, number>> | null)?.[today] || {}
-            const bots: Record<string, { count: number; owner: string }> = {}
-            for (const [owner, count] of Object.entries(todayByOwner)) {
-              bots[owner] = { count: Number(count) || 0, owner }
+          if (USE_MV) {
+            // ── New MV path ───────────────────────────────────────────────
+            const [totalRes, botsRes, industriesRes, dailyRes] = await Promise.all([
+              supabase.from('mv_crawler_total_visits_30d').select('*').single(),
+              supabase
+                .from('mv_crawler_bots_30d')
+                .select('bot_name,bot_owner,visit_count')
+                .order('visit_count', { ascending: false }),
+              supabase
+                .from('mv_crawler_industries_30d')
+                .select('industry,visit_count')
+                .order('visit_count', { ascending: false })
+                .limit(50),
+              supabase
+                .from('mv_crawler_daily_30d')
+                .select('day,bot_owner,visit_count')
+                .order('day', { ascending: false }),
+            ])
+
+            const total = totalRes.data as
+              | { total_visits_1d?: number; total_visits_7d?: number; unique_bots?: number; generated_at?: string }
+              | null
+            const botRows = (botsRes.data || []) as Array<{ bot_name: string; bot_owner: string; visit_count: number }>
+            const industryRows = (industriesRes.data || []) as Array<{ industry: string; visit_count: number }>
+            const dailyRows = (dailyRes.data || []) as Array<{ day: string; bot_owner: string; visit_count: number }>
+
+            if (total) {
+              // Build daily_by_owner_30d-equivalent map keyed by YYYY-MM-DD
+              const dailyByOwner: Record<string, Record<string, number>> = {}
+              for (const row of dailyRows) {
+                const dayKey = String(row.day).slice(0, 10)
+                if (!dailyByOwner[dayKey]) dailyByOwner[dayKey] = {}
+                dailyByOwner[dayKey][row.bot_owner] = (dailyByOwner[dayKey][row.bot_owner] || 0) + (Number(row.visit_count) || 0)
+              }
+
+              const generatedAt = total.generated_at ? new Date(total.generated_at) : new Date()
+              const todayUtcMidnight = new Date()
+              todayUtcMidnight.setUTCHours(0, 0, 0, 0)
+              const isStale = generatedAt < todayUtcMidnight
+
+              // Reconstruct today's bot breakdown from daily MV at "today" (HKT date)
+              const todayByOwner: Record<string, number> = dailyByOwner[today] || {}
+              const bots: Record<string, { count: number; owner: string }> = {}
+              for (const [owner, count] of Object.entries(todayByOwner)) {
+                bots[owner] = { count: Number(count) || 0, owner }
+              }
+              const totalToday = isStale
+                ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
+                : (total.total_visits_1d ?? 0)
+              const xCheck7d = total.total_visits_7d ?? null
+
+              // Aggregate industries_breakdown from MV
+              const industriesBreakdown: Record<string, number> = {}
+              for (const row of industryRows) {
+                if (!row.industry) continue
+                industriesBreakdown[row.industry] = (industriesBreakdown[row.industry] || 0) + (Number(row.visit_count) || 0)
+              }
+
+              // Bots breakdown (top-N flat record bot_name → count) for x-check
+              const botsBreakdownFlat: Record<string, number> = {}
+              for (const row of botRows) {
+                if (!row.bot_name) continue
+                botsBreakdownFlat[row.bot_name] = (botsBreakdownFlat[row.bot_name] || 0) + (Number(row.visit_count) || 0)
+              }
+
+              const uniqueBots = Object.keys(bots).length || total.unique_bots || Object.keys(botsBreakdownFlat).length
+
+              return json({
+                period: { since: `${today}T00:00:00+08:00`, days: 1 },
+                total_visits: totalToday,
+                today_visits: totalToday,
+                unique_bots: uniqueBots,
+                unique_sessions: 0,
+                bots,
+                top_pages: {},
+                industries: industriesBreakdown,
+                page_types: {},
+                sites: {}, // MV does not track sites breakdown; preserved as empty object to keep shape
+                daily: [{ date: today, total: totalToday }],
+                generated_at: total.generated_at || new Date().toISOString(),
+                is_stale: isStale,
+                x_check_7d: xCheck7d,
+              }, isStale ? 'STALE-MV' : 'LIVE-MV')
             }
-            // If stale, derive today total from daily_by_owner_30d[today] sum instead of total_visits_1d
-            // (daily_by_owner_30d might have been precomputed yesterday, but key "today" = UTC date = should be 0 if empty)
-            const totalToday = isStale
-              ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
-              : (cacheRow.total_visits_1d ?? 0)
-            const xCheck7d = cacheRow.total_visits_7d ?? null
-            return json({
-              period: { since: `${today}T00:00:00+08:00`, days: 1 },
-              total_visits: totalToday,
-              today_visits: totalToday,
-              unique_bots: Object.keys(bots).length || cacheRow.unique_bots,
-              unique_sessions: 0,
-              bots,
-              top_pages: {},
-              industries: (cacheRow.industries_breakdown as Record<string, number>) || {},
-              page_types: {},
-              sites: (cacheRow.sites_breakdown as Record<string, number>) || {},
-              daily: [{ date: today, total: totalToday }],
-              generated_at: cacheRow.generated_at,
-              is_stale: isStale,
-              x_check_7d: xCheck7d,
-            }, isStale ? 'STALE-CACHE' : 'LIVE-CACHE')
+          } else {
+            // ── Legacy crawler_stats_cache path (kept 1 week for rollback) ──
+            const { data: cacheRow } = await supabase
+              .from('crawler_stats_cache')
+              .select('total_visits_1d,total_visits_7d,daily_by_owner_30d,industries_breakdown,sites_breakdown,unique_bots,generated_at')
+              .eq('id', 1)
+              .single()
+            if (cacheRow) {
+              const generatedAt = new Date(cacheRow.generated_at)
+              const todayUtcMidnight = new Date()
+              todayUtcMidnight.setUTCHours(0, 0, 0, 0)
+              const isStale = generatedAt < todayUtcMidnight
+
+              const todayByOwner: Record<string, number> = (cacheRow.daily_by_owner_30d as Record<string, Record<string, number>> | null)?.[today] || {}
+              const bots: Record<string, { count: number; owner: string }> = {}
+              for (const [owner, count] of Object.entries(todayByOwner)) {
+                bots[owner] = { count: Number(count) || 0, owner }
+              }
+              const totalToday = isStale
+                ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
+                : (cacheRow.total_visits_1d ?? 0)
+              const xCheck7d = cacheRow.total_visits_7d ?? null
+              return json({
+                period: { since: `${today}T00:00:00+08:00`, days: 1 },
+                total_visits: totalToday,
+                today_visits: totalToday,
+                unique_bots: Object.keys(bots).length || cacheRow.unique_bots,
+                unique_sessions: 0,
+                bots,
+                top_pages: {},
+                industries: (cacheRow.industries_breakdown as Record<string, number>) || {},
+                page_types: {},
+                sites: (cacheRow.sites_breakdown as Record<string, number>) || {},
+                daily: [{ date: today, total: totalToday }],
+                generated_at: cacheRow.generated_at,
+                is_stale: isStale,
+                x_check_7d: xCheck7d,
+              }, isStale ? 'STALE-CACHE' : 'LIVE-CACHE')
+            }
           }
         } catch {
           // fall through to GitHub cache
