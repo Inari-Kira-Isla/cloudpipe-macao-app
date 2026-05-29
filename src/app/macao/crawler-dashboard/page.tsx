@@ -194,7 +194,6 @@ export default function CrawlerDashboard() {
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
-  const [aiRefLoading, setAiRefLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
@@ -203,12 +202,15 @@ export default function CrawlerDashboard() {
 
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
-  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000): Promise<T> => {
+  // `forceFresh=true` bypasses the browser/CDN cache (used by "立即重新整理" button).
+  // Default mode uses `default` so the CDN cache (s-maxage on the route) can serve
+  // a fast hit, avoiding Vercel cold-start latency on auto-refresh and tab navigations.
+  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000, forceFresh = false): Promise<T> => {
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
     try {
       const res = await fetch(url, {
-        cache: 'no-store',
+        cache: forceFresh ? 'no-store' : 'default',
         signal: controller.signal,
       })
       if (!res.ok) return fallback
@@ -219,21 +221,25 @@ export default function CrawlerDashboard() {
     finally { window.clearTimeout(timeout) }
   }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceFresh = false) => {
     setLoading(true)
     setError(null)
     try {
-      // Run all 3 fetches in parallel; health (GitHub Pages) gets a shorter timeout
+      // Run all 4 fetches in parallel; health (GitHub Pages) gets a shorter timeout
       // so a blocked/slow external host never delays the main data display.
       // 20s timeout accommodates Vercel cold starts (can take 12-15s on first request).
-      const [sum, sw, health] = await Promise.all([
-        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 20000),
-        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 20000),
+      // ai-referrals is also fetched here so a `days` change runs a single parallel batch
+      // (was previously a separate effect, doubling the cold-start cost on day toggles).
+      const [sum, sw, health, refs] = await Promise.all([
+        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 20000, forceFresh),
+        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 20000, forceFresh),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
+        safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null, 20000, forceFresh),
       ])
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
+      setAiReferrals(refs)
       setLastUpdated(new Date())
       if (!sum) setError('數據載入中，Vercel 冷啟動需時約 15 秒，請稍候再按「立即重新整理」。')
     } catch (e) {
@@ -243,21 +249,17 @@ export default function CrawlerDashboard() {
     setLoading(false)
   }, [days])
 
+  // Explicit refresh: bypass cache to guarantee fresh data
+  const handleManualRefresh = useCallback(() => { fetchData(true) }, [fetchData])
+
   useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    const interval = setInterval(() => { fetchData() }, 30000)
+    // Auto-refresh every 60s (was 30s — too aggressive given route s-maxage=120).
+    // Uses default cache so CDN can serve hits sub-second.
+    const interval = setInterval(() => { fetchData() }, 60000)
     return () => clearInterval(interval)
   }, [fetchData])
-
-  const loadAiReferrals = async () => {
-    setAiRefLoading(true)
-    const data = await safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null)
-    setAiReferrals(data)
-    setAiRefLoading(false)
-  }
-
-  useEffect(() => { loadAiReferrals() }, [days]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRouting = async () => {
     if (routing) return
@@ -404,7 +406,7 @@ export default function CrawlerDashboard() {
               最後更新：{lastUpdated.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           )}
-          <button onClick={fetchData} disabled={loading} style={{
+          <button onClick={handleManualRefresh} disabled={loading} style={{
             padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd',
             cursor: loading ? 'wait' : 'pointer', background: loading ? '#f5f5f5' : '#fff',
             fontSize: 13, opacity: loading ? 0.6 : 1, transition: 'all 0.2s', whiteSpace: 'nowrap'
@@ -499,13 +501,13 @@ export default function CrawlerDashboard() {
                 <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶</span>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
-                {aiRefLoading ? '…' : (aiReferrals?.total ?? 0)}
+                {loading ? '…' : (aiReferrals?.total ?? 0)}
               </span>
             </div>
 
-            {aiRefLoading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
+            {loading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
 
-            {!aiRefLoading && aiReferrals && (
+            {!loading && aiReferrals && (
               <div style={{ padding: '14px 18px' }}>
                 {aiReferrals.total === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>

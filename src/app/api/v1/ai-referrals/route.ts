@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-export const dynamic = 'force-dynamic'
+// Removed `force-dynamic` so Vercel CDN can cache by URL.
+// Freshness is bounded by `s-maxage=120` below; client sends `cache: 'no-store'`
+// so the dashboard "立即重新整理" button still bypasses CDN when needed.
+export const revalidate = 120
+export const maxDuration = 30
 
 const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },
@@ -86,5 +90,7 @@ export async function GET(req: NextRequest) {
       page_type: r.page_type,
       industry: r.industry,
     })),
+  }, {
+    headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
   })
 }
