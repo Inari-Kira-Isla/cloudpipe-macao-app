@@ -148,7 +148,7 @@ const fetchCrawlerSummaryToday = unstable_cache(
         page_types: {},
         sites: sitesBreakdown,
         daily: [{ date: todayDate, total: totalToday }],
-        generated_at: total.generated_at || new Date().toISOString(),
+        generated_at: new Date().toISOString(),
         is_stale: isStale,
         x_check_7d: total.total_visits_7d ?? null,
       },

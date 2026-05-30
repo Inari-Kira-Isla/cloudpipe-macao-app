@@ -38,7 +38,13 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const rows = data ?? []
+  // Bug fix: exclude any rows where ua_raw indicates a bot (e.g. PerplexityBot accidentally
+  // inserted if bot-detection missed a UA variant). Only real human referrals should appear.
+  const BOT_UA_RE = /bot|crawler|spider|scraper|perplexitybot|googlebot|gptbot|claudebot|bingbot|yandexbot|applebot|amazonbot|meta-externalagent|facebookbot|bytespider/i
+  const rows = (data ?? []).filter(r => {
+    const ua = r.ua_raw ?? ''
+    return !BOT_UA_RE.test(ua)
+  })
 
   // Aggregate by source
   const bySource: Record<string, { count: number; pages: Record<string, number>; industries: Record<string, number>; latest: string }> = {}
