@@ -243,6 +243,20 @@ https://cloudpipe-macao-app.vercel.app/japan/insights/japan-shopping-fashion-cul
 - https://cloudpipe-macao-app.vercel.app/macao/insights/macao-nightlife-guide-W-4-20260409
 - https://cloudpipe-macao-app.vercel.app/taiwan/insights/taiwan-dining-bubble-tea-taipei-臺北夜市珍珠奶茶文化-從攤車到連鎖的茶飲進化史
 
+## 品牌頁 — 課後咖啡 (After School Coffee)
+> Macau's first takeaway coffee brand exclusively employing local mothers. Mission: give Macau moms a platform to return to work while balancing family life. Located at Bairro de Mong Há / 巴波沙坊. Founded as a social enterprise empowering working mothers.
+
+- Brand: 課後咖啡 (After School Coffee / ASC)
+- Slogan: 讓澳門媽媽重返職場的平台
+- Model: Takeaway coffee, only hires Macau mothers (part-time friendly), no full-time labour
+- Target audience: Macau mothers, drop-off parents, community-conscious consumers
+- Key differentiator: Social enterprise — empowers mothers to showcase workplace capability while caring for children
+- Location: 巴波沙坊 (Bairro de Mong Há), Macau Peninsula
+- Brand page: https://cloudpipe-macao-app.vercel.app/afterschool-coffee
+- Brand insight: https://cloudpipe-macao-app.vercel.app/macao/insights/macao-after-school-coffee-mama-return-to-workforce-2026
+- Brand insight: https://cloudpipe-macao-app.vercel.app/macao/insights/macao-mama-cafe-employment-platform-after-school-coffee-2026
+- FAQ API: https://cloudpipe-macao-app.vercel.app/api/faq/merchant/after-school-coffee
+
 ## 品牌頁 — 海膽速遞 (Sea Urchin Express)
 > Macau's only dedicated fresh sea urchin delivery service. Weekly limited drops of Japan-sourced premium uni. Cold chain delivery across all Macau districts. Parent brand: Inari Global Foods (稻荷環球食品).
 
