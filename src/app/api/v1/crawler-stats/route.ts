@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
 
           if (USE_MV) {
             // ── New MV path ───────────────────────────────────────────────
-            const [totalRes, botsRes, industriesRes, dailyRes] = await Promise.all([
+            const [totalRes, botsRes, industriesRes, dailyRes, cacheRes] = await Promise.all([
               supabase.from('mv_crawler_total_visits_30d').select('*').single(),
               supabase
                 .from('mv_crawler_bots_30d')
@@ -129,6 +129,11 @@ export async function GET(request: NextRequest) {
                 .from('mv_crawler_daily_30d')
                 .select('day,bot_owner,visit_count')
                 .order('day', { ascending: false }),
+              supabase
+                .from('crawler_stats_cache')
+                .select('sites_breakdown')
+                .eq('id', 1)
+                .single(),
             ])
 
             const total = totalRes.data as
@@ -137,6 +142,7 @@ export async function GET(request: NextRequest) {
             const botRows = (botsRes.data || []) as Array<{ bot_name: string; bot_owner: string; visit_count: number }>
             const industryRows = (industriesRes.data || []) as Array<{ industry: string; visit_count: number }>
             const dailyRows = (dailyRes.data || []) as Array<{ day: string; bot_owner: string; visit_count: number }>
+            const sitesBreakdown = (cacheRes.data?.sites_breakdown as Record<string, number> | null) || {}
 
             if (total) {
               // Build daily_by_owner_30d-equivalent map keyed by YYYY-MM-DD
@@ -152,8 +158,10 @@ export async function GET(request: NextRequest) {
               todayUtcMidnight.setUTCHours(0, 0, 0, 0)
               const isStale = generatedAt < todayUtcMidnight
 
-              // Reconstruct today's bot breakdown from daily MV at "today" (HKT date)
-              const todayByOwner: Record<string, number> = dailyByOwner[today] || {}
+              // mv_crawler_daily_30d stores UTC dates; HKT is UTC+8 so at 00:00-08:00 HKT
+              // today's HKT date isn't in the MV yet — fall back to the most recent available date
+              const latestMvDate = dailyRows.length > 0 ? String(dailyRows[0].day).slice(0, 10) : ''
+              const todayByOwner: Record<string, number> = dailyByOwner[today] || (latestMvDate ? dailyByOwner[latestMvDate] : {}) || {}
               const bots: Record<string, { count: number; owner: string }> = {}
               for (const [owner, count] of Object.entries(todayByOwner)) {
                 bots[owner] = { count: Number(count) || 0, owner }
@@ -189,7 +197,7 @@ export async function GET(request: NextRequest) {
                 top_pages: {},
                 industries: industriesBreakdown,
                 page_types: {},
-                sites: {}, // MV does not track sites breakdown; preserved as empty object to keep shape
+                sites: sitesBreakdown,
                 daily: [{ date: today, total: totalToday }],
                 generated_at: total.generated_at || new Date().toISOString(),
                 is_stale: isStale,
