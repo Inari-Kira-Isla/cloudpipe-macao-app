@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches 
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
 
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []

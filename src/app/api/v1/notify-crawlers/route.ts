@@ -69,8 +69,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       status: 'ready',
       endpoints: {
-        sitemap: 'https://cloudpipe.ai/sitemap.xml',
-        feed: 'https://cloudpipe.ai/feed.xml',
+        sitemap: 'https://cloudpipe-macao-app.vercel.app/sitemap.xml',
+        feed: 'https://cloudpipe-macao-app.vercel.app/feed.xml',
       },
       usage: 'POST /api/v1/notify-crawlers?type=sitemap|rss|all',
       description: 'Notifies Google, Bing, Yandex of sitemap updates',

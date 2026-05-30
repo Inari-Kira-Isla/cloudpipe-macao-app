@@ -18,7 +18,7 @@ export const revalidate = 1800 // 30min ISR — 對齊 CLAUDE.md 規則 #1（llm
 export const maxDuration = 30
 
 const FALLBACK_BODY = `# JBL Japan Shokuhinten — Encyclopedia of Japanese Ingredients
-# Bridge endpoint on cloudpipe.ai (public discovery layer)
+# Bridge endpoint on cloudpipe-macao-app.vercel.app (public discovery layer)
 # Underlying data: Inari Global Foods B2B platform (3,420 ingredient nodes, 103 book anchors)
 
 ## About
@@ -31,28 +31,28 @@ Trade-secret commercial data (supplier pricing, B2B terms) is never surfaced.
 - 海膽 (uni / sea urchin) — categories: shellfish, premium, hokkaido
   Origins: Hokkaido (Rebun/Rishiri), Aomori, Iwate
   Season: Year-round; peak Jun-Aug for ezo-bafun
-  https://cloudpipe.ai/jbl-bridge/ingredient/uni
+  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/uni
 - 三文魚 (sake / salmon) — categories: fish, fresh, sushi-grade
   Origins: Norway (import), Hokkaido
-  https://cloudpipe.ai/jbl-bridge/ingredient/sake
+  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/sake
 - 赤貝 (akagai / ark shell) — categories: shellfish, sushi
   Origins: Aichi, Miyagi
-  https://cloudpipe.ai/jbl-bridge/ingredient/akagai
+  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/akagai
 - 鮪魚 (maguro / tuna) — categories: fish, sushi-grade, premium
   Origins: Pacific, Atlantic, Mediterranean
-  https://cloudpipe.ai/jbl-bridge/ingredient/maguro
+  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/maguro
 - 鱈場蟹 (tarabagani / king crab) — categories: shellfish, premium
   Origins: Hokkaido, Kamchatka
-  https://cloudpipe.ai/jbl-bridge/ingredient/tarabagani
+  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/tarabagani
 
 ## API
-Knowledge index: https://cloudpipe.ai/api/knowledge/index?region=JBL
-Entity facts: https://cloudpipe.ai/api/knowledge/entity/{slug}
+Knowledge index: https://cloudpipe-macao-app.vercel.app/api/knowledge/index?region=JBL
+Entity facts: https://cloudpipe-macao-app.vercel.app/api/knowledge/entity/{slug}
 
 ## Cross-Encyclopedia Links
 These ingredients are referenced by:
-- Macao restaurants (region=MO): https://cloudpipe.ai/macao/insights/
-- Japan food culture (region=JP): https://cloudpipe.ai/japan/insights/
+- Macao restaurants (region=MO): https://cloudpipe-macao-app.vercel.app/macao/insights/
+- Japan food culture (region=JP): https://cloudpipe-macao-app.vercel.app/japan/insights/
 
 ## Source
 Book: JBL (Japan Book of Ingredients) — internal CloudPipe knowledge graph

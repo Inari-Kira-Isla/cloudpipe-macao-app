@@ -140,7 +140,7 @@ function Sec({ title, badge, right, children }: { title: string; badge?: string 
 
 /* ─── Detail Panel ─────────────────────────────────────────────── */
 function DetailPanel({ merchant, detail, loading }: { merchant: MerchantResult | null; detail: MerchantDetail | null; loading: boolean }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
 
   if (!merchant) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, color: 'rgba(255,255,255,0.15)' }}>

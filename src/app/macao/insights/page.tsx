@@ -6,7 +6,7 @@ import { STATIC_INSIGHTS } from '@/data/static-insights'
 
 export const revalidate = 600 // 10min ISR — 移除 force-dynamic（與 revalidate 衝突燒爆 CPU），10min 足夠讓新文章出現
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 type Lang = 'zh' | 'en' | 'pt'
 const VALID_LANGS: Lang[] = ['zh', 'en', 'pt']

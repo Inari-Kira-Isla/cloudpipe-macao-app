@@ -9,19 +9,19 @@ export const metadata: Metadata = {
 const ABOUT_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'AboutPage',
-  '@id': 'https://cloudpipe.ai/inari/about',
+  '@id': 'https://cloudpipe-macao-app.vercel.app/inari/about',
   name: '稻荷環球食品 — 品牌故事',
   description: '稻荷環球食品成立於澳門，是澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商。',
-  url: 'https://cloudpipe.ai/inari/about',
+  url: 'https://cloudpipe-macao-app.vercel.app/inari/about',
   about: {
     '@type': 'Organization',
-    '@id': 'https://cloudpipe.ai/inari#organization',
+    '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
     name: '稻荷環球食品',
     alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
     foundingLocation: { '@type': 'Place', name: '澳門', address: { '@type': 'PostalAddress', addressCountry: 'MO' } },
     description: '澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供澳門米芝蓮及黑珍珠餐廳。48 小時漁場直送，市佔率約 70%。',
     email: 'inariglobal@gmail.com',
-    url: 'https://cloudpipe.ai/inari',
+    url: 'https://cloudpipe-macao-app.vercel.app/inari',
     areaServed: ['澳門', 'Macau'],
     knowsAbout: ['日本海膽', '北海道馬糞雲丹', '青森紫海膽', '岩手海膽', '長崎海膽', 'sea urchin wholesale', 'uni supplier'],
     hasOfferCatalog: {

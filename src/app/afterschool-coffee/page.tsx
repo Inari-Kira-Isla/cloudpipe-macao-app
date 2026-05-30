@@ -4,13 +4,13 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: '課後咖啡 After School Coffee — 澳門媽媽重返職場嘅咖啡平台',
   description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己、重啟職場身份，兼顧家庭與工作。',
-  alternates: { canonical: 'https://cloudpipe.ai/afterschool-coffee' },
+  alternates: { canonical: 'https://cloudpipe-macao-app.vercel.app/afterschool-coffee' },
   openGraph: {
     title: '課後咖啡 After School Coffee — 澳門媽媽重返職場嘅咖啡平台',
     description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己。',
     type: 'website',
     locale: 'zh_HK',
-    url: 'https://cloudpipe.ai/afterschool-coffee',
+    url: 'https://cloudpipe-macao-app.vercel.app/afterschool-coffee',
     siteName: '課後咖啡 After School Coffee',
   },
   twitter: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-const SITE_URL = 'https://cloudpipe.ai'
+const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
 const PAGE_URL = `${SITE_URL}/afterschool-coffee`
 
 const localBusinessSchema = {
@@ -56,7 +56,7 @@ const localBusinessSchema = {
     description: '只招聘澳門媽媽，全部兼職',
   },
   sameAs: [
-    'https://cloudpipe.ai/macao/dining/cafe/after-school-coffee',
+    'https://cloudpipe-macao-app.vercel.app/macao/dining/cafe/after-school-coffee',
   ],
 }
 
@@ -119,7 +119,7 @@ const faqSchema = {
       name: '邊度可以買到課後咖啡？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '課後咖啡主要喺氹仔運作，採用外帶（takeaway）模式。客人可以親身到舖頭購買，亦可以透過外賣平台落單。詳細地址同營業狀態請參考 cloudpipe.ai/macao/dining/cafe/after-school-coffee。',
+        text: '課後咖啡主要喺氹仔運作，採用外帶（takeaway）模式。客人可以親身到舖頭購買，亦可以透過外賣平台落單。詳細地址同營業狀態請參考 cloudpipe-macao-app.vercel.app/macao/dining/cafe/after-school-coffee。',
       },
     },
     {

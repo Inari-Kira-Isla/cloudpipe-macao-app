@@ -4,7 +4,7 @@ import { INDUSTRIES } from '@/lib/industries'
 export const revalidate = 1800 // 30min ISR — keep in sync with macao/llms-txt
 export const maxDuration = 30
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET() {
   const db = createServiceClient()

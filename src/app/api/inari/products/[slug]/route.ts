@@ -10,7 +10,7 @@ export async function GET(_req: Request, { params }: { params: { slug: string } 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `https://cloudpipe.io/inari/shop/${p.slug}`,
+    '@id': `https://cloudpipe-macao-app.vercel.app/inari/shop/${p.slug}`,
     name: p.name_zh,
     alternateName: [p.name_en, p.name_ja].filter(Boolean),
     image: p.image_url ?? undefined,

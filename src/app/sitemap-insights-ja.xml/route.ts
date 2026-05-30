@@ -63,7 +63,7 @@ async function fetchJapanesePublishedInsights(): Promise<InsightRow[]> {
 }
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date().toISOString().split('T')[0]
 
   const rows = await fetchJapanesePublishedInsights()

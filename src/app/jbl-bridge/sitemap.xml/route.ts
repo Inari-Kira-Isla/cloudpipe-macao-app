@@ -26,7 +26,7 @@ const FEATURED_SLUGS = [
 ] as const
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const lastmod = '2026-05-29'
 
   const urls = [

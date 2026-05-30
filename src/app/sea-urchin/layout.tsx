@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export const metadata: Metadata = {
   title: '海膽速遞 | 澳門新鮮北海道海膽直送',

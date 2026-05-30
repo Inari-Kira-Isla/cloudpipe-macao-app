@@ -199,7 +199,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
     contentAudit: {
       score: 50,
       items: [
-        { label: '官方網站 + SSL',     status: 'pass',    note: 'cloudpipe.ai 已上線，SSL 有效' },
+        { label: '官方網站 + SSL',     status: 'pass',    note: 'cloudpipe-macao-app.vercel.app 已上線，SSL 有效' },
         { label: '聯絡資訊完整度',      status: 'pass',    note: 'Email + Demo 請求表單均可使用' },
         { label: 'Schema.org 標記',    status: 'partial', note: '需加入 SoftwareApplication + Organization Schema' },
         { label: 'FAQPage 結構化資料', status: 'partial', note: 'FAQ 覆蓋中等，需補充英文版查詢內容' },

@@ -34,7 +34,7 @@ const FAQ_PAGES: Record<string, { title: string; description: string; publishedA
   },
 }
 
-const SITE_URL = 'https://cloudpipe.ai'
+const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
 
 interface PageProps {
   params: Promise<{ slug: string }>

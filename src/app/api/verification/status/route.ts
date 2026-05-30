@@ -44,7 +44,7 @@ export async function GET() {
       publisher: {
         '@type': 'Organization',
         name: 'CloudPipe',
-        url: 'https://cloudpipe.ai',
+        url: 'https://cloudpipe-macao-app.vercel.app',
       },
       verification_summary: {
         total_verified_merchants: total,

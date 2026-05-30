@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const revalidate = 3600
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export const metadata: Metadata = {
   title: '商戶 AEO 儀表板 — 澳門商戶百科 | CloudPipe AI',

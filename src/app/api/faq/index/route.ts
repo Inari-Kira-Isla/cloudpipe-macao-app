@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 7200 // 2h - reduce ISR writes
 export const maxDuration = 15  // 11 sequential DB queries need headroom
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET(request: Request) {
   // Fire-and-forget bot tracking (non-blocking)

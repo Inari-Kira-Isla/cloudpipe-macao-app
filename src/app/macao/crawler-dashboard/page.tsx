@@ -777,7 +777,7 @@ export default function CrawlerDashboard() {
                         </div>
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
                           {formatTime(step.ts)}
-                          {step.referer && <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe.ai', '')}</code></span>}
+                          {step.referer && <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe-macao-app.vercel.app', '')}</code></span>}
                         </div>
                       </div>
                     ))}

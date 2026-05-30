@@ -104,7 +104,7 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     siteSlug: 'cloudpipe',
     category: 'aeo-saas',
     industry: 'tech',
-    brandUrl: 'https://cloudpipe.ai/cloudpipe',
+    brandUrl: 'https://cloudpipe-macao-app.vercel.app/cloudpipe',
     description: '澳門 AI 搜尋可見度 SaaS，AEO/GEO 優化平台',
     ecosystem: 'AI 引擎 — 為生態系所有品牌提供 AI 能見度基礎建設',
     searchTerms: ['澳門AEO優化', '澳門AI搜尋排名', '澳門品牌AI能見度'],
