@@ -757,7 +757,7 @@ export default async function MerchantPage({ params }: PageProps) {
                     認領你的商戶頁面，獲得 AI 能見度分析、評論管理和資訊更新權限。免費認領，讓全球 AI 助手更準確地推薦你的品牌。
                   </p>
                 </div>
-                <a href={`mailto:hello@cloudpipe.ai?subject=${encodeURIComponent('認領商戶：' + merchant.name_zh)}&body=${encodeURIComponent('商戶名稱：' + merchant.name_zh + '\n商戶頁面：' + pageUrl + '\n\n我是此商戶的擁有者/授權代表，希望認領此頁面。\n\n聯絡人姓名：\n職位：\n聯絡電話：')}`}
+                <a href={`mailto:cloudpipemo@gmail.com?subject=${encodeURIComponent('認領商戶：' + merchant.name_zh)}&body=${encodeURIComponent('商戶名稱：' + merchant.name_zh + '\n商戶頁面：' + pageUrl + '\n\n我是此商戶的擁有者/授權代表，希望認領此頁面。\n\n聯絡人姓名：\n職位：\n聯絡電話：')}`}
                   data-track="claim-click" data-target={slug}
                   className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c81] text-white text-sm font-semibold rounded-xl hover:bg-[#0d3f6d] hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
