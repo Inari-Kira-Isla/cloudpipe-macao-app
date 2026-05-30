@@ -279,17 +279,28 @@ function DetailPanel({ merchant, detail, loading }: { merchant: MerchantResult |
 }
 
 /* ─── Merchant List Item ───────────────────────────────────────── */
-function MItem({ m, sel, onSelect }: { m: MerchantResult; sel: boolean; onSelect: () => void }) {
+function MItem({ m, sel, onSelect, rank }: { m: MerchantResult; sel: boolean; onSelect: () => void; rank?: number }) {
   const sc = scoreColor(m.aeoScore)
+  const medal = rank ? RANK_MEDAL[rank] : null
   return (
     <div onClick={onSelect} style={{ padding: '13px 15px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.045)', borderLeft: `3px solid ${sel ? '#2563EB' : 'transparent'}`, background: sel ? 'rgba(37,99,235,0.1)' : 'transparent', transition: 'background 0.12s, border-color 0.12s' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: sel ? '#BFDBFE' : '#E2E8F0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
-            {!m.verified && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(245,158,11,0.13)', color: '#FCD34D', border: '1px solid rgba(245,158,11,0.22)', fontWeight: 700, flexShrink: 0 }}>未核實</span>}
+        <div style={{ minWidth: 0, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          {rank && (
+            <div style={{ flexShrink: 0, width: 28, textAlign: 'center', paddingTop: 1 }}>
+              {medal
+                ? <span style={{ fontSize: 18, lineHeight: 1 }}>{medal}</span>
+                : <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>#{rank}</span>
+              }
+            </div>
+          )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: sel ? '#BFDBFE' : '#E2E8F0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+              {!m.verified && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(245,158,11,0.13)', color: '#FCD34D', border: '1px solid rgba(245,158,11,0.22)', fontWeight: 700, flexShrink: 0 }}>未核實</span>}
+            </div>
+            <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.35)' }}>{[m.category, m.district].filter(Boolean).join(' · ')}</div>
           </div>
-          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.35)' }}>{[m.category, m.district].filter(Boolean).join(' · ')}</div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: 22, fontWeight: 700, color: sc, lineHeight: 1, ...mono }}>{m.aeoScore}</div>
@@ -306,6 +317,19 @@ function MItem({ m, sel, onSelect }: { m: MerchantResult; sel: boolean; onSelect
   )
 }
 
+const CATEGORY_PILLS = [
+  { label: '咖啡店', emoji: '☕' },
+  { label: '餐廳', emoji: '🍽️' },
+  { label: '酒店', emoji: '🏨' },
+  { label: '景點', emoji: '🎡' },
+  { label: '購物', emoji: '🛍️' },
+  { label: '博彩', emoji: '🎰' },
+  { label: '酒吧', emoji: '🍸' },
+  { label: '美容', emoji: '💆' },
+]
+
+const RANK_MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+
 /* ─── Main Dashboard ───────────────────────────────────────────── */
 export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
   const [q, setQ] = useState('')
@@ -313,6 +337,9 @@ export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
   const [sel, setSel] = useState<MerchantResult | null>(null)
   const [detail, setDetail] = useState<MerchantDetail | null>(null)
   const [searching, setSearching] = useState(false)
+  const [rankMode, setRankMode] = useState(false)
+  const [rankLabel, setRankLabel] = useState('')
+  const [rankPoolSize, setRankPoolSize] = useState(0)
   const [listLoading, setListLoading] = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
@@ -338,6 +365,7 @@ export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
     setListLoading(true)
     setSearchError('')
     setSearching(true)
+    setRankMode(false)
     setResults([])
     setSel(null)
     setDetail(null)
@@ -346,16 +374,36 @@ export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
       const data = await res.json()
       const r: MerchantResult[] = data.results ?? []
       setResults(r)
-      if (r[0]) {
-        setSel(r[0])
-        fetchDetail(r[0].slug)
-      }
+      if (r[0]) { setSel(r[0]); fetchDetail(r[0].slug) }
     } catch {
       setSearchError('搜尋失敗，請稍後再試')
     } finally {
       setListLoading(false)
     }
   }, [q, fetchDetail])
+
+  const doRanking = useCallback(async (category: string) => {
+    setListLoading(true)
+    setSearchError('')
+    setSearching(true)
+    setRankMode(true)
+    setRankLabel(category)
+    setResults([])
+    setSel(null)
+    setDetail(null)
+    try {
+      const res = await fetch(`/api/merchants/aeo-search?category=${encodeURIComponent(category)}&mode=ranking`)
+      const data = await res.json()
+      const r: MerchantResult[] = data.results ?? []
+      setRankPoolSize(data.poolSize ?? r.length)
+      setResults(r)
+      if (r[0]) { setSel(r[0]); fetchDetail(r[0].slug) }
+    } catch {
+      setSearchError('排名載入失敗，請稍後再試')
+    } finally {
+      setListLoading(false)
+    }
+  }, [fetchDetail])
 
   const quickSearch = (term: string) => {
     setQ(term)
@@ -415,11 +463,31 @@ export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
               <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && doSearch()} style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 15.5, color: '#E2E8F0' }} placeholder="輸入商戶名稱，例如：威尼斯人酒店" autoFocus />
               <button onClick={() => doSearch()} style={{ padding: '9px 20px', borderRadius: 9, fontSize: 13.5, fontWeight: 600, background: 'linear-gradient(135deg,#2563EB,#1D4ED8)', border: 'none', color: 'white', cursor: 'pointer', boxShadow: '0 2px 14px rgba(37,99,235,0.3)' }}>搜尋</button>
             </div>
-            <div style={{ display: 'flex', gap: 7, marginTop: 13, justifyContent: 'center', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>快速搜尋：</span>
+            <div style={{ display: 'flex', gap: 7, marginTop: 13, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>商戶搜尋：</span>
               {['威尼斯人', '米其林', '葡萄牙餐廳', '五星酒店'].map(t => (
                 <button key={t} onClick={() => quickSearch(t)} style={{ padding: '4px 11px', borderRadius: 5, fontSize: 11.5, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.42)', cursor: 'pointer' }}>{t}</button>
               ))}
+            </div>
+            {/* ── 行業類別排名 ── */}
+            <div style={{ marginTop: 22, width: '100%', maxWidth: 540 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>行業 AEO 排名</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                {CATEGORY_PILLS.map(({ label, emoji }) => (
+                  <button key={label} onClick={() => doRanking(label)} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '7px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
+                    background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.22)',
+                    color: '#93C5FD', transition: 'background 0.12s',
+                  }}>
+                    <span>{emoji}</span>{label} <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 2 }}>TOP 20</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 44 }}>
@@ -440,23 +508,33 @@ export function MerchantAeoDashboard({ stats }: { stats: Stats }) {
           {/* Left list */}
           <div style={{ width: 308, flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.055)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 15px', borderBottom: '1px solid rgba(255,255,255,0.045)', flexShrink: 0 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
-                搜尋 「<span style={{ color: '#93C5FD' }}>{q}</span>」 · {listLoading ? '搜尋中⋯' : `${results.length} 個結果`}
-              </span>
+              {rankMode ? (
+                <div>
+                  <div style={{ fontSize: 11, color: '#06B6D4', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>行業 AEO 排名</div>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                    <span style={{ color: '#93C5FD' }}>{rankLabel}</span>
+                    {listLoading ? ' · 計算中⋯' : ` · TOP ${results.length}（共 ${rankPoolSize} 間）`}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                  搜尋 「<span style={{ color: '#93C5FD' }}>{q}</span>」 · {listLoading ? '搜尋中⋯' : `${results.length} 個結果`}
+                </span>
+              )}
             </div>
             <div style={{ flex: 1, overflow: 'auto' }}>
               {listLoading ? (
-                <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>搜尋中⋯</div>
+                <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>{rankMode ? '計算行業排名⋯' : '搜尋中⋯'}</div>
               ) : searchError ? (
                 <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: '#FCA5A5' }}>{searchError}</div>
               ) : results.length > 0 ? (
-                results.map(m => <MItem key={m.id} m={m} sel={sel?.id === m.id} onSelect={() => handleSelect(m)} />)
+                results.map((m, i) => <MItem key={m.id} m={m} sel={sel?.id === m.id} onSelect={() => handleSelect(m)} rank={rankMode ? i + 1 : undefined} />)
               ) : (
-                <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>找不到相關商戶</div>
+                <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>{rankMode ? '此行業暫無數據' : '找不到相關商戶'}</div>
               )}
             </div>
             <div style={{ padding: '9px 14px', borderTop: '1px solid rgba(255,255,255,0.045)', flexShrink: 0 }}>
-              <button onClick={() => { setSearching(false); setResults([]); setSel(null); setDetail(null); setQ('') }} style={{ width: '100%', padding: '7px', borderRadius: 7, fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>← 返回搜尋</button>
+              <button onClick={() => { setSearching(false); setRankMode(false); setRankLabel(''); setResults([]); setSel(null); setDetail(null); setQ('') }} style={{ width: '100%', padding: '7px', borderRadius: 7, fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>← 返回</button>
             </div>
           </div>
           {/* Right detail */}
