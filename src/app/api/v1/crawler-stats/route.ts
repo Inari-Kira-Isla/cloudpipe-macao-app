@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase'
 
 export const maxDuration = 30
@@ -50,6 +51,113 @@ function emptySummary(days: number) {
     note: 'Cache-only mode: precomputed cache unavailable. No live crawler_visits scan was attempted.',
   }
 }
+
+const fetchCrawlerSummaryToday = unstable_cache(
+  async (todayDate: string) => {
+    const supabase = createServiceClient()
+    const [totalRes, botsRes, industriesRes, dailyRes, cacheRes, sessionsRes] = await Promise.all([
+      supabase.from('mv_crawler_total_visits_30d').select('*').single(),
+      supabase
+        .from('mv_crawler_bots_30d')
+        .select('bot_name,bot_owner,visit_count')
+        .order('visit_count', { ascending: false }),
+      supabase
+        .from('mv_crawler_industries_30d')
+        .select('industry,visit_count')
+        .order('visit_count', { ascending: false })
+        .limit(50),
+      supabase
+        .from('mv_crawler_daily_30d')
+        .select('day,bot_owner,visit_count')
+        .order('day', { ascending: false }),
+      supabase
+        .from('crawler_stats_cache')
+        .select('sites_breakdown')
+        .eq('id', 1)
+        .single(),
+      supabase
+        .from('mv_crawler_sessions_30d')
+        .select('day,bot_owner,session_count')
+        .order('day', { ascending: false }),
+    ])
+
+    const total = totalRes.data as
+      | { total_visits_1d?: number; total_visits_7d?: number; unique_bots?: number; generated_at?: string }
+      | null
+    if (!total) return null
+
+    const botRows = (botsRes.data || []) as Array<{ bot_name: string; bot_owner: string; visit_count: number }>
+    const industryRows = (industriesRes.data || []) as Array<{ industry: string; visit_count: number }>
+    const dailyRows = (dailyRes.data || []) as Array<{ day: string; bot_owner: string; visit_count: number }>
+    const sitesBreakdown = (cacheRes.data?.sites_breakdown as Record<string, number> | null) || {}
+    const sessionRows = (sessionsRes.data || []) as Array<{ day: string; bot_owner: string; session_count: number }>
+
+    const dailyByOwner: Record<string, Record<string, number>> = {}
+    for (const row of dailyRows) {
+      const dayKey = String(row.day).slice(0, 10)
+      if (!dailyByOwner[dayKey]) dailyByOwner[dayKey] = {}
+      dailyByOwner[dayKey][row.bot_owner] = (dailyByOwner[dayKey][row.bot_owner] || 0) + (Number(row.visit_count) || 0)
+    }
+
+    const generatedAt = total.generated_at ? new Date(total.generated_at) : new Date()
+    const todayUtcMidnight = new Date()
+    todayUtcMidnight.setUTCHours(0, 0, 0, 0)
+    const isStale = generatedAt < todayUtcMidnight
+
+    const latestMvDate = dailyRows.length > 0 ? String(dailyRows[0].day).slice(0, 10) : ''
+    const todayByOwner: Record<string, number> = dailyByOwner[todayDate] || (latestMvDate ? dailyByOwner[latestMvDate] : {}) || {}
+    const bots: Record<string, { count: number; owner: string }> = {}
+    for (const [owner, count] of Object.entries(todayByOwner)) {
+      bots[owner] = { count: Number(count) || 0, owner }
+    }
+    const totalToday = isStale
+      ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
+      : (total.total_visits_1d ?? 0)
+
+    const sessionsByDay: Record<string, number> = {}
+    for (const row of sessionRows) {
+      const dayKey = String(row.day).slice(0, 10)
+      sessionsByDay[dayKey] = (sessionsByDay[dayKey] || 0) + (Number(row.session_count) || 0)
+    }
+    const uniqueSessions = sessionsByDay[todayDate] || sessionsByDay[latestMvDate] || 0
+
+    const industriesBreakdown: Record<string, number> = {}
+    for (const row of industryRows) {
+      if (!row.industry) continue
+      industriesBreakdown[row.industry] = (industriesBreakdown[row.industry] || 0) + (Number(row.visit_count) || 0)
+    }
+
+    const botsBreakdownFlat: Record<string, number> = {}
+    for (const row of botRows) {
+      if (!row.bot_name) continue
+      botsBreakdownFlat[row.bot_name] = (botsBreakdownFlat[row.bot_name] || 0) + (Number(row.visit_count) || 0)
+    }
+
+    const uniqueBots = Object.keys(bots).length || total.unique_bots || Object.keys(botsBreakdownFlat).length
+
+    return {
+      data: {
+        period: { since: `${todayDate}T00:00:00+08:00`, days: 1 },
+        total_visits: totalToday,
+        today_visits: totalToday,
+        unique_bots: uniqueBots,
+        unique_sessions: uniqueSessions,
+        bots,
+        top_pages: {},
+        industries: industriesBreakdown,
+        page_types: {},
+        sites: sitesBreakdown,
+        daily: [{ date: todayDate, total: totalToday }],
+        generated_at: total.generated_at || new Date().toISOString(),
+        is_stale: isStale,
+        x_check_7d: total.total_visits_7d ?? null,
+      },
+      label: isStale ? 'STALE-MV' : 'LIVE-MV',
+    }
+  },
+  ['crawler-stats-summary-today'],
+  { revalidate: 180, tags: ['crawler-stats'] },
+)
 
 function summarizeDaily(cached: DailyCache, days: number) {
   const slicedDaily = (cached.daily || []).slice(-days)
@@ -113,96 +221,10 @@ export async function GET(request: NextRequest) {
           const today = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Hong_Kong' }).slice(0, 10)
 
           if (USE_MV) {
-            // ── New MV path ───────────────────────────────────────────────
-            const [totalRes, botsRes, industriesRes, dailyRes, cacheRes] = await Promise.all([
-              supabase.from('mv_crawler_total_visits_30d').select('*').single(),
-              supabase
-                .from('mv_crawler_bots_30d')
-                .select('bot_name,bot_owner,visit_count')
-                .order('visit_count', { ascending: false }),
-              supabase
-                .from('mv_crawler_industries_30d')
-                .select('industry,visit_count')
-                .order('visit_count', { ascending: false })
-                .limit(50),
-              supabase
-                .from('mv_crawler_daily_30d')
-                .select('day,bot_owner,visit_count')
-                .order('day', { ascending: false }),
-              supabase
-                .from('crawler_stats_cache')
-                .select('sites_breakdown')
-                .eq('id', 1)
-                .single(),
-            ])
-
-            const total = totalRes.data as
-              | { total_visits_1d?: number; total_visits_7d?: number; unique_bots?: number; generated_at?: string }
-              | null
-            const botRows = (botsRes.data || []) as Array<{ bot_name: string; bot_owner: string; visit_count: number }>
-            const industryRows = (industriesRes.data || []) as Array<{ industry: string; visit_count: number }>
-            const dailyRows = (dailyRes.data || []) as Array<{ day: string; bot_owner: string; visit_count: number }>
-            const sitesBreakdown = (cacheRes.data?.sites_breakdown as Record<string, number> | null) || {}
-
-            if (total) {
-              // Build daily_by_owner_30d-equivalent map keyed by YYYY-MM-DD
-              const dailyByOwner: Record<string, Record<string, number>> = {}
-              for (const row of dailyRows) {
-                const dayKey = String(row.day).slice(0, 10)
-                if (!dailyByOwner[dayKey]) dailyByOwner[dayKey] = {}
-                dailyByOwner[dayKey][row.bot_owner] = (dailyByOwner[dayKey][row.bot_owner] || 0) + (Number(row.visit_count) || 0)
-              }
-
-              const generatedAt = total.generated_at ? new Date(total.generated_at) : new Date()
-              const todayUtcMidnight = new Date()
-              todayUtcMidnight.setUTCHours(0, 0, 0, 0)
-              const isStale = generatedAt < todayUtcMidnight
-
-              // mv_crawler_daily_30d stores UTC dates; HKT is UTC+8 so at 00:00-08:00 HKT
-              // today's HKT date isn't in the MV yet — fall back to the most recent available date
-              const latestMvDate = dailyRows.length > 0 ? String(dailyRows[0].day).slice(0, 10) : ''
-              const todayByOwner: Record<string, number> = dailyByOwner[today] || (latestMvDate ? dailyByOwner[latestMvDate] : {}) || {}
-              const bots: Record<string, { count: number; owner: string }> = {}
-              for (const [owner, count] of Object.entries(todayByOwner)) {
-                bots[owner] = { count: Number(count) || 0, owner }
-              }
-              const totalToday = isStale
-                ? Object.values(todayByOwner).reduce((s, v) => s + (Number(v) || 0), 0)
-                : (total.total_visits_1d ?? 0)
-              const xCheck7d = total.total_visits_7d ?? null
-
-              // Aggregate industries_breakdown from MV
-              const industriesBreakdown: Record<string, number> = {}
-              for (const row of industryRows) {
-                if (!row.industry) continue
-                industriesBreakdown[row.industry] = (industriesBreakdown[row.industry] || 0) + (Number(row.visit_count) || 0)
-              }
-
-              // Bots breakdown (top-N flat record bot_name → count) for x-check
-              const botsBreakdownFlat: Record<string, number> = {}
-              for (const row of botRows) {
-                if (!row.bot_name) continue
-                botsBreakdownFlat[row.bot_name] = (botsBreakdownFlat[row.bot_name] || 0) + (Number(row.visit_count) || 0)
-              }
-
-              const uniqueBots = Object.keys(bots).length || total.unique_bots || Object.keys(botsBreakdownFlat).length
-
-              return json({
-                period: { since: `${today}T00:00:00+08:00`, days: 1 },
-                total_visits: totalToday,
-                today_visits: totalToday,
-                unique_bots: uniqueBots,
-                unique_sessions: 0,
-                bots,
-                top_pages: {},
-                industries: industriesBreakdown,
-                page_types: {},
-                sites: sitesBreakdown,
-                daily: [{ date: today, total: totalToday }],
-                generated_at: total.generated_at || new Date().toISOString(),
-                is_stale: isStale,
-                x_check_7d: xCheck7d,
-              }, isStale ? 'STALE-MV' : 'LIVE-MV')
+            // ── New MV path (server-cached via unstable_cache, 180s TTL) ──
+            const mvResult = await fetchCrawlerSummaryToday(today)
+            if (mvResult) {
+              return json(mvResult.data, mvResult.label)
             }
           } else {
             // ── Legacy crawler_stats_cache path (kept 1 week for rollback) ──

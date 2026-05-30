@@ -195,6 +195,7 @@ export default function CrawlerDashboard() {
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
 
@@ -249,8 +250,18 @@ export default function CrawlerDashboard() {
     setLoading(false)
   }, [days])
 
-  // Explicit refresh: bypass cache to guarantee fresh data
-  const handleManualRefresh = useCallback(() => { fetchData(true) }, [fetchData])
+  // Explicit refresh: bust server-side cache then force-reload client data
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      await fetch(`/api/v1/crawler-stats/refresh?token=cloudpipe2026`, { method: 'POST' })
+      await fetchData(true)
+    } catch (e) {
+      console.error('refresh error', e)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [fetchData])
 
   useEffect(() => { fetchData() }, [fetchData])
 
