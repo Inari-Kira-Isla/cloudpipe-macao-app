@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 7200 // 2h - reduce ISR writes
+// Removed force-dynamic: conflicts with revalidate (CLAUDE.md rule #3) → burned CPU every request
+// ISR revalidate=7200 gives 2h CDN cache; ecosystem stats don't need sub-second freshness
+export const revalidate = 7200 // 2h ISR — force-dynamic removed 2026-05-31 CPU fix
 
 export async function GET() {
   const supabase = createServiceClient()

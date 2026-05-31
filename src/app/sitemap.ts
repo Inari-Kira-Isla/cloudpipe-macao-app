@@ -3,7 +3,9 @@ import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
 
-export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Vercel edge
+// Changed force-dynamic → revalidate=1800 (CLAUDE.md rule #3 + sitemap rule #1)
+// MetadataRoute sitemaps cannot set Cache-Control headers; force-dynamic caused full DB re-query on every AI crawler hit
+export const revalidate = 1800 // 30min ISR — CLAUDE.md sitemap rule ≤1800s
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
