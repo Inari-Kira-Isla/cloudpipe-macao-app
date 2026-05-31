@@ -37,6 +37,9 @@ export interface BrandPortalConfig {
   engines: BrandEngineStatus[]
   gaps: BrandGap[]
   contentAudit: BrandContentAudit
+  tags?: string[]
+  contact?: { phone?: string; email?: string; whatsapp?: string }
+  online?: { url?: string }
 }
 
 export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [

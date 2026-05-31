@@ -3,8 +3,9 @@ import { getProductBySlug } from '@/lib/inari-supabase'
 
 export const revalidate = 3600
 
-export async function GET(_req: Request, { params }: { params: { slug: string } }) {
-  const p = await getProductBySlug(params.slug)
+export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const p = await getProductBySlug(slug)
   if (!p) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const jsonLd = {
