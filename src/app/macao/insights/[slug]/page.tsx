@@ -285,7 +285,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   for (const al of availableLangs) {
     const url = al === 'zh'
       ? `${siteUrl}/macao/insights/${slug}`
-      : `${siteUrl}/macao/insights/${slug}?lang=${al}`
+      : `${siteUrl}/macao/${al}/insights/${slug}`
     alternates[LANG_CONFIG[al].hreflang] = url
   }
 
@@ -542,7 +542,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
   function langUrl(targetLang: Lang) {
     return targetLang === 'zh'
       ? `/macao/insights/${slug}`
-      : `/macao/insights/${slug}?lang=${targetLang}`
+      : `/macao/${targetLang}/insights/${slug}`
   }
 
   return (
