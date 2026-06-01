@@ -478,7 +478,7 @@ export default function CrawlerDashboard() {
 
           {(() => {
             const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex'])
-            const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
+            const excludeOwners = new Set(['Test', 'Debug'])
             const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
               return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
