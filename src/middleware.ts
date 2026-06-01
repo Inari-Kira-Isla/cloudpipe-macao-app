@@ -39,7 +39,7 @@ const AI_BOT_PATTERNS = [
 const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/GPTBot|ChatGPT|OAI-SearchBot/i, 'GPTBot', 'OpenAI'],
   [/ClaudeBot|Claude-Web/i, 'ClaudeBot', 'Anthropic'],
-  [/PerplexityBot/i, 'PerplexityBot', 'Perplexity'],
+  [/PerplexityBot|Perplexity-User/i, 'PerplexityBot', 'Perplexity'],
   [/Googlebot|Google-Extended|GoogleOther/i, 'Googlebot', 'Google'],
   [/Amazonbot/i, 'Amazonbot', 'Amazon'],
   [/Applebot/i, 'Applebot', 'Apple'],
@@ -59,7 +59,7 @@ function detectBot(ua: string): { name: string; owner: string } | null {
   }
   if (AI_BOT_PATTERNS.some(p => p.test(ua))) return { name: 'UnknownBot', owner: 'Unknown' }
   // Perplexity real-time fetcher uses Chrome UA with round version number
-  if (HEADLESS_CHROME_UA.test(ua)) return { name: 'HeadlessFetcher', owner: 'Unknown' }
+  if (HEADLESS_CHROME_UA.test(ua)) return { name: 'HeadlessFetcher', owner: 'HeadlessFetcher' }
   return null
 }
 
