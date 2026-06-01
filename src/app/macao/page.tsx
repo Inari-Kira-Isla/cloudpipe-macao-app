@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
@@ -93,6 +93,7 @@ async function getData() {
     }
   }
 
+  const supabase = createServiceClient()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
