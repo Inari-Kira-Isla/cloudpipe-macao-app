@@ -346,9 +346,54 @@ async function getSpiderWebInsights(
         (hydrated.data || []).map((r: any) => [r.slug as string, r]),
       )
 
+      // ─── LIKE fallback: for placeholder slugs (e.g. my-industry-tourism-001)
+      // that don't exist verbatim in insights, extract a keyword and ilike-search
+      // in the target region. Capped at CROSS_REGION_MAX total fallbacks to avoid
+      // over-hydrating the page.
+      const FALLBACK_CAP = CROSS_REGION_MAX
+      let fallbacksUsed = 0
+      const fallbackByOrigSlug = new Map<string, { slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }>()
+
+      const missingOrigSlugs = targetSlugs.filter(s => !bySlug.has(s))
+      for (const origSlug of missingOrigSlugs) {
+        if (fallbacksUsed >= FALLBACK_CAP) break
+        // Extract keyword: strip trailing -NNN, strip *-industry- prefix, join with spaces
+        const keyword = origSlug
+          .replace(/-\d+$/, '')          // remove trailing -001 / -002 etc.
+          .replace(/^[a-z]{2,3}-industry-/, '')  // remove e.g. my-industry-
+          .replace(/-/g, ' ')            // dashes → spaces for readability (ilike uses %)
+          .trim()
+        // Skip keywords too short to be meaningful
+        if (keyword.length < 3) continue
+        // Use the first token as the ilike search term (most specific)
+        const likeToken = keyword.split(' ')[0]
+        if (likeToken.length < 3) continue
+
+        // Find the edge associated with this slug to know the target region
+        const targetEdge = edges.find(e => e.to_entity_slug === origSlug)
+        if (!targetEdge) continue
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: fallbackRows } = await (db as any)
+          .from('insights')
+          .select('slug, title, subtitle, read_time_minutes, region')
+          .ilike('slug', `%${likeToken}%`)
+          .eq('region', targetEdge.to_region)
+          .eq('status', 'published')
+          .eq('lang', lang)
+          .neq('slug', currentSlug)
+          .limit(1)
+
+        if (fallbackRows?.length) {
+          const fb = fallbackRows[0]
+          fallbackByOrigSlug.set(origSlug, fb)
+          fallbacksUsed++
+        }
+      }
+
       const crossScored: Array<{ insight: SpiderWebInsight; score: number }> = []
       for (const e of edges) {
-        const row = bySlug.get(e.to_entity_slug)
+        const row = bySlug.get(e.to_entity_slug) ?? fallbackByOrigSlug.get(e.to_entity_slug)
         if (!row) continue
         if (row.region !== e.to_region) continue  // sanity: only render if the insight actually lives in to_region
         const weight = EDGE_WEIGHTS[e.edge_type] ?? 0.3
