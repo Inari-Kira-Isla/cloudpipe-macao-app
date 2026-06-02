@@ -49,8 +49,10 @@ const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/Bytespider|SamanthaDoubao/i, 'Bytespider', 'ByteDance'],
 ]
 
-// Headless Chrome / server-side fetchers use round version numbers: Chrome/120.0.0.0
+// Headless Chrome / server-side fetchers use round version numbers: Chrome/X.0.0.0
 // Real Chrome always has non-zero build+patch: Chrome/120.0.6099.71
+// Chrome/120 is the most commonly documented Perplexity real-time fetcher UA.
+const PERPLEXITY_HEADLESS_UA = /Chrome\/120\.0\.0\.0/
 const HEADLESS_CHROME_UA = /Chrome\/\d+\.0\.0\.0/
 
 function detectBot(ua: string): { name: string; owner: string } | null {
@@ -58,7 +60,9 @@ function detectBot(ua: string): { name: string; owner: string } | null {
     if (pattern.test(ua)) return { name, owner }
   }
   if (AI_BOT_PATTERNS.some(p => p.test(ua))) return { name: 'UnknownBot', owner: 'Unknown' }
-  // Perplexity real-time fetcher uses Chrome UA with round version number
+  // Chrome/120.0.0.0 is the documented Perplexity real-time fetcher UA
+  if (PERPLEXITY_HEADLESS_UA.test(ua)) return { name: 'PerplexityBot', owner: 'Perplexity' }
+  // Other round-version headless Chrome = generic AI headless fetcher
   if (HEADLESS_CHROME_UA.test(ua)) return { name: 'HeadlessFetcher', owner: 'HeadlessFetcher' }
   return null
 }
