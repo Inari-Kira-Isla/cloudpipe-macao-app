@@ -73,6 +73,9 @@ const OUR_BRAND_DOMAINS = [
 // Asset/system paths that browsers fetch automatically — exclude from referral tracking
 const NON_CONTENT_PATHS = /^\/(manifest\.json|favicon\.ico|robots\.txt|sitemap.*\.xml|llms\.txt|sw\.js|_next\/|opengraph-image|apple-touch-icon)/i
 
+// Technical/system paths that produce industry=null noise in crawler_visits — skip bot tracking
+const SKIP_BOT_TRACK_PATHS = /^\/(canary|llms[-\w]*|api\/|_next\/|favicon|icons\/|images\/|manifest\.json|robots\.txt|sitemap)/i
+
 function isOwnDomain(host: string): boolean {
   return OUR_BRAND_DOMAINS.some(d => host === d || host.endsWith('.' + d))
 }
@@ -386,7 +389,7 @@ export async function middleware(request: NextRequest) {
   // --- End Supabase session refresh ---
 
   const bot = detectBot(ua)
-  if (bot && supabaseUrl && supabaseKey) {
+  if (bot && supabaseUrl && supabaseKey && !SKIP_BOT_TRACK_PATHS.test(path)) {
     trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer)
   } else if (!bot && supabaseUrl && supabaseKey) {
     // Track FAQ conversion arrivals — only real humans (bots excluded)
