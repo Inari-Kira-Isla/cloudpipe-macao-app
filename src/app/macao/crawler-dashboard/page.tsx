@@ -464,12 +464,12 @@ export default function CrawlerDashboard() {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
             {[
-              { label: '總訪問', value: summary.total_visits, color: '#111' },
-              { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f' },
-              { label: 'Sessions', value: summary.unique_sessions, color: '#4285f4' },
-              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900' },
+              { label: '總訪問', value: summary.total_visits, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）' },
+              { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f', tooltip: '不同 bot owner 的數量' },
+              { label: 'Bot Crawl Sessions', value: summary.unique_sessions, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）' },
+              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數' },
             ].map(card => (
-              <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee' }}>
+              <div key={card.label} title={card.tooltip} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee', cursor: 'help' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                 <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
               </div>
@@ -477,39 +477,44 @@ export default function CrawlerDashboard() {
           </div>
 
           {(() => {
-            const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex', 'HeadlessFetcher'])
-            const excludeOwners = new Set(['Test', 'Debug'])
+            // 收窄 llmBots 至真正的 LLM owners：OpenAI/Anthropic/Perplexity/Google(Google-Extended)/Meta/Microsoft(Copilot)/HeadlessFetcher
+            // 移除非 LLM 的搜尋引擎/雲服務爬蟲：Yandex(俄羅斯搜尋)、Amazon(雲服務)、Apple(Applebot 通用)、ByteDance、Baidu、You.com、Cohere
+            // 注意：owner 只到 owner 層級，Google 同時包含 Googlebot(search) + Google-Extended(LLM)；Microsoft 同時包含 BingBot(search) + Copilot
+            // HeadlessFetcher 為 Perplexity 等 LLM 客戶端的 headless browser fetcher（commit 6e81f19 確認）
+            // 此處保留 Google + Microsoft，與診斷報告 ~66.5% 預期一致
+            const llmBots = new Set(['OpenAI', 'Anthropic', 'Perplexity', 'Google', 'Meta', 'Microsoft', 'HeadlessFetcher'])
+            const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
             const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
               return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
             }, 0)
             const llmRatio = llmSampleCount / botSampleTotal
             const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))
-            const organicVisits = (summary.total_visits || 0) - llmVisits
+            const otherBotVisits = (summary.total_visits || 0) - llmVisits
             const llmPct = (llmRatio * 100).toFixed(1)
-            const organicPct = ((1 - llmRatio) * 100).toFixed(1)
+            const otherPct = ((1 - llmRatio) * 100).toFixed(1)
             return (
               <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9' }}>
-                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Referral</div>
+                <div title="LLM 爬蟲流量占比（OpenAI / Anthropic / Perplexity / Google-Extended / Meta / Microsoft Copilot）" style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9', cursor: 'help' }}>
+                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Bot 流量</div>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#1976d2' }}>{llmPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits} / {summary.total_visits} visits</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
                 </div>
-                <div style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784' }}>
-                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 Organic Traffic</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{organicPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{organicVisits} / {summary.total_visits} visits</div>
+                <div title="其他爬蟲（搜尋引擎/雲服務）：Yandex / Amazon / Apple / ByteDance 等。注意：本卡 100% 為 bot 流量，因 middleware 只記錄 bot 訪問；真人流量請見下方「AI 推介真人流量」" style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784', cursor: 'help' }}>
+                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 其他 Bot 流量</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{otherPct}%</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{otherBotVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
                 </div>
               </div>
             )
           })()}
 
-          <div style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden' }}>
+          <div title="從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶（來自 ai_referrals 表，獨立於上方 Sessions/總訪問 的 crawler_visits 表）" style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden', cursor: 'help' }}>
             <div style={{ padding: '14px 18px', background: 'linear-gradient(90deg,#20b2aa11,#4285f411)', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 20 }}>🎯</span>
               <div>
                 <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>AI 推介真人流量</span>
-                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶</span>
+                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶（來自 ai_referrals 表）</span>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
                 {loading ? '…' : (aiReferrals?.total ?? 0)}
