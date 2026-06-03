@@ -275,8 +275,12 @@ export async function GET(request: NextRequest) {
         const cached = await readCache<{ total_visits?: number; daily?: Array<{ date: string; total: number }> } & Record<string, unknown>>(`crawler-stats-summary-${days}`)
         if (cached) {
           // Fix: if total_visits=0 but daily data exists, recalculate from daily array
+          // The daily array is already sliced to the correct window by precompute
           if (!cached.total_visits && cached.daily?.length) {
-            cached.total_visits = cached.daily.reduce((sum, d) => sum + (Number(d.total) || 0), 0)
+            const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10)
+            cached.total_visits = cached.daily
+              .filter((d) => d.date >= cutoff)
+              .reduce((sum, d) => sum + (Number(d.total) || 0), 0)
           }
           return json(cached, 'PRECOMPUTED')
         }
