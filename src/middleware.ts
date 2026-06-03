@@ -84,6 +84,42 @@ function isOwnDomain(host: string): boolean {
   return OUR_BRAND_DOMAINS.some(d => host === d || host.endsWith('.' + d))
 }
 
+// 從 Vercel / 一般 proxy header 取 client IP；多 hop 時取第一個（客戶端）
+function extractClientIp(request: NextRequest): string | null {
+  const xff = request.headers.get('x-forwarded-for')
+  if (xff) {
+    const first = xff.split(',')[0]?.trim()
+    if (first) return first
+  }
+  const vff = request.headers.get('x-vercel-forwarded-for')
+  if (vff) {
+    const first = vff.split(',')[0]?.trim()
+    if (first) return first
+  }
+  const real = request.headers.get('x-real-ip')
+  if (real) return real.trim()
+  return null
+}
+
+// 隱私保護：SHA-256(salt + ip) 截 16 字元；不可逆推；非 raw IP 儲存
+// Edge runtime 使用 Web Crypto API（globalThis.crypto.subtle）
+async function hashIp(ip: string | null): Promise<string | null> {
+  if (!ip) return null
+  try {
+    const salt = process.env.IP_HASH_SALT || 'cloudpipe-2026'
+    const data = new TextEncoder().encode(salt + ip)
+    const digest = await globalThis.crypto.subtle.digest('SHA-256', data)
+    const bytes = new Uint8Array(digest)
+    let hex = ''
+    for (let i = 0; i < bytes.length; i++) {
+      hex += bytes[i].toString(16).padStart(2, '0')
+    }
+    return hex.slice(0, 16)
+  } catch {
+    return null
+  }
+}
+
 function getPageType(path: string, referer?: string): string {
   // Cross-site crawl: bot arrived via referer from one of our own brand sites
   if (referer) {
@@ -296,7 +332,7 @@ async function trackAiReferral(
   })().catch(() => {})
 }
 
-async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string) {
+async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string, ipRaw?: string | null) {
   const today = new Date().toISOString().slice(0, 10)
   const sessionId = `mw-${bot.name}-${today}`
   const { industry: fallbackIndustry, category } = getIndustryCategory(path)
@@ -310,6 +346,8 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
     if (insightMatch) {
       industry = await resolveInsightIndustry(insightMatch, supabaseUrl, supabaseKey)
     }
+    // 隱私保護：只存 SHA-256 hash，不存 raw IP
+    const ip_hash = await hashIp(ipRaw ?? null)
     const row = {
       bot_name: bot.name,
       bot_owner: bot.owner,
@@ -321,6 +359,7 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
       session_id: sessionId,
       ua_raw: ua.slice(0, 200),
       referer: referer ? referer.slice(0, 500) : null,
+      ip_hash,
       ts: new Date().toISOString(),
     }
     try {
@@ -392,9 +431,13 @@ export async function middleware(request: NextRequest) {
   }
   // --- End Supabase session refresh ---
 
+  // 取 client IP（Vercel x-forwarded-for / x-vercel-forwarded-for / x-real-ip）
+  // 唔存 raw IP — 只 hash 後寫入 crawler_visits.ip_hash 供 bot IP abuse detection
+  const ipRaw = extractClientIp(request)
+
   const bot = detectBot(ua)
   if (bot && supabaseUrl && supabaseKey && !SKIP_BOT_TRACK_PATHS.test(path)) {
-    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer)
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer, ipRaw)
   } else if (!bot && supabaseUrl && supabaseKey) {
     // Track FAQ conversion arrivals — only real humans (bots excluded)
     if (utmSource === 'faq') {
