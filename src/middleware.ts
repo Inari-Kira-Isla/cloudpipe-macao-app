@@ -101,6 +101,24 @@ function extractClientIp(request: NextRequest): string | null {
   return null
 }
 
+// 取/建 cp_sid cookie（30 日 session）
+// Edge runtime 兼容：用 globalThis.crypto.randomUUID()，不用 node:crypto
+// httpOnly=false：之後 Phase 1.5 landing pixel JS 可讀
+// 用途：跨 event correlation（referral → landing → WhatsApp click）
+function getOrCreateSessionId(request: NextRequest, response: NextResponse): string {
+  const existing = request.cookies.get('cp_sid')?.value
+  if (existing) return existing
+
+  const newSid = globalThis.crypto.randomUUID()
+  response.cookies.set('cp_sid', newSid, {
+    httpOnly: false,
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60, // 30 日
+    path: '/',
+  })
+  return newSid
+}
+
 // 隱私保護：SHA-256(salt + ip) 截 16 字元；不可逆推；非 raw IP 儲存
 // Edge runtime 使用 Web Crypto API（globalThis.crypto.subtle）
 async function hashIp(ip: string | null): Promise<string | null> {
@@ -295,6 +313,7 @@ async function trackAiReferral(
   ua: string,
   supabaseUrl: string,
   supabaseKey: string,
+  sessionId: string,
 ) {
   const { industry: fallbackIndustry, category } = getIndustryCategory(path)
   const insightMatch = matchInsightPath(path)
@@ -313,6 +332,7 @@ async function trackAiReferral(
       industry,
       category,
       ua_raw: ua.slice(0, 200),
+      session_id: sessionId,
       ts: new Date().toISOString(),
     }
     try {
@@ -439,6 +459,9 @@ export async function middleware(request: NextRequest) {
   if (bot && supabaseUrl && supabaseKey && !SKIP_BOT_TRACK_PATHS.test(path)) {
     trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer, ipRaw)
   } else if (!bot && supabaseUrl && supabaseKey) {
+    // 真人訪客：取/建 cp_sid cookie（30d）— 用於 attribution funnel cross-event join
+    const sessionId = getOrCreateSessionId(request, supabaseResponse)
+
     // Track FAQ conversion arrivals — only real humans (bots excluded)
     if (utmSource === 'faq') {
       trackFaqConversion(path, utmMedium || 'unknown', supabaseUrl, supabaseKey)
@@ -451,7 +474,7 @@ export async function middleware(request: NextRequest) {
       if (refHost && !isOwnDomain(refHost)) {
         const aiSource = detectAiReferrer(referer)
         if (aiSource) {
-          trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey)
+          trackAiReferral(path, aiSource, referer, ua, supabaseUrl, supabaseKey, sessionId)
         }
       }
     }
