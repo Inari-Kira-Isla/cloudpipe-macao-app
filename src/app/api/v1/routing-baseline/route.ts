@@ -185,7 +185,23 @@ const computeRoutingBaseline = unstable_cache(
   { revalidate: 600, tags: ['routing-baseline'] }
 )
 
+const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+
 export async function GET() {
+  // Primary: precomputed GitHub Pages cache (zero Supabase)
+  try {
+    const res = await fetch(`${CACHE_BASE}/routing-baseline.json`, { cache: 'no-store' })
+    if (res.ok) {
+      const data = await res.json()
+      if (data && data.tiers) {
+        return NextResponse.json(data, {
+          headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300', 'X-Cache': 'PRECOMPUTED' }
+        })
+      }
+    }
+  } catch { /* fall through to Supabase */ }
+
+  // Fallback: live Supabase query via unstable_cache (600s per instance)
   try {
     const data = await computeRoutingBaseline()
     return NextResponse.json(data, {

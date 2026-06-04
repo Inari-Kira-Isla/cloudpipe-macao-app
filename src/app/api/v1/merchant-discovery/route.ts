@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300 // 5 min CDN cache; GitHub Pages primary path keeps data fresh
 
 export const maxDuration = 120
 
