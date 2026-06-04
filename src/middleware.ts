@@ -352,6 +352,56 @@ async function trackAiReferral(
   })().catch(() => {})
 }
 
+async function trackUserVisit(
+  path: string, ua: string, referer: string | undefined,
+  sessionId: string, ipRaw: string | null,
+  supabaseUrl: string, supabaseKey: string,
+  request: NextRequest,
+) {
+  // Skip non-content paths (assets, API, sitemaps)
+  if (NON_CONTENT_PATHS.test(path)) return
+
+  const isMobile = /mobile|android|iphone|ipad/i.test(ua)
+  const isTablet = /tablet|ipad/i.test(ua)
+  const deviceType = isTablet ? 'tablet' : isMobile ? 'mobile' : 'desktop'
+
+  let refererDomain: string | null = null
+  try { if (referer) refererDomain = new URL(referer).hostname } catch { /* ignore */ }
+
+  const { industry, category } = getIndustryCategory(path)
+  const ip_hash = await hashIp(ipRaw)
+
+  const row = {
+    session_id: sessionId,
+    device_type: deviceType,
+    path,
+    page_type: getPageType(path, referer),
+    industry,
+    category,
+    referer: referer ? referer.slice(0, 500) : null,
+    referer_domain: refererDomain,
+    utm_source: request.nextUrl.searchParams.get('utm_source'),
+    utm_medium: request.nextUrl.searchParams.get('utm_medium'),
+    utm_campaign: request.nextUrl.searchParams.get('utm_campaign'),
+    utm_content: request.nextUrl.searchParams.get('utm_content'),
+    utm_term: request.nextUrl.searchParams.get('utm_term'),
+    is_bot: false,
+    ip_hash,
+  }
+  ;(async () => {
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/user_visits`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(row),
+      })
+    } catch { /* swallow — never block user response */ }
+  })().catch(() => {})
+}
+
 async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string, ipRaw?: string | null) {
   const today = new Date().toISOString().slice(0, 10)
   const sessionId = `mw-${bot.name}-${today}`
@@ -461,6 +511,9 @@ export async function middleware(request: NextRequest) {
   } else if (!bot && supabaseUrl && supabaseKey) {
     // 真人訪客：取/建 cp_sid cookie（30d）— 用於 attribution funnel cross-event join
     const sessionId = getOrCreateSessionId(request, supabaseResponse)
+
+    // Track all real human page visits → user_visits table (fire-and-forget)
+    trackUserVisit(path, ua, referer, sessionId, ipRaw, supabaseUrl, supabaseKey, request)
 
     // Track FAQ conversion arrivals — only real humans (bots excluded)
     if (utmSource === 'faq') {
