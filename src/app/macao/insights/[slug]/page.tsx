@@ -13,11 +13,11 @@ import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
 // NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
 // Lang switching is handled client-side via LangAwareContent + useSearchParams().
+// FIX 2026-06-04: 移除 `dynamic = 'force-static'` — 與 revalidate 共存會強制只 build 已知 slug，
+// 導致 24 日 SSG/DB desync（4 旗艦 + 過去新 insight 全部 0 URL 200 OK）。
+// 改用 dynamicParams=true（Next.js 預設）+ revalidate 86400 → on-demand SSG + 24h ISR cache。
 export const revalidate = 86400
 export const fetchCache = 'default-cache'
-// 2026-06-04 hotfix: 移除 `dynamic = 'force-static'`，原本配合 `revalidate` 但缺
-// `generateStaticParams` → 新 INSERT 嘅 insight slug 永遠唔出現喺 build manifest → 永 404。
-// 改用 ISR (revalidate) + dynamicParams=true：新 slug 第一個 request 觸發 SSR 並 cache 86400s。
 export const dynamicParams = true
 
 interface PageProps {

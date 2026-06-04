@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { buildMetadata, renderInsightPage } from '@/components/insight-region/InsightPageView'
 
+// FIX 2026-06-04: 明示 dynamicParams=true 防 force-static desync regression
 export const revalidate = 86400
+export const dynamicParams = true
 
 const VALID_LANG_PATHS = ['en', 'ja', 'pt'] as const
 type LangPath = (typeof VALID_LANG_PATHS)[number]
