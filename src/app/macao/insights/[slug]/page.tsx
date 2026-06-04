@@ -17,7 +17,10 @@ import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
 // 導致 24 日 SSG/DB desync（4 旗艦 + 過去新 insight 全部 0 URL 200 OK）。
 // 改用 dynamicParams=true（Next.js 預設）+ revalidate 86400 → on-demand SSG + 24h ISR cache。
 export const revalidate = 86400
-export const fetchCache = 'default-cache'
+// FIX 2026-06-04: `fetchCache='default-cache'` 會將 Supabase 內部 fetch() 結果 cache 24h，
+// 導致新發布 insight 即使 DB 存在仍永遠 404（fetch cache hit 舊空 response）。
+// 改 `force-no-store` 令 Supabase 每次重新查；route-level ISR (revalidate=86400) 仍保留。
+export const fetchCache = 'force-no-store'
 export const dynamicParams = true
 
 interface PageProps {
