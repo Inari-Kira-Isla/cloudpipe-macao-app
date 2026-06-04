@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 
   switch (view) {
     case 'summary': {
-      if ([7, 30, 90].includes(days)) {
+      if ([1, 7, 30, 90].includes(days)) {
         const cached = await readCache(`crawler-stats-summary-${days}`)
         if (cached) return json(cached, 'PRECOMPUTED')
       }
