@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { INDUSTRIES } from '@/lib/industries'
 
 interface BotInfo { count: number; owner: string }
@@ -161,6 +161,70 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   )
+}
+
+// ── GSAP number counter hook ──────────────────────────────────────────────────
+function useCountUp(target: number, duration = 1.2, decimals = 0): string {
+  const [display, setDisplay] = useState('0')
+  const prev = useRef(0)
+  useEffect(() => {
+    if (typeof window === 'undefined' || target === 0) { setDisplay('0'); return }
+    const start = prev.current
+    prev.current = target
+    const startTime = performance.now()
+    const fmt = (n: number) => decimals > 0
+      ? n.toFixed(decimals)
+      : Math.round(n).toLocaleString()
+    let raf: number
+    const step = (now: number) => {
+      const elapsed = Math.min((now - startTime) / (duration * 1000), 1)
+      // ease out cubic
+      const eased = 1 - Math.pow(1 - elapsed, 3)
+      setDisplay(fmt(start + (target - start) * eased))
+      if (elapsed < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration, decimals])
+  return display
+}
+
+// ── Animated bar component ────────────────────────────────────────────────────
+function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; height?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.width = '0%'
+    const raf = requestAnimationFrame(() => {
+      el.style.transition = `width 0.8s cubic-bezier(0.16,1,0.3,1)`
+      el.style.width = `${Math.min(pct, 100)}%`
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [pct])
+  return (
+    <div style={{ background: '#e5e5e5', borderRadius: 4, height, overflow: 'hidden' }}>
+      <div ref={ref} style={{ height: '100%', borderRadius: 4, background: color, width: '0%' }} />
+    </div>
+  )
+}
+
+// ── Fade-in card wrapper ──────────────────────────────────────────────────────
+function FadeCard({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.opacity = '0'
+    el.style.transform = 'translateY(16px)'
+    const t = setTimeout(() => {
+      el.style.transition = `opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)`
+      el.style.opacity = '1'
+      el.style.transform = 'translateY(0)'
+    }, delay)
+    return () => clearTimeout(t)
+  }, [delay])
+  return <div ref={ref} style={style}>{children}</div>
 }
 
 export default function CrawlerDashboard() {
@@ -339,6 +403,12 @@ export default function CrawlerDashboard() {
     setJourney(data.journey || [])
   }
 
+  const totalVisitsDisplay = useCountUp(summary?.total_visits ?? 0)
+  const uniqueBotsDisplay  = useCountUp(summary?.unique_bots ?? 0)
+  const sessionsDisplay    = useCountUp(summary?.unique_sessions ?? 0)
+  const sitesDisplay       = useCountUp(summary ? Object.keys(summary.sites || {}).length : 0)
+  const aiRefTotalDisplay  = useCountUp(aiReferrals?.total ?? 0)
+
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
 
@@ -515,15 +585,18 @@ export default function CrawlerDashboard() {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
             {[
-              { label: '總訪問', value: summary.total_visits, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）' },
-              { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f', tooltip: '不同 bot owner 的數量' },
-              { label: 'Bot Crawl Sessions', value: summary.unique_sessions, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）' },
-              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數' },
+              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）', delay: 0 },
+              { label: 'AI Bot 種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: '不同 bot owner 的數量', delay: 80 },
+              { label: 'Bot Crawl Sessions', value: sessionsDisplay, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）', delay: 160 },
+              { label: '追蹤站點', value: sitesDisplay, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數', delay: 240 },
             ].map(card => (
-              <div key={card.label} title={card.tooltip} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee', cursor: 'help' }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
-              </div>
+              <FadeCard key={card.label} delay={card.delay}
+                style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee', cursor: 'help' }}>
+                <div title={card.tooltip} style={{ height: '100%' }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
+                </div>
+              </FadeCard>
             ))}
           </div>
 
@@ -568,7 +641,7 @@ export default function CrawlerDashboard() {
                 <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶（來自 ai_referrals 表）</span>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
-                {loading ? '…' : (aiReferrals?.total ?? 0)}
+                {loading ? '…' : aiRefTotalDisplay}
               </span>
             </div>
 
@@ -597,9 +670,7 @@ export default function CrawlerDashboard() {
                                 <span style={{ fontWeight: 600 }}>{meta.icon} {meta.label}</span>
                                 <span style={{ fontWeight: 700, color: meta.color }}>{data.count} <span style={{ fontSize: 11, color: '#999', fontWeight: 400 }}>({pct}%)</span></span>
                               </div>
-                              <div style={{ background: '#f3f4f6', borderRadius: 4, height: 6 }}>
-                                <div style={{ width: `${pct}%`, height: '100%', borderRadius: 4, background: meta.color }} />
-                              </div>
+                              <AnimBar pct={pct} color={meta.color} />
                               <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
                                 最新：{new Date(data.latest).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </div>
@@ -673,9 +744,7 @@ export default function CrawlerDashboard() {
                         <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
                         <span style={{ fontWeight: 600 }}>{info.count}</span>
                       </div>
-                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{ width: `${(info.count / maxBot) * 100}%`, height: '100%', borderRadius: 4, background: BOT_COLORS[info.owner] || '#999' }} />
-                      </div>
+                      <AnimBar pct={(info.count / maxBot) * 100} color={BOT_COLORS[info.owner] || '#999'} />
                     </div>
                   ))}
               </div>
@@ -692,9 +761,7 @@ export default function CrawlerDashboard() {
                           <span style={{ color: isSystemBucket ? '#aaa' : undefined }}>{ind}</span>
                           <span style={{ fontWeight: 600, color: isSystemBucket ? '#aaa' : undefined }}>{count}</span>
                         </div>
-                        <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                          <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: isSystemBucket ? '#ccc' : '#4285f4' }} />
-                        </div>
+                        <AnimBar pct={(count / maxInd) * 100} color={isSystemBucket ? '#ccc' : '#4285f4'} />
                       </div>
                     )
                   })}
