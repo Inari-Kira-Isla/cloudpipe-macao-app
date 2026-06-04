@@ -346,15 +346,66 @@ export default function CrawlerDashboard() {
     ...INDUSTRIES.map(i => i.slug),
     'insights', 'services', 'entertainment', 'tourism', 'culture', 'merchants', 'lifestyle',
   ])
+
+  // Phase 0 frontend-only whitelist (Agent 20 hound review approved, CEO 方案 A)
+  // 分流 NULL/未識別 industry 為 4 bucket：navigation root / listing / aux / meta
+  // 解 120K 偽「未分類」誤導性 dashboard count
+  // Agent 15 完整 MV 重建延 D+7 Phase 2 再評
+  const NAV_ROOTS = new Set(['/macao', '/hongkong', '/taiwan', '/japan', '/malaysia',
+    'macao', 'hongkong', 'taiwan', 'japan', 'malaysia',
+    'nav_root', 'navigation', 'home', 'index'])
+  const LISTING_KEYWORDS = ['listing', 'list', 'category', 'directory']
+  const AUX_KEYWORDS = ['api', 'sitemap', 'robots', 'llms', '_next', 'feed', 'rss']
+  const META_KEYWORDS = ['favicon', 'manifest', 'well-known', 'icon', 'apple-touch']
+
+  const classifyUnknownIndustry = (key: string): 'nav_root' | 'listing' | 'aux' | 'meta' | 'uncategorized' => {
+    if (!key) return 'uncategorized'
+    const lower = key.toLowerCase()
+    if (NAV_ROOTS.has(lower) || NAV_ROOTS.has(key)) return 'nav_root'
+    // path-style key (starts with /)
+    if (lower.startsWith('/')) {
+      if (AUX_KEYWORDS.some(k => lower.includes(k))) return 'aux'
+      if (META_KEYWORDS.some(k => lower.includes(k))) return 'meta'
+      // /macao/dining /macao/attractions etc → listing
+      if (/^\/[a-z]+\/(dining|attractions|shopping|hotels|wellness|merchants|insights)$/.test(lower)) return 'listing'
+      // /macao /hongkong /taiwan etc (single segment) → nav_root
+      if (/^\/[a-z]+$/.test(lower)) return 'nav_root'
+    }
+    if (AUX_KEYWORDS.some(k => lower.includes(k))) return 'aux'
+    if (META_KEYWORDS.some(k => lower.includes(k))) return 'meta'
+    if (LISTING_KEYWORDS.some(k => lower.includes(k))) return 'listing'
+    return 'uncategorized'
+  }
+
   const filteredIndustries = summary?.industries
     ? (() => {
         const valid: Record<string, number> = {}
-        let unknownSum = 0
-        for (const [k, v] of Object.entries(summary.industries)) {
-          if (VALID_IND.has(k)) valid[k] = (valid[k] || 0) + (Number(v) || 0)
-          else unknownSum += Number(v) || 0
+        const buckets: Record<string, number> = {
+          '🧭 導航根頁': 0,
+          '📋 列表頁': 0,
+          '⚙️ 輔助端點': 0,
+          '🗂️ Meta 檔案': 0,
+          '未分類': 0,
         }
-        if (unknownSum > 0) valid['未分類'] = unknownSum
+        const BUCKET_KEY: Record<string, keyof typeof buckets> = {
+          nav_root: '🧭 導航根頁',
+          listing: '📋 列表頁',
+          aux: '⚙️ 輔助端點',
+          meta: '🗂️ Meta 檔案',
+          uncategorized: '未分類',
+        }
+        for (const [k, v] of Object.entries(summary.industries)) {
+          const n = Number(v) || 0
+          if (VALID_IND.has(k)) {
+            valid[k] = (valid[k] || 0) + n
+          } else {
+            const bucket = BUCKET_KEY[classifyUnknownIndustry(k)]
+            buckets[bucket] += n
+          }
+        }
+        for (const [bk, bv] of Object.entries(buckets)) {
+          if (bv > 0) valid[bk] = bv
+        }
         return valid
       })()
     : {}
@@ -632,17 +683,21 @@ export default function CrawlerDashboard() {
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
                 {Object.entries(filteredIndustries)
                   .sort((a, b) => b[1] - a[1])
-                  .map(([ind, count]) => (
-                    <div key={ind} style={{ marginBottom: 8 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                        <span style={{ color: ind === '未分類' ? '#aaa' : undefined }}>{ind}</span>
-                        <span style={{ fontWeight: 600, color: ind === '未分類' ? '#aaa' : undefined }}>{count}</span>
+                  .map(([ind, count]) => {
+                    // Phase 0: nav/listing/aux/meta 同 未分類 共用淡色 styling，表示非真實 industry
+                    const isSystemBucket = ind === '未分類' || ind.startsWith('🧭') || ind.startsWith('📋') || ind.startsWith('⚙️') || ind.startsWith('🗂️')
+                    return (
+                      <div key={ind} style={{ marginBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                          <span style={{ color: isSystemBucket ? '#aaa' : undefined }}>{ind}</span>
+                          <span style={{ fontWeight: 600, color: isSystemBucket ? '#aaa' : undefined }}>{count}</span>
+                        </div>
+                        <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
+                          <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: isSystemBucket ? '#ccc' : '#4285f4' }} />
+                        </div>
                       </div>
-                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: ind === '未分類' ? '#ccc' : '#4285f4' }} />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 {Object.keys(filteredIndustries).length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>}
               </div>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', gridColumn: '1 / -1' }}>
