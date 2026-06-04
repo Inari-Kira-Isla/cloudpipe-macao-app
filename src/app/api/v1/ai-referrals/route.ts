@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-// Removed `force-dynamic` so Vercel CDN can cache by URL.
-// Freshness is bounded by `s-maxage=120` below; client sends `cache: 'no-store'`
-// so the dashboard "立即重新整理" button still bypasses CDN when needed.
 export const revalidate = 120
 export const maxDuration = 30
+
+const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
 
 const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },
@@ -25,6 +24,23 @@ export async function GET(req: NextRequest) {
   const days = parseInt(searchParams.get('days') ?? '30')
   const site = searchParams.get('site') ?? 'cloudpipe-macao-app'
 
+  // Primary: precomputed GitHub Pages cache (zero Supabase, generated every 30 min)
+  // Only for default site + standard window (dashboard always uses these)
+  if (site === 'cloudpipe-macao-app' && days === 30) {
+    try {
+      const res = await fetch(`${CACHE_BASE}/ai-referrals-30.json`, { cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data && typeof data.total === 'number') {
+          return NextResponse.json(data, {
+            headers: { 'Cache-Control': 'public, max-age=120', 'X-Cache': 'PRECOMPUTED' },
+          })
+        }
+      }
+    } catch { /* fall through to Supabase */ }
+  }
+
+  // Fallback: live Supabase query (for non-standard days or cache miss)
   const supabase = createServiceClient()
   const since = new Date(Date.now() - days * 86400000).toISOString()
 
