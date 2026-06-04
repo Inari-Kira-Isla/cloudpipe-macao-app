@@ -5,7 +5,7 @@
  * Schema: <sitemapindex> not <urlset>.
  */
 
-export const revalidate = 3600 // 1h ISR
+export const revalidate = 1800 // 30min ISR — aligns with sub-sitemap revalidate window (CLAUDE.md §1)
 export const maxDuration = 60
 
 function escapeXml(str: string): string {
@@ -18,13 +18,15 @@ function escapeXml(str: string): string {
 }
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date().toISOString()
 
   const childSitemaps = [
     'sitemap.xml',
     'sitemap-merchants.xml',
     'sitemap-insights.xml',
+    'sitemap-insights-en.xml',
+    'sitemap-insights-ja.xml',
     'sitemap-mo.xml',
     'sitemap-hk.xml',
     'sitemap-tw.xml',
@@ -49,7 +51,7 @@ ${body}
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=1800, stale-while-revalidate=86400',
     },
   })
 }

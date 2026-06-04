@@ -386,10 +386,18 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
                 <span>WhatsApp 查詢 B2B 採購</span>
               </a>
             ) : (
-              <button type="submit" className="ud-btn-primary" disabled={loading}>
-                <span>{loading ? '提交中…' : '解鎖寶箱 / SECURE THIS DROP'}</span>
-                <span className="arrow">→</span>
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button type="submit" className="ud-btn-primary" disabled={loading}>
+                  <span>{loading ? '提交中…' : '解鎖寶箱 / SECURE THIS DROP'}</span>
+                  <span className="arrow">→</span>
+                </button>
+                <a
+                  href={`/sea-urchin/cart?size=${encodeURIComponent(size.id)}&name=${encodeURIComponent(size.name)}&weight=${encodeURIComponent(size.weight)}&price=${size.price}`}
+                  style={{ display: 'block', textAlign: 'center', padding: '12px 20px', border: '1px solid #2a2a2a', borderRadius: 8, color: '#888', fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textDecoration: 'none' }}
+                >
+                  前往結帳頁（含地址 / 時段選擇）→
+                </a>
+              </div>
             )}
           </form>
 

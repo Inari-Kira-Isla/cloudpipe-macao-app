@@ -10,11 +10,12 @@ import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 7200 // 2h - reduce ISR writes
+// Removed force-dynamic: conflicts with revalidate (CLAUDE.md rule #3) → burned CPU every request
+// ISR revalidate=7200 gives 2h CDN cache; FAQ index doesn't need per-request freshness
+export const revalidate = 7200 // 2h ISR — force-dynamic removed 2026-05-31 CPU fix
 export const maxDuration = 15  // 11 sequential DB queries need headroom
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET(request: Request) {
   // Fire-and-forget bot tracking (non-blocking)

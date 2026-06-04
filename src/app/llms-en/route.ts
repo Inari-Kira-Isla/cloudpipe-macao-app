@@ -5,7 +5,7 @@ import { notifySitemaps } from '@/lib/notify-crawlers'
 export const revalidate = 1800 // 30min ISR — 與 llms-txt 一致，anon→serviceClient 修復後數字準確
 export const maxDuration = 30
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET() {
   // Non-blocking: notify crawlers of potential updates (fire and forget)
@@ -32,7 +32,7 @@ export async function GET() {
   const insights = topInsights || []
 
   const insightLines = insights.map(i =>
-    `- [${i.title}](${siteUrl}/macao/insights/${i.slug}?lang=en) — ${(i.word_count || 0).toLocaleString()} words`
+    `- [${i.title}](${siteUrl}/macao/en/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString()} words`
   ).join('\n')
 
   const industryLines = INDUSTRIES

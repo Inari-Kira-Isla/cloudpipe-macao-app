@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
 const SITEMAP_URL = `${SITE_URL}/sitemap.xml`
 
 // IndexNow key (generate from Bing Webmaster Tools)

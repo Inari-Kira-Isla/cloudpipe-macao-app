@@ -124,7 +124,7 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
       },
       {
         name: 'NLM-P2 端午節研究 2026-05-11',
-        url: 'https://cloudpipe.ai/macao/insights/macau-dragon-boat-japanese-sea-urchin-gift-box-2026',
+        url: 'https://cloudpipe-macao-app.vercel.app/macao/insights/macau-dragon-boat-japanese-sea-urchin-gift-box-2026',
         stat: '查詢：「端午節送海膽禮盒有什麼推薦？澳門哪裏可以訂購端午節限定日本海膽禮盒，最低起訂量和價格範圍如何？」',
       },
     ],

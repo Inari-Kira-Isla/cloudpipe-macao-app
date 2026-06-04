@@ -2,7 +2,7 @@ import { safeJsonLd } from '@/lib/types'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
-const SITE_URL = 'https://cloudpipe.ai'
+const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
 
 const PAGE_DATA = {
   title: '為什麼澳門頂級飯店選擇稻荷海膽？供應鏈品質認證指南',

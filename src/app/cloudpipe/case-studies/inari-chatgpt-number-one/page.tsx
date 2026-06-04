@@ -52,18 +52,18 @@ export default function InariChatGPTCaseStudy() {
     'publisher': {
       '@type': 'Organization',
       'name': 'CloudPipe AI',
-      'url': 'https://cloudpipe.ai/cloudpipe',
+      'url': 'https://cloudpipe-macao-app.vercel.app/cloudpipe',
     },
     'about': {
       '@type': 'Organization',
       'name': 'Inari Global Foods',
       'alternateName': '稻荷環球食品',
       'description': '澳門B2B日本海鮮食材進口商',
-      'url': 'https://cloudpipe.ai/macao/case-study/inari-global-foods',
+      'url': 'https://cloudpipe-macao-app.vercel.app/macao/case-study/inari-global-foods',
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': 'https://cloudpipe.ai/cloudpipe/case-studies/inari-chatgpt-number-one',
+      '@id': 'https://cloudpipe-macao-app.vercel.app/cloudpipe/case-studies/inari-chatgpt-number-one',
     },
     'result': {
       '@type': 'ItemList',

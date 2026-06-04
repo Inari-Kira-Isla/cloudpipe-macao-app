@@ -2,7 +2,9 @@
 import { createClient } from '@supabase/supabase-js'
 import type { InariProduct, B2bCustomer, InariOrder } from '@/types/inari'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+// inari-production has its own Supabase project (cqartwwsbxnjjatmndtt)
+// separate from CloudPipe main (yitmabzsxfgbchhhjjef)
+const supabaseUrl = process.env.INARI_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export function inariPublicClient() {
@@ -12,7 +14,7 @@ export function inariPublicClient() {
 export function inariServiceClient() {
   return createClient(
     supabaseUrl,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
+    process.env.INARI_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
   )
 }
 
@@ -24,7 +26,7 @@ export async function getProducts(opts: {
   origin?: string
   limit?: number
 } = {}): Promise<InariProduct[]> {
-  const db = inariPublicClient()
+  const db = inariServiceClient()
   let q = db
     .from('inari_catalog')
     .select('id,slug,name_zh,name_en,name_ja,species,origin_region,origin_detail,season_start,season_end,unit,unit_weight_g,min_order_qty,retail_price,stock_qty,is_available,is_featured,image_url,certifications,sort_order')
@@ -41,7 +43,7 @@ export async function getProducts(opts: {
 }
 
 export async function getProductBySlug(slug: string): Promise<InariProduct | null> {
-  const db = inariPublicClient()
+  const db = inariServiceClient()
   const { data } = await db
     .from('inari_catalog')
     .select('*')

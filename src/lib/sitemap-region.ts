@@ -11,9 +11,9 @@
  *   MO → /macao,   HK → /hongkong,   TW → /taiwan,
  *   JP → /japan,   GLOBAL → /global
  */
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 
-export type SitemapRegion = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL'
+export type SitemapRegion = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL' | 'MY' | 'JBL'
 
 export const REGION_PATH: Record<SitemapRegion, string> = {
   MO: 'macao',
@@ -21,6 +21,12 @@ export const REGION_PATH: Record<SitemapRegion, string> = {
   TW: 'taiwan',
   JP: 'japan',
   GLOBAL: 'global',
+  // MY served from a separate Vercel project (malaysia-encyclopedia.vercel.app);
+  // path segment listed here for cross-region link/Schema parity. Sub-sitemap on main
+  // app NOT generated for MY (use external domain's own sitemap).
+  MY: 'malaysia',
+  // JBL bridge — public discovery routes under main app; sub-sitemap pending.
+  JBL: 'japan-shokuhinten',
 }
 
 export interface InsightRow {
@@ -41,27 +47,33 @@ export async function fetchInsightsByRegion(
   let offset = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createServiceClient()
-      .from('insights')
-      .select('slug, updated_at, region, lang')
-      .eq('status', 'published')
-      .eq('region', region)
-      .order('updated_at', { ascending: false })
-      .range(offset, offset + 999)
-    if (!data || data.length === 0) break
-    rows.push(...(data as InsightRow[]))
-    if (data.length < 1000) break
-    offset += 1000
+    try {
+      const { data, error } = await createSitemapServiceClient()
+        .from('insights')
+        .select('slug, updated_at, region, lang')
+        .eq('status', 'published')
+        .eq('region', region)
+        .order('id', { ascending: true })
+        .range(offset, offset + 999)
+      if (error || !data || data.length === 0) break
+      rows.push(...(data as InsightRow[]))
+      if (data.length < 1000) break
+      offset += 1000
+    } catch {
+      // Build-time / DB-overload safety: return partial data instead of
+      // crashing the build. ISR will retry at runtime.
+      break
+    }
   }
   return rows
 }
 
 /**
- * URL for one insight row. Mirrors sitemap.ts insightPath():
+ * URL for one insight row — path-based lang routing (2026-05-27):
  *   zh  → /{seg}/insights/{slug}             (canonical)
- *   en  → /{seg}/insights/{slug}?lang=en
- *   pt  → /{seg}/insights/{slug}?lang=pt
- *   ja  → /{seg}/insights/{slug}?lang=ja
+ *   en  → /{seg}/en/insights/{slug}
+ *   pt  → /{seg}/pt/insights/{slug}
+ *   ja  → /{seg}/ja/insights/{slug}
  */
 export function buildInsightLoc(
   siteUrl: string,
@@ -70,8 +82,9 @@ export function buildInsightLoc(
   lang: string,
 ): string {
   const seg = REGION_PATH[region]
-  const base = `${siteUrl}/${seg}/insights/${slug}`
-  return lang === 'zh' ? base : `${base}?lang=${lang}`
+  return lang === 'zh'
+    ? `${siteUrl}/${seg}/insights/${slug}`
+    : `${siteUrl}/${seg}/${lang}/insights/${slug}`
 }
 
 export function escapeXml(str: string): string {
@@ -106,9 +119,41 @@ ${body}
 }
 
 /**
+ * Age-based changefreq + priority for region sitemaps.
+ * Mirrors sitemap-insights.xml stratification rules (CLAUDE.md §2):
+ *   < 7 days  → daily  / 0.98 (zh) | 0.93 (other)
+ *   < 30 days → daily  / 0.95 (zh) | 0.90 (other)
+ *   >= 30 days → weekly / 0.85 (zh) | 0.80 (other)
+ *
+ * NEVER use a flat 'weekly' for all entries — it signals bots to skip for a
+ * full week, causing the "single-batch then 5-day silence" pattern observed
+ * on HK/TW/JP in the week of 2026-05-20 (root-cause: flat weekly in v1).
+ */
+function regionChangefreqAndPriority(
+  updatedAt: string | null,
+  lang: string,
+): { changefreq: string; priority: string } {
+  const nowMs = Date.now()
+  const ageDays = updatedAt
+    ? (nowMs - new Date(updatedAt).getTime()) / 86400000
+    : 999
+  const isZh = lang === 'zh'
+  if (ageDays < 7) {
+    return { changefreq: 'daily', priority: isZh ? '0.98' : '0.93' }
+  }
+  if (ageDays < 30) {
+    return { changefreq: 'daily', priority: isZh ? '0.95' : '0.90' }
+  }
+  return { changefreq: 'weekly', priority: isZh ? '0.85' : '0.80' }
+}
+
+/**
  * Build a region-scoped urlset for one of the per-region sub-sitemaps.
  * Emits one URL per (slug × lang) so all 4 language variants are surfaced
  * to AI crawlers / GSC.
+ *
+ * 2026-05-27: upgraded from flat 'weekly' to age-based stratification to fix
+ * HK/TW/JP "single-batch then 5-day silence" crawl pattern.
  */
 export async function buildRegionSitemapXml(
   siteUrl: string,
@@ -118,19 +163,26 @@ export async function buildRegionSitemapXml(
   const now = new Date().toISOString().split('T')[0]
   const urls = rows
     .filter((r) => r.slug)
-    .map((r) => ({
-      loc: buildInsightLoc(siteUrl, region, r.slug, r.lang || 'zh'),
-      lastmod: r.updated_at ? r.updated_at.split('T')[0] : now,
-      changefreq: 'weekly',
-      priority: r.lang === 'zh' ? '0.95' : '0.90',
-    }))
+    .map((r) => {
+      const lang = r.lang || 'zh'
+      const { changefreq, priority } = regionChangefreqAndPriority(r.updated_at, lang)
+      return {
+        loc: buildInsightLoc(siteUrl, region, r.slug, lang),
+        lastmod: r.updated_at ? r.updated_at.split('T')[0] : now,
+        changefreq,
+        priority,
+      }
+    })
   return renderUrlsetXml(urls)
 }
 
 /**
  * Standard response headers for sub-sitemaps.
- *   - 1h ISR with 24h stale-while-revalidate
+ *   - 30min ISR (matches revalidate = 1800) with 24h stale-while-revalidate
  *   - text/xml content-type
+ *
+ * 2026-05-27: reduced max-age from 3600→1800 to align with ISR revalidate window,
+ * so AI bots always receive fresh sitemaps within 30min of new article publication.
  */
 export const SITEMAP_HEADERS = {
   'Content-Type': 'application/xml; charset=utf-8',

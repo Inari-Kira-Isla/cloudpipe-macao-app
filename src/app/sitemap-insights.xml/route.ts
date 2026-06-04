@@ -9,7 +9,7 @@
  *   TW → /taiwan/insights/{slug}       JP → /japan/insights/{slug}
  *   GLOBAL → /global/insights/{slug}
  */
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 import {
   REGION_PATH,
   buildInsightLoc,
@@ -18,7 +18,7 @@ import {
   type SitemapRegion,
 } from '@/lib/sitemap-region'
 
-export const revalidate = 1800 // 30min ISR — 日均100+新文章，降至30min讓AI爬蟲持續發現
+export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
 export const maxDuration = 120
 
 interface AllInsightRow {
@@ -31,27 +31,53 @@ interface AllInsightRow {
 async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
   const rows: AllInsightRow[] = []
   let offset = 0
+  let consecutiveErrors = 0
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { data } = await createServiceClient()
-      .from('insights')
-      .select('slug, updated_at, region, lang')
-      .eq('status', 'published')
-      .order('updated_at', { ascending: false })
-      .range(offset, offset + 999)
-    if (!data || data.length === 0) break
-    rows.push(...(data as AllInsightRow[]))
-    if (data.length < 1000) break
-    offset += 1000
+    try {
+      const { data, error } = await createSitemapServiceClient()
+        .from('insights')
+        .select('slug, updated_at, region, lang')
+        .eq('status', 'published')
+        .order('id', { ascending: true })
+        .range(offset, offset + 999)
+
+      if (error || !data) {
+        consecutiveErrors++
+        if (rows.length > 0 || consecutiveErrors >= 3) break  // return partial on transient error
+        await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+        continue
+      }
+
+      consecutiveErrors = 0
+      if (data.length === 0) break
+      rows.push(...(data as AllInsightRow[]))
+      if (data.length < 1000) break
+      offset += 1000
+    } catch {
+      consecutiveErrors++
+      if (rows.length > 0 || consecutiveErrors >= 3) break
+      await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+    }
   }
   return rows
 }
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date().toISOString().split('T')[0]
 
   const rows = await fetchAllPublishedInsights()
+
+  // Guard: if DB returned critically few rows, return 503 so CDN doesn't cache
+  // an empty/broken sitemap that would tank AI crawler discovery for hours.
+  if (rows.length < 500) {
+    return new Response('Service temporarily unavailable — DB load high, retry shortly', {
+      status: 503,
+      headers: { 'Retry-After': '120', 'Content-Type': 'text/plain' },
+    })
+  }
 
   const nowMs = Date.now()
   const urls = rows

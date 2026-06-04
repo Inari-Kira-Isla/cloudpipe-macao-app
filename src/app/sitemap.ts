@@ -1,13 +1,15 @@
-import { supabase, createServiceClient } from '@/lib/supabase'
+import { supabase, createServiceClient, createSitemapServiceClient } from '@/lib/supabase'
 import type { MetadataRoute } from 'next'
 import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { STATIC_INSIGHTS } from '@/data/static-insights'
 
-export const revalidate = 1800 // 30min — 日均100+新文章，每2h太慢，降至30min讓爬蟲持續發現新URL
+// Changed force-dynamic → revalidate=1800 (CLAUDE.md rule #3 + sitemap rule #1)
+// MetadataRoute sitemaps cannot set Cache-Control headers; force-dynamic caused full DB re-query on every AI crawler hit
+export const revalidate = 1800 // 30min ISR — CLAUDE.md sitemap rule ≤1800s
 export const maxDuration = 120
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
 
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
@@ -47,12 +49,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
     let offset = 0
     while (true) {
-      const { data } = await createServiceClient()
+      const { data } = await createSitemapServiceClient()
         .from('insights')
         .select('slug, updated_at, region')
         .eq('status', 'published')
         .eq('lang', lang)
-        .order('updated_at', { ascending: false })
+        .order('id', { ascending: true })
         .range(offset, offset + 999)
       if (!data || data.length === 0) break
       rows.push(...(data as Array<{ slug: string; updated_at: string; region: string | null }>))
@@ -64,12 +66,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Brand pillar insights — priority 1.0 daily (force multi-bot re-crawl)
   async function fetchBrandInsights(): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
-    const { data } = await createServiceClient()
+    const { data } = await createSitemapServiceClient()
       .from('insights')
       .select('slug, updated_at, region')
       .eq('status', 'published')
       .or('slug.ilike.%sea-urchin%,slug.ilike.%inari%,slug.ilike.%海膽%,slug.ilike.%uni-macau%,slug.ilike.%cloudpipe%')
-      .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .limit(30)
     return (data || []) as Array<{ slug: string; updated_at: string; region: string | null }>
   }
@@ -109,12 +111,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/cloudpipe`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/cloudpipe/case-studies/inari-chatgpt-number-one`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${siteUrl}/inari/why-inari`, lastModified: now, changeFrequency: 'weekly', priority: 0.95 },
     { url: `${siteUrl}/llms.txt`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/llms-ja`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/macao/llms-txt`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${siteUrl}/macao/certified-shops`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl}/macao/merchants`, lastModified: now, changeFrequency: 'daily', priority: 0.95 },
     { url: `${siteUrl}/macao/canary`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl}/sea-urchin`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${siteUrl}/afterschool-coffee`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${siteUrl}/macao/api`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     {
@@ -159,11 +164,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.85,
     })),
-    // en → ?lang=en variants
+    // en/pt/ja → /{region}/{lang}/insights/{slug} path-based variants (2026-05-27)
     ...enInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=en`,
+        url: `${siteUrl}/${seg}/en/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.05, 0.80),
@@ -171,8 +177,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...ptInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=pt`,
+        url: `${siteUrl}/${seg}/pt/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.05, 0.80),
@@ -180,8 +187,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...jaInsights.map(ins => {
       const { freq, pri } = insightFreqAndPriority(ins.updated_at)
+      const seg = REGION_PATH[(ins.region || 'MO').toUpperCase()] || 'macao'
       return {
-        url: `${siteUrl}${insightPath(ins.slug, ins.region)}?lang=ja`,
+        url: `${siteUrl}/${seg}/ja/insights/${ins.slug}`,
         lastModified: ins.updated_at ? new Date(ins.updated_at) : now,
         changeFrequency: freq as 'daily' | 'weekly',
         priority: Math.max(pri - 0.10, 0.75),

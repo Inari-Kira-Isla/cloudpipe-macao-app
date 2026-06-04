@@ -16,7 +16,7 @@ interface IndexNowPayload {
 }
 
 async function getRecentUrls(): Promise<string[]> {
-  const baseUrl = 'https://cloudpipe.ai';
+  const baseUrl = 'https://cloudpipe-macao-app.vercel.app';
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     console.log('🔔 [CRON] Starting IndexNow notifications...');
 
     const indexNowKey = process.env.INDEXNOW_KEY;
-    const keyLocation = `https://cloudpipe.ai/indexnow-key-${indexNowKey}.txt`;
+    const keyLocation = `https://cloudpipe-macao-app.vercel.app/indexnow-key-${indexNowKey}.txt`;
 
     if (!indexNowKey) {
       console.warn('⚠️ INDEXNOW_KEY not configured');
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     // 構建 IndexNow 請求
     const payload: IndexNowPayload = {
-      host: (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim().replace(/^https?:\/\//, ''),
+      host: (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim().replace(/^https?:\/\//, ''),
       key: indexNowKey,
       keyLocation: keyLocation,
       urlList: recentUrls,

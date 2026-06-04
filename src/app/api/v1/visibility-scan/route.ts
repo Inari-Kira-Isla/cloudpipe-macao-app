@@ -88,7 +88,7 @@ async function fetchPage(url: string, timeout = 15000): Promise<string | null> {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeout)
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'CloudPipe-Visibility-Engine/1.0 (+https://cloudpipe.ai)' },
+      headers: { 'User-Agent': 'CloudPipe-Visibility-Engine/1.0 (+https://cloudpipe-macao-app.vercel.app)' },
       signal: controller.signal,
       redirect: 'follow',
     })

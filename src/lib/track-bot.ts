@@ -65,6 +65,9 @@ export async function trackBotVisit(
     const dateStr = new Date().toISOString().slice(0, 10)
     const referer = (request.headers as Headers).get('referer') || null
 
+    // Derive industry from pageType when path has no structured industry (e.g. API FAQ routes)
+    const industry = pageType === 'api-faq' ? 'insights' : null
+
     const row = {
       bot_name: bot.bot_name,
       bot_owner: bot.bot_owner,
@@ -75,7 +78,7 @@ export async function trackBotVisit(
       ua_raw: ua.slice(0, 500),
       site: 'cloudpipe-macao-app',
       page_type: pageType,
-      industry: null,
+      industry,
       category: null,
       status_code: 200,
     }

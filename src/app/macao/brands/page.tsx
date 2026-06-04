@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const PASSWORD = 'cloudpipe2026'
 const BASE = '/macao/brand'
-const APP_URL = 'https://cloudpipe.ai'
+const APP_URL = 'https://cloudpipe-macao-app.vercel.app'
 
 // ── Design tokens (same as brand detail page) ─────────────────────────────────
 const CP = {

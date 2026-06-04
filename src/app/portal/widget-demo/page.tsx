@@ -53,7 +53,7 @@ export default function WidgetDemoPage() {
       })
       .catch(() => {
         // Fallback hardcode
-        const fallback = `<!-- CloudPipe Brand Chat Widget — 稻荷環球食品 -->\n<script>\n  window.CloudPipeWidget = {\n    "brandSlug": "${DEMO_SLUG}",\n    "brandName": "稻荷環球食品",\n    "primaryColor": "#F5C842",\n    "greeting": "你好！我是稻荷環球食品的 AI 策略顧問。有什麼可以幫你？",\n    "position": "bottom-right"\n  };\n<\/script>\n<script src="https://cloudpipe.ai/widget/brand-chat.js" async defer><\/script>`
+        const fallback = `<!-- CloudPipe Brand Chat Widget — 稻荷環球食品 -->\n<script>\n  window.CloudPipeWidget = {\n    "brandSlug": "${DEMO_SLUG}",\n    "brandName": "稻荷環球食品",\n    "primaryColor": "#F5C842",\n    "greeting": "你好！我是稻荷環球食品的 AI 策略顧問。有什麼可以幫你？",\n    "position": "bottom-right"\n  };\n<\/script>\n<script src="https://cloudpipe-macao-app.vercel.app/widget/brand-chat.js" async defer><\/script>`
         setEmbedHtml(fallback)
       })
       .finally(() => setLoading(false))

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-export const dynamic = 'force-dynamic'
+// Removed `force-dynamic` so Vercel CDN can cache by URL.
+// Freshness is bounded by `s-maxage=120` below; client sends `cache: 'no-store'`
+// so the dashboard "立即重新整理" button still bypasses CDN when needed.
+export const revalidate = 120
+export const maxDuration = 30
 
 const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },
@@ -34,7 +38,13 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const rows = data ?? []
+  // Bug fix: exclude any rows where ua_raw indicates a bot (e.g. PerplexityBot accidentally
+  // inserted if bot-detection missed a UA variant). Only real human referrals should appear.
+  const BOT_UA_RE = /bot|crawler|spider|scraper|perplexitybot|googlebot|gptbot|claudebot|bingbot|yandexbot|applebot|amazonbot|meta-externalagent|facebookbot|bytespider/i
+  const rows = (data ?? []).filter(r => {
+    const ua = r.ua_raw ?? ''
+    return !BOT_UA_RE.test(ua)
+  })
 
   // Aggregate by source
   const bySource: Record<string, { count: number; pages: Record<string, number>; industries: Record<string, number>; latest: string }> = {}
@@ -86,5 +96,7 @@ export async function GET(req: NextRequest) {
       page_type: r.page_type,
       industry: r.industry,
     })),
+  }, {
+    headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
   })
 }

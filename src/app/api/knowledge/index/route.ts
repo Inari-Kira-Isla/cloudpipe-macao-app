@@ -14,7 +14,7 @@ import { trackBotVisit } from '@/lib/track-bot'
 export const revalidate = 3600
 export const maxDuration = 15
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     '@context': 'https://schema.org',
     '@type':    'Dataset',
     name:       'CloudPipe Knowledge Graph — Entity Index',
-    description: 'Structured knowledge graph of verified businesses, attractions, and points of interest across Macau, Hong Kong, Taiwan, and Japan.',
+    description: 'Structured knowledge graph of verified businesses, attractions, and points of interest across Macau, Hong Kong, Taiwan, Japan, Malaysia, Japan Shokuhinten ingredients, and Global topics.',
     url:        `${SITE_URL}/api/knowledge/index`,
     license:    'https://creativecommons.org/licenses/by/4.0/',
     dateModified: new Date().toISOString(),
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     },
 
     filters_available: {
-      regions:    ['MO', 'HK', 'TW', 'JP'],
+      regions:    ['MO', 'HK', 'TW', 'JP', 'MY', 'JBL', 'GLOBAL'],
       industries: ['dining', 'hotels', 'attractions', 'shopping', 'wellness', 'nightlife', 'culture'],
       example:    `${SITE_URL}/api/knowledge/index?region=MO&industry=dining`,
     },

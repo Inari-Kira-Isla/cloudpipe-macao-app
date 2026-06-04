@@ -117,7 +117,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!data) return { title: '找不到分類' }
 
   const { category, industry, totalFaqs } = data
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const title = `${category.name_zh} 常見問題 — ${totalFaqs} 個問答 | 澳門百科`
   const description = `瀏覽澳門 ${category.name_zh} 分類下所有商戶的常見問題，共 ${totalFaqs} 個解答，涵蓋營業時間、地址、價格、預約等資訊。`
 
@@ -142,7 +142,7 @@ export default async function CategoryFaqsPage({ params }: PageProps) {
   if (!data) notFound()
 
   const { industry, category, merchants, faqsByMerchant, featuredFaqsWithMerchant, totalFaqs } = data
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   // Only include merchants that have at least one FAQ
   const merchantsWithFaqs = merchants.filter(m => (faqsByMerchant[m.id] || []).length > 0)

@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { unstable_cache } from 'next/cache'
 
-export const dynamic = 'force-dynamic'
+// Note: avoid `force-dynamic` so Vercel CDN may serve the response;
+// freshness is controlled by the unstable_cache wrapper below.
+export const revalidate = 600 // 10 min ISR-style cache for the response
 
-export const maxDuration = 120
+export const maxDuration = 60
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-let _cache: { data: unknown; ts: number } | null = null
-const CACHE_TTL = 5 * 60 * 1000 // 5 min
 
 const SCHEMA_IMPORTANCE: Record<string, number> = {
   TouristAttraction: 50, LandmarksOrHistoricalBuildings: 50,
@@ -58,14 +58,10 @@ const SCHEMA_TO_INDUSTRY: Record<string, string> = {
   EntertainmentBusiness: 'gaming', BarOrPub: 'nightlife',
 }
 
-export async function GET() {
-  if (_cache && Date.now() - _cache.ts < CACHE_TTL) {
-    return NextResponse.json(_cache.data, {
-      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300' }
-    })
-  }
-
-  try {
+// Cross-instance cache via Vercel Data Cache (survives cold starts).
+// Tagged so we can revalidateTag('routing-baseline') from elsewhere if needed.
+const computeRoutingBaseline = unstable_cache(
+  async () => {
     const { data: cats } = await supabase.from('categories').select('id,slug')
     const catMap: Record<string, string> = {}
     for (const c of (cats || [])) catMap[c.id] = c.slug
@@ -112,7 +108,7 @@ export async function GET() {
       .slice(0, 20)
       .map(([slug, info]) => ({
         slug, ...info,
-        page_url: `https://cloudpipe.ai${info.page_path}`
+        page_url: `https://cloudpipe-macao-app.vercel.app${info.page_path}`
       }))
 
     const merchantsByIndustry: Record<string, number> = {}
@@ -120,23 +116,21 @@ export async function GET() {
       merchantsByIndustry[m.industry] = (merchantsByIndustry[m.industry] || 0) + 1
     }
 
-    const [{ data: insights_raw }, { count: hubCount }] = await Promise.all([
+    // Fetch insights list + hub slug set in parallel.
+    // The previous implementation did 3 queries (insights / count / hubSlugs);
+    // we collapsed it to 2 since we never used `hubCount` in the response.
+    const [{ data: insights_raw }, { data: hubSlugs }] = await Promise.all([
       supabase.from('insights')
         .select('slug,title,related_merchant_slugs,tags')
         .eq('status', 'published').eq('lang', 'zh').limit(1000),
       supabase.from('insights')
-        .select('*', { count: 'exact', head: true })
+        .select('slug')
         .eq('status', 'published').eq('lang', 'zh')
-        .like('body_html', '%answer-hub%'),
+        .like('body_html', '%answer-hub%')
+        .limit(2000),
     ])
     const insights = insights_raw || []
-
-    const { data: hubSlugs } = await supabase.from('insights')
-      .select('slug')
-      .eq('status', 'published').eq('lang', 'zh')
-      .like('body_html', '%answer-hub%')
-      .limit(2000)
-    const hubSet = new Set((hubSlugs || []).map((h: any) => h.slug))
+    const hubSet = new Set((hubSlugs || []).map((h: { slug: string }) => h.slug))
 
     let tierA = 0, tierB = 0, tierC = 0, tierD = 0
     const industryTiers: Record<string, { a: number; b: number; c: number; d: number }> = {}
@@ -185,10 +179,17 @@ export async function GET() {
       merchantVisits: { total: 0, uniqueSlugs: 0, byBot: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; ts: string }[] },
       categoryVisits: { total: 0, byIndustry: {} as Record<string, number>, recentPaths: [] as { path: string; bot: string; industry: string; ts: string }[] },
     }
+    return result
+  },
+  ['routing-baseline-v1'],
+  { revalidate: 600, tags: ['routing-baseline'] }
+)
 
-    _cache = { data: result, ts: Date.now() }
-    return NextResponse.json(result, {
-      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300' }
+export async function GET() {
+  try {
+    const data = await computeRoutingBaseline()
+    return NextResponse.json(data, {
+      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400' }
     })
   } catch (e) {
     console.error('routing-baseline error', e)

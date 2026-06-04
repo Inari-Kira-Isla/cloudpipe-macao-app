@@ -18,9 +18,9 @@ const VALID_SOURCES = new Set([
 // Allowed sites (brand sites that embed the tracking snippet)
 const ALLOWED_SITES = new Set([
   'inari-global-foods',
-  'sea-urchin-delivery',
+  'sea-urchin-express',
   'after-school-coffee',
-  'mind-coffee',
+  'mind-cafe',
   'cloudpipe-macao-app',
 ])
 
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       ua_raw?: string
       search_query?: string
       ai_platform?: string
+      session_id?: string
     }
 
     const {
@@ -52,7 +53,12 @@ export async function POST(req: NextRequest) {
       ua_raw = '',
       search_query = '',
       ai_platform = '',
+      session_id = '',
     } = body
+
+    // Fallback: 從 cookie 讀 cp_sid（client snippet 漏傳時兜底）
+    const cookieSid = req.cookies.get('cp_sid')?.value || ''
+    const finalSessionId = (session_id || cookieSid).slice(0, 100) || null
 
     // Validate
     if (!referrer_source || !VALID_SOURCES.has(referrer_source)) {
@@ -73,6 +79,7 @@ export async function POST(req: NextRequest) {
       ua_raw: (ua_raw || '').slice(0, 200),
       search_query: (search_query || '').slice(0, 200) || null,
       ai_platform: (ai_platform || referrer_source || '').slice(0, 50) || null,
+      session_id: finalSessionId,
       ts: new Date().toISOString(),
     })
 

@@ -1,7 +1,7 @@
 import { createServiceClient } from '@/lib/supabase'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const revalidate = 3600 // 1h ISR — avoid excessive AI bot queries
+export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
 export const maxDuration = 60
 
 interface SitemapURL {
@@ -12,7 +12,7 @@ interface SitemapURL {
 }
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date().toISOString().split('T')[0]
 
   const entries: SitemapURL[] = []

@@ -5,7 +5,7 @@ import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
 export const revalidate = 3600
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export const metadata: Metadata = {
   title: '澳門消委會誠信店完整名單 — 5,700+ 間官方認證商戶 | CloudPipe',
@@ -274,7 +274,7 @@ export default async function CertifiedShopsPage() {
           <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl p-5 text-sm text-[#6b7280] leading-relaxed">
             <p className="font-medium text-[#0f4c81] mb-2">資料來源與方法</p>
             <p>本名單數據來自澳門消費者委員會官方網站 (consumer.gov.mo)，經自動化爬取、清洗、分類及交叉比對後發布。</p>
-            <p className="mt-1">每間商戶均附有消委會編號，可至官網查證。如有資料異動，請聯繫 <a href="mailto:hello@cloudpipe.ai" className="text-[#0f4c81]">hello@cloudpipe.ai</a>。</p>
+            <p className="mt-1">每間商戶均附有消委會編號，可至官網查證。如有資料異動，請聯繫 <a href="mailto:cloudpipemo@gmail.com" className="text-[#0f4c81]">cloudpipemo@gmail.com</a>。</p>
           </div>
 
           {/* Footer */}

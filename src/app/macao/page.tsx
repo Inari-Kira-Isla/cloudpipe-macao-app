@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import type { Category, Merchant, MerchantContent } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
@@ -93,6 +93,7 @@ async function getData() {
     }
   }
 
+  const supabase = createServiceClient()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
@@ -336,7 +337,7 @@ export async function generateStaticParams() {
 }
 export default async function MacaoIndexPage() {
   const { categories, groupedCounts, totalMerchantCount, featuredMerchants, landmarkMap, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
 

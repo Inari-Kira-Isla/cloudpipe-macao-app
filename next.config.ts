@@ -10,6 +10,47 @@ const nextConfig: NextConfig = {
           { key: 'CDN-Cache-Control', value: 'public, max-age=3600' },
         ],
       },
+      // ── Crawler-dashboard read-only stats API: cacheable at CDN ──
+      // These routes are GET-only aggregations that change on the order of minutes.
+      // Wrapping them in CDN cache (s-maxage) eliminates Vercel cold-start latency
+      // on dashboard auto-refreshes. Manual "立即重新整理" still bypasses via no-store.
+      // NOTE: rules are evaluated in declared order, so these specific rules must
+      // appear BEFORE the catch-all `/api/v1/:path*` below.
+      {
+        source: '/api/v1/crawler-stats',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/api/v1/routing-baseline',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, s-maxage=600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/api/v1/ai-referrals',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, s-maxage=120, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/api/v1/faq-conversions',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, s-maxage=120, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/api/v1/merchant-discovery',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=3600' },
+        ],
+      },
       {
         source: '/api/v1/:path*',
         headers: [
@@ -175,6 +216,19 @@ const nextConfig: NextConfig = {
     // to 404 because /macao/insights/ filters by region='MO'.
     // If new non-insight pages are added under a region before their route exists,
     // add targeted redirects here. Do NOT use the catch-all /:path* pattern.
+
+    // ── ?lang= query param → /{region}/{lang}/insights/{slug} (2026-05-27) ──
+    // 301-redirect old query-param URLs so AI crawlers follow to the new path-based routes.
+    for (const region of ['macao', 'hongkong', 'taiwan', 'japan', 'global']) {
+      for (const lang of ['en', 'ja', 'pt']) {
+        redirects.push({
+          source: `/${region}/insights/:slug`,
+          has: [{ type: 'query' as const, key: 'lang', value: lang }],
+          destination: `/${region}/${lang}/insights/:slug`,
+          permanent: true,
+        })
+      }
+    }
 
     return redirects
   },

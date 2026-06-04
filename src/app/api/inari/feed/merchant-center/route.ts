@@ -6,12 +6,12 @@ import { getApprovedCommerceProducts } from '@/lib/commerce-supabase'
 import { buildMerchantCenterFeed, type CommerceProduct, type CommerceBrand } from '@/lib/cloudpipe-commerce'
 import type { InariProduct } from '@/types/inari'
 
-export const revalidate = 7200
+export const dynamic = 'force-dynamic'
 
 const BRAND: CommerceBrand = {
   slug: 'inari-global-foods',
   name: '稻荷環球食品',
-  url: 'https://cloudpipe.io/inari',
+  url: 'https://cloudpipe-macao-app.vercel.app/inari',
   contact_email: 'inariglobal@gmail.com',
   shipping_country: 'MO',
   currency: 'MOP',
@@ -41,7 +41,7 @@ function inariToCommerce(p: InariProduct): CommerceProduct {
       ...(p.origin_detail ? { origin_detail: p.origin_detail } : {}),
       ...(p.unit_weight_g ? { unit_weight_g: p.unit_weight_g } : {}),
     },
-    url: `https://cloudpipe.io/inari/shop/${p.slug}`,
+    url: `https://cloudpipe-macao-app.vercel.app/inari/shop/${p.slug}`,
   }
 }
 

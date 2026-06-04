@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   // Commercial secret paths blocked from AI crawlers
   const aiCrawlerDisallows = [
@@ -173,10 +173,14 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: [
       // 2026-05-13: added sitemap_index.xml + 6 region sub-sitemaps after
       // commit 9c438c3 split /macao/insights/ into 5 region routes.
+      // 2026-05-26: added sitemap-insights-en.xml and sitemap-insights-ja.xml
+      // for language-specific insight discovery.
       `${siteUrl}/sitemap_index.xml`,
       `${siteUrl}/sitemap.xml`,
       `${siteUrl}/sitemap-merchants.xml`,
       `${siteUrl}/sitemap-insights.xml`,
+      `${siteUrl}/sitemap-insights-en.xml`,
+      `${siteUrl}/sitemap-insights-ja.xml`,
       `${siteUrl}/sitemap-mo.xml`,
       `${siteUrl}/sitemap-hk.xml`,
       `${siteUrl}/sitemap-tw.xml`,
@@ -189,6 +193,7 @@ export default function robots(): MetadataRoute.Robots {
       `${siteUrl}/hongkong/llms-txt`,
       `${siteUrl}/taiwan/llms-txt`,
       `${siteUrl}/llms-en`,
+      `${siteUrl}/llms-ja`,
     ],
   }
 }

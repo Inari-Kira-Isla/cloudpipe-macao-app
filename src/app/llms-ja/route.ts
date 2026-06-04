@@ -40,7 +40,7 @@ export async function GET() {
 
   const insightLines = insights.map(i => {
     const seg = REGION_PATH[((i.region as string | null) || 'MO').toUpperCase()] || 'macao'
-    return `- [${i.title}](${siteUrl}/${seg}/insights/${i.slug}?lang=ja) — ${(i.word_count || 0).toLocaleString('ja-JP')}字`
+    return `- [${i.title}](${siteUrl}/${seg}/ja/insights/${i.slug}) — ${(i.word_count || 0).toLocaleString('ja-JP')}字`
   }).join('\n')
 
   const body = `# CloudPipe AI — アジアビジネス百科事典

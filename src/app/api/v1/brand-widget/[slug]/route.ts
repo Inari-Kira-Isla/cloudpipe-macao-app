@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const WIDGET_ORIGIN = 'https://cloudpipe.ai'
+const WIDGET_ORIGIN = 'https://cloudpipe-macao-app.vercel.app'
 
 /** Known brand slugs that may not yet have a brand_profiles row */
 const KNOWN_BRAND_SLUGS: Record<string, { brandName: string; primaryColor?: string; greeting?: string }> = {

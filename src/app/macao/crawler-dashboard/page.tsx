@@ -16,6 +16,9 @@ interface Summary {
   page_types: Record<string, number>
   sites: Record<string, number>
   daily?: { date: string; total: number }[]
+  generated_at?: string
+  is_stale?: boolean
+  x_check_7d?: number | null
 }
 interface CacheHealth {
   source_status: 'ok' | 'stale' | 'degraded' | 'backoff' | string
@@ -191,8 +194,8 @@ export default function CrawlerDashboard() {
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
-  const [aiRefLoading, setAiRefLoading] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
 
@@ -200,13 +203,15 @@ export default function CrawlerDashboard() {
 
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
-  const safeFetch = async <T,>(url: string, fallback: T): Promise<T> => {
+  // `forceFresh=true` bypasses the browser/CDN cache (used by "立即重新整理" button).
+  // Default mode uses `default` so the CDN cache (s-maxage on the route) can serve
+  // a fast hit, avoiding Vercel cold-start latency on auto-refresh and tab navigations.
+  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000, forceFresh = false): Promise<T> => {
     const controller = new AbortController()
-    const timeout = window.setTimeout(() => controller.abort(), 9000)
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
     try {
       const res = await fetch(url, {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+        cache: forceFresh ? 'no-store' : 'default',
         signal: controller.signal,
       })
       if (!res.ok) return fallback
@@ -217,20 +222,27 @@ export default function CrawlerDashboard() {
     finally { window.clearTimeout(timeout) }
   }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceFresh = false) => {
     setLoading(true)
     setError(null)
     try {
-      const [sum, sw] = await Promise.all([
-        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null),
-        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null),
+      // Run all 4 fetches in parallel; health (GitHub Pages) gets a shorter timeout
+      // so a blocked/slow external host never delays the main data display.
+      // 20s timeout accommodates Vercel cold starts (can take 12-15s on first request).
+      // ai-referrals is also fetched here so a `days` change runs a single parallel batch
+      // (was previously a separate effect, doubling the cold-start cost on day toggles).
+      const [sum, sw, health, refs] = await Promise.all([
+        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 20000, forceFresh),
+        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 20000, forceFresh),
+        safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
+        safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null, 20000, forceFresh),
       ])
-      const health = await safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null)
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
+      setAiReferrals(refs)
       setLastUpdated(new Date())
-      if (!sum) setError('無法載入數據，API 可能超時。請縮短時間範圍後重試。')
+      if (!sum) setError('數據載入中，Vercel 冷啟動需時約 15 秒，請稍候再按「立即重新整理」。')
     } catch (e) {
       console.error(e)
       setError('載入失敗，請重試。')
@@ -238,21 +250,27 @@ export default function CrawlerDashboard() {
     setLoading(false)
   }, [days])
 
+  // Explicit refresh: bust server-side cache then force-reload client data
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      await fetch(`/api/v1/crawler-stats/refresh?token=cloudpipe2026`, { method: 'POST' })
+      await fetchData(true)
+    } catch (e) {
+      console.error('refresh error', e)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [fetchData])
+
   useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    const interval = setInterval(() => { fetchData() }, 30000)
+    // Auto-refresh every 60s (was 30s — too aggressive given route s-maxage=120).
+    // Uses default cache so CDN can serve hits sub-second.
+    const interval = setInterval(() => { fetchData() }, 60000)
     return () => clearInterval(interval)
   }, [fetchData])
-
-  const loadAiReferrals = async () => {
-    setAiRefLoading(true)
-    const data = await safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null)
-    setAiReferrals(data)
-    setAiRefLoading(false)
-  }
-
-  useEffect(() => { loadAiReferrals() }, [days]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRouting = async () => {
     if (routing) return
@@ -328,15 +346,66 @@ export default function CrawlerDashboard() {
     ...INDUSTRIES.map(i => i.slug),
     'insights', 'services', 'entertainment', 'tourism', 'culture', 'merchants', 'lifestyle',
   ])
+
+  // Phase 0 frontend-only whitelist (Agent 20 hound review approved, CEO 方案 A)
+  // 分流 NULL/未識別 industry 為 4 bucket：navigation root / listing / aux / meta
+  // 解 120K 偽「未分類」誤導性 dashboard count
+  // Agent 15 完整 MV 重建延 D+7 Phase 2 再評
+  const NAV_ROOTS = new Set(['/macao', '/hongkong', '/taiwan', '/japan', '/malaysia',
+    'macao', 'hongkong', 'taiwan', 'japan', 'malaysia',
+    'nav_root', 'navigation', 'home', 'index'])
+  const LISTING_KEYWORDS = ['listing', 'list', 'category', 'directory']
+  const AUX_KEYWORDS = ['api', 'sitemap', 'robots', 'llms', '_next', 'feed', 'rss']
+  const META_KEYWORDS = ['favicon', 'manifest', 'well-known', 'icon', 'apple-touch']
+
+  const classifyUnknownIndustry = (key: string): 'nav_root' | 'listing' | 'aux' | 'meta' | 'uncategorized' => {
+    if (!key) return 'uncategorized'
+    const lower = key.toLowerCase()
+    if (NAV_ROOTS.has(lower) || NAV_ROOTS.has(key)) return 'nav_root'
+    // path-style key (starts with /)
+    if (lower.startsWith('/')) {
+      if (AUX_KEYWORDS.some(k => lower.includes(k))) return 'aux'
+      if (META_KEYWORDS.some(k => lower.includes(k))) return 'meta'
+      // /macao/dining /macao/attractions etc → listing
+      if (/^\/[a-z]+\/(dining|attractions|shopping|hotels|wellness|merchants|insights)$/.test(lower)) return 'listing'
+      // /macao /hongkong /taiwan etc (single segment) → nav_root
+      if (/^\/[a-z]+$/.test(lower)) return 'nav_root'
+    }
+    if (AUX_KEYWORDS.some(k => lower.includes(k))) return 'aux'
+    if (META_KEYWORDS.some(k => lower.includes(k))) return 'meta'
+    if (LISTING_KEYWORDS.some(k => lower.includes(k))) return 'listing'
+    return 'uncategorized'
+  }
+
   const filteredIndustries = summary?.industries
     ? (() => {
         const valid: Record<string, number> = {}
-        let unknownSum = 0
-        for (const [k, v] of Object.entries(summary.industries)) {
-          if (VALID_IND.has(k)) valid[k] = (valid[k] || 0) + (Number(v) || 0)
-          else unknownSum += Number(v) || 0
+        const buckets: Record<string, number> = {
+          '🧭 導航根頁': 0,
+          '📋 列表頁': 0,
+          '⚙️ 輔助端點': 0,
+          '🗂️ Meta 檔案': 0,
+          '未分類': 0,
         }
-        if (unknownSum > 0) valid['未分類'] = unknownSum
+        const BUCKET_KEY: Record<string, keyof typeof buckets> = {
+          nav_root: '🧭 導航根頁',
+          listing: '📋 列表頁',
+          aux: '⚙️ 輔助端點',
+          meta: '🗂️ Meta 檔案',
+          uncategorized: '未分類',
+        }
+        for (const [k, v] of Object.entries(summary.industries)) {
+          const n = Number(v) || 0
+          if (VALID_IND.has(k)) {
+            valid[k] = (valid[k] || 0) + n
+          } else {
+            const bucket = BUCKET_KEY[classifyUnknownIndustry(k)]
+            buckets[bucket] += n
+          }
+        }
+        for (const [bk, bv] of Object.entries(buckets)) {
+          if (bv > 0) valid[bk] = bv
+        }
         return valid
       })()
     : {}
@@ -399,7 +468,7 @@ export default function CrawlerDashboard() {
               最後更新：{lastUpdated.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           )}
-          <button onClick={fetchData} disabled={loading} style={{
+          <button onClick={handleManualRefresh} disabled={loading} style={{
             padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd',
             cursor: loading ? 'wait' : 'pointer', background: loading ? '#f5f5f5' : '#fff',
             fontSize: 13, opacity: loading ? 0.6 : 1, transition: 'all 0.2s', whiteSpace: 'nowrap'
@@ -422,16 +491,36 @@ export default function CrawlerDashboard() {
         </div>
       )}
 
+      {summary?.is_stale && days === 1 && (
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>
+          ⚠️ <strong>pg_cron 未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 08:00 HKT 之前）。今日數據可能不準確，請檢查 Supabase pg_cron 排程。
+        </div>
+      )}
+
+      {summary?.generated_at && days === 1 && !summary.is_stale && (
+        <div style={{ marginBottom: 12, fontSize: 12, color: '#888' }}>
+          數據從 <strong>08:00 HKT</strong> 起計（UTC 凌晨），快取更新於 {
+            new Date(summary.generated_at).toLocaleString('zh-TW', { timeZone: 'Asia/Hong_Kong', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          } HKT
+          {summary.x_check_7d != null && (
+            <span style={{ marginLeft: 12, color: summary.total_visits <= summary.x_check_7d ? '#10a37f' : '#ef4444' }}>
+              （7日總計 {summary.x_check_7d.toLocaleString()}，今日 {summary.total_visits.toLocaleString()}
+              {summary.total_visits > summary.x_check_7d ? ' — 今日異常高！' : ''}）
+            </span>
+          )}
+        </div>
+      )}
+
       {summary && !loading && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
             {[
-              { label: '總訪問', value: summary.total_visits, color: '#111' },
-              { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f' },
-              { label: 'Sessions', value: summary.unique_sessions, color: '#4285f4' },
-              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900' },
+              { label: '總訪問', value: summary.total_visits, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）' },
+              { label: 'AI Bot 種類', value: summary.unique_bots, color: '#10a37f', tooltip: '不同 bot owner 的數量' },
+              { label: 'Bot Crawl Sessions', value: summary.unique_sessions, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）' },
+              { label: '追蹤站點', value: Object.keys(summary.sites || {}).length, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數' },
             ].map(card => (
-              <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee' }}>
+              <div key={card.label} title={card.tooltip} style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee', cursor: 'help' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                 <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
               </div>
@@ -439,7 +528,12 @@ export default function CrawlerDashboard() {
           </div>
 
           {(() => {
-            const llmBots = new Set(['OpenAI', 'Anthropic', 'Google', 'Microsoft', 'Perplexity', 'Meta', 'You.com', 'Cohere', 'Apple', 'ByteDance', 'Amazon', 'Baidu', 'Yandex'])
+            // 收窄 llmBots 至真正的 LLM owners：OpenAI/Anthropic/Perplexity/Google(Google-Extended)/Meta/Microsoft(Copilot)/HeadlessFetcher
+            // 移除非 LLM 的搜尋引擎/雲服務爬蟲：Yandex(俄羅斯搜尋)、Amazon(雲服務)、Apple(Applebot 通用)、ByteDance、Baidu、You.com、Cohere
+            // 注意：owner 只到 owner 層級，Google 同時包含 Googlebot(search) + Google-Extended(LLM)；Microsoft 同時包含 BingBot(search) + Copilot
+            // HeadlessFetcher 為 Perplexity 等 LLM 客戶端的 headless browser fetcher（commit 6e81f19 確認）
+            // 此處保留 Google + Microsoft，與診斷報告 ~66.5% 預期一致
+            const llmBots = new Set(['OpenAI', 'Anthropic', 'Perplexity', 'Google', 'Meta', 'Microsoft', 'HeadlessFetcher'])
             const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
             const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
@@ -447,40 +541,40 @@ export default function CrawlerDashboard() {
             }, 0)
             const llmRatio = llmSampleCount / botSampleTotal
             const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))
-            const organicVisits = (summary.total_visits || 0) - llmVisits
+            const otherBotVisits = (summary.total_visits || 0) - llmVisits
             const llmPct = (llmRatio * 100).toFixed(1)
-            const organicPct = ((1 - llmRatio) * 100).toFixed(1)
+            const otherPct = ((1 - llmRatio) * 100).toFixed(1)
             return (
               <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9' }}>
-                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Referral</div>
+                <div title="LLM 爬蟲流量占比（OpenAI / Anthropic / Perplexity / Google-Extended / Meta / Microsoft Copilot）" style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9', cursor: 'help' }}>
+                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Bot 流量</div>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#1976d2' }}>{llmPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits} / {summary.total_visits} visits</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
                 </div>
-                <div style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784' }}>
-                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 Organic Traffic</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{organicPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{organicVisits} / {summary.total_visits} visits</div>
+                <div title="其他爬蟲（搜尋引擎/雲服務）：Yandex / Amazon / Apple / ByteDance 等。注意：本卡 100% 為 bot 流量，因 middleware 只記錄 bot 訪問；真人流量請見下方「AI 推介真人流量」" style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784', cursor: 'help' }}>
+                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 其他 Bot 流量</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{otherPct}%</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{otherBotVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
                 </div>
               </div>
             )
           })()}
 
-          <div style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden' }}>
+          <div title="從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶（來自 ai_referrals 表，獨立於上方 Sessions/總訪問 的 crawler_visits 表）" style={{ marginBottom: 24, background: '#fff', borderRadius: 12, border: '2px solid #20b2aa22', overflow: 'hidden', cursor: 'help' }}>
             <div style={{ padding: '14px 18px', background: 'linear-gradient(90deg,#20b2aa11,#4285f411)', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 20 }}>🎯</span>
               <div>
                 <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>AI 推介真人流量</span>
-                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶</span>
+                <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>從 Perplexity / ChatGPT / Claude 等 AI 平台點擊進入的真實用戶（來自 ai_referrals 表）</span>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 700, color: '#20b2aa' }}>
-                {aiRefLoading ? '…' : (aiReferrals?.total ?? 0)}
+                {loading ? '…' : (aiReferrals?.total ?? 0)}
               </span>
             </div>
 
-            {aiRefLoading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
+            {loading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
 
-            {!aiRefLoading && aiReferrals && (
+            {!loading && aiReferrals && (
               <div style={{ padding: '14px 18px' }}>
                 {aiReferrals.total === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>
@@ -589,17 +683,21 @@ export default function CrawlerDashboard() {
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
                 {Object.entries(filteredIndustries)
                   .sort((a, b) => b[1] - a[1])
-                  .map(([ind, count]) => (
-                    <div key={ind} style={{ marginBottom: 8 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                        <span style={{ color: ind === '未分類' ? '#aaa' : undefined }}>{ind}</span>
-                        <span style={{ fontWeight: 600, color: ind === '未分類' ? '#aaa' : undefined }}>{count}</span>
+                  .map(([ind, count]) => {
+                    // Phase 0: nav/listing/aux/meta 同 未分類 共用淡色 styling，表示非真實 industry
+                    const isSystemBucket = ind === '未分類' || ind.startsWith('🧭') || ind.startsWith('📋') || ind.startsWith('⚙️') || ind.startsWith('🗂️')
+                    return (
+                      <div key={ind} style={{ marginBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                          <span style={{ color: isSystemBucket ? '#aaa' : undefined }}>{ind}</span>
+                          <span style={{ fontWeight: 600, color: isSystemBucket ? '#aaa' : undefined }}>{count}</span>
+                        </div>
+                        <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
+                          <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: isSystemBucket ? '#ccc' : '#4285f4' }} />
+                        </div>
                       </div>
-                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{ width: `${(count / maxInd) * 100}%`, height: '100%', borderRadius: 4, background: ind === '未分類' ? '#ccc' : '#4285f4' }} />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 {Object.keys(filteredIndustries).length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>}
               </div>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', gridColumn: '1 / -1' }}>
@@ -750,7 +848,7 @@ export default function CrawlerDashboard() {
                         </div>
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
                           {formatTime(step.ts)}
-                          {step.referer && <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe.ai', '')}</code></span>}
+                          {step.referer && <span> ← <code style={{ color: '#aaa' }}>{step.referer.replace('https://cloudpipe-macao-app.vercel.app', '')}</code></span>}
                         </div>
                       </div>
                     ))}

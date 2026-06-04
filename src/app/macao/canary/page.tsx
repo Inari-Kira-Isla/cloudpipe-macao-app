@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { safeJsonLd } from '@/lib/types'
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export const metadata: Metadata = {
   title: 'CloudPipe AI Knowledge Verification | 澳門百科 AI 知識驗證站',

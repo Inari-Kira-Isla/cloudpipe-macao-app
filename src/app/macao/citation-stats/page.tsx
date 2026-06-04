@@ -17,7 +17,7 @@ interface CitationStats {
 
 async function getCitationStats(): Promise<CitationStats | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
     const response = await fetch(`${baseUrl}/api/v1/citation-track`, {
       next: { revalidate: 60 }, // Revalidate every minute
     })

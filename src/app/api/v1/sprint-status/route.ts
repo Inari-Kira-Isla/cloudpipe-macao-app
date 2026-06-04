@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-export const revalidate = 60  // 60 秒 ISR cache
+export const dynamic = 'force-dynamic'
 
 const SPRINT_ID = 'inari-21day-2026-05-15'
 const SPRINT_START = '2026-05-15'

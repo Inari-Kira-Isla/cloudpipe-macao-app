@@ -13,17 +13,22 @@ import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
 // NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
 // Lang switching is handled client-side via LangAwareContent + useSearchParams().
+// FIX 2026-06-04: 移除 `dynamic = 'force-static'` — 與 revalidate 共存會強制只 build 已知 slug，
+// 導致 24 日 SSG/DB desync（4 旗艦 + 過去新 insight 全部 0 URL 200 OK）。
+// 改用 dynamicParams=true（Next.js 預設）+ revalidate 86400 → on-demand SSG + 24h ISR cache。
 export const revalidate = 86400
-export const fetchCache = 'default-cache'
-// Force ISR — prevent any dynamic API from accidentally opting this page out of Edge Cache
-export const dynamic = 'force-static'
+// FIX 2026-06-04: `fetchCache='default-cache'` 會將 Supabase 內部 fetch() 結果 cache 24h，
+// 導致新發布 insight 即使 DB 存在仍永遠 404（fetch cache hit 舊空 response）。
+// 改 `force-no-store` 令 Supabase 每次重新查；route-level ISR (revalidate=86400) 仍保留。
+export const fetchCache = 'force-no-store'
+export const dynamicParams = true
 
 interface PageProps {
   params: Promise<{ slug: string }>
   // searchParams intentionally omitted — reading it forces dynamic rendering
 }
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
 type Lang = (typeof VALID_LANGS)[number]
@@ -285,7 +290,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   for (const al of availableLangs) {
     const url = al === 'zh'
       ? `${siteUrl}/macao/insights/${slug}`
-      : `${siteUrl}/macao/insights/${slug}?lang=${al}`
+      : `${siteUrl}/macao/${al}/insights/${slug}`
     alternates[LANG_CONFIG[al].hreflang] = url
   }
 
@@ -542,7 +547,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
   function langUrl(targetLang: Lang) {
     return targetLang === 'zh'
       ? `/macao/insights/${slug}`
-      : `/macao/insights/${slug}?lang=${targetLang}`
+      : `/macao/${targetLang}/insights/${slug}`
   }
 
   return (

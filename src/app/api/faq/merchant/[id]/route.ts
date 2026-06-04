@@ -13,7 +13,7 @@ import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 export const revalidate = 7200 // 2h - reduce ISR writes
 export const maxDuration = 15
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe.ai').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export async function GET(
   _req: Request,
