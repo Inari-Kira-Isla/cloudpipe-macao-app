@@ -15,8 +15,10 @@ import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
 // Lang switching is handled client-side via LangAwareContent + useSearchParams().
 export const revalidate = 86400
 export const fetchCache = 'default-cache'
-// Force ISR — prevent any dynamic API from accidentally opting this page out of Edge Cache
-export const dynamic = 'force-static'
+// 2026-06-04 hotfix: 移除 `dynamic = 'force-static'`，原本配合 `revalidate` 但缺
+// `generateStaticParams` → 新 INSERT 嘅 insight slug 永遠唔出現喺 build manifest → 永 404。
+// 改用 ISR (revalidate) + dynamicParams=true：新 slug 第一個 request 觸發 SSR 並 cache 86400s。
+export const dynamicParams = true
 
 interface PageProps {
   params: Promise<{ slug: string }>
