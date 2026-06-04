@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { INDUSTRIES } from '@/lib/industries'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+
+gsap.registerPlugin(useGSAP)
 
 interface BotInfo { count: number; owner: string }
 interface Summary {
@@ -166,41 +170,34 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
 // ── GSAP number counter hook ──────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1.2, decimals = 0): string {
   const [display, setDisplay] = useState('0')
-  const prev = useRef(0)
+  const tweenRef = useRef<gsap.core.Tween | null>(null)
+  const objRef = useRef({ value: 0 })
   useEffect(() => {
-    if (typeof window === 'undefined' || target === 0) { setDisplay('0'); return }
-    const start = prev.current
-    prev.current = target
-    const startTime = performance.now()
-    const fmt = (n: number) => decimals > 0
-      ? n.toFixed(decimals)
-      : Math.round(n).toLocaleString()
-    let raf: number
-    const step = (now: number) => {
-      const elapsed = Math.min((now - startTime) / (duration * 1000), 1)
-      // ease out cubic
-      const eased = 1 - Math.pow(1 - elapsed, 3)
-      setDisplay(fmt(start + (target - start) * eased))
-      if (elapsed < 1) raf = requestAnimationFrame(step)
-    }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
+    if (typeof window === 'undefined') return
+    tweenRef.current?.kill()
+    const fmt = (n: number) => decimals > 0 ? n.toFixed(decimals) : Math.round(n).toLocaleString()
+    if (target === 0) { setDisplay('0'); return }
+    tweenRef.current = gsap.to(objRef.current, {
+      value: target,
+      duration,
+      ease: 'power3.out',
+      onUpdate: () => setDisplay(fmt(objRef.current.value)),
+      onComplete: () => setDisplay(fmt(target)),
+    })
+    return () => { tweenRef.current?.kill() }
   }, [target, duration, decimals])
   return display
 }
 
-// ── Animated bar component ────────────────────────────────────────────────────
+// ── Animated bar component (GSAP) ────────────────────────────────────────────
 function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; height?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.width = '0%'
-    const raf = requestAnimationFrame(() => {
-      el.style.transition = `width 0.8s cubic-bezier(0.16,1,0.3,1)`
-      el.style.width = `${Math.min(pct, 100)}%`
-    })
-    return () => cancelAnimationFrame(raf)
+    if (!ref.current) return
+    gsap.fromTo(ref.current,
+      { width: '0%' },
+      { width: `${Math.min(pct, 100)}%`, duration: 0.9, ease: 'power3.out' }
+    )
   }, [pct])
   return (
     <div style={{ background: '#e5e5e5', borderRadius: 4, height, overflow: 'hidden' }}>
@@ -209,20 +206,17 @@ function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; heigh
   )
 }
 
-// ── Fade-in card wrapper ──────────────────────────────────────────────────────
+// ── Fade-in card wrapper (GSAP) ──────────────────────────────────────────────
 function FadeCard({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.opacity = '0'
-    el.style.transform = 'translateY(16px)'
-    const t = setTimeout(() => {
-      el.style.transition = `opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)`
-      el.style.opacity = '1'
-      el.style.transform = 'translateY(0)'
-    }, delay)
-    return () => clearTimeout(t)
+    if (!ref.current) return
+    gsap.from(ref.current, {
+      y: 20, opacity: 0, duration: 0.6,
+      delay: delay / 1000,
+      ease: 'power3.out',
+      clearProps: 'all',
+    })
   }, [delay])
   return <div ref={ref} style={style}>{children}</div>
 }
@@ -264,6 +258,9 @@ export default function CrawlerDashboard() {
   const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
 
   const [error, setError] = useState<string | null>(null)
+
+  const tabContentRef = useRef<HTMLDivElement>(null)
+  const overviewRef   = useRef<HTMLDivElement>(null)
 
   const googleSheetUrl = process.env.NEXT_PUBLIC_INSIGHTS_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1example/edit'
 
@@ -335,6 +332,28 @@ export default function CrawlerDashboard() {
     const interval = setInterval(() => { fetchData() }, 60000)
     return () => clearInterval(interval)
   }, [fetchData])
+
+  // Tab crossfade — fade+slide up when switching tabs
+  useEffect(() => {
+    if (!tabContentRef.current) return
+    gsap.fromTo(tabContentRef.current,
+      { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }
+    )
+  }, [tab])
+
+  // Bot + industry stagger when overview data loads
+  useGSAP(() => {
+    if (tab !== 'overview' || !overviewRef.current) return
+    const botRows = overviewRef.current.querySelectorAll('.bot-row')
+    const indRows = overviewRef.current.querySelectorAll('.industry-row')
+    if (botRows.length) {
+      gsap.from(botRows, { x: -16, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'power3.out', clearProps: 'all' })
+    }
+    if (indRows.length) {
+      gsap.from(indRows, { x: -16, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'power3.out', delay: 0.1, clearProps: 'all' })
+    }
+  }, { dependencies: [summary, tab] })
 
   const loadRouting = async () => {
     if (routing) return
@@ -732,14 +751,15 @@ export default function CrawlerDashboard() {
             ))}
           </div>
 
+          <div ref={tabContentRef}>
           {tab === 'overview' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div ref={overviewRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI Bot 訪問量</h3>
                 {Object.entries(summary.bots)
                   .sort((a, b) => b[1].count - a[1].count)
                   .map(([name, info]) => (
-                    <div key={name} style={{ marginBottom: 8 }}>
+                    <div key={name} className="bot-row" style={{ marginBottom: 8 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                         <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
                         <span style={{ fontWeight: 600 }}>{info.count}</span>
@@ -756,7 +776,7 @@ export default function CrawlerDashboard() {
                     // Phase 0: nav/listing/aux/meta 同 未分類 共用淡色 styling，表示非真實 industry
                     const isSystemBucket = ind === '未分類' || ind.startsWith('🧭') || ind.startsWith('📋') || ind.startsWith('⚙️') || ind.startsWith('🗂️')
                     return (
-                      <div key={ind} style={{ marginBottom: 8 }}>
+                      <div key={ind} className="industry-row" style={{ marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                           <span style={{ color: isSystemBucket ? '#aaa' : undefined }}>{ind}</span>
                           <span style={{ fontWeight: 600, color: isSystemBucket ? '#aaa' : undefined }}>{count}</span>
@@ -1219,6 +1239,7 @@ export default function CrawlerDashboard() {
               )}
             </div>
           )}
+          </div>
         </>
       )}
 
