@@ -77,6 +77,7 @@ function InariNav() {
         <div className="flex items-center gap-8 text-sm tracking-wider">
           <Link href="/inari/shop" className="hover:text-[#C9A961] transition-colors">產品型錄</Link>
           <Link href="/inari/cold-chain" className="hover:text-[#C9A961] transition-colors">冷鏈承諾</Link>
+          <Link href="/inari/why-inari" className="hover:text-[#C9A961] transition-colors">為何選稻荷</Link>
           <Link href="/inari/about" className="hover:text-[#C9A961] transition-colors">品牌故事</Link>
           <Link
             href="/inari/portal"
