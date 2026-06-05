@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next'
 
+export const revalidate = 0  // always regenerate; prevents Vercel Edge caching stale robots.txt
+
 export default function robots(): MetadataRoute.Robots {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
