@@ -342,18 +342,14 @@ export default function CrawlerDashboard() {
     )
   }, [tab])
 
-  // Bot + industry stagger when overview data loads
+  // Universal row stagger — fires for every tab when content or tab changes
   useGSAP(() => {
-    if (tab !== 'overview' || !overviewRef.current) return
-    const botRows = overviewRef.current.querySelectorAll('.bot-row')
-    const indRows = overviewRef.current.querySelectorAll('.industry-row')
-    if (botRows.length) {
-      gsap.from(botRows, { x: -16, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'power3.out', clearProps: 'all' })
+    if (!tabContentRef.current) return
+    const rows = tabContentRef.current.querySelectorAll('.gsap-row')
+    if (rows.length) {
+      gsap.from(rows, { x: -16, opacity: 0, duration: 0.45, stagger: 0.04, ease: 'power3.out', clearProps: 'all' })
     }
-    if (indRows.length) {
-      gsap.from(indRows, { x: -16, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'power3.out', delay: 0.1, clearProps: 'all' })
-    }
-  }, { dependencies: [summary, tab] })
+  }, { dependencies: [summary, spiderWeb, pages, sessions, routing, discovery, faqConversions, tab] })
 
   const loadRouting = async () => {
     if (routing) return
@@ -427,6 +423,31 @@ export default function CrawlerDashboard() {
   const sessionsDisplay    = useCountUp(summary?.unique_sessions ?? 0)
   const sitesDisplay       = useCountUp(summary ? Object.keys(summary.sites || {}).length : 0)
   const aiRefTotalDisplay  = useCountUp(aiReferrals?.total ?? 0)
+  // Spider-web
+  const swSitesDisplay    = useCountUp(spiderWeb?.sites.length ?? 0)
+  const swSessionsDisplay = useCountUp(spiderWeb?.cross_site_sessions ?? 0)
+  const swFlowsDisplay    = useCountUp(spiderWeb?.flows.length ?? 0)
+  // Routing
+  const routingTierADisplay = useCountUp(routing?.tiers?.A ?? 0)
+  const routingTierBDisplay = useCountUp(routing?.tiers?.B ?? 0)
+  const routingTierCDisplay = useCountUp(routing?.tiers?.C ?? 0)
+  const routingTierDDisplay = useCountUp(routing?.tiers?.D ?? 0)
+  const routingMerchDisplay = useCountUp(routing?.merchantVisits?.total ?? 0)
+  const routingCatDisplay   = useCountUp(routing?.categoryVisits?.total ?? 0)
+  // Merchant discovery
+  const discTrackedDisplay  = useCountUp(discovery?.summary?.totalTracked ?? 0)
+  const discCrawledDisplay  = useCountUp(discovery?.summary?.crawledByAI ?? 0)
+  const discCoveredDisplay  = useCountUp(discovery?.summary?.insightCovered ?? 0)
+  const discReadyDisplay    = useCountUp(discovery?.summary?.aiReady ?? 0)
+  const discNearDisplay     = useCountUp(discovery?.summary?.nearReady ?? 0)
+  const discGapDisplay      = useCountUp(discovery?.summary?.coverageGap ?? 0)
+  const discTodayVDisplay   = useCountUp(discovery?.today?.totalVisits ?? 0)
+  const discTodayMDisplay   = useCountUp(discovery?.today?.uniqueMerchants ?? 0)
+  const discTodayBDisplay   = useCountUp(discovery?.today?.uniqueBots ?? 0)
+  // FAQ conversion
+  const faqTotalDisplay2   = useCountUp(faqConversions?.total ?? 0)
+  const faqTodayDisplay    = useCountUp(faqConversions?.today ?? 0)
+  const faqMerchDisplay2   = useCountUp(faqConversions?.topMerchants?.length ?? 0)
 
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
@@ -759,7 +780,7 @@ export default function CrawlerDashboard() {
                 {Object.entries(summary.bots)
                   .sort((a, b) => b[1].count - a[1].count)
                   .map(([name, info]) => (
-                    <div key={name} className="bot-row" style={{ marginBottom: 8 }}>
+                    <div key={name} className="gsap-row" style={{ marginBottom: 8 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                         <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
                         <span style={{ fontWeight: 600 }}>{info.count}</span>
@@ -776,7 +797,7 @@ export default function CrawlerDashboard() {
                     // Phase 0: nav/listing/aux/meta 同 未分類 共用淡色 styling，表示非真實 industry
                     const isSystemBucket = ind === '未分類' || ind.startsWith('🧭') || ind.startsWith('📋') || ind.startsWith('⚙️') || ind.startsWith('🗂️')
                     return (
-                      <div key={ind} className="industry-row" style={{ marginBottom: 8 }}>
+                      <div key={ind} className="gsap-row" style={{ marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                           <span style={{ color: isSystemBucket ? '#aaa' : undefined }}>{ind}</span>
                           <span style={{ fontWeight: 600, color: isSystemBucket ? '#aaa' : undefined }}>{count}</span>
@@ -809,14 +830,14 @@ export default function CrawlerDashboard() {
               {pagesLoading && <p style={{ color: '#999', fontSize: 13 }}>載入頁面數據中...</p>}
               {!pagesLoading && pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
               {pages.map((p, i) => (
-                <div key={p.path} style={{ padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none' }}>
+                <div key={p.path} className="gsap-row" style={{ padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <code style={{ fontSize: 13, color: '#111', wordBreak: 'break-all' }}>{p.path}</code>
                     <span style={{ fontWeight: 700, fontSize: 15, marginLeft: 12, whiteSpace: 'nowrap' }}>{p.visits}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <div style={{ background: '#e5e5e5', borderRadius: 4, height: 4, flex: 1 }}>
-                      <div style={{ width: `${(p.visits / maxPage) * 100}%`, height: '100%', borderRadius: 4, background: '#10a37f' }} />
+                    <div style={{ flex: 1 }}>
+                      <AnimBar pct={(p.visits / maxPage) * 100} color="#10a37f" height={4} />
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {p.bots.map(b => (
@@ -833,15 +854,15 @@ export default function CrawlerDashboard() {
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
                 <div style={{ background: '#f0f7ff', borderRadius: 10, padding: '16px 14px', border: '1px solid #c8ddf5' }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#4285f4' }}>{spiderWeb.sites.length}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#4285f4' }}>{swSitesDisplay}</div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>追蹤站點</div>
                 </div>
                 <div style={{ background: '#f0fff4', borderRadius: 10, padding: '16px 14px', border: '1px solid #c8f5d5' }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#10a37f' }}>{spiderWeb.cross_site_sessions}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#10a37f' }}>{swSessionsDisplay}</div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>跨站 Sessions</div>
                 </div>
                 <div style={{ background: '#fff8f0', borderRadius: 10, padding: '16px 14px', border: '1px solid #f5dfc8' }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#ff9900' }}>{spiderWeb.flows.length}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#ff9900' }}>{swFlowsDisplay}</div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>跨站流向</div>
                 </div>
               </div>
@@ -850,14 +871,12 @@ export default function CrawlerDashboard() {
                 {spiderWeb.sites.map(s => {
                   const maxSite = Math.max(...spiderWeb.sites.map(x => x.total), 1)
                   return (
-                    <div key={s.site} style={{ marginBottom: 10 }}>
+                    <div key={s.site} className="gsap-row" style={{ marginBottom: 10 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                         <span><strong>{s.site}</strong>{s.spider_web > 0 && <span style={{ fontSize: 10, background: '#e8f5e9', color: '#2e7d32', padding: '1px 5px', borderRadius: 4, marginLeft: 6 }}>🕸 {s.spider_web} 跨站</span>}</span>
                         <span style={{ fontWeight: 600 }}>{s.total}</span>
                       </div>
-                      <div style={{ background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                        <div style={{ width: `${(s.total / maxSite) * 100}%`, height: '100%', borderRadius: 4, background: s.site === 'cloudpipe-macao-app' ? '#10a37f' : '#4285f4' }} />
-                      </div>
+                      <AnimBar pct={(s.total / maxSite) * 100} color={s.site === 'cloudpipe-macao-app' ? '#10a37f' : '#4285f4'} height={6} />
                       <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
                         {s.bots.map(b => <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>)}
                       </div>
@@ -870,7 +889,7 @@ export default function CrawlerDashboard() {
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>跨站流量走向</h3>
                 {spiderWeb.flows.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無跨站流向記錄。AI 爬蟲從一個站跟隨 llms.txt 連結到另一個站時會記錄在此。</p>}
                 {spiderWeb.flows.map((f, i) => (
-                  <div key={i} style={{ padding: '10px 0', borderBottom: i < spiderWeb.flows.length - 1 ? '1px solid #dce8f5' : 'none' }}>
+                  <div key={i} className="gsap-row" style={{ padding: '10px 0', borderBottom: i < spiderWeb.flows.length - 1 ? '1px solid #dce8f5' : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: 14 }}>
                         {f.flow.split(' → ').map((site, j) => (
@@ -898,7 +917,7 @@ export default function CrawlerDashboard() {
                 {sessionsLoading && <p style={{ color: '#999', fontSize: 13 }}>載入 session 數據中...</p>}
                 {!sessionsLoading && sessions.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無 session 數據或查詢逾時，總覽數據仍可正常使用。</p>}
                 {sessions.map(s => (
-                  <div key={s.session_id} style={{ padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer', background: journeySession === s.session_id ? '#f0f7ff' : 'transparent' }} onClick={() => loadJourney(s.session_id)}>
+                  <div key={s.session_id} className="gsap-row" style={{ padding: '10px 0', borderBottom: '1px solid #eee', cursor: 'pointer', background: journeySession === s.session_id ? '#f0f7ff' : 'transparent' }} onClick={() => loadJourney(s.session_id)}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <span style={{ fontWeight: 600, fontSize: 13, color: BOT_COLORS[s.owner] || '#333' }}>{s.bot}</span>
@@ -961,11 +980,16 @@ export default function CrawlerDashboard() {
                     <div style={{ marginBottom: 24 }}>
                       <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>📊 Insight 路由等級分佈（{totalTier.toLocaleString()} 篇 ZH）</h3>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                        {(['A','B','C','D'] as const).map(t => {
+                        {([
+                          ['A', routingTierADisplay],
+                          ['B', routingTierBDisplay],
+                          ['C', routingTierCDisplay],
+                          ['D', routingTierDDisplay],
+                        ] as const).map(([t, display]) => {
                           const cnt = tiers[t]; const pct = totalTier > 0 ? (cnt / totalTier * 100).toFixed(1) : '0.0'
                           return (
-                            <div key={t} style={{ background: '#fafafa', border: `2px solid ${TIER_COLORS[t]}`, borderRadius: 10, padding: '14px 12px', textAlign: 'center' }}>
-                              <div style={{ fontSize: 28, fontWeight: 700, color: TIER_COLORS[t] }}>{cnt.toLocaleString()}</div>
+                            <div key={t} className="gsap-row" style={{ background: '#fafafa', border: `2px solid ${TIER_COLORS[t]}`, borderRadius: 10, padding: '14px 12px', textAlign: 'center' }}>
+                              <div style={{ fontSize: 28, fontWeight: 700, color: TIER_COLORS[t] }}>{display}</div>
                               <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>{TIER_LABELS[t]}</div>
                               <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{pct}%</div>
                             </div>
@@ -981,12 +1005,12 @@ export default function CrawlerDashboard() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
                       <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
                         <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🤖 AI 爬蟲 → 商戶頁（基線）</h4>
-                        <div style={{ fontSize: 28, fontWeight: 700 }}>{merchantVisits.total}</div>
+                        <div style={{ fontSize: 28, fontWeight: 700 }}>{routingMerchDisplay}</div>
                         <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積商戶頁訪問 · {merchantVisits.uniqueSlugs} 個唯一商戶</div>
                       </div>
                       <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
                         <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#333' }}>🗂️ AI 爬蟲 → 分類頁（基線）</h4>
-                        <div style={{ fontSize: 28, fontWeight: 700 }}>{categoryVisits.total}</div>
+                        <div style={{ fontSize: 28, fontWeight: 700 }}>{routingCatDisplay}</div>
                         <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>累積分類頁訪問</div>
                       </div>
                     </div>
@@ -1008,8 +1032,8 @@ export default function CrawlerDashboard() {
                                   <td style={{ padding: '8px 12px', color: '#555' }}>{tot}</td>
                                   <td style={{ padding: '8px 12px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                      <div style={{ width: 80, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden' }}>
-                                        <div style={{ width: `${donePct}%`, height: '100%', background: TIER_COLORS.A }} />
+                                      <div style={{ width: 80 }}>
+                                        <AnimBar pct={donePct} color={TIER_COLORS.A} height={6} />
                                       </div>
                                       <span style={{ fontSize: 11, color: '#999' }}>{donePct.toFixed(1)}%</span>
                                     </div>
@@ -1065,24 +1089,24 @@ export default function CrawlerDashboard() {
                       <div style={{ background: 'linear-gradient(135deg, #0f4c81 0%, #1a6fb5 100%)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, color: 'white', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                         <div style={{ fontSize: 13, opacity: 0.8 }}>📅 今日 ({discovery.today.date})</div>
                         <div style={{ display: 'flex', gap: 24 }}>
-                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.totalVisits}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>次爬取</span></div>
-                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueMerchants}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>商戶被訪</span></div>
-                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discovery.today.uniqueBots}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>AI Bots</span></div>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discTodayVDisplay}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>次爬取</span></div>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discTodayMDisplay}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>商戶被訪</span></div>
+                          <div><span style={{ fontSize: 22, fontWeight: 700 }}>{discTodayBDisplay}</span><span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>AI Bots</span></div>
                         </div>
                         {discovery.today.bots.length > 0 && <div style={{ fontSize: 11, opacity: 0.6 }}>{discovery.today.bots.join(' · ')}</div>}
                       </div>
                     )}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 24 }}>
                       {[
-                        { label: '追蹤商戶', value: s.totalTracked, color: '#111' },
-                        { label: 'AI 已爬取', value: s.crawledByAI, color: '#10a37f' },
-                        { label: 'Insight 覆蓋', value: s.insightCovered, color: '#4285f4' },
-                        { label: '✅ AI 就緒', value: s.aiReady, color: '#16a34a' },
-                        { label: '🟡 接近就緒', value: s.nearReady, color: '#d97706' },
-                        { label: '覆蓋缺口', value: s.coverageGap, color: '#dc2626' },
+                        { label: '追蹤商戶', display: discTrackedDisplay, color: '#111' },
+                        { label: 'AI 已爬取', display: discCrawledDisplay, color: '#10a37f' },
+                        { label: 'Insight 覆蓋', display: discCoveredDisplay, color: '#4285f4' },
+                        { label: '✅ AI 就緒', display: discReadyDisplay, color: '#16a34a' },
+                        { label: '🟡 接近就緒', display: discNearDisplay, color: '#d97706' },
+                        { label: '覆蓋缺口', display: discGapDisplay, color: '#dc2626' },
                       ].map(card => (
-                        <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
-                          <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.value}</div>
+                        <div key={card.label} className="gsap-row" style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                          <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.display}</div>
                           <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
                         </div>
                       ))}
@@ -1090,14 +1114,12 @@ export default function CrawlerDashboard() {
                     <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: 10, padding: 16, marginBottom: 20 }}>
                       <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>📊 商戶 Insight 覆蓋分佈</h3>
                       {Object.entries(histData).map(([k, v]) => (
-                        <div key={k} style={{ marginBottom: 8 }}>
+                        <div key={k} className="gsap-row" style={{ marginBottom: 8 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
                             <span style={{ color: k === '0' ? '#dc2626' : '#333' }}>{HIST_LABELS[k] || k}</span>
                             <span style={{ fontWeight: 600 }}>{v} 個商戶</span>
                           </div>
-                          <div style={{ background: '#e5e5e5', borderRadius: 4, height: 8 }}>
-                            <div style={{ width: `${(v / maxHist) * 100}%`, height: '100%', borderRadius: 4, background: k === '0' ? '#fca5a5' : k === '1-2' ? '#fcd34d' : k === '3-5' ? '#86efac' : '#4ade80' }} />
-                          </div>
+                          <AnimBar pct={(Number(v) / maxHist) * 100} color={k === '0' ? '#fca5a5' : k === '1-2' ? '#fcd34d' : k === '3-5' ? '#86efac' : '#4ade80'} height={8} />
                         </div>
                       ))}
                     </div>
@@ -1111,7 +1133,7 @@ export default function CrawlerDashboard() {
                             const pct = d.total > 0 ? Math.round(d.ready / d.total * 100) : 0
                             const isActive = discoveryRegion === r
                             return (
-                              <div key={r} onClick={() => setDiscoveryRegion(isActive ? '' : r)}
+                              <div key={r} className="gsap-row" onClick={() => setDiscoveryRegion(isActive ? '' : r)}
                                 style={{ background: isActive ? '#eff6ff' : '#fafafa', border: `2px solid ${isActive ? '#3b82f6' : '#eee'}`, borderRadius: 10, padding: 14, cursor: 'pointer' }}>
                                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{REGION_LABELS[r]}</div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
@@ -1120,8 +1142,8 @@ export default function CrawlerDashboard() {
                                   <div><span style={{ color: '#888' }}>已就緒 </span><b style={{ color: '#16a34a' }}>{d.ready}</b></div>
                                   <div><span style={{ color: '#888' }}>接近 </span><b style={{ color: '#d97706' }}>{d.nearReady}</b></div>
                                 </div>
-                                <div style={{ marginTop: 8, background: '#e5e5e5', borderRadius: 4, height: 6 }}>
-                                  <div style={{ width: `${pct}%`, background: pct >= 50 ? '#16a34a' : pct >= 20 ? '#d97706' : '#fca5a5', height: '100%', borderRadius: 4 }} />
+                                <div style={{ marginTop: 8 }}>
+                                  <AnimBar pct={pct} color={pct >= 50 ? '#16a34a' : pct >= 20 ? '#d97706' : '#fca5a5'} height={6} />
                                 </div>
                                 <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>就緒率 {pct}%</div>
                               </div>
@@ -1203,12 +1225,12 @@ export default function CrawlerDashboard() {
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: `累計 FAQ 點擊（${days}天）`, value: faqConversions.total, color: '#0f4c81' },
-                      { label: '今日 FAQ 點擊', value: faqConversions.today, color: '#10a37f' },
-                      { label: '涉及商戶數', value: faqConversions.topMerchants.length, color: '#c5a572' },
+                      { label: `累計 FAQ 點擊（${days}天）`, display: faqTotalDisplay2, color: '#0f4c81' },
+                      { label: '今日 FAQ 點擊', display: faqTodayDisplay, color: '#10a37f' },
+                      { label: '涉及商戶數', display: faqMerchDisplay2, color: '#c5a572' },
                     ].map(card => (
-                      <div key={card.label} style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
-                        <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                      <div key={card.label} className="gsap-row" style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.display}</div>
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
                       </div>
                     ))}
@@ -1226,7 +1248,7 @@ export default function CrawlerDashboard() {
                       </tr></thead>
                       <tbody>
                         {faqConversions.topMerchants.map((m, i) => (
-                          <tr key={m.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <tr key={m.slug} className="gsap-row" style={{ borderBottom: '1px solid #f0f0f0' }}>
                             <td style={{ padding: '7px 12px', fontWeight: 600 }}>{i + 1}. {m.slug}</td>
                             <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700, color: '#0f4c81' }}>{m.count}</td>
                             <td style={{ padding: '7px 12px' }}><a href={`/macao/search?q=${m.slug}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#4285f4' }}>查看頁面 →</a></td>
