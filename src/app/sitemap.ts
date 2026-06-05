@@ -11,7 +11,7 @@ export const maxDuration = 120
 // Wrap any promise with a 45s timeout; returns null on timeout/error so build never fails
 async function withBuildTimeout<T>(promise: Promise<T>): Promise<T | null> {
   const timeout = new Promise<null>((_, reject) =>
-    setTimeout(() => reject(new Error('sitemap-query-timeout')), 45000)
+    setTimeout(() => reject(new Error('sitemap-query-timeout')), 5000)
   )
   try {
     return await Promise.race([promise, timeout]) as T
