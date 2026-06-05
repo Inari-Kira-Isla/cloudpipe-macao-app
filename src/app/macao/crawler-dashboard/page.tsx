@@ -206,10 +206,11 @@ function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; heigh
   )
 }
 
-// ── Daily trend chart (HKT-labelled, data from crawler_daily_mv UTC groups) ──
+// ── Daily trend chart (HKT date labels — precompute script uses HKT day boundaries) ──
 function DailyTrendChart({ daily, days }: { daily: { date: string; total: number }[]; days: number }) {
   const barsRef = useRef<(HTMLDivElement | null)[]>([])
-  const utcToday = new Date().toISOString().slice(0, 10)
+  // Precompute script labels days with HKT date (UTC+8); must match here or today bar turns wrong
+  const hktToday = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
   // Show last N days depending on context; cap at 30 bars for readability
   const maxBars = days <= 7 ? 7 : days <= 14 ? 14 : 30
   const sliced = daily.slice(-maxBars)
@@ -234,18 +235,15 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
     <div style={{ background: '#fafafa', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #eee', gridColumn: '1 / -1' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>每日 AI 爬取趨勢</h3>
-        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 UTC</span>
+        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 HKT</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }}>
         {sliced.map((d, i) => {
-          // Convert UTC date → HKT display label
-          // UTC YYYY-MM-DD 00:00Z = HKT 08:00 on same calendar day
-          // We display the same date since ~67% of UTC day overlaps with HKT day
           const [, mm, dd] = d.date.split('-')
-          const isToday = d.date === utcToday
+          const isToday = d.date === hktToday
           const barColor = isToday ? '#10a37f' : '#4285f4'
           return (
-            <div key={d.date} title={`${d.date} (UTC): ${d.total.toLocaleString()} visits`}
+            <div key={d.date} title={`${d.date} (HKT): ${d.total.toLocaleString()} visits`}
               style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', cursor: 'default' }}>
               <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative' }}>
                 <div
@@ -262,7 +260,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: '#bbb' }}>
         <span>峰值: {Math.max(...sliced.map(d => d.total)).toLocaleString()}</span>
-        <span>今日: {(sliced.find(d => d.date === utcToday)?.total ?? sliced.at(-1)?.total ?? 0).toLocaleString()}</span>
+        <span>今日: {(sliced.find(d => d.date === hktToday)?.total ?? sliced.at(-1)?.total ?? 0).toLocaleString()}</span>
         <span>合計: {sliced.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
       </div>
     </div>
@@ -666,13 +664,13 @@ export default function CrawlerDashboard() {
 
       {summary?.is_stale && days === 1 && (
         <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>
-          ⚠️ <strong>pg_cron 未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 08:00 HKT 之前）。今日數據可能不準確，請檢查 Supabase pg_cron 排程。
+          ⚠️ <strong>pg_cron 未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 UTC 00:00 之前）。今日數據可能不準確，請檢查 Supabase pg_cron 排程。
         </div>
       )}
 
       {summary?.generated_at && days === 1 && !summary.is_stale && (
         <div style={{ marginBottom: 12, fontSize: 12, color: '#888' }}>
-          數據從 <strong>08:00 HKT</strong> 起計（UTC 凌晨），快取更新於 {
+          數據從 <strong>UTC 00:00</strong> 起計，快取更新於 {
             new Date(summary.generated_at).toLocaleString('zh-TW', { timeZone: 'Asia/Hong_Kong', hour: '2-digit', minute: '2-digit', second: '2-digit' })
           } HKT
           {summary.x_check_7d != null && (
