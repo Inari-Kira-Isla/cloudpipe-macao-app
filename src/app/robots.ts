@@ -175,25 +175,26 @@ export default function robots(): MetadataRoute.Robots {
       // commit 9c438c3 split /macao/insights/ into 5 region routes.
       // 2026-05-26: added sitemap-insights-en.xml and sitemap-insights-ja.xml
       // for language-specific insight discovery.
-      `${siteUrl}/sitemap_index.xml`,
-      `${siteUrl}/sitemap.xml`,
-      `${siteUrl}/sitemap-merchants.xml`,
+      // 2026-06-05: insights-first reorder; dead-link xml removed;
+      // llms-txt moved to comments (plain text, not XML sitemaps).
       `${siteUrl}/sitemap-insights.xml`,
       `${siteUrl}/sitemap-insights-en.xml`,
       `${siteUrl}/sitemap-insights-ja.xml`,
+      `${siteUrl}/sitemap-merchants.xml`,
       `${siteUrl}/sitemap-mo.xml`,
       `${siteUrl}/sitemap-hk.xml`,
       `${siteUrl}/sitemap-tw.xml`,
       `${siteUrl}/sitemap-jp.xml`,
       `${siteUrl}/sitemap-world.xml`,
-      `${siteUrl}/seasonal_calendar.xml`,
-      // AI discovery: region-specific llms.txt endpoints
-      `${siteUrl}/macao/llms-txt`,
-      `${siteUrl}/japan/llms-txt`,
-      `${siteUrl}/hongkong/llms-txt`,
-      `${siteUrl}/taiwan/llms-txt`,
-      `${siteUrl}/llms-en`,
-      `${siteUrl}/llms-ja`,
+      `${siteUrl}/sitemap.xml`,
+      `${siteUrl}/sitemap_index.xml`,
+      // AI Context Documents (plain text, not XML sitemaps):
+      // ${siteUrl}/macao/llms-txt
+      // ${siteUrl}/japan/llms-txt
+      // ${siteUrl}/hongkong/llms-txt
+      // ${siteUrl}/taiwan/llms-txt
+      // ${siteUrl}/llms-en
+      // ${siteUrl}/llms-ja
     ],
   }
 }
