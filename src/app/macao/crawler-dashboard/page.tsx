@@ -716,8 +716,11 @@ export default function CrawlerDashboard() {
               return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
             }, 0)
             const llmRatio = llmSampleCount / botSampleTotal
-            const llmVisits = Math.round(llmRatio * (summary.total_visits || 0))
-            const otherBotVisits = (summary.total_visits || 0) - llmVisits
+            // FIX 2026-06-05: 用 botSampleTotal（各 bot 實際加總）作為 llmVisits/otherBotVisits 分子母，
+            // 不再用 total_visits（24h 滾動視窗，與 bot counts 日曆日計算基準不同，差距可達 5,000+）。
+            // 原本 total_visits × ratio 導致 LLM/Other 顯示數字虛高，與個別 bot 加總不符。
+            const llmVisits = Math.round(llmRatio * botSampleTotal)
+            const otherBotVisits = botSampleTotal - llmVisits
             const llmPct = (llmRatio * 100).toFixed(1)
             const otherPct = ((1 - llmRatio) * 100).toFixed(1)
             return (
@@ -725,12 +728,12 @@ export default function CrawlerDashboard() {
                 <div title="LLM 爬蟲流量占比（OpenAI / Anthropic / Perplexity / Google-Extended / Meta / Microsoft Copilot）" style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9', cursor: 'help' }}>
                   <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Bot 流量</div>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#1976d2' }}>{llmPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits.toLocaleString()} / {botSampleTotal.toLocaleString()} visits</div>
                 </div>
                 <div title="其他爬蟲（搜尋引擎/雲服務）：Yandex / Amazon / Apple / ByteDance 等。注意：本卡 100% 為 bot 流量，因 middleware 只記錄 bot 訪問；真人流量請見下方「AI 推介真人流量」" style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784', cursor: 'help' }}>
                   <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 其他 Bot 流量</div>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{otherPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{otherBotVisits.toLocaleString()} / {(summary.total_visits || 0).toLocaleString()} visits</div>
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{otherBotVisits.toLocaleString()} / {botSampleTotal.toLocaleString()} visits</div>
                 </div>
               </div>
             )
@@ -750,13 +753,23 @@ export default function CrawlerDashboard() {
 
             {loading && <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>載入中...</div>}
 
+            {/* TODO [P0 2026-06-05]: aiReferrals=null 表示 safeFetch 超時或 Vercel cold-start 失敗，
+                非數據真的為 0。區分 null（載入失敗）vs {total:0}（真無數據）避免誤報 0。 */}
+            {!loading && aiReferrals === null && (
+              <div style={{ padding: '16px 18px', textAlign: 'center', color: '#999', fontSize: 13 }}>
+                <div style={{ fontSize: 20, marginBottom: 6 }}>⏳</div>
+                <div>AI 推介數據載入中或暫時不可用</div>
+                <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>請按「立即重新整理」重試，Vercel 冷啟動需時約 15 秒</div>
+              </div>
+            )}
+
             {!loading && aiReferrals && (
               <div style={{ padding: '14px 18px' }}>
                 {aiReferrals.total === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>
                     <div style={{ fontSize: 32, marginBottom: 8 }}>🕳️</div>
                     <div>尚未記錄到 AI 推介真人流量</div>
-                    <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>當有人從 Perplexity / ChatGPT 等 AI 平台點擊連結進入後，數據會在此顯示</div>
+                    <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>追蹤從 2026-04 起，當有人從 Perplexity / ChatGPT 等 AI 平台點擊連結進入後，數據會在此顯示</div>
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
