@@ -206,6 +206,69 @@ function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; heigh
   )
 }
 
+// ── Daily trend chart (HKT-labelled, data from crawler_daily_mv UTC groups) ──
+function DailyTrendChart({ daily, days }: { daily: { date: string; total: number }[]; days: number }) {
+  const barsRef = useRef<(HTMLDivElement | null)[]>([])
+  const utcToday = new Date().toISOString().slice(0, 10)
+  // Show last N days depending on context; cap at 30 bars for readability
+  const maxBars = days <= 7 ? 7 : days <= 14 ? 14 : 30
+  const sliced = daily.slice(-maxBars)
+  const maxVal = Math.max(...sliced.map(d => d.total), 1)
+  const datesKey = sliced.map(d => d.date).join(',')
+
+  useEffect(() => {
+    barsRef.current.forEach((el, i) => {
+      if (!el) return
+      const pct = (sliced[i]?.total / maxVal) * 100
+      gsap.fromTo(el,
+        { height: '0%', opacity: 0 },
+        { height: `${pct}%`, opacity: 1, duration: 0.7, delay: i * 0.03, ease: 'power2.out' }
+      )
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datesKey])
+
+  if (!sliced.length) return null
+
+  return (
+    <div style={{ background: '#fafafa', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #eee', gridColumn: '1 / -1' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>每日 AI 爬取趨勢</h3>
+        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 HKT (UTC+8)</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }}>
+        {sliced.map((d, i) => {
+          // Convert UTC date → HKT display label
+          // UTC YYYY-MM-DD 00:00Z = HKT 08:00 on same calendar day
+          // We display the same date since ~67% of UTC day overlaps with HKT day
+          const [, mm, dd] = d.date.split('-')
+          const isToday = d.date === utcToday
+          const barColor = isToday ? '#10a37f' : '#4285f4'
+          return (
+            <div key={d.date} title={`${d.date} (HKT+8): ${d.total.toLocaleString()} visits`}
+              style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', cursor: 'default' }}>
+              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative' }}>
+                <div
+                  ref={el => { barsRef.current[i] = el }}
+                  style={{ width: '100%', background: barColor, borderRadius: '3px 3px 0 0', height: '0%', opacity: 0 }}
+                />
+              </div>
+              <span style={{ fontSize: 9, color: isToday ? '#10a37f' : '#aaa', fontWeight: isToday ? 700 : 400, whiteSpace: 'nowrap' }}>
+                {mm}/{dd}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: '#bbb' }}>
+        <span>峰值: {Math.max(...sliced.map(d => d.total)).toLocaleString()}</span>
+        <span>今日: {(sliced.find(d => d.date === utcToday)?.total ?? sliced.at(-1)?.total ?? 0).toLocaleString()}</span>
+        <span>合計: {sliced.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Fade-in card wrapper (GSAP) ──────────────────────────────────────────────
 function FadeCard({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -775,6 +838,9 @@ export default function CrawlerDashboard() {
           <div ref={tabContentRef}>
           {tab === 'overview' && (
             <div ref={overviewRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+              {summary.daily && summary.daily.length > 1 && (
+                <DailyTrendChart daily={summary.daily} days={days} />
+              )}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI Bot 訪問量</h3>
                 {Object.entries(summary.bots)
