@@ -234,7 +234,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
     <div style={{ background: '#fafafa', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #eee', gridColumn: '1 / -1' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>每日 AI 爬取趨勢</h3>
-        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 HKT (UTC+8)</span>
+        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 UTC</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }}>
         {sliced.map((d, i) => {
@@ -245,7 +245,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
           const isToday = d.date === utcToday
           const barColor = isToday ? '#10a37f' : '#4285f4'
           return (
-            <div key={d.date} title={`${d.date} (HKT+8): ${d.total.toLocaleString()} visits`}
+            <div key={d.date} title={`${d.date} (UTC): ${d.total.toLocaleString()} visits`}
               style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', cursor: 'default' }}>
               <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative' }}>
                 <div
