@@ -91,7 +91,7 @@ interface RoutingBaseline {
   categoryVisits?: { total: number; byIndustry: Record<string, number>; recentPaths: { path: string; bot: string; industry: string; ts: string }[] }
 }
 
-const API = '/api/v1/crawler-stats?token=cloudpipe2026'
+const API = '/api/v1/crawler-stats'
 const ROUTING_API = '/api/v1/routing-baseline'
 const CACHE_HEALTH_URL = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-cache-health.json'
 
@@ -376,7 +376,7 @@ export default function CrawlerDashboard() {
   const handleManualRefresh = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      await fetch(`/api/v1/crawler-stats/refresh?token=cloudpipe2026`, { method: 'POST' })
+      await fetch(`/api/v1/crawler-stats/refresh`, { method: 'POST' })
       await fetchData(true)
     } catch (e) {
       console.error('refresh error', e)

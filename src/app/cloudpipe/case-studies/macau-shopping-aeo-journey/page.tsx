@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { createServiceClient } from '@/lib/supabase'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: '案例研究：澳門購物誌 — CloudPipe AEO 從零到 AI 引用全紀錄 | CloudPipe',
