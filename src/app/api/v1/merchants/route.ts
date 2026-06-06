@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
   const offset = parseInt(searchParams.get('offset') || '0')
 
+  const supabase = createServiceClient()
   let query = supabase
     .from('merchants')
     .select('code, slug, name_zh, name_en, phone, website, address_zh, district, latitude, longitude, google_rating, google_reviews, price_range, tier, category:categories(slug, name_zh)', { count: 'exact' })

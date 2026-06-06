@@ -1,11 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
 // Removed force-dynamic: conflicts with revalidate (CLAUDE.md rule #3) → burned CPU every request
 // ISR revalidate=7200 gives 2h CDN cache; ecosystem stats don't need sub-second freshness
 export const revalidate = 7200 // 2h ISR — force-dynamic removed 2026-05-31 CPU fix
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token')
+  const referer = req.headers.get('referer') || ''
+  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing')
+  const expectedToken = process.env.CRAWLER_STATS_TOKEN
+  if (!isInternal && (!expectedToken || token !== expectedToken)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const supabase = createServiceClient()
 
   const [

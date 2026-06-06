@@ -8,7 +8,16 @@ import { createServiceClient } from '@/lib/supabase'
 
 const AGENT = 'demo'
 
-export async function GET() {
+function isAuthorized(req: NextRequest): boolean {
+  const referer = req.headers.get('referer') || ''
+  const token = req.nextUrl.searchParams.get('token') ?? req.headers.get('x-api-key') ?? ''
+  const expected = process.env.CRAWLER_STATS_TOKEN
+  return referer.includes('cloudpipe-macao-app') || referer.includes('localhost') ||
+    (!!expected && token === expected)
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = createServiceClient()
   const { data, error } = await db
     .from('property_clients')
@@ -21,6 +30,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
   const db   = createServiceClient()
   const { data, error } = await db
@@ -34,6 +44,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id, ...updates } = await req.json()
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
@@ -51,6 +62,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await req.json()
   const db     = createServiceClient()
   const { error } = await db

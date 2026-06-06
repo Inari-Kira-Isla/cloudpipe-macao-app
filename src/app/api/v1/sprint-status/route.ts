@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
@@ -8,7 +8,14 @@ const SPRINT_START = '2026-05-15'
 const SPRINT_END = '2026-06-05'
 const TOTAL_DAYS = 21
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token')
+  const referer = req.headers.get('referer') || ''
+  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing')
+  const expectedToken = process.env.CRAWLER_STATS_TOKEN
+  if (!isInternal && (!expectedToken || token !== expectedToken)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const supabase = createServiceClient()
 

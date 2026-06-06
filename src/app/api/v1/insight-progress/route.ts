@@ -17,7 +17,7 @@ const CACHE_TTL = 3 * 60 * 1000
 export async function GET() {
   if (_cache && Date.now() - _cache.ts < CACHE_TTL) {
     return NextResponse.json(_cache.data, {
-      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=180' }
+      headers: { 'Access-Control-Allow-Origin': 'https://cloudpipe-macao-app.vercel.app', 'Cache-Control': 'public, max-age=180' }
     })
   }
 
@@ -119,7 +119,7 @@ export async function GET() {
 
     _cache = { data: result, ts: Date.now() }
     return NextResponse.json(result, {
-      headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=180' }
+      headers: { 'Access-Control-Allow-Origin': 'https://cloudpipe-macao-app.vercel.app', 'Cache-Control': 'public, max-age=180' }
     })
   } catch (e) {
     console.error('insight-progress error', e)
