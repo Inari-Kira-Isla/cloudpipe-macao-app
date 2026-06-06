@@ -95,6 +95,28 @@ const API = '/api/v1/crawler-stats'
 const ROUTING_API = '/api/v1/routing-baseline'
 const CACHE_HEALTH_URL = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-cache-health.json'
 
+const SITE_META: Record<string, { label: string; icon: string; group: 'encyclopedia' | 'brand' | 'platform' | 'demo' }> = {
+  'cloudpipe-macao-app':  { label: '澳門百科',       icon: '🇲🇴', group: 'encyclopedia' },
+  'japan-encyclopedia':   { label: '日本旅遊百科',   icon: '🇯🇵', group: 'encyclopedia' },
+  'hongkong-encyclopedia':{ label: '香港旅遊百科',   icon: '🇭🇰', group: 'encyclopedia' },
+  'taiwan-encyclopedia':  { label: '台灣旅遊百科',   icon: '🇹🇼', group: 'encyclopedia' },
+  'malaysia-encyclopedia':{ label: '馬來西亞旅遊百科', icon: '🇲🇾', group: 'encyclopedia' },
+  'world-encyclopedia':   { label: '世界建築百科',   icon: '🌍', group: 'encyclopedia' },
+  'inari-global-foods':   { label: '稻荷環球食品',   icon: '🐟', group: 'brand' },
+  'sea-urchin-delivery':  { label: '海膽速遞',       icon: '🦔', group: 'brand' },
+  'after-school-coffee':  { label: '課後咖啡',       icon: '☕', group: 'brand' },
+  'yamanakada':           { label: '山中田',         icon: '🍚', group: 'brand' },
+  'cloudpipe-landing':    { label: 'CloudPipe 官網', icon: '☁️', group: 'platform' },
+  'cloudpipe-directory':  { label: 'AEO 目錄',      icon: '📂', group: 'platform' },
+  'openclaw':             { label: 'OpenClaw',      icon: '🦅', group: 'platform' },
+  'bni-macau':            { label: 'BNI 澳門',      icon: '🤝', group: 'platform' },
+  'mind-coffee':          { label: 'Mind Cafe',     icon: '☕', group: 'platform' },
+  'aeo-demo-education':   { label: 'Demo 教育',     icon: '📚', group: 'demo' },
+  'aeo-demo-finance':     { label: 'Demo 金融',     icon: '💰', group: 'demo' },
+  'aeo-demo-luxury':      { label: 'Demo 奢侈品',   icon: '💎', group: 'demo' },
+  'aeo-demo-travel-food': { label: 'Demo 旅食',     icon: '✈️', group: 'demo' },
+}
+
 const BOT_COLORS: Record<string, string> = {
   OpenAI: '#10a37f',
   Anthropic: '#d4a574',
@@ -294,7 +316,7 @@ export default function CrawlerDashboard() {
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
-  const [tab, setTab] = useState<'overview' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery' | 'faq-conversion'>('overview')
+  const [tab, setTab] = useState<'overview' | 'sites' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery' | 'faq-conversion'>('overview')
   const [routing, setRouting] = useState<RoutingBaseline | null>(null)
   const [routingLoading, setRoutingLoading] = useState(false)
   const [discovery, setDiscovery] = useState<MerchantDiscovery | null>(null)
@@ -826,7 +848,7 @@ export default function CrawlerDashboard() {
           </div>
 
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
-            {(['overview', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
+            {(['overview', 'sites', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion'] as const).map(t => (
               <button key={t} onClick={() => {
                 setTab(t); setJourney(null)
                 if (t === 'pages') loadPages()
@@ -841,7 +863,7 @@ export default function CrawlerDashboard() {
                   color: tab === t ? '#111' : '#888',
                   borderBottom: tab === t ? '2px solid #111' : '2px solid transparent',
                 }}>
-                {{ overview: '總覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蝶蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度', 'faq-conversion': '💡 FAQ 轉化' }[t]}
+                {{ overview: '總覽', sites: '📚 各站概覽', pages: '頁面', sessions: '爬蟲路徑', 'spider-web': '蝶蛛網', routing: '🗺️ 路由基線', 'merchant-discovery': '🔍 商戶發現度', 'faq-conversion': '💡 FAQ 轉化' }[t]}
               </button>
             ))}
           </div>
@@ -900,6 +922,135 @@ export default function CrawlerDashboard() {
               </div>
             </div>
           )}
+
+          {tab === 'sites' && (() => {
+            // Merge summary.sites (totals) + spiderWeb.sites (bot details)
+            const siteTotals: Record<string, number> = { ...(summary?.sites || {}) }
+            const siteBotsMap: Record<string, string[]> = {}
+            const siteSpiderMap: Record<string, number> = {}
+            if (spiderWeb?.sites) {
+              for (const s of spiderWeb.sites) {
+                siteBotsMap[s.site] = s.bots
+                siteSpiderMap[s.site] = s.spider_web
+                if (!siteTotals[s.site]) siteTotals[s.site] = s.total
+              }
+            }
+            const allSites = Object.entries(siteTotals).sort((a, b) => b[1] - a[1])
+            const grandTotal = allSites.reduce((s, [, v]) => s + v, 0)
+
+            const GROUPS: { key: 'encyclopedia' | 'brand' | 'platform' | 'demo'; label: string; color: string }[] = [
+              { key: 'encyclopedia', label: '📚 知識百科', color: '#4285f4' },
+              { key: 'brand',        label: '🏪 品牌站',   color: '#10a37f' },
+              { key: 'platform',     label: '☁️ 平台站',   color: '#9c27b0' },
+              { key: 'demo',         label: '🧪 AEO Demo', color: '#ff9800' },
+            ]
+
+            const grouped: Record<string, [string, number][]> = {
+              encyclopedia: [], brand: [], platform: [], demo: [], other: [],
+            }
+            for (const [slug, count] of allSites) {
+              const g = SITE_META[slug]?.group || 'other'
+              grouped[g].push([slug, count])
+            }
+
+            return (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
+                  {[
+                    { label: '追蹤站點', value: allSites.length, color: '#111' },
+                    { label: `${days}日總爬取`, value: grandTotal, color: '#4285f4' },
+                    { label: '知識百科站', value: grouped.encyclopedia.length, color: '#10a37f' },
+                    { label: '品牌站', value: grouped.brand.length, color: '#ff9900' },
+                  ].map(card => (
+                    <div key={card.label} className="gsap-row" style={{ background: '#fafafa', borderRadius: 10, padding: '14px 12px', border: '1px solid #eee' }}>
+                      <div style={{ fontSize: 24, fontWeight: 700, color: card.color }}>{card.value.toLocaleString()}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{card.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {GROUPS.map(({ key, label, color }) => {
+                  const sites = grouped[key]
+                  if (!sites?.length) return null
+                  const groupMax = Math.max(...sites.map(([, v]) => v), 1)
+                  return (
+                    <div key={key} style={{ marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {label}
+                        <span style={{ fontSize: 11, fontWeight: 400, color: '#999', background: '#f0f0f0', padding: '1px 8px', borderRadius: 12 }}>
+                          {sites.reduce((s, [, v]) => s + v, 0).toLocaleString()} visits
+                        </span>
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+                        {sites.map(([slug, count]) => {
+                          const meta = SITE_META[slug]
+                          const bots = siteBotsMap[slug] || []
+                          const spiderCount = siteSpiderMap[slug] || 0
+                          const pct = count / groupMax * 100
+                          const pctOfTotal = grandTotal > 0 ? (count / grandTotal * 100).toFixed(1) : '0.0'
+                          return (
+                            <div key={slug} className="gsap-row" style={{ background: '#fafafa', borderRadius: 10, padding: '14px 16px', border: '1px solid #eee', transition: 'box-shadow 0.2s' }}
+                              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)' }}
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {meta?.icon} {meta?.label || slug}
+                                  </div>
+                                  <div style={{ fontSize: 10, color: '#bbb', fontFamily: 'monospace', marginTop: 2 }}>{slug}</div>
+                                </div>
+                                <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
+                                  <div style={{ fontSize: 22, fontWeight: 700, color, lineHeight: 1 }}>{count.toLocaleString()}</div>
+                                  <div style={{ fontSize: 10, color: '#999' }}>{pctOfTotal}% of total</div>
+                                </div>
+                              </div>
+                              <AnimBar pct={pct} color={color} height={5} />
+                              <div style={{ display: 'flex', gap: 4, marginTop: 8, flexWrap: 'wrap', alignItems: 'center', minHeight: 20 }}>
+                                {bots.slice(0, 5).map(b => (
+                                  <span key={b} style={{ fontSize: 10, background: '#e8e8e8', borderRadius: 4, padding: '1px 5px', color: '#555' }}>{b}</span>
+                                ))}
+                                {bots.length > 5 && <span style={{ fontSize: 10, color: '#aaa' }}>+{bots.length - 5}</span>}
+                                {spiderCount > 0 && (
+                                  <span style={{ fontSize: 10, background: '#e8f5e9', color: '#2e7d32', borderRadius: 4, padding: '1px 5px', marginLeft: 'auto' }}>
+                                    🕸 {spiderCount} 跨站
+                                  </span>
+                                )}
+                                {bots.length === 0 && count === 0 && (
+                                  <span style={{ fontSize: 10, color: '#ddd' }}>尚無爬取記錄</span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {grouped.other?.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: '#aaa' }}>其他站點</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+                      {grouped.other.map(([slug, count]) => {
+                        const bots = siteBotsMap[slug] || []
+                        return (
+                          <div key={slug} className="gsap-row" style={{ background: '#fafafa', borderRadius: 8, padding: '10px 14px', border: '1px solid #eee' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#888' }}>{slug}</div>
+                              <div style={{ fontSize: 16, fontWeight: 700, color: '#aaa' }}>{count.toLocaleString()}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 3, marginTop: 5, flexWrap: 'wrap' }}>
+                              {bots.map(b => <span key={b} style={{ fontSize: 9, background: '#eee', borderRadius: 3, padding: '1px 4px', color: '#777' }}>{b}</span>)}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {tab === 'pages' && (
             <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>

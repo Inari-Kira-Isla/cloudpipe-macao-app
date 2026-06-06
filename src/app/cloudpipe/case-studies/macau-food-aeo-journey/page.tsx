@@ -57,10 +57,11 @@ const FAQS = [
 
 export default async function MacauFoodCaseStudyPage() {
   const supabase = createServiceClient()
+  const today = new Date().toISOString().slice(0, 10)
   const since7d = new Date(Date.now() - 7 * 86400000).toISOString()
 
-  const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T | null> =>
-    Promise.race([p, new Promise<null>(r => setTimeout(() => r(null), ms))])
+  const withTimeout = <T,>(p: PromiseLike<T>, ms = 5000): Promise<T | null> =>
+    Promise.race([Promise.resolve(p), new Promise<null>(r => setTimeout(() => r(null), ms))])
 
   const [ref, cit, crawl, art] = await Promise.all([
     withTimeout(supabase.from('ai_referrals').select('*', { count: 'exact', head: true }).ilike('path', '%macau-food%')),
