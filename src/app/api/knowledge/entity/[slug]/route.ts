@@ -127,7 +127,7 @@ export async function GET(
 
   const sameAsLinks = [
     externalIds.google_place_id
-      ? `https://maps.google.com/?cid=${externalIds.google_place_id}`
+      ? `https://www.google.com/maps/place/?q=place_id:${externalIds.google_place_id}`
       : null,
     wikiDataFact?.object_value
       ? `https://www.wikidata.org/wiki/${wikiDataFact.object_value}`

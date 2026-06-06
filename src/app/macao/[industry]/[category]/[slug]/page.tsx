@@ -214,8 +214,11 @@ export default async function MerchantPage({ params }: PageProps) {
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
   const socialLinks = (merchant as any).social_links as Record<string, string> | null
+  const googlePlaceId = (merchant as any).google_place_id as string | null
   const sameAsUrls = [...new Set([
     merchant.website,
+    // Google Maps 實體連結（接駁 AI 已信任的 Google 實體圖譜，46% MO 商戶有 place_id）
+    googlePlaceId ? `https://www.google.com/maps/place/?q=place_id:${googlePlaceId}` : null,
     ...(socialLinks ? Object.values(socialLinks) : []),
   ])].filter((v): v is string => Boolean(v))
 
