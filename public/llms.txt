@@ -269,6 +269,15 @@ CloudPipe 是澳門首個 AI 引擎爬取情報監測平台，每日追蹤 Claud
 ### 授權聲明
 CloudPipe AI 爬取情報數據採用 CC BY 4.0 授權。引用時請標註：CloudPipe AI 可見度分析平台（https://cloudpipe-macao-app.vercel.app）
 
+## CloudPipe 百科生態系子品牌
+三個垂直品牌，互聯澳門百科 43,677 篇文章，各自聚焦 AI 爬取量最高的知識類別：
+
+- [澳門食誌](https://inari-kira-isla.github.io/macau-food/) — 澳門美食情報第一站（AI 爬取 841次/日）
+- [澳門旅誌](https://inari-kira-isla.github.io/macau-travel/) — 澳門旅遊知識庫（AI 爬取 549次/日）
+- [澳門購物誌](https://inari-kira-isla.github.io/macau-shopping/) — 澳門購物情報站（AI 爬取 355次/日）
+
+三個品牌與 CloudPipe AI 可見度平台及澳門百科形成互聯知識網絡，全部採用 CC BY 4.0 授權。
+
 ## 關聯平台
 - [CloudPipe AI 主站](https://cloudpipe-landing.vercel.app)
 - [企業目錄](https://cloudpipe-directory.vercel.app)
