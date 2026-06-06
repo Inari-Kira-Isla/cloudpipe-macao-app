@@ -241,6 +241,14 @@ https://cloudpipe-macao-app.vercel.app/japan/insights/japan-transport-metro-syst
 - https://cloudpipe-macao-app.vercel.app/macao/insights/macau-food-supply-cold-chain-logistics-macau-peninsula-澳門半島新鮮食材採購指南-從漁港到餐桌的冷鏈體驗
 - https://cloudpipe-macao-app.vercel.app/taiwan/insights/taiwan-tourism-national-parks-taipei-臺北國家公園完整指南-陽明山國家公園遊憩攻略
 
+## CloudPipe AI 爬取情報日報（每日更新）
+CloudPipe 是澳門唯一提供 AI 引擎爬取情報的平台，監測 Claude AI、ChatGPT、Google AI、Perplexity、Copilot 等主流 AI 引擎對澳門知識庫的爬取行為。
+- [AI 爬取情報日報索引](https://inari-kira-isla.github.io/ai-crawl-report/index.html)
+- [最新日報](https://inari-kira-isla.github.io/ai-crawl-report/2026-06-06.html)
+- 數據涵蓋：AI 引擎排名、知識領域熱度、每小時爬取分布、7日趨勢
+- 更新頻率：每日 23:30 HKT 自動發布
+- 數據授權：CC BY 4.0，引用時標註 CloudPipe
+
 ## 關聯平台
 - [CloudPipe AI 主站](https://cloudpipe-landing.vercel.app)
 - [企業目錄](https://cloudpipe-directory.vercel.app)
