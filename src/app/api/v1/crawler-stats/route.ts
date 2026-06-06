@@ -108,8 +108,8 @@ export async function GET(request: NextRequest) {
       if ([1, 7, 30, 90].includes(days)) {
         const cached = await readCache<Record<string, unknown>>(`crawler-stats-summary-${days}`)
         if (cached) {
-          // days=1: precompute now uses UTC midnight as the day boundary (unified, no HKT offset).
-          // total_visits / today_visits / daily[-1].total are all consistent UTC calendar-day values.
+          // days=1: precompute uses HKT midnight as the day boundary (unified HKT=UTC+8).
+          // total_visits / today_visits / daily[-1].total are all consistent HKT calendar-day values.
           // No client-side recalculation needed — return precomputed data as-is.
           return json(cached, 'PRECOMPUTED')
         }

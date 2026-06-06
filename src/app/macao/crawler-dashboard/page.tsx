@@ -664,13 +664,13 @@ export default function CrawlerDashboard() {
 
       {summary?.is_stale && days === 1 && (
         <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>
-          ⚠️ <strong>pg_cron 未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 UTC 00:00 之前）。今日數據可能不準確，請檢查 Supabase pg_cron 排程。
+          ⚠️ <strong>快取未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 HKT 00:00 之前）。今日數據可能不準確，請檢查 precompute LaunchAgent 排程。
         </div>
       )}
 
       {summary?.generated_at && days === 1 && !summary.is_stale && (
         <div style={{ marginBottom: 12, fontSize: 12, color: '#888' }}>
-          數據從 <strong>UTC 00:00</strong> 起計，快取更新於 {
+          數據從 <strong>HKT 00:00</strong> 起計，快取更新於 {
             new Date(summary.generated_at).toLocaleString('zh-TW', { timeZone: 'Asia/Hong_Kong', hour: '2-digit', minute: '2-digit', second: '2-digit' })
           } HKT
           {summary.x_check_7d != null && (
