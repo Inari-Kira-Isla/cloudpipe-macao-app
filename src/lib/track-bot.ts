@@ -22,9 +22,11 @@ const BOT_PATTERNS: [RegExp, string, string][] = [
   [/Bingbot/i,             'Bingbot',              'Microsoft'],
   [/Bytespider/i,          'Bytespider',           'ByteDance'],
   [/SamanthaDoubao/i,      'SamanthaDoubao',       'ByteDance'],
+  [/YouBot/i,              'YouBot',               'You.com'],
   [/PetalBot/i,            'PetalBot',             'Aspiegel'],
   [/CCBot/i,               'CCBot',                'Common Crawl'],
   [/cohere-ai/i,           'cohere-ai',            'Cohere'],
+  [/AI2Bot/i,              'AI2Bot',               'AI2'],
 ]
 
 export function detectBot(ua: string): { bot_name: string; bot_owner: string } | null {

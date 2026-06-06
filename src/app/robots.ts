@@ -61,12 +61,42 @@ export default function robots(): MetadataRoute.Robots {
         disallow: aiCrawlerDisallows,
       },
       {
+        userAgent: 'Applebot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
         userAgent: 'Applebot-Extended',
         allow: '/',
         disallow: aiCrawlerDisallows,
       },
       {
+        userAgent: 'Claude-Web',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
         userAgent: 'YouBot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
+        userAgent: 'CCBot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
+        userAgent: 'ia_archiver',
+        allow: '/',
+        disallow: ['/api/', '/macao/crawler-dashboard', '/macao/citation-stats'],
+      },
+      {
+        userAgent: 'Diffbot',
+        allow: '/',
+        disallow: aiCrawlerDisallows,
+      },
+      {
+        userAgent: 'omgili',
         allow: '/',
         disallow: aiCrawlerDisallows,
       },

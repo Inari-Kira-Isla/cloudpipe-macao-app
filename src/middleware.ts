@@ -27,18 +27,20 @@ function detectAiReferrer(referer: string): string | null {
 
 const AI_BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT/i, /OAI-SearchBot/i,
-  /ClaudeBot/i, /Claude-Web/i, /Anthropic/i,
+  /ClaudeBot/i, /Claude-Web/i, /Anthropic/i, /anthropic-ai/i,
   /PerplexityBot/i, /Perplexity/i,
   /Googlebot/i, /Google-Extended/i, /GoogleOther/i,
   /Amazonbot/i, /Applebot/i,
   /meta-externalagent/i, /FacebookBot/i,
   /YandexBot/i, /Bingbot/i,
   /Bytespider/i, /SamanthaDoubao/i,
+  /CCBot/i, /YouBot/i,
+  /cohere-ai/i, /PetalBot/i, /AI2Bot/i,
 ]
 
 const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/GPTBot|ChatGPT|OAI-SearchBot/i, 'GPTBot', 'OpenAI'],
-  [/ClaudeBot|Claude-Web/i, 'ClaudeBot', 'Anthropic'],
+  [/ClaudeBot|Claude-Web|anthropic-ai/i, 'ClaudeBot', 'Anthropic'],
   [/PerplexityBot|Perplexity-User/i, 'PerplexityBot', 'Perplexity'],
   [/Googlebot|Google-Extended|GoogleOther/i, 'Googlebot', 'Google'],
   [/Amazonbot/i, 'Amazonbot', 'Amazon'],
@@ -47,6 +49,11 @@ const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/YandexBot/i, 'YandexBot', 'Yandex'],
   [/Bingbot/i, 'Bingbot', 'Microsoft'],
   [/Bytespider|SamanthaDoubao/i, 'Bytespider', 'ByteDance'],
+  [/YouBot/i, 'YouBot', 'You.com'],
+  [/CCBot/i, 'CCBot', 'Common Crawl'],
+  [/cohere-ai/i, 'cohere-ai', 'Cohere'],
+  [/PetalBot/i, 'PetalBot', 'Aspiegel'],
+  [/AI2Bot/i, 'AI2Bot', 'AI2'],
 ]
 
 // Headless Chrome / server-side fetchers use round version numbers: Chrome/X.0.0.0
