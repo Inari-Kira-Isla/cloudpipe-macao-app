@@ -108,22 +108,9 @@ export async function GET(request: NextRequest) {
       if ([1, 7, 30, 90].includes(days)) {
         const cached = await readCache<Record<string, unknown>>(`crawler-stats-summary-${days}`)
         if (cached) {
-          // days=1: total_visits in the precomputed file is a rolling 24h window which
-          // crosses HKT day boundaries and doesn't match what the user expects as "today".
-          // Recalculate from daily[-1] (the latest calendar day entry) so the KPI card
-          // shows the actual current-day count, not a rolling cross-day aggregate.
-          if (days === 1) {
-            const daily = cached.daily as { date: string; total: number }[] | undefined
-            const latest = daily?.at(-1)
-            if (latest) {
-              return json({
-                ...cached,
-                total_visits: latest.total,
-                today_visits: latest.total,
-                period: { since: `${latest.date}T00:00:00Z`, days: 1 },
-              }, 'PRECOMPUTED-DAILY-LATEST')
-            }
-          }
+          // days=1: precompute now uses UTC midnight as the day boundary (unified, no HKT offset).
+          // total_visits / today_visits / daily[-1].total are all consistent UTC calendar-day values.
+          // No client-side recalculation needed — return precomputed data as-is.
           return json(cached, 'PRECOMPUTED')
         }
       }
