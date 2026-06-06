@@ -93,7 +93,11 @@ interface RoutingBaseline {
 
 const API = '/api/v1/crawler-stats'
 const ROUTING_API = '/api/v1/routing-baseline'
-const CACHE_HEALTH_URL = 'https://inari-kira-isla.github.io/Openclaw/api-cache/crawler-cache-health.json'
+// GitHub Pages static cache (precomputed locally by crawler_stats_precompute.py every 30 min).
+// Reading these directly = CDN-served, sub-second, zero Vercel cold-start. The /api/v1/crawler-stats
+// route returns these exact files as-is (view=summary|spider-web), so the shapes are identical.
+const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_HEALTH_URL = `${CACHE_BASE}/crawler-cache-health.json`
 
 const SITE_META: Record<string, { label: string; icon: string; group: 'encyclopedia' | 'brand' | 'platform' | 'demo' }> = {
   'cloudpipe-macao-app':  { label: '澳門百科',       icon: '🇲🇴', group: 'encyclopedia' },
@@ -366,6 +370,18 @@ export default function CrawlerDashboard() {
     finally { window.clearTimeout(timeout) }
   }
 
+  // Cache-first read: hit the GitHub Pages static JSON directly (CDN, no Vercel cold start);
+  // only fall back to the Vercel API route if the static file is missing/unreachable.
+  // This is the real "read local cache" path — the precompute job publishes these files,
+  // so the dashboard no longer pays a 12–15s serverless cold start on first load.
+  const cacheFirst = async <T,>(staticUrl: string | null, apiUrl: string, fallback: T, forceFresh = false): Promise<T> => {
+    if (staticUrl) {
+      const fromCache = await safeFetch<T | null>(staticUrl, null, 6000, forceFresh)
+      if (fromCache != null) return fromCache as T
+    }
+    return safeFetch<T>(apiUrl, fallback, 20000, forceFresh)
+  }
+
   const fetchData = useCallback(async (forceFresh = false) => {
     setLoading(true)
     setError(null)
@@ -376,8 +392,12 @@ export default function CrawlerDashboard() {
       // ai-referrals is also fetched here so a `days` change runs a single parallel batch
       // (was previously a separate effect, doubling the cold-start cost on day toggles).
       const [sum, sw, health, refs] = await Promise.all([
-        safeFetch<Summary | null>(`${API}&view=summary&days=${days}`, null, 20000, forceFresh),
-        safeFetch<SpiderWebData | null>(`${API}&view=spider-web&days=${days}`, null, 20000, forceFresh),
+        cacheFirst<Summary | null>(
+          [1, 7, 30, 90].includes(days) ? `${CACHE_BASE}/crawler-stats-summary-${days}.json` : null,
+          `${API}&view=summary&days=${days}`, null, forceFresh),
+        cacheFirst<SpiderWebData | null>(
+          `${CACHE_BASE}/crawler-stats-spider-web-30.json`,
+          `${API}&view=spider-web&days=${days}`, null, forceFresh),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
         safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null, 20000, forceFresh),
       ])
