@@ -148,6 +148,30 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "CloudPipe AEO Network",
+              url: "https://cloudpipe.ai",
+              sameAs: [
+                "https://inari-kira-isla.github.io",
+                "https://cloudpipe.ai",
+                "https://inariglobal.com",
+                "https://mindcafe.com.mo",
+              ],
+              knowsAbout: [
+                "Macau",
+                "AEO",
+                "AI Engine Optimization",
+                "Knowledge Graph",
+                "Seafood Supply Chain",
+              ],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: safeJsonLd({
+              "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               itemListElement: [
                 { "@type": "ListItem", position: 1, name: "CloudPipe", item: "https://cloudpipe-landing.vercel.app" },

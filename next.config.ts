@@ -4,6 +4,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Signal', value: 'ai-train=yes, search=yes, ai-input=yes' },
+          { key: 'X-AEO-Network', value: 'CloudPipe-CAPN-v1' },
+        ],
+      },
+      {
         source: '/macao/llms-txt',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
