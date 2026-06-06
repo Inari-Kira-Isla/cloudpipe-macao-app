@@ -56,43 +56,24 @@ const FAQS = [
 ]
 
 export default async function MacauFoodCaseStudyPage() {
-  // Fetch live metrics from Supabase
   const supabase = createServiceClient()
-  const today = new Date().toISOString().slice(0, 10)
-
-  // AI referrals to macau-shopping
-  const { count: refCount } = await supabase
-    .from('ai_referrals')
-    .select('*', { count: 'exact', head: true })
-    .ilike('path', '%macau-shopping%')
-
-  // ai_citations with cloudpipe_count > 0 mentioning food
-  const { count: citCount } = await supabase
-    .from('ai_citations')
-    .select('*', { count: 'exact', head: true })
-    .gt('cloudpipe_count', 0)
-    .ilike('query_text', '%澳門%食%')
-
-  // Crawler visits to food-related content
   const since7d = new Date(Date.now() - 7 * 86400000).toISOString()
-  const { count: crawlCount } = await supabase
-    .from('crawler_visits')
-    .select('*', { count: 'exact', head: true })
-    .or('path.ilike.%shopping%,path.ilike.%food%,path.ilike.%macau-shopping%')
-    .gte('ts', since7d)
 
-  // Published shopping articles
-  const { count: artCount } = await supabase
-    .from('insights')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'published')
-    .or('industry.eq.shopping,slug.ilike.%macau-shopping%')
+  const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T | null> =>
+    Promise.race([p, new Promise<null>(r => setTimeout(() => r(null), ms))])
+
+  const [ref, cit, crawl, art] = await Promise.all([
+    withTimeout(supabase.from('ai_referrals').select('*', { count: 'exact', head: true }).ilike('path', '%macau-shopping%')),
+    withTimeout(supabase.from('ai_citations').select('*', { count: 'exact', head: true }).gt('cloudpipe_count', 0).ilike('query_text', '%澳門%購%')),
+    withTimeout(supabase.from('crawler_visits').select('*', { count: 'exact', head: true }).or('path.ilike.%shopping%,path.ilike.%macau-shopping%').gte('ts', since7d)),
+    withTimeout(supabase.from('insights').select('*', { count: 'exact', head: true }).eq('status', 'published').or('industry.eq.shopping,slug.ilike.%macau-shopping%')),
+  ])
 
   const metrics = {
-    ai_referrals: refCount ?? 0,
-    ai_citations: citCount ?? 0,
-    crawl_7d: crawlCount ?? 0,
-    articles: artCount ?? 0,
+    ai_referrals: ref?.count ?? 0,
+    ai_citations: cit?.count ?? 0,
+    crawl_7d: crawl?.count ?? 0,
+    articles: art?.count ?? 0,
   }
 
   const hasFirstCitation = metrics.ai_referrals > 0 || metrics.ai_citations > 0
