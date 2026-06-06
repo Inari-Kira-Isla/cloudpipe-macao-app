@@ -95,28 +95,41 @@ function parseLang(raw?: string): Lang {
 // GLOBAL articles (e.g., faq-schema-ai-citation-2026) live under a future /global hub.
 const ROUTE_REGION = 'MO' as const
 
+// FIX 2026-06-06: Supabase 過載時（實測 9-25s/查詢）無 timeout 的 SSR 查詢會疊加 hang
+// → 整頁 HTTP 000 打唔開（連被 AI 引用的頁面都 serve 唔到）。包 sbTimeout 令慢查詢
+// 6s fail-fast 返回 {data:null} → 觸發既有 static fallback / 空陣列降級，頁面照 render。
+const sbTimeout = <T,>(p: PromiseLike<T>, ms = 6000): Promise<T | { data: null }> =>
+  Promise.race([
+    Promise.resolve(p),
+    new Promise<{ data: null }>(resolve => setTimeout(() => resolve({ data: null }), ms)),
+  ])
+
 async function getInsight(slug: string, lang: Lang) {
   // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
-  const { data } = await supabase
-    .from('insights')
-    .select('*')
-    .eq('slug', slug)
-    .eq('lang', lang)
-    .eq('region', ROUTE_REGION)
-    .eq('status', 'published')
-    .eq('region', 'MO')
-    .maybeSingle()
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('*')
+      .eq('slug', slug)
+      .eq('lang', lang)
+      .eq('region', ROUTE_REGION)
+      .eq('status', 'published')
+      .eq('region', 'MO')
+      .maybeSingle()
+  )
   return (data as InsightArticle | null) || getStaticInsight(slug, lang)
 }
 
 async function getAvailableLangs(slug: string): Promise<Lang[]> {
-  const { data } = await supabase
-    .from('insights')
-    .select('lang')
-    .eq('slug', slug)
-    .eq('region', ROUTE_REGION)
-    .eq('status', 'published')
-    .eq('region', 'MO')
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('lang')
+      .eq('slug', slug)
+      .eq('region', ROUTE_REGION)
+      .eq('status', 'published')
+      .eq('region', 'MO')
+  )
   if (!data) return []
   const langs = new Set<Lang>([
     ...data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l)),
@@ -139,11 +152,13 @@ interface RelatedMerchant {
 async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
   const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
   if (!validSlugs.length) return []
-  const { data } = await supabase
-    .from('merchants')
-    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
-    .in('slug', validSlugs)
-    .eq('status', 'live')
+  const { data } = await sbTimeout(
+    supabase
+      .from('merchants')
+      .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
+      .in('slug', validSlugs)
+      .eq('status', 'live')
+  )
   if (!data) return []
   return data.map((d: Record<string, unknown>) => ({
     ...d,
@@ -199,14 +214,16 @@ async function getSpiderWebInsights(
 
   // Fetch candidates: same region, published, not self.
   // Removed null filter — insights without merchant slugs can still match via industry/keywords.
-  const { data: candidates } = await supabase
-    .from('insights')
-    .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
-    .eq('status', 'published')
-    .eq('lang', lang)
-    .eq('region', ROUTE_REGION)
-    .neq('slug', currentSlug)
-    .limit(300)
+  const { data: candidates } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
+      .eq('status', 'published')
+      .eq('lang', lang)
+      .eq('region', ROUTE_REGION)
+      .neq('slug', currentSlug)
+      .limit(300)
+  )
 
   if (!candidates?.length) return []
 
@@ -249,20 +266,24 @@ async function getFallbackMerchants(industries: string[]): Promise<RelatedMercha
   if (!industries?.length) return []
   const categorySlugs = industries.flatMap(ind => INDUSTRY_TO_CATEGORIES[ind] || [])
   if (!categorySlugs.length) return []
-  const { data: cats } = await supabase
-    .from('categories')
-    .select('id')
-    .in('slug', categorySlugs)
+  const { data: cats } = await sbTimeout(
+    supabase
+      .from('categories')
+      .select('id')
+      .in('slug', categorySlugs)
+  )
   const catIds = (cats || []).map((c: { id: string }) => c.id)
   if (!catIds.length) return []
-  const { data } = await supabase
-    .from('merchants')
-    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
-    .eq('status', 'live')
-    .in('category_id', catIds)
-    .not('google_rating', 'is', null)
-    .order('google_rating', { ascending: false })
-    .limit(6)
+  const { data } = await sbTimeout(
+    supabase
+      .from('merchants')
+      .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
+      .eq('status', 'live')
+      .in('category_id', catIds)
+      .not('google_rating', 'is', null)
+      .order('google_rating', { ascending: false })
+      .limit(6)
+  )
   if (!data) return []
   return data.map((d: Record<string, unknown>) => ({
     ...d,
