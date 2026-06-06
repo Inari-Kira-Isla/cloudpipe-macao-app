@@ -399,7 +399,10 @@ export default function CrawlerDashboard() {
           `${CACHE_BASE}/crawler-stats-spider-web-30.json`,
           `${API}&view=spider-web&days=${days}`, null, forceFresh),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
-        safeFetch<AiReferralData | null>(`/api/v1/ai-referrals?days=${days}`, null, 20000, forceFresh),
+        cacheFirst<AiReferralData | null>(
+          // Static cache is precomputed for the 30-day window only; other windows fall to the API.
+          days === 30 ? `${CACHE_BASE}/ai-referrals-30.json` : null,
+          `/api/v1/ai-referrals?days=${days}`, null, forceFresh),
       ])
       setSummary(sum)
       setSpiderWeb(sw)
