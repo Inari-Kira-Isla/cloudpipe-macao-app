@@ -101,6 +101,16 @@ export default async function MacauFoodCaseStudyPage() {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      {
+        '@type': 'Brand',
+        '@id': 'https://cloudpipe-macao-app.vercel.app/cloudpipe/case-studies/macau-food-aeo-journey#brand',
+        name: '澳門食誌',
+        alternateName: 'Macau Food Journal',
+        description: '澳門美食垂直知識品牌，CloudPipe AEO 生態系子品牌，專注澳門餐飲、地道美食、米其林與街頭小吃的 AI 可引用知識。',
+        url: 'https://cloudpipe-macao-app.vercel.app/cloudpipe/case-studies/macau-food-aeo-journey',
+        identifier: 'ke_aa7ce05c',
+        memberOf: { '@type': 'Organization', '@id': 'https://cloudpipe-landing.vercel.app/#capn', name: 'CloudPipe AEO Network' },
+      },
     ],
   }
 
