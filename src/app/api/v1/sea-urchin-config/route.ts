@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const ADMIN_KEY = 'sue-admin-2026'
+const ADMIN_KEY = process.env.SEA_URCHIN_ADMIN_KEY ?? ''
 
 // GET /api/v1/sea-urchin-config — returns all config keys as a flat object
 export async function GET() {
@@ -31,7 +31,7 @@ export async function GET() {
 
 // PUT /api/v1/sea-urchin-config — update one or more keys
 // Body: { key: string, value: unknown } or { updates: {key,value}[] }
-// Requires header: x-admin-key: sue-admin-2026
+// Requires header: x-admin-key: [SEA_URCHIN_ADMIN_KEY env var]
 export async function PUT(req: NextRequest) {
   if (req.headers.get('x-admin-key') !== ADMIN_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

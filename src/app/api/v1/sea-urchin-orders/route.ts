@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const ADMIN_KEY = 'sue-admin-2026'
+const ADMIN_KEY = process.env.SEA_URCHIN_ADMIN_KEY ?? ''
 
 export async function POST(req: NextRequest) {
   let body: {

@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cloudpipe2026'
+const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
 const BRAND_SLUG = 'inari-global-foods'
 
 function serviceClient() {

@@ -55,14 +55,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '無法生成登入連結，請稍後再試' }, { status: 500 })
   }
 
-  const redirectUrl = `/portal/${effectiveSlug}?token=${token}`
-
+  // SECURITY: Never return the token in the response body.
+  // The token must only reach the account owner via email (or the portal UI that initiates this).
+  // Returning it here would allow any caller who knows an email to obtain a valid 24h session token.
   return NextResponse.json({
     success: true,
-    message: '登入連結已發送',
-    token,
+    message: '登入連結已生成，請由品牌門戶頁面點擊登入',
     brand_slug: effectiveSlug,
-    redirect: redirectUrl,
-    expires_at: expiresAt,
   })
 }

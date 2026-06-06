@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { getMcReadiness, approveMcProduct, excludeMcProduct, pauseMcProduct } from '@/lib/commerce-supabase'
 
 const BRAND = 'inari-global-foods'
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cloudpipe2026'
+const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
 
 function checkAuth(req: Request) {
   const token = req.headers.get('x-admin-secret') || new URL(req.url).searchParams.get('secret')

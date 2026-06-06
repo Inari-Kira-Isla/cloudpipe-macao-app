@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export const maxDuration = 120
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cloudpipe2026'
+const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
 const TARGET_SIZE = 1200
 const OUTPUT_QUALITY = 92
 const BUCKET = 'commerce-images'

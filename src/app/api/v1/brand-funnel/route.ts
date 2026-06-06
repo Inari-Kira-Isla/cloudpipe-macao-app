@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
   const days = parseInt(searchParams.get('days') || '30')
   const token = searchParams.get('token')
 
-  if (token !== 'cloudpipe2026') {
+  const expectedToken = process.env.CRAWLER_STATS_TOKEN
+  if (!expectedToken || token !== expectedToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

@@ -2,11 +2,11 @@ import { revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 
 const CORS = { 'Access-Control-Allow-Origin': '*' }
-const DASHBOARD_TOKEN = 'cloudpipe2026'
+const DASHBOARD_TOKEN = process.env.CRAWLER_STATS_TOKEN ?? ''
 
 export async function POST(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')
-  if (token !== DASHBOARD_TOKEN) {
+  if (!DASHBOARD_TOKEN || token !== DASHBOARD_TOKEN) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS })
   }
   revalidateTag('crawler-stats', 'default')

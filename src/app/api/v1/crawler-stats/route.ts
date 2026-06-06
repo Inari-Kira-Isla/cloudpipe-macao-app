@@ -89,9 +89,8 @@ export async function GET(request: NextRequest) {
   const referer = request.headers.get('referer') || ''
   const token = request.nextUrl.searchParams.get('token')
   const expectedToken = process.env.CRAWLER_STATS_TOKEN
-  const dashboardToken = 'cloudpipe2026'
   const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost')
-  const isAuthorized = isInternal || token === dashboardToken || (expectedToken && token === expectedToken)
+  const isAuthorized = isInternal || (expectedToken && token === expectedToken)
 
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS })
