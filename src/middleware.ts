@@ -409,6 +409,38 @@ async function trackUserVisit(
   })().catch(() => {})
 }
 
+// Inari buffer — fallback when main Supabase is down
+// Key loaded from env at runtime (set INARI_SERVICE_ROLE_KEY in Vercel)
+const INARI_BUFFER_URL = 'https://cqartwwsbxnjjatmndtt.supabase.co/rest/v1/bot_tracking_buffer'
+
+async function writeToInariBuffer(bufferPayload: {
+  visit_time: string
+  bot_name: string | null
+  bot_owner: string | null
+  ua_raw: string
+  path: string
+  site_id: string
+  region: string
+}): Promise<void> {
+  const inariKey = process.env.INARI_SERVICE_ROLE_KEY
+  if (!inariKey) return // buffer unavailable — skip silently
+  try {
+    await fetch(INARI_BUFFER_URL, {
+      method: 'POST',
+      headers: {
+        'apikey': inariKey,
+        'Authorization': `Bearer ${inariKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(bufferPayload),
+      signal: AbortSignal.timeout(5000),
+    })
+  } catch {
+    /* buffer write also failed — visits lost, acceptable last resort */
+  }
+}
+
 async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string, ipRaw?: string | null) {
   const today = new Date().toISOString().slice(0, 10)
   const sessionId = `mw-${bot.name}-${today}`
@@ -439,8 +471,9 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
       ip_hash,
       ts: new Date().toISOString(),
     }
+    let mainOk = false
     try {
-      await fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
+      const res = await fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
         method: 'POST',
         headers: {
           'apikey': supabaseKey,
@@ -449,9 +482,23 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
           'Prefer': 'return=minimal',
         },
         body: JSON.stringify(row),
+        signal: AbortSignal.timeout(5000), // 5s hard timeout — prevent edge isolate hang
       })
+      mainOk = res.ok
     } catch {
-      /* swallow tracking errors */
+      /* main DB unreachable */
+    }
+    // Fallback: buffer in Inari DB when main write failed
+    if (!mainOk) {
+      await writeToInariBuffer({
+        visit_time: row.ts,
+        bot_name: bot.name,
+        bot_owner: bot.owner,
+        ua_raw: ua.slice(0, 200),
+        path,
+        site_id: 'cloudpipe-macao-app',
+        region: 'MO',
+      })
     }
   })().catch(() => {})
 }
