@@ -526,8 +526,9 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
 
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'ScholarlyArticle',
     headline: article.title,
+    abstract: article.description,
     description: article.description,
     datePublished: article.published_at || article.created_at,
     dateModified: article.updated_at,
@@ -553,6 +554,13 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
         }
         return buildInsightUrl(linkCfg, sw.slug, lang)
       }),
+    }),
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      citation: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'CreativeWork',
+        name: src.name,
+        url: src.url,
+      })),
     }),
     ...((article.authority_sources?.length ?? 0) > 0 && {
       isBasedOn: article.authority_sources!.map((src: { name: string; url: string }) => ({
