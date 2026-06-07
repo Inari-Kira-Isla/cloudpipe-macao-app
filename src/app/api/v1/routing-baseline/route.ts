@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
 
-// Note: avoid `force-dynamic` so Vercel CDN may serve the response;
-// freshness is controlled by the unstable_cache wrapper below.
-export const revalidate = 600 // 10 min ISR-style cache for the response
+// force-dynamic: the Supabase scan is too slow to prerender at build time
+// (>60s export timeout on t4g.micro → broke the whole build 2026-06-07).
+// Runtime freshness/caching is still handled by the unstable_cache wrapper below.
+// (Rule #3: force-dynamic + revalidate must not coexist, so revalidate removed.)
+export const dynamic = 'force-dynamic'
 
 export const maxDuration = 60
 
