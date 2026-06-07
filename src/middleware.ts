@@ -1,29 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-
-// AI platform referrers — humans clicking from AI answers
-// Match on hostname only (not full URL) — avoid utm_source=chatgpt.com false positives
-const AI_REFERRER_HOSTS: [RegExp, string][] = [
-  [/^(www\.)?perplexity\.ai$/i,                          'perplexity'],
-  [/^(www\.)?(chatgpt\.com|chat\.openai\.com)$/i,        'chatgpt'],
-  [/^(www\.)?claude\.ai$/i,                              'claude'],
-  [/^(gemini|bard)\.google\.com$/i,                      'gemini'],
-  [/^(copilot\.microsoft\.com|(www\.)?bing\.com)$/i,     'copilot'],
-  [/^(grok\.x\.ai|(www\.)?x\.com)$/i,                    'grok'],
-  [/^(www\.)?you\.com$/i,                                'you'],
-  [/^(www\.)?kagi\.com$/i,                               'kagi'],
-  [/^(www\.)?phind\.com$/i,                              'phind'],
-]
-
-function detectAiReferrer(referer: string): string | null {
-  try {
-    const host = new URL(referer).hostname
-    for (const [pattern, name] of AI_REFERRER_HOSTS) {
-      if (pattern.test(host)) return name
-    }
-  } catch { /* invalid URL */ }
-  return null
-}
+// AI referrer detection: single source of truth shared with /api/v1/track-ai-referral
+import { detectAiReferrer } from '@/lib/ai-referrers'
 
 const AI_BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT/i, /OAI-SearchBot/i,
