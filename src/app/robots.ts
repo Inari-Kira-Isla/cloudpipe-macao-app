@@ -12,6 +12,8 @@ export default function robots(): MetadataRoute.Robots {
     '/macao/citation-stats',
   ]
 
+  const allowAll = { allow: '/', disallow: aiCrawlerDisallows }
+
   return {
     rules: [
       {
@@ -19,188 +21,43 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: '/macao/*/null',
       },
-      // International AI crawlers — limit access to sensitive data
-      {
-        userAgent: 'GPTBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'ChatGPT-User',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Google-Extended',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Bingbot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'anthropic-ai',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'ClaudeBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'PerplexityBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'cohere-ai',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Applebot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Applebot-Extended',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Claude-Web',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'YouBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'CCBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'ia_archiver',
-        allow: '/',
-        disallow: ['/api/', '/macao/crawler-dashboard', '/macao/citation-stats'],
-      },
-      {
-        userAgent: 'Diffbot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'omgili',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Amazonbot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'meta-externalagent',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'FacebookBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      // Chinese AI crawlers — limit access to sensitive data
-      {
-        userAgent: 'Bytespider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'TikTokSpider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Baiduspider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'ChatGLM-Spider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: '360Spider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Sogou',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'PetalBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'DeepSeekBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'YisouSpider',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'HunyuanBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Kimi-Bot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'Doubao',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'SparkBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'SenseChat',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'XiaoIce',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'QwenBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
-      {
-        userAgent: 'MoonshotBot',
-        allow: '/',
-        disallow: aiCrawlerDisallows,
-      },
+      // === International AI crawlers ===
+      { userAgent: 'GPTBot', ...allowAll },
+      { userAgent: 'ChatGPT-User', ...allowAll },
+      { userAgent: 'OAI-SearchBot', ...allowAll },      // OpenAI search indexing
+      { userAgent: 'Google-Extended', ...allowAll },
+      { userAgent: 'Googlebot', ...allowAll },
+      { userAgent: 'Bingbot', ...allowAll },
+      { userAgent: 'anthropic-ai', ...allowAll },
+      { userAgent: 'ClaudeBot', ...allowAll },
+      { userAgent: 'PerplexityBot', ...allowAll },
+      { userAgent: 'cohere-ai', ...allowAll },
+      { userAgent: 'Applebot-Extended', ...allowAll },
+      { userAgent: 'YouBot', ...allowAll },
+      { userAgent: 'Amazonbot', ...allowAll },
+      { userAgent: 'meta-externalagent', ...allowAll },
+      { userAgent: 'FacebookBot', ...allowAll },
+      { userAgent: 'CCBot', ...allowAll },              // Common Crawl (LLM training)
+      { userAgent: 'DuckDuckBot', ...allowAll },
+      { userAgent: 'Slurp', ...allowAll },              // Yahoo/Oath
+      // === Chinese AI crawlers ===
+      { userAgent: 'Bytespider', ...allowAll },
+      { userAgent: 'TikTokSpider', ...allowAll },
+      { userAgent: 'Baiduspider', ...allowAll },
+      { userAgent: 'ChatGLM-Spider', ...allowAll },
+      { userAgent: '360Spider', ...allowAll },
+      { userAgent: 'Sogou', ...allowAll },
+      { userAgent: 'PetalBot', ...allowAll },
+      { userAgent: 'DeepSeekBot', ...allowAll },
+      { userAgent: 'YisouSpider', ...allowAll },
+      { userAgent: 'HunyuanBot', ...allowAll },
+      { userAgent: 'Kimi-Bot', ...allowAll },
+      { userAgent: 'Doubao', ...allowAll },
+      { userAgent: 'SparkBot', ...allowAll },
+      { userAgent: 'SenseChat', ...allowAll },
+      { userAgent: 'XiaoIce', ...allowAll },
+      { userAgent: 'QwenBot', ...allowAll },
+      { userAgent: 'MoonshotBot', ...allowAll },
     ],
     sitemap: [
       // 2026-05-13: added sitemap_index.xml + 6 region sub-sitemaps after
@@ -230,4 +87,3 @@ export default function robots(): MetadataRoute.Robots {
     ],
   }
 }
-// rebuild 1775000447
