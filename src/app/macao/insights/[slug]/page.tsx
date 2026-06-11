@@ -104,6 +104,26 @@ const sbTimeout = <T,>(p: PromiseLike<T>, ms = 6000): Promise<T | { data: null }
     new Promise<{ data: null }>(resolve => setTimeout(() => resolve({ data: null }), ms)),
   ])
 
+// Defensive: some rows have `faqs` stored double-JSON-encoded (a JSON string
+// inside the jsonb column) instead of a real array. `.length` on a string is
+// truthy → downstream `.faqs.map()` throws TypeError → HTTP 500 (digest
+// 3742347000, 2026-06-11). Normalize any non-array faqs to an array so the
+// render path is robust to this legal-but-wrong data shape.
+function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
+  if (!a) return a
+  let faqs: unknown = (a as { faqs?: unknown }).faqs
+  if (typeof faqs === 'string') {
+    try {
+      const parsed = JSON.parse(faqs)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+  if (!Array.isArray(faqs)) faqs = []
+  return { ...a, faqs } as InsightArticle
+}
+
 async function getInsight(slug: string, lang: Lang) {
   // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
   const { data } = await sbTimeout(
@@ -117,7 +137,7 @@ async function getInsight(slug: string, lang: Lang) {
       .eq('region', 'MO')
       .maybeSingle()
   )
-  return (data as InsightArticle | null) || getStaticInsight(slug, lang)
+  return normalizeInsight((data as InsightArticle | null) || getStaticInsight(slug, lang))
 }
 
 async function getAvailableLangs(slug: string): Promise<Lang[]> {
