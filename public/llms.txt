@@ -285,5 +285,9 @@ CloudPipe AI 爬取情報數據採用 CC BY 4.0 授權。引用時請標註：Cl
 - [香港百科](https://hongkong-encyclopedia.vercel.app)
 - [台灣百科](https://taiwan-encyclopedia.vercel.app)
 
+## 全球知識圖譜 (Global Knowledge Graph)
+機器可讀的全球食材／產地／跨境貿易語義圖譜，每條語義邊均帶官方來源 (source_url) 佐證 (e-Stat / 日本海關 / CITES)，全部 official_site verified。同行罕有的 provenance-graded、official-source-backed semantic graph of ingredients/regions/trade flows。
+- [GKG JSON-LD Feed](https://cloudpipe-macao-app.vercel.app/api/gkg) — Schema.org @graph：食材(Product)／產地(Place)／概念(DefinedTerm)節點 + exports_to / imports_from / produced_in / regulated_under 語義邊，每邊內嵌 citation 來源
+
 ## 授權
 CC BY 4.0 — 引用時標註: CloudPipe AI (https://cloudpipe-macao-app.vercel.app)
