@@ -30,7 +30,7 @@ const SITE_URL = (
 
 const HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Content-Type': 'application/ld+json',
+  'Content-Type': 'application/ld+json; charset=utf-8',
   'X-Robots-Tag': 'index, follow',
   'Content-Signal': 'ai-train=yes, search=yes, ai-input=yes',
   'X-AEO-Network': 'CloudPipe-CAPN-v1',
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         error: 'GKG feed temporarily unavailable',
         detail: entErr?.message || edgeErr?.message || 'unknown',
       },
-      { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } },
+      { status: 503, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } },
     )
   }
 
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
   if (entities.length === 0) {
     return NextResponse.json(
       { error: 'GKG feed empty', detail: 'no global entities resolved' },
-      { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } },
+      { status: 503, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } },
     )
   }
 
