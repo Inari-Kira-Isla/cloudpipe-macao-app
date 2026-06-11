@@ -80,6 +80,34 @@ export function toRoutedRegion(rawRegion: string | null | undefined): SitemapReg
   return (rawRegion || 'MO').toUpperCase() as SitemapRegion
 }
 
+/**
+ * Languages that have an ACTUAL Next.js insight route on this project.
+ *   zh → /{seg}/insights/{slug}            (canonical, no lang segment)
+ *   en → /{seg}/en/insights/{slug}
+ *   pt → /{seg}/pt/insights/{slug}
+ *   ja → /{seg}/ja/insights/{slug}
+ *
+ * The region [lang] page route only mounts these four segments (verified against
+ * src/app/{seg}/{en,pt,ja}/insights/[slug]/page.tsx + the canonical zh route).
+ */
+export const ROUTABLE_LANGS = new Set(['zh', 'en', 'pt', 'ja'])
+
+/**
+ * Whether a raw DB lang value maps to a live insight route (so buildInsightLoc
+ * produces a path the page router can actually serve).
+ *
+ * ⚠️ Rows whose lang fails this test MUST be filtered out — NOT folded to zh.
+ * Root cause (2026-06-11): 4 MO brand insights carry lang='zh-TW' (a duplicate
+ * Traditional-Chinese variant alongside the canonical lang='zh' row). buildInsightLoc
+ * treats any non-'zh' lang as a prefixed path, so it emitted /{seg}/zh-TW/insights/...
+ * which 404s (no /{seg}/zh-TW/ route exists). The canonical zh sibling row already
+ * emits the live /{seg}/insights/{slug} loc, so dropping the zh-TW row loses no
+ * coverage and removes the dead 404 link. Mirrors the hasInsightRoute() region guard.
+ */
+export function hasInsightLangRoute(rawLang: string | null | undefined): boolean {
+  return ROUTABLE_LANGS.has(rawLang || 'zh')
+}
+
 export interface InsightRow {
   slug: string
   updated_at: string

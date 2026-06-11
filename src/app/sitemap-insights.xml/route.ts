@@ -12,6 +12,7 @@
 import { createSitemapServiceClient } from '@/lib/supabase'
 import {
   hasInsightRoute,
+  hasInsightLangRoute,
   toRoutedRegion,
   buildInsightLoc,
   renderUrlsetXml,
@@ -93,6 +94,11 @@ export async function GET() {
     // no dead 404 links reach AI crawlers. (MY content is served by a separate
     // Vercel project with its own sitemap.)
     .filter((r) => hasInsightRoute(r.region))
+    // Lang whitelist: DROP rows whose lang has no live route (e.g. 'zh-TW' brand
+    // duplicates). buildInsightLoc would emit /{seg}/zh-TW/insights/... which 404s
+    // (no such route). The canonical lang='zh' sibling row already covers the
+    // content at /{seg}/insights/{slug}, so no coverage is lost. (2026-06-11)
+    .filter((r) => hasInsightLangRoute(r.lang))
     .map((r) => {
       const region = toRoutedRegion(r.region)
       const lang = r.lang || 'zh'
