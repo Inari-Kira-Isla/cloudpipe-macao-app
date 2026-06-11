@@ -29,6 +29,42 @@ export const REGION_PATH: Record<SitemapRegion, string> = {
   JBL: 'japan-shokuhinten',
 }
 
+/**
+ * Region whitelist for sitemap emission — ONLY regions that have an actual
+ * Next.js route directory under src/app/{seg}/insights/ on THIS Vercel project.
+ *
+ * ⚠️ Do NOT reuse `region in REGION_PATH` as a route-existence test: REGION_PATH
+ * intentionally carries non-routed segments (MY → malaysia, JBL → japan-shokuhinten)
+ * for cross-region link/Schema parity. MY is served by a separate Vercel project;
+ * JBL's sub-sitemap is pending. Emitting their /malaysia/... or /japan-shokuhinten/...
+ * locs into THIS app's sitemap produces dead 404 links fed to AI crawlers.
+ *
+ * Root cause (2026-06-11): ~58 MY insights (trust≥70) slipped past the prior
+ * `regionUpper in REGION_PATH` guard because MY *is* a REGION_PATH key, emitting
+ * /malaysia/insights/... locs that 404 (no src/app/malaysia route on this project).
+ *
+ * Verified against src/app/: macao, hongkong, taiwan, japan, global each have an
+ * insights/ subroute; malaysia and japan-shokuhinten do not exist.
+ */
+export const ROUTED_REGIONS = new Set<SitemapRegion>([
+  'MO',
+  'HK',
+  'TW',
+  'JP',
+  'GLOBAL',
+])
+
+/**
+ * Map any raw DB region value to a route-backed SitemapRegion, falling back to
+ * MO when the region has no actual route on this project (MY/JBL, NULL, unknown,
+ * lowercase 'macao', composite 'MO/SG', etc.). Guarantees every emitted loc
+ * targets a live route — no dead 404 links reach AI crawlers.
+ */
+export function toRoutedRegion(rawRegion: string | null | undefined): SitemapRegion {
+  const upper = (rawRegion || 'MO').toUpperCase()
+  return ROUTED_REGIONS.has(upper as SitemapRegion) ? (upper as SitemapRegion) : 'MO'
+}
+
 export interface InsightRow {
   slug: string
   updated_at: string

@@ -10,11 +10,10 @@
  */
 import { createSitemapServiceClient } from '@/lib/supabase'
 import {
-  REGION_PATH,
+  toRoutedRegion,
   buildInsightLoc,
   renderUrlsetXml,
   SITEMAP_HEADERS,
-  type SitemapRegion,
 } from '@/lib/sitemap-region'
 
 export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
@@ -75,9 +74,10 @@ export async function GET() {
   const urls = rows
     .filter((r): r is InsightRow & { slug: string } => Boolean(r.slug))
     .map((r) => {
-      const regionUpper = (r.region || 'MO').toUpperCase()
-      // Fallback to MO if region is somehow not in our 5-region map
-      const region: SitemapRegion = (regionUpper in REGION_PATH ? regionUpper : 'MO') as SitemapRegion
+      // Region whitelist: only emit locs for regions with an actual route on
+      // this project (MO/HK/TW/JP/GLOBAL). MY/JBL/NULL/unknown → MO fallback,
+      // preventing dead /malaysia/... 404 links being fed to AI crawlers.
+      const region = toRoutedRegion(r.region)
 
       // 按文章新舊分層 changefreq：7天內=daily；30天內=daily；更舊=weekly
       const ageDays = r.updated_at
