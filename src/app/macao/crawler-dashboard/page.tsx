@@ -753,7 +753,11 @@ export default function CrawlerDashboard() {
             // HeadlessFetcher 為 Perplexity 等 LLM 客戶端的 headless browser fetcher（commit 6e81f19 確認）
             // 此處保留 Google + Microsoft，與診斷報告 ~66.5% 預期一致
             const llmBots = new Set(['OpenAI', 'Anthropic', 'Perplexity', 'Google', 'Meta', 'Microsoft', 'HeadlessFetcher'])
-            const excludeOwners = new Set(['Test', 'Debug', 'Unknown'])
+            // SSOT v3 (2026-06-11): 分母 = 完整 raw 爬取量 (含 SEO + Unknown，唔排除)，
+            // 對齊 precompute 嘅 total_visits = 全 raw crawler_visits universe。
+            // 「LLM Bot 流量」= llmBots 子集；「其他 Bot 流量」= total − LLM = SEO + Unknown + 其餘。
+            // botSampleTotal == summary.total_visits == Σbots（每個 range 都自洽）。
+            const excludeOwners = new Set<string>([])
             const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
             const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
               return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)

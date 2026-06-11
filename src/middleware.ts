@@ -40,15 +40,41 @@ const BOT_NAME_MAP: [RegExp, string, string][] = [
 const PERPLEXITY_HEADLESS_UA = /Chrome\/120\.0\.0\.0/
 const HEADLESS_CHROME_UA = /Chrome\/\d+\.0\.0\.0/
 
-function detectBot(ua: string): { name: string; owner: string } | null {
+// Explicit headless token in UA (e.g. "HeadlessChrome")
+const HEADLESS_TOKEN_UA = /Headless/i
+
+// Round-version Chrome (Chrome/X.0.0.0) is NOT sufficient to flag headless:
+// modern Chrome 110+ reports .0.0.0 due to UA reduction, so real users + AI
+// agents all carry it. Require an ADDITIONAL headless signal before bucketing
+// as HeadlessFetcher; otherwise treat as normal real traffic (not a bot).
+// Signals (best-effort — only use a header if present):
+//   - explicit "Headless" token in UA
+//   - missing Accept-Language (real browsers always send it; headless often omits)
+//   - missing client hints (sec-ch-ua / sec-ch-ua-platform) — real Chrome sends them
+// Conservative: prefer under-flagging over killing real user/AI-agent traffic.
+function hasHeadlessSignal(ua: string, headers: Headers): boolean {
+  if (HEADLESS_TOKEN_UA.test(ua)) return true
+  const acceptLanguage = headers.get('accept-language')
+  if (!acceptLanguage) return true
+  const secChUa = headers.get('sec-ch-ua')
+  const secChUaPlatform = headers.get('sec-ch-ua-platform')
+  if (!secChUa && !secChUaPlatform) return true
+  return false
+}
+
+function detectBot(ua: string, headers: Headers): { name: string; owner: string } | null {
   for (const [pattern, name, owner] of BOT_NAME_MAP) {
     if (pattern.test(ua)) return { name, owner }
   }
   if (AI_BOT_PATTERNS.some(p => p.test(ua))) return { name: 'UnknownBot', owner: 'Unknown' }
   // Chrome/120.0.0.0 is the documented Perplexity real-time fetcher UA
   if (PERPLEXITY_HEADLESS_UA.test(ua)) return { name: 'PerplexityBot', owner: 'Perplexity' }
-  // Other round-version headless Chrome = generic AI headless fetcher
-  if (HEADLESS_CHROME_UA.test(ua)) return { name: 'HeadlessFetcher', owner: 'HeadlessFetcher' }
+  // Round-version headless Chrome ALONE is not enough (UA reduction makes real
+  // Chrome 110+ report .0.0.0). Only bucket as HeadlessFetcher when an extra
+  // headless signal is present; otherwise fall through → treated as real traffic.
+  if (HEADLESS_CHROME_UA.test(ua) && hasHeadlessSignal(ua, headers)) {
+    return { name: 'HeadlessFetcher', owner: 'HeadlessFetcher' }
+  }
   return null
 }
 
@@ -63,7 +89,8 @@ const OUR_BRAND_DOMAINS = [
 const NON_CONTENT_PATHS = /^\/(manifest\.json|favicon\.ico|robots\.txt|sitemap.*\.xml|llms\.txt|sw\.js|_next\/|opengraph-image|apple-touch-icon)/i
 
 // Technical/system paths that produce industry=null noise in crawler_visits — skip bot tracking
-const SKIP_BOT_TRACK_PATHS = /^\/(canary|llms[-\w]*|api\/|_next\/|favicon|icons\/|images\/|manifest\.json|robots\.txt|sitemap)/i
+// Note: `canary` matched via (^|/) so nested paths like /macao/canary are also skipped.
+const SKIP_BOT_TRACK_PATHS = /(^|\/)canary|^\/(llms[-\w]*|api\/|_next\/|favicon|icons\/|images\/|manifest\.json|robots\.txt|sitemap)/i
 
 function isOwnDomain(host: string): boolean {
   return OUR_BRAND_DOMAINS.some(d => host === d || host.endsWith('.' + d))
@@ -537,7 +564,7 @@ export async function middleware(request: NextRequest) {
   // 唔存 raw IP — 只 hash 後寫入 crawler_visits.ip_hash 供 bot IP abuse detection
   const ipRaw = extractClientIp(request)
 
-  const bot = detectBot(ua)
+  const bot = detectBot(ua, request.headers)
   if (bot && supabaseUrl && supabaseKey && !SKIP_BOT_TRACK_PATHS.test(path)) {
     trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer, ipRaw)
   } else if (!bot && supabaseUrl && supabaseKey) {

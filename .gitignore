@@ -49,3 +49,4 @@ credentials.json
 *.pem
 scripts/*.env
 .env*.local
+supabase/.temp/
