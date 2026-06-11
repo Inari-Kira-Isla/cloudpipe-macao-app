@@ -39,6 +39,10 @@ async function fetchEnglishPublishedInsights(): Promise<InsightRow[]> {
         .select('slug, updated_at, region, lang')
         .eq('status', 'published')
         .eq('lang', 'en')
+        // Tiered exposure (Fable 裁決④: demote not delete) — only A-tier
+        // (trust_score ≥ 70) insights are surfaced. NULL trust excluded.
+        // ~1,324 EN rows pass as of 2026-06-11.
+        .gte('trust_score', 70)
         .order('id', { ascending: true })
         .range(offset, offset + 999)
       if (error || !data) {

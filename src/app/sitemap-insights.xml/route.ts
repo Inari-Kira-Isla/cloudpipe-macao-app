@@ -40,6 +40,11 @@ async function fetchAllPublishedInsights(): Promise<AllInsightRow[]> {
         .from('insights')
         .select('slug, updated_at, region, lang')
         .eq('status', 'published')
+        // Tiered exposure (Fable 裁決④: demote not delete) — only A-tier
+        // (trust_score ≥ 70) insights are surfaced to AI crawlers. NULL trust
+        // (未評分) is intentionally excluded: unscored ≠ A-tier qualified.
+        // ~8,095 rows pass as of 2026-06-11, far above the <500 → 503 guard.
+        .gte('trust_score', 70)
         .order('id', { ascending: true })
         .range(offset, offset + 999)
 

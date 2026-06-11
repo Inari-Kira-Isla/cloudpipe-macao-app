@@ -19,6 +19,9 @@ export async function GET() {
       .select('slug, title, word_count, related_industries')
       .eq('status', 'published')
       .eq('lang', 'zh')
+      // Tiered exposure (Fable 裁決④: demote not delete) — llms.txt only lists
+      // A-tier (trust_score ≥ 70) insights. NULL trust (未評分) excluded.
+      .gte('trust_score', 70)
       .order('word_count', { ascending: false })
       .limit(50),
     db
