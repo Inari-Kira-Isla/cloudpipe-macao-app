@@ -11,6 +11,7 @@
  */
 import { createSitemapServiceClient } from '@/lib/supabase'
 import {
+  hasInsightRoute,
   toRoutedRegion,
   buildInsightLoc,
   renderUrlsetXml,
@@ -86,10 +87,13 @@ export async function GET() {
   const nowMs = Date.now()
   const urls = rows
     .filter((r): r is AllInsightRow & { slug: string } => Boolean(r.slug))
+    // Region whitelist: DROP rows whose region has no live route on this project
+    // (MY/JBL/NULL/'macao'/'MO/SG'). The [slug] page is region-scoped, so these
+    // 404 under both /malaysia/ and the /macao/ fallback — omit them entirely so
+    // no dead 404 links reach AI crawlers. (MY content is served by a separate
+    // Vercel project with its own sitemap.)
+    .filter((r) => hasInsightRoute(r.region))
     .map((r) => {
-      // Region whitelist: only emit locs for regions with an actual route on
-      // this project (MO/HK/TW/JP/GLOBAL). MY/JBL/NULL/unknown → MO fallback,
-      // preventing dead /malaysia/... 404 links being fed to AI crawlers.
       const region = toRoutedRegion(r.region)
       const lang = r.lang || 'zh'
 

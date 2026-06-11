@@ -55,14 +55,29 @@ export const ROUTED_REGIONS = new Set<SitemapRegion>([
 ])
 
 /**
- * Map any raw DB region value to a route-backed SitemapRegion, falling back to
- * MO when the region has no actual route on this project (MY/JBL, NULL, unknown,
- * lowercase 'macao', composite 'MO/SG', etc.). Guarantees every emitted loc
- * targets a live route — no dead 404 links reach AI crawlers.
+ * Whether a raw DB region value maps to a live insights route on THIS project.
+ *
+ * ⚠️ Rows that fail this test MUST be filtered out of the sitemap entirely —
+ * NOT folded to MO. The region [slug] page is region-scoped: an MY-region
+ * insight (e.g. malaysia-data-center-investment-2024) 404s under /macao/insights/
+ * just as it 404s under /malaysia/insights/, because the page query filters by
+ * region=MY and no MO page exists for that slug. Folding MY→MO would merely swap
+ * one dead 404 link for another. The only correct behaviour is to omit the loc.
+ *
+ * NULL / unknown / lowercase 'macao' / composite 'MO/SG' likewise have no
+ * dedicated routed page and are dropped.
+ */
+export function hasInsightRoute(rawRegion: string | null | undefined): boolean {
+  const upper = (rawRegion || '').toUpperCase()
+  return ROUTED_REGIONS.has(upper as SitemapRegion)
+}
+
+/**
+ * Normalise a region value KNOWN to be routed (caller must have filtered via
+ * hasInsightRoute first) into its SitemapRegion key.
  */
 export function toRoutedRegion(rawRegion: string | null | undefined): SitemapRegion {
-  const upper = (rawRegion || 'MO').toUpperCase()
-  return ROUTED_REGIONS.has(upper as SitemapRegion) ? (upper as SitemapRegion) : 'MO'
+  return (rawRegion || 'MO').toUpperCase() as SitemapRegion
 }
 
 export interface InsightRow {
