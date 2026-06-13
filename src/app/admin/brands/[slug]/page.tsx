@@ -269,12 +269,22 @@ export default function BrandEditorPage() {
           <Link href={`/admin/brands?key=${encodeURIComponent(adminKey)}`} style={{ color: '#64748b', fontSize: 13, textDecoration: 'none' }}>
             ← 品牌列表
           </Link>
-          <h1 style={{ color: '#f1f5f9', fontSize: 22, margin: '8px 0 4px' }}>
-            {brand.name_zh}
-            <span style={{ color: '#64748b', fontSize: 14, marginLeft: 8 }}>{brand.name_en}</span>
-          </h1>
-          <div style={{ fontSize: 12, color: '#475569' }}>
-            slug: {brand.slug} · 更新: {brand.updated_at?.slice(0, 16)} · by {brand.updated_by}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <h1 style={{ color: '#f1f5f9', fontSize: 22, margin: '8px 0 4px' }}>
+                {brand.name_zh}
+                <span style={{ color: '#64748b', fontSize: 14, marginLeft: 8 }}>{brand.name_en}</span>
+              </h1>
+              <div style={{ fontSize: 12, color: '#475569' }}>
+                slug: {brand.slug} · 更新: {brand.updated_at?.slice(0, 16)} · by {brand.updated_by}
+              </div>
+            </div>
+            <Link
+              href={`/admin/brands/${brand.slug}/products?key=${encodeURIComponent(adminKey)}`}
+              style={{ flexShrink: 0, marginTop: 8, padding: '7px 14px', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 13, color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+            >
+              📷 商品圖片
+            </Link>
           </div>
         </div>
 
