@@ -10,6 +10,7 @@ import AeoQuestTab from './AeoQuestTab'
 import BrandProfileEditor from './BrandProfileEditor'
 import BrandFaqEditor from './BrandFaqEditor'
 import BrandProductsEditor from './BrandProductsEditor'
+import BrandSsotEditor from './BrandSsotEditor'
 
 const PASSWORD = 'cloudpipe2026'
 const APP_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
@@ -754,7 +755,10 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
 
           {/* ════════════ PROFILE TAB ════════════ */}
           {activeTab === 'profile' && slug && (
-            <BrandProfileEditor slug={slug} />
+            <>
+              <BrandProfileEditor slug={slug} />
+              <BrandSsotEditor slug={slug} />
+            </>
           )}
 
           {/* ════════════ FAQ TAB ════════════ */}
