@@ -3,9 +3,9 @@
 import { useState } from 'react'
 
 const ENGINES = [
-  { id: 'chatgpt', name: 'ChatGPT', icon: '🤖' },
-  { id: 'perplexity', name: 'Perplexity', icon: '🔍' },
-  { id: 'gemini', name: 'Gemini', icon: '✨' },
+  { id: 'youcom', name: 'You.com', icon: '🔎', live: true },
+  { id: 'chatgpt', name: 'ChatGPT', icon: '🤖', live: false },
+  { id: 'perplexity', name: 'Perplexity', icon: '🔍', live: false },
 ]
 
 const CATEGORIES = [
@@ -83,7 +83,7 @@ export default function AuditPage() {
           AI 能見度免費審計
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 16, margin: 0, maxWidth: 480, marginInline: 'auto' }}>
-          輸入你的品牌名，即時查看 ChatGPT / Perplexity / Gemini 有冇提及你
+          輸入你的品牌名，即時查看 AI 搜尋引擎有否引用你，並分析你的知識圖譜覆蓋缺口
         </p>
       </div>
 
@@ -183,9 +183,13 @@ export default function AuditPage() {
               {ENGINES.map(e => (
                 <div key={e.id} style={{ background: '#fff', borderRadius: 12, padding: '10px 18px', fontSize: 14, color: '#444', boxShadow: '0 1px 8px rgba(0,0,0,0.06)', display: 'flex', gap: 6, alignItems: 'center' }}>
                   {e.icon} {e.name}
+                  {e.live && <span style={{ fontSize: 10, background: '#25D36620', color: '#25D366', padding: '2px 6px', borderRadius: 6, fontWeight: 700 }}>LIVE</span>}
                 </div>
               ))}
             </div>
+            <p style={{ textAlign: 'center', color: '#aaa', fontSize: 12, marginTop: 10, marginBottom: 0 }}>
+              Layer 1：You.com 即時 AI 搜尋（真實查詢）· Layer 2：ChatGPT / Perplexity 知識圖譜估算
+            </p>
           </form>
         )}
 
