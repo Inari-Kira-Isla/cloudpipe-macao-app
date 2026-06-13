@@ -64,7 +64,18 @@ function BrandEditorContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const slug = params.slug as string
-  const adminKey = searchParams.get('key') ?? ''
+  const urlKey = searchParams.get('key') ?? ''
+  const [adminKey, setAdminKey] = useState(urlKey)
+
+  useEffect(() => {
+    if (urlKey) {
+      sessionStorage.setItem('bak', urlKey)
+      setAdminKey(urlKey)
+    } else {
+      const saved = sessionStorage.getItem('bak')
+      if (saved) setAdminKey(saved)
+    }
+  }, [urlKey])
 
   const [brand, setBrand] = useState<BrandConfig | null>(null)
   const [loading, setLoading] = useState(true)
