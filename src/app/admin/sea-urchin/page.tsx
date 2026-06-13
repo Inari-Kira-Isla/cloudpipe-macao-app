@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { TOKENS, getBrandTokens } from '@/lib/design-tokens'
+
+const brand = getBrandTokens('sea-urchin-express')
 
 // ─── Page-content editor types ────────────────────────────────
 type SizeEntry    = { id: string; name: string; weight: string; price: number; sub: string; isB2B: boolean }
@@ -80,6 +83,79 @@ interface Stats {
 }
 
 const ADMIN_KEY = 'sue-admin-2026'
+
+// ─── White Minimal shared styles ───────────────────────────────
+const sectionCard: React.CSSProperties = {
+  ...TOKENS.card,
+  padding: 28,
+  marginBottom: 20,
+}
+
+const inputStyle: React.CSSProperties = {
+  ...TOKENS.input,
+}
+
+const selectStyle: React.CSSProperties = {
+  ...TOKENS.input,
+  cursor: 'pointer',
+}
+
+const primaryBtn: React.CSSProperties = {
+  ...TOKENS.button.primary,
+}
+
+const amberBtn: React.CSSProperties = {
+  ...TOKENS.button.primary,
+  background: brand.accent,
+}
+
+const secondaryBtn: React.CSSProperties = {
+  ...TOKENS.button.secondary,
+}
+
+const dangerBtn: React.CSSProperties = {
+  background: TOKENS.color.errorBg,
+  border: `1px solid ${TOKENS.color.errorBorder}`,
+  borderRadius: TOKENS.radius.md,
+  padding: '4px 10px',
+  color: '#dc2626',
+  fontSize: 18,
+  lineHeight: 1,
+  cursor: 'pointer',
+}
+
+const addBtn: React.CSSProperties = {
+  background: brand.accentLight,
+  border: `1px solid ${brand.accentBorder}`,
+  borderRadius: TOKENS.radius.md,
+  padding: '5px 14px',
+  color: brand.accentDark,
+  fontSize: 12,
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const sectionDivider: React.CSSProperties = {
+  borderTop: `1px solid ${TOKENS.color.borderMuted}`,
+  paddingTop: 16,
+  marginTop: 16,
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={TOKENS.sectionHeader(brand.accent)}>
+      {children}
+    </div>
+  )
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label style={{ display: 'block', ...TOKENS.type.label, marginBottom: 6 }}>
+      {children}
+    </label>
+  )
+}
 
 export default function SeaUrchinAdminPage() {
   const [tab, setTab] = useState<'customers' | 'content'>('content')
@@ -286,57 +362,119 @@ export default function SeaUrchinAdminPage() {
     document.body.removeChild(link)
   }
 
+  const today = new Date().toLocaleDateString('zh-HK', { year: 'numeric', month: 'long', day: 'numeric' })
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-amber-400 mb-2">海膽速遞 • 後台管理</h1>
-            <p className="text-zinc-400">⚠️ 管理員頁面 · 請勿分享此 URL · <a href="/sea-urchin" target="_blank" className="text-amber-400 underline">前往網站 →</a></p>
+    <div style={{
+      background: TOKENS.color.bgSubtle,
+      minHeight: '100vh',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      color: TOKENS.color.text,
+    }}>
+      {/* ── Sticky Navbar ── */}
+      <div style={{
+        ...TOKENS.nav,
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        height: 60,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: TOKENS.color.text }}>
+            Sea Urchin Admin
+          </span>
+          <span style={{
+            fontSize: 11,
+            color: brand.accentDark,
+            background: brand.accentLight,
+            border: `1px solid ${brand.accentBorder}`,
+            borderRadius: 20,
+            padding: '2px 10px',
+            marginLeft: 12,
+          }}>
+            海膽速遞
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 12, color: TOKENS.color.textSubtle }}>{today}</span>
+          <a
+            href="/sea-urchin"
+            target="_blank"
+            style={{ fontSize: 12, color: brand.accent, textDecoration: 'none', fontWeight: 600 }}
+          >
+            前往網站 →
+          </a>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
+
+        {/* Page Header */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.color.textSubtle }}>
+            管理員頁面 · 請勿分享此 URL
           </div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: TOKENS.color.text, letterSpacing: '-0.02em', marginTop: 4, marginBottom: 0 }}>
+            海膽速遞 · 後台管理
+          </h1>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-zinc-800">
+        {/* ── Tabs ── */}
+        <div style={TOKENS.tab.bar}>
           {(['content', 'customers'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-5 py-2 font-semibold text-sm transition border-b-2 -mb-px ${tab === t ? 'border-amber-400 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'}`}
+              style={TOKENS.tab.item(tab === t, brand.accent)}
             >
-              {t === 'content' ? '📝 頁面內容' : '👥 客戶管理'}
+              {t === 'content' ? '頁面內容' : '客戶管理'}
             </button>
           ))}
         </div>
 
         {/* ── CONTENT TAB ── */}
         {tab === 'content' && (
-          <div style={{ fontFamily: 'system-ui', color: '#f4f4f5' }}>
+          <div>
             {saveStatus && (
-              <div className={`p-3 rounded-lg mb-4 text-sm font-semibold ${saveStatus.type === 'ok' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+              <div style={{
+                padding: '12px 16px',
+                borderRadius: TOKENS.radius.md,
+                fontSize: 13,
+                fontWeight: 600,
+                marginBottom: 20,
+                background: saveStatus.type === 'ok' ? TOKENS.color.successBg : TOKENS.color.errorBg,
+                border: saveStatus.type === 'ok' ? `1px solid ${TOKENS.color.successBorder}` : `1px solid ${TOKENS.color.errorBorder}`,
+                color: saveStatus.type === 'ok' ? '#166534' : '#dc2626',
+              }}>
                 {saveStatus.msg}
               </div>
             )}
 
             {/* Notice */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-3">📢 公告橫幅</h2>
-              <div className="flex gap-3 items-center flex-wrap">
+            <div style={sectionCard}>
+              <SectionHeader>公告橫幅</SectionHeader>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                 <input
-                  className="flex-1 min-w-60 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                  style={{ ...inputStyle, flex: 1, minWidth: 240 }}
                   value={cfg.notice}
                   onChange={e => setCfg(c => ({ ...c, notice: e.target.value }))}
                 />
-                <button disabled={saving} onClick={() => saveConfig('notice', cfg.notice)} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存</button>
+                <button disabled={saving} onClick={() => saveConfig('notice', cfg.notice)} style={secondaryBtn}>
+                  儲存
+                </button>
               </div>
-              <div className="mt-2 text-xs text-zinc-500">預覽：<span className="bg-orange-600 text-white px-2 py-0.5 rounded text-xs">{cfg.notice}</span></div>
+              <div style={{ marginTop: 10, fontSize: 12, color: TOKENS.color.textSubtle }}>
+                預覽：
+                <span style={{ background: brand.accent, color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 12, marginLeft: 6 }}>
+                  {cfg.notice}
+                </span>
+              </div>
             </div>
 
             {/* Drop Info */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">🎯 本週 DROP</h2>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div style={sectionCard}>
+              <SectionHeader>本週 DROP</SectionHeader>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
                 {([
                   ['no', 'DROP 編號', 'text'],
                   ['name', '商品名稱', 'text'],
@@ -346,241 +484,305 @@ export default function SeaUrchinAdminPage() {
                   ['temp', '冷鏈溫度 (°C)', 'number'],
                 ] as [keyof DropConfig, string, string][]).map(([field, label, type]) => (
                   <div key={field}>
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{label}</label>
+                    <FieldLabel>{label}</FieldLabel>
                     <input
                       type={type}
                       step={type === 'number' ? '0.1' : undefined}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                      style={inputStyle}
                       value={cfg.drop[field]}
                       onChange={e => setDrop(field, type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                     />
                   </div>
                 ))}
               </div>
-              <button disabled={saving} onClick={() => saveConfig('drop', cfg.drop)} className="mt-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存 DROP 資訊</button>
+              <div style={{ marginTop: 16 }}>
+                <button disabled={saving} onClick={() => saveConfig('drop', cfg.drop)} style={secondaryBtn}>
+                  儲存 DROP 資訊
+                </button>
+              </div>
             </div>
 
             {/* Delivery */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">📅 配送設定</h2>
-              <div className="grid grid-cols-2 gap-4">
+            <div style={sectionCard}>
+              <SectionHeader>配送設定</SectionHeader>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, maxWidth: 400 }}>
                 <div>
-                  <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">到貨日</label>
-                  <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={cfg.delivery_day} onChange={e => setCfg(c => ({ ...c, delivery_day: parseInt(e.target.value) }))}>
+                  <FieldLabel>到貨日</FieldLabel>
+                  <select style={selectStyle} value={cfg.delivery_day} onChange={e => setCfg(c => ({ ...c, delivery_day: parseInt(e.target.value) }))}>
                     {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">截單日</label>
-                  <select className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={cfg.cutoff_day} onChange={e => setCfg(c => ({ ...c, cutoff_day: parseInt(e.target.value) }))}>
+                  <FieldLabel>截單日</FieldLabel>
+                  <select style={selectStyle} value={cfg.cutoff_day} onChange={e => setCfg(c => ({ ...c, cutoff_day: parseInt(e.target.value) }))}>
                     {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
                   </select>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-zinc-500">⚠️ 更改此設定後需重新部署網站才能反映倒數計時</p>
-              <button disabled={saving} onClick={() => saveConfig('delivery_day', cfg.delivery_day).then(() => saveConfig('cutoff_day', cfg.cutoff_day))} className="mt-3 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存配送設定</button>
+              <p style={{ marginTop: 12, fontSize: 12, color: TOKENS.color.textSubtle }}>
+                更改此設定後需重新部署網站才能反映倒數計時
+              </p>
+              <button
+                disabled={saving}
+                onClick={() => saveConfig('delivery_day', cfg.delivery_day).then(() => saveConfig('cutoff_day', cfg.cutoff_day))}
+                style={{ ...secondaryBtn, marginTop: 12 }}
+              >
+                儲存配送設定
+              </button>
             </div>
 
             {/* Sizes */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">📦 產品規格及定價</h2>
-                <button onClick={addSize} className="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold text-white">＋ 增加規格</button>
+            <div style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionHeader>產品規格及定價</SectionHeader>
+                <button onClick={addSize} style={addBtn}>＋ 增加規格</button>
               </div>
               {cfg.sizes.map((size, idx) => (
-                <div key={size.id} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-400 uppercase">{size.id}</span>
-                      <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer">
-                        <input type="checkbox" checked={!!size.isB2B} onChange={e => setSize(idx, 'isB2B', e.target.checked)} className="accent-amber-400" />
+                <div key={size.id} style={idx > 0 ? sectionDivider : {}}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: brand.accent, letterSpacing: '0.08em' }}>{size.id}</span>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: TOKENS.color.textMuted, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={!!size.isB2B}
+                          onChange={e => setSize(idx, 'isB2B', e.target.checked)}
+                          style={{ accentColor: brand.accent }}
+                        />
                         B2B詢價
                       </label>
                     </div>
-                    <button onClick={() => rmSize(idx)} className="text-red-500 hover:text-red-300 text-lg leading-none">×</button>
+                    <button onClick={() => rmSize(idx)} style={dangerBtn}>×</button>
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">名稱</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.name} onChange={e => setSize(idx, 'name', e.target.value)} />
+                      <FieldLabel>名稱</FieldLabel>
+                      <input style={inputStyle} value={size.name} onChange={e => setSize(idx, 'name', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">規格 / 重量</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.weight} onChange={e => setSize(idx, 'weight', e.target.value)} />
+                      <FieldLabel>規格 / 重量</FieldLabel>
+                      <input style={inputStyle} value={size.weight} onChange={e => setSize(idx, 'weight', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">說明</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.sub} onChange={e => setSize(idx, 'sub', e.target.value)} />
+                      <FieldLabel>說明</FieldLabel>
+                      <input style={inputStyle} value={size.sub} onChange={e => setSize(idx, 'sub', e.target.value)} />
                     </div>
                     {!size.isB2B && (
                       <div>
-                        <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">價格 (MOP$)</label>
-                        <input type="number" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={size.price} onChange={e => setSize(idx, 'price', parseInt(e.target.value))} />
+                        <FieldLabel>價格 (MOP$)</FieldLabel>
+                        <input type="number" style={inputStyle} value={size.price} onChange={e => setSize(idx, 'price', parseInt(e.target.value))} />
                       </div>
                     )}
                   </div>
                 </div>
               ))}
-              <button disabled={saving} onClick={() => saveConfig('sizes', cfg.sizes)} className="mt-5 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存產品規格</button>
+              <button disabled={saving} onClick={() => saveConfig('sizes', cfg.sizes)} style={{ ...secondaryBtn, marginTop: 18 }}>
+                儲存產品規格
+              </button>
             </div>
 
             {/* Steps */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">📋 四步驟說明</h2>
-                <button onClick={addStep} className="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold text-white">＋ 增加步驟</button>
+            <div style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionHeader>四步驟說明</SectionHeader>
+                <button onClick={addStep} style={addBtn}>＋ 增加步驟</button>
               </div>
               {cfg.steps.map((step, idx) => (
-                <div key={idx} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-amber-400">步驟 {idx + 1}</span>
-                    <button onClick={() => rmStep(idx)} className="text-red-500 hover:text-red-300 text-lg leading-none">×</button>
+                <div key={idx} style={idx > 0 ? sectionDivider : {}}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: brand.accent, letterSpacing: '0.08em' }}>步驟 {idx + 1}</span>
+                    <button onClick={() => rmStep(idx)} style={dangerBtn}>×</button>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 mb-2">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">標籤 (英文)</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={step.lbl} onChange={e => setStep(idx, 'lbl', e.target.value)} />
+                      <FieldLabel>標籤 (英文)</FieldLabel>
+                      <input style={inputStyle} value={step.lbl} onChange={e => setStep(idx, 'lbl', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">標題 (中文)</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={step.name} onChange={e => setStep(idx, 'name', e.target.value)} />
+                      <FieldLabel>標題 (中文)</FieldLabel>
+                      <input style={inputStyle} value={step.name} onChange={e => setStep(idx, 'name', e.target.value)} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">說明</label>
-                    <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white resize-none" rows={2} value={step.desc} onChange={e => setStep(idx, 'desc', e.target.value)} />
+                    <FieldLabel>說明</FieldLabel>
+                    <textarea
+                      style={TOKENS.textarea}
+                      rows={2}
+                      value={step.desc}
+                      onChange={e => setStep(idx, 'desc', e.target.value)}
+                    />
                   </div>
                 </div>
               ))}
-              <button disabled={saving} onClick={() => saveConfig('steps', cfg.steps)} className="mt-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存步驟</button>
+              <button disabled={saving} onClick={() => saveConfig('steps', cfg.steps)} style={{ ...secondaryBtn, marginTop: 16 }}>
+                儲存步驟
+              </button>
             </div>
 
             {/* Archive */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">📁 過往掉落記錄</h2>
-                <button onClick={addArch} className="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold text-white">＋ 新增記錄</button>
+            <div style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionHeader>過往掉落記錄</SectionHeader>
+                <button onClick={addArch} style={addBtn}>＋ 新增記錄</button>
               </div>
               {cfg.archive.map((item, idx) => (
-                <div key={idx} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-amber-400">DROP NO. {item.no}</span>
-                      <label className="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" checked={!!item.available} onChange={e => setArch(idx, 'available', e.target.checked)} className="accent-green-500" />
-                        <span className={`text-xs font-semibold ${item.available ? 'text-green-400' : 'text-zinc-500'}`}>
-                          {item.available ? '✓ 仍可訂購' : '已售罄'}
-                        </span>
+                <div key={idx} style={idx > 0 ? sectionDivider : {}}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: brand.accent, letterSpacing: '0.08em' }}>DROP NO. {item.no}</span>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={!!item.available}
+                          onChange={e => setArch(idx, 'available', e.target.checked)}
+                          style={{ accentColor: '#16a34a' }}
+                        />
+                        {item.available ? (
+                          <span style={{ ...TOKENS.badge.default, ...TOKENS.badge.success }}>
+                            仍可訂購
+                          </span>
+                        ) : (
+                          <span style={{ ...TOKENS.badge.default, ...TOKENS.badge.neutral }}>
+                            已售罄
+                          </span>
+                        )}
                       </label>
                     </div>
-                    <button onClick={() => rmArch(idx)} className="text-red-500 hover:text-red-300 text-lg leading-none">×</button>
+                    <button onClick={() => rmArch(idx)} style={dangerBtn}>×</button>
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">編號</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.no} onChange={e => setArch(idx, 'no', e.target.value)} />
+                      <FieldLabel>編號</FieldLabel>
+                      <input style={inputStyle} value={item.no} onChange={e => setArch(idx, 'no', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">商品名稱</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.name} onChange={e => setArch(idx, 'name', e.target.value)} />
+                      <FieldLabel>商品名稱</FieldLabel>
+                      <input style={inputStyle} value={item.name} onChange={e => setArch(idx, 'name', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">日期</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.date} onChange={e => setArch(idx, 'date', e.target.value)} />
+                      <FieldLabel>日期</FieldLabel>
+                      <input style={inputStyle} value={item.date} onChange={e => setArch(idx, 'date', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">數量 (盒)</label>
-                      <input type="number" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.sold} onChange={e => setArch(idx, 'sold', parseInt(e.target.value))} />
+                      <FieldLabel>數量 (盒)</FieldLabel>
+                      <input type="number" style={inputStyle} value={item.sold} onChange={e => setArch(idx, 'sold', parseInt(e.target.value))} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">售罄時間 / 備注</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.time} onChange={e => setArch(idx, 'time', e.target.value)} />
+                      <FieldLabel>售罄時間 / 備注</FieldLabel>
+                      <input style={inputStyle} value={item.time} onChange={e => setArch(idx, 'time', e.target.value)} />
                     </div>
                     {item.available && (
                       <>
                         <div>
-                          <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">規格 (weight)</label>
-                          <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" placeholder="e.g. 100g / 板" value={item.weight ?? ''} onChange={e => setArch(idx, 'weight', e.target.value)} />
+                          <FieldLabel>規格 (weight)</FieldLabel>
+                          <input style={inputStyle} placeholder="e.g. 100g / 板" value={item.weight ?? ''} onChange={e => setArch(idx, 'weight', e.target.value)} />
                         </div>
                         <div>
-                          <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">訂購價格 (MOP$)</label>
-                          <input type="number" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" placeholder="0" value={item.price ?? 0} onChange={e => setArch(idx, 'price', parseInt(e.target.value))} />
+                          <FieldLabel>訂購價格 (MOP$)</FieldLabel>
+                          <input type="number" style={inputStyle} placeholder="0" value={item.price ?? 0} onChange={e => setArch(idx, 'price', parseInt(e.target.value))} />
                         </div>
                       </>
                     )}
                   </div>
                 </div>
               ))}
-              <button disabled={saving} onClick={() => saveConfig('archive', cfg.archive)} className="mt-5 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存過往記錄</button>
+              <button disabled={saving} onClick={() => saveConfig('archive', cfg.archive)} style={{ ...secondaryBtn, marginTop: 18 }}>
+                儲存過往記錄
+              </button>
             </div>
 
             {/* Reviews */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">⭐ 客戶評價</h2>
-                <button onClick={addReview} className="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold text-white">＋ 新增評價</button>
+            <div style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionHeader>客戶評價</SectionHeader>
+                <button onClick={addReview} style={addBtn}>＋ 新增評價</button>
               </div>
               {cfg.reviews.map((rev, idx) => (
-                <div key={idx} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-amber-400">評價 {idx + 1}</span>
-                    <button onClick={() => rmReview(idx)} className="text-red-500 hover:text-red-300 text-lg leading-none">×</button>
+                <div key={idx} style={idx > 0 ? sectionDivider : {}}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: brand.accent, letterSpacing: '0.08em' }}>評價 {idx + 1}</span>
+                    <button onClick={() => rmReview(idx)} style={dangerBtn}>×</button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 mb-2">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 }}>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">客戶代號 (顯示)</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={rev.n} onChange={e => setRev(idx, 'n', e.target.value)} />
+                      <FieldLabel>客戶代號 (顯示)</FieldLabel>
+                      <input style={inputStyle} value={rev.n} onChange={e => setRev(idx, 'n', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">頭像字母</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" maxLength={1} value={rev.a} onChange={e => setRev(idx, 'a', e.target.value)} />
+                      <FieldLabel>頭像字母</FieldLabel>
+                      <input style={inputStyle} maxLength={1} value={rev.a} onChange={e => setRev(idx, 'a', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">購買記錄</label>
-                      <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={rev.m} onChange={e => setRev(idx, 'm', e.target.value)} />
+                      <FieldLabel>購買記錄</FieldLabel>
+                      <input style={inputStyle} value={rev.m} onChange={e => setRev(idx, 'm', e.target.value)} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">評價內容</label>
-                    <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white resize-none" rows={2} value={rev.q} onChange={e => setRev(idx, 'q', e.target.value)} />
+                    <FieldLabel>評價內容</FieldLabel>
+                    <textarea
+                      style={TOKENS.textarea}
+                      rows={2}
+                      value={rev.q}
+                      onChange={e => setRev(idx, 'q', e.target.value)}
+                    />
                   </div>
                 </div>
               ))}
-              <button disabled={saving} onClick={() => saveConfig('reviews', cfg.reviews)} className="mt-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存評價</button>
+              <button disabled={saving} onClick={() => saveConfig('reviews', cfg.reviews)} style={{ ...secondaryBtn, marginTop: 16 }}>
+                儲存評價
+              </button>
             </div>
 
             {/* FAQ */}
-            <div className="bg-zinc-900 rounded-xl p-5 mb-4 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">❓ 常見問題 FAQ</h2>
-                <button onClick={addFaq} className="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold text-white">＋ 新增問題</button>
+            <div style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionHeader>常見問題 FAQ</SectionHeader>
+                <button onClick={addFaq} style={addBtn}>＋ 新增問題</button>
               </div>
               {cfg.faq.map((item, idx) => (
-                <div key={idx} className={`${idx > 0 ? 'border-t border-zinc-800 pt-4 mt-4' : ''}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-amber-400">Q.{String(idx + 1).padStart(2, '0')}</span>
-                    <button onClick={() => rmFaq(idx)} className="text-red-500 hover:text-red-300 text-lg leading-none">×</button>
+                <div key={idx} style={idx > 0 ? sectionDivider : {}}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: brand.accent, letterSpacing: '0.08em' }}>
+                      Q.{String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <button onClick={() => rmFaq(idx)} style={dangerBtn}>×</button>
                   </div>
-                  <div className="mb-2">
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">問題</label>
-                    <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white" value={item.q} onChange={e => setFaq(idx, 'q', e.target.value)} />
+                  <div style={{ marginBottom: 10 }}>
+                    <FieldLabel>問題</FieldLabel>
+                    <input style={inputStyle} value={item.q} onChange={e => setFaq(idx, 'q', e.target.value)} />
                   </div>
                   <div>
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">答案</label>
-                    <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white resize-none" rows={2} value={item.a} onChange={e => setFaq(idx, 'a', e.target.value)} />
+                    <FieldLabel>答案</FieldLabel>
+                    <textarea
+                      style={TOKENS.textarea}
+                      rows={2}
+                      value={item.a}
+                      onChange={e => setFaq(idx, 'a', e.target.value)}
+                    />
                   </div>
                 </div>
               ))}
-              <button disabled={saving} onClick={() => saveConfig('faq', cfg.faq)} className="mt-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider transition">儲存 FAQ</button>
+              <button disabled={saving} onClick={() => saveConfig('faq', cfg.faq)} style={{ ...secondaryBtn, marginTop: 16 }}>
+                儲存 FAQ
+              </button>
             </div>
 
             {/* Save All */}
             <button
               onClick={saveAll}
               disabled={saving}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl text-sm uppercase tracking-wider transition"
+              style={{
+                ...amberBtn,
+                width: '100%',
+                padding: '14px 20px',
+                fontSize: 14,
+                borderRadius: TOKENS.radius.lg,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                opacity: saving ? 0.7 : 1,
+              }}
             >
-              {saving ? '儲存中…' : '💾 全部儲存'}
+              {saving ? '儲存中…' : '全部儲存'}
             </button>
           </div>
         )}
@@ -588,198 +790,235 @@ export default function SeaUrchinAdminPage() {
         {/* ── CUSTOMERS TAB ── */}
         {tab === 'customers' && (
           <div>
+            {/* Stats Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14, marginBottom: 28 }}>
+              {[
+                { label: '總客戶數', value: stats.total, accent: '#f59e0b' },
+                { label: '個人客戶', value: stats.retail, accent: '#3b82f6' },
+                { label: '餐廳批發', value: stats.restaurant, accent: '#22c55e' },
+                { label: 'VIP 客戶', value: stats.vip, accent: '#a855f7' },
+                { label: '本週新增', value: stats.thisWeek, accent: '#ec4899' },
+              ].map(({ label, value, accent }) => (
+                <div key={label} style={{
+                  ...TOKENS.card,
+                  borderTop: `2px solid ${accent}`,
+                  padding: 18,
+                }}>
+                  <p style={{ fontSize: 11, color: TOKENS.color.textSubtle, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
+                  <p style={{ fontSize: 32, fontWeight: 800, margin: '8px 0 0', color: TOKENS.color.text }}>{value}</p>
+                </div>
+              ))}
+            </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <StatCard label="總客戶數" value={stats.total} color="bg-amber-500" />
-          <StatCard label="個人客戶" value={stats.retail} color="bg-blue-500" />
-          <StatCard label="餐廳批發" value={stats.restaurant} color="bg-green-500" />
-          <StatCard label="VIP 客戶" value={stats.vip} color="bg-purple-500" />
-          <StatCard label="本週新增" value={stats.thisWeek} color="bg-pink-500" />
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex gap-2 flex-wrap">
-            {['all', 'retail', 'restaurant', 'chef', 'vip'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setFilter(type)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  filter === type
-                    ? 'bg-amber-400 text-black'
-                    : 'bg-zinc-800 text-white hover:bg-zinc-700'
-                }`}
-              >
-                {type === 'all'
-                  ? '全部'
-                  : type === 'retail'
-                    ? '個人'
-                    : type === 'restaurant'
-                      ? '餐廳'
-                      : type === 'chef'
-                        ? '主廚'
-                        : 'VIP'}
+            {/* Controls */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
+              {['all', 'retail', 'restaurant', 'chef', 'vip'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFilter(type)}
+                  style={filter === type ? {
+                    background: brand.accentLight,
+                    border: `1px solid ${brand.accentBorder}`,
+                    color: brand.accentDark,
+                    borderRadius: TOKENS.radius.md,
+                    padding: '7px 16px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  } : {
+                    background: TOKENS.color.bg,
+                    border: `1px solid ${TOKENS.color.border}`,
+                    color: TOKENS.color.textMuted,
+                    borderRadius: TOKENS.radius.md,
+                    padding: '7px 16px',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {type === 'all' ? '全部' : type === 'retail' ? '個人' : type === 'restaurant' ? '餐廳' : type === 'chef' ? '主廚' : 'VIP'}
+                </button>
+              ))}
+              <button onClick={exportCSV} style={{
+                background: TOKENS.color.successBg,
+                border: `1px solid ${TOKENS.color.successBorder}`,
+                color: '#166534',
+                borderRadius: TOKENS.radius.md,
+                padding: '7px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginLeft: 4,
+              }}>
+                匯出 CSV
               </button>
-            ))}
-          </div>
-          <button
-            onClick={exportCSV}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition"
-          >
-            📥 匯出 CSV
-          </button>
-          <button
-            onClick={fetchCustomers}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg font-medium transition"
-          >
-            🔄 刷新
-          </button>
-        </div>
+              <button onClick={fetchCustomers} style={secondaryBtn}>
+                刷新
+              </button>
+            </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-900 border border-red-700 p-4 rounded-lg mb-6 text-red-100">
-            {error}
-          </div>
-        )}
+            {/* Error */}
+            {error && (
+              <div style={{
+                background: TOKENS.color.errorBg,
+                border: `1px solid ${TOKENS.color.errorBorder}`,
+                padding: '12px 16px',
+                borderRadius: TOKENS.radius.md,
+                marginBottom: 20,
+                color: '#dc2626',
+                fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="text-center py-12">
-            <p className="text-zinc-400">載入中...</p>
-          </div>
-        )}
+            {/* Loading */}
+            {loading && (
+              <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                <p style={{ color: TOKENS.color.textSubtle, fontSize: 14 }}>載入中...</p>
+              </div>
+            )}
 
-        {/* Table */}
-        {!loading && filtered.length > 0 && (
-          <div className="overflow-x-auto bg-zinc-900 rounded-lg border border-zinc-800">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-800 border-b border-zinc-700">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">姓名</th>
-                  <th className="px-4 py-3 text-left font-semibold">電話</th>
-                  <th className="px-4 py-3 text-left font-semibold">電郵</th>
-                  <th className="px-4 py-3 text-left font-semibold">類型</th>
-                  <th className="px-4 py-3 text-left font-semibold">來源</th>
-                  <th className="px-4 py-3 text-left font-semibold">級別</th>
-                  <th className="px-4 py-3 text-center font-semibold">訂單</th>
-                  <th className="px-4 py-3 text-center font-semibold">消費 (MOP)</th>
-                  <th className="px-4 py-3 text-left font-semibold">註冊日期</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((customer, idx) => (
-                  <tr
-                    key={customer.id}
-                    className={`border-b border-zinc-800 ${
-                      idx % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-900'
-                    } hover:bg-zinc-800 transition`}
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {customer.name || '未提供'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-300">
-                      {customer.phone || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-300">
-                      {customer.email || '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          customer.customer_type === 'restaurant'
-                            ? 'bg-green-900 text-green-200'
-                            : customer.customer_type === 'chef'
-                              ? 'bg-orange-900 text-orange-200'
-                              : 'bg-blue-900 text-blue-200'
-                        }`}
-                      >
-                        {customer.customer_type === 'retail'
-                          ? '個人'
-                          : customer.customer_type === 'restaurant'
-                            ? '餐廳'
-                            : '主廚'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-400 text-xs">
-                      {customer.source === 'landing_page'
-                        ? '落地頁'
-                        : customer.source === 'whatsapp'
-                          ? 'WhatsApp'
-                          : customer.source}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          customer.tier === 'gold'
-                            ? 'bg-yellow-900 text-yellow-200'
-                            : customer.tier === 'silver'
-                              ? 'bg-gray-500 text-white'
-                              : customer.tier === 'restaurant'
-                                ? 'bg-purple-900 text-purple-200'
-                                : 'bg-amber-900 text-amber-200'
-                        }`}
-                      >
-                        {customer.tier === 'bronze'
-                          ? '銅級'
-                          : customer.tier === 'silver'
-                            ? '銀級'
-                            : customer.tier === 'gold'
-                              ? '金級'
-                              : '批發'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center font-medium">
-                      {customer.total_orders}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {customer.total_spent > 0
-                        ? customer.total_spent.toFixed(2)
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-400 text-xs">
-                      {new Date(customer.created_at).toLocaleDateString('zh-HK')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+            {/* Table */}
+            {!loading && filtered.length > 0 && (
+              <div style={{
+                border: `1px solid ${TOKENS.color.border}`,
+                borderRadius: TOKENS.radius.lg,
+                overflow: 'hidden',
+                background: TOKENS.color.bg,
+              }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: TOKENS.color.bgSubtle, borderBottom: `1px solid ${TOKENS.color.border}` }}>
+                        {['姓名', '電話', '電郵', '類型', '來源', '級別', '訂單', '消費 (MOP)', '註冊日期'].map(h => (
+                          <th key={h} style={{
+                            padding: '12px 16px',
+                            textAlign: 'left',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            color: TOKENS.color.textSubtle,
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((customer) => (
+                        <tr
+                          key={customer.id}
+                          style={{
+                            borderBottom: `1px solid ${TOKENS.color.borderMuted}`,
+                          }}
+                        >
+                          <td style={{ padding: '14px 16px', fontWeight: 500, color: TOKENS.color.text }}>
+                            {customer.name || '未提供'}
+                          </td>
+                          <td style={{ padding: '14px 16px', color: TOKENS.color.textMuted }}>
+                            {customer.phone || '—'}
+                          </td>
+                          <td style={{ padding: '14px 16px', color: TOKENS.color.textMuted }}>
+                            {customer.email || '—'}
+                          </td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <span style={{
+                              padding: '3px 10px',
+                              borderRadius: 20,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              background: customer.customer_type === 'restaurant'
+                                ? '#f0fdf4'
+                                : customer.customer_type === 'chef'
+                                  ? '#fff7ed'
+                                  : '#eff6ff',
+                              border: customer.customer_type === 'restaurant'
+                                ? '1px solid #86efac'
+                                : customer.customer_type === 'chef'
+                                  ? '1px solid #fdba74'
+                                  : '1px solid #bfdbfe',
+                              color: customer.customer_type === 'restaurant'
+                                ? '#166534'
+                                : customer.customer_type === 'chef'
+                                  ? '#c2410c'
+                                  : '#1d4ed8',
+                            }}>
+                              {customer.customer_type === 'retail' ? '個人' : customer.customer_type === 'restaurant' ? '餐廳' : '主廚'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 16px', color: TOKENS.color.textMuted, fontSize: 12 }}>
+                            {customer.source === 'landing_page' ? '落地頁' : customer.source === 'whatsapp' ? 'WhatsApp' : customer.source}
+                          </td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <span style={{
+                              padding: '3px 10px',
+                              borderRadius: 20,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              background: customer.tier === 'gold'
+                                ? '#fefce8'
+                                : customer.tier === 'silver'
+                                  ? '#f8fafc'
+                                  : customer.tier === 'restaurant'
+                                    ? '#faf5ff'
+                                    : '#fffbeb',
+                              border: customer.tier === 'gold'
+                                ? '1px solid #fde047'
+                                : customer.tier === 'silver'
+                                  ? '1px solid #e2e8f0'
+                                  : customer.tier === 'restaurant'
+                                    ? '1px solid #e9d5ff'
+                                    : '1px solid #fde68a',
+                              color: customer.tier === 'gold'
+                                ? '#a16207'
+                                : customer.tier === 'silver'
+                                  ? '#64748b'
+                                  : customer.tier === 'restaurant'
+                                    ? '#7e22ce'
+                                    : '#b45309',
+                            }}>
+                              {customer.tier === 'bronze' ? '銅級' : customer.tier === 'silver' ? '銀級' : customer.tier === 'gold' ? '金級' : '批發'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 500, color: TOKENS.color.text }}>
+                            {customer.total_orders}
+                          </td>
+                          <td style={{ padding: '14px 16px', textAlign: 'center', color: TOKENS.color.textMuted }}>
+                            {customer.total_spent > 0 ? customer.total_spent.toFixed(2) : '—'}
+                          </td>
+                          <td style={{ padding: '14px 16px', color: TOKENS.color.textSubtle, fontSize: 12 }}>
+                            {new Date(customer.created_at).toLocaleDateString('zh-HK')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
-        {/* Empty State */}
-        {!loading && filtered.length === 0 && (
-          <div className="text-center py-12 bg-zinc-900 rounded-lg border border-zinc-800">
-            <p className="text-zinc-400">沒有客戶記錄</p>
-          </div>
-        )}
+            {/* Empty State */}
+            {!loading && filtered.length === 0 && (
+              <div style={{
+                ...TOKENS.card,
+                textAlign: 'center',
+                padding: '48px 20px',
+              }}>
+                <p style={{ color: TOKENS.color.textSubtle, fontSize: 14 }}>沒有客戶記錄</p>
+              </div>
+            )}
 
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-zinc-800 text-xs text-zinc-500">
-          <p>顯示 {filtered.length} 名客戶 (篩選後) · 總計 {stats.total} 名</p>
-        </div>
+            {/* Footer */}
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${TOKENS.color.border}`, fontSize: 12, color: TOKENS.color.textSubtle }}>
+              顯示 {filtered.length} 名客戶 (篩選後) · 總計 {stats.total} 名
+            </div>
           </div>
         )}
 
       </div>
-    </div>
-  )
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: number
-  color: string
-}) {
-  return (
-    <div className={`${color} rounded-lg p-4 text-black`}>
-      <p className="text-sm font-medium opacity-90">{label}</p>
-      <p className="text-3xl font-bold mt-1">{value}</p>
     </div>
   )
 }
