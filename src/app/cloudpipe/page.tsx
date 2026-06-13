@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 }
 
 const WHATSAPP_URL = 'https://wa.me/85362823037?text=你好，我想了解 CloudPipe AI 能見度免費診斷'
+const AUDIT_URL = '/cloudpipe/audit'
 
 const STATS = [
   { num: '40%', label: '購買決策受 AI 影響', source: 'GEO Research 2026' },
@@ -259,65 +260,132 @@ export default function CloudPipeLandingPage() {
 
       {/* ── S6 PRICING ── */}
       <section style={{ background: '#fff', padding: '64px 24px' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: 1080, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(22px, 3.5vw, 36px)', fontWeight: 800, marginBottom: 8 }}>
-            從免費診斷開始
+            按需選擇，從免費開始
           </h2>
-          <p style={{ color: '#666', marginBottom: 48, fontSize: 16 }}>唔需要先付錢，先看看你的 AI 能見度在哪裡</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+          <p style={{ color: '#666', marginBottom: 56, fontSize: 16 }}>
+            先免費了解你的 AI 能見度，再決定下一步
+          </p>
+
+          {/* Free tier — full width highlight */}
+          <div style={{ background: 'linear-gradient(135deg, #0A1628 0%, #162848 100%)', borderRadius: 20, padding: '36px 40px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, textAlign: 'left' }}>
+            <div>
+              <div style={{ display: 'inline-block', background: '#25D366', color: '#fff', padding: '3px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, marginBottom: 12 }}>免費入門</div>
+              <h3 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: '0 0 8px' }}>AI 能見度自助審計</h3>
+              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 15, margin: 0, maxWidth: 480 }}>
+                輸入品牌名稱，即時掃描你喺 ChatGPT、Perplexity、Gemini 的引用狀態——找出 AI 係唔係認識你，競品係唔係比你強。
+              </p>
+              <div style={{ display: 'flex', gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
+                {['ChatGPT 引用報告', 'Perplexity 排名', '競品對標', 'AI Visibility Score'].map(f => (
+                  <span key={f} style={{ fontSize: 13, color: '#C9A961', display: 'flex', gap: 4, alignItems: 'center' }}>✓ {f}</span>
+                ))}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <div style={{ fontSize: 40, fontWeight: 900, color: '#C9A961', lineHeight: 1 }}>MOP 0</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 20 }}>完全免費，即時出結果</div>
+              <a href={AUDIT_URL} style={{ display: 'inline-block', background: '#25D366', color: '#fff', padding: '14px 36px', borderRadius: 50, fontWeight: 700, fontSize: 16, textDecoration: 'none', boxShadow: '0 8px 24px rgba(37,211,102,0.4)' }}>
+                立即免費審計 →
+              </a>
+            </div>
+          </div>
+
+          {/* 3 paid tiers */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, marginBottom: 24 }}>
             {[
               {
-                name: '免費診斷',
-                price: 'MOP 0',
-                badge: '推薦起步',
-                badgeColor: '#25D366',
-                features: ['30 分鐘 AI 現況掃描', 'ChatGPT / Perplexity / Gemini 引用報告', '優先改善建議', '無銷售壓力'],
-                cta: '立即預約',
-                ctaColor: '#25D366',
+                name: '中級方案',
+                sub: 'AEO 搜尋優化',
+                price: 'MOP 499',
+                per: '/月',
+                highlight: false,
+                badge: null,
+                features: ['月度 Citation 監測報告', '5 條優先 FAQ 優化', 'Citation playbook', 'AI Visibility Score 追蹤'],
+                cta: '了解詳情',
+                href: WHATSAPP_URL,
+                external: true,
               },
               {
-                name: 'AEO 完整服務',
-                price: 'MOP 15,000',
-                badge: '/ 季度（3個月）',
-                badgeColor: '#C9A961',
-                features: ['知識圖譜建立 (50+ facts)', '每月 FAQ schema 更新', 'AI 爬蟲監控報告', '每月優化迭代', '競品動向追蹤'],
-                cta: '了解詳情',
-                ctaColor: '#0A1628',
+                name: '高級方案',
+                sub: 'AEO + 行業研究 + KG',
+                price: 'MOP 1,499',
+                per: '/月',
+                highlight: true,
+                badge: '最受歡迎',
+                features: ['你的事實進入行業知識圖譜', 'AI 答案直接引用你最新數字', 'Verified KG entity 建立', '定制 Insight 文章', '月度 absorption lift 報告'],
+                cta: '立即咨詢',
+                href: WHATSAPP_URL,
+                external: true,
+              },
+              {
+                name: '定制方案',
+                sub: '全方位戰略部署',
+                price: 'MOP 3,999+',
+                per: '/月 or 項目制',
+                highlight: false,
+                badge: null,
+                features: ['企業年度 AI 戰略', '競品 entity 全面對標', '行業 Citation Gap 分析', '季度 absorption 審計', '政府/機構白皮書（可選）'],
+                cta: '預約策略會議',
+                href: WHATSAPP_URL,
+                external: true,
               },
             ].map((plan, i) => (
               <div key={i} style={{
-                border: i === 0 ? '2px solid #25D366' : '2px solid #C9A961',
+                border: plan.highlight ? '2px solid #C9A961' : '1px solid #e8e8e8',
                 borderRadius: 20,
-                padding: '36px 28px',
+                padding: '32px 24px',
                 position: 'relative',
+                background: plan.highlight ? 'rgba(201,169,97,0.04)' : '#fff',
               }}>
-                <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: plan.badgeColor, color: '#fff', padding: '4px 16px', borderRadius: 20, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  {plan.badge}
+                {plan.badge && (
+                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: '#C9A961', color: '#fff', padding: '4px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                    {plan.badge}
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: '#888', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{plan.sub}</div>
+                <h3 style={{ fontSize: 19, fontWeight: 800, margin: '0 0 4px', color: '#0A1628' }}>{plan.name}</h3>
+                <div style={{ marginBottom: 20 }}>
+                  <span style={{ fontSize: 30, fontWeight: 900, color: '#0A1628' }}>{plan.price}</span>
+                  <span style={{ fontSize: 13, color: '#888', marginLeft: 4 }}>{plan.per}</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{plan.name}</h3>
-                <div style={{ fontSize: 32, fontWeight: 900, color: '#0A1628', marginBottom: 24 }}>{plan.price}</div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', textAlign: 'left' }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', textAlign: 'left' }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0', fontSize: 15, color: '#444', display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ color: plan.ctaColor, fontWeight: 700 }}>✓</span> {f}
+                    <li key={j} style={{ padding: '7px 0', borderBottom: '1px solid #f5f5f5', fontSize: 14, color: '#444', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <span style={{ color: plan.highlight ? '#C9A961' : '#0A1628', fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span> {f}
                     </li>
                   ))}
                 </ul>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" style={{
+                <a href={plan.href} {...(plan.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} style={{
                   display: 'block',
-                  background: plan.ctaColor,
+                  background: plan.highlight ? '#C9A961' : '#0A1628',
                   color: '#fff',
-                  padding: '14px',
+                  padding: '13px',
                   borderRadius: 12,
                   textDecoration: 'none',
                   fontWeight: 700,
-                  fontSize: 16,
+                  fontSize: 15,
                   textAlign: 'center',
                 }}>
                   {plan.cta}
                 </a>
               </div>
             ))}
+          </div>
+
+          {/* Government track */}
+          <div style={{ background: '#f8f9fc', border: '1px solid #e0e0e0', borderRadius: 16, padding: '24px 32px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', textAlign: 'left' }}>
+            <div style={{ fontSize: 28 }}>🏛️</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#0A1628', marginBottom: 4 }}>政府 / 機構方案 — 地區 AI 能見度白皮書</div>
+              <div style={{ fontSize: 14, color: '#666', lineHeight: 1.6 }}>
+                面向旅遊局、工業局、行業協會——分析整個地區產業在 AI 引擎的引用現況，提供戰略部署建議。
+                MOP 50,000+ / 項目
+              </div>
+            </div>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, background: '#0A1628', color: '#fff', padding: '12px 28px', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 14 }}>
+              聯絡我們
+            </a>
           </div>
         </div>
       </section>
