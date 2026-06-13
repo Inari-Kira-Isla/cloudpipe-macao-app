@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { TOKENS, getBrandTokens } from '@/lib/design-tokens'
@@ -60,7 +60,7 @@ const FIELD_LABELS: Record<string, string> = {
 
 const TOP_LEVEL_FIELDS = ['name_zh', 'name_en', 'industry_slug', 'uvp', 'mode']
 
-export default function BrandEditorPage() {
+function BrandEditorContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const slug = params.slug as string
@@ -606,5 +606,13 @@ export default function BrandEditorPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BrandEditorPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, color: "#94a3b8", fontFamily: "system-ui" }}>Loading…</div>}>
+      <BrandEditorContent />
+    </Suspense>
   )
 }
