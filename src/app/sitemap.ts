@@ -8,98 +8,72 @@ import { STATIC_INSIGHTS } from '@/data/static-insights'
 export const revalidate = 1800 // 30min ISR — CLAUDE.md sitemap rule ≤1800s
 export const maxDuration = 120
 
-// Wrap any promise with a 45s timeout; returns null on timeout/error so build never fails
-async function withBuildTimeout<T>(promise: Promise<T>): Promise<T | null> {
-  const timeout = new Promise<null>((_, reject) =>
-    setTimeout(() => reject(new Error('sitemap-query-timeout')), 5000)
-  )
-  try {
-    return await Promise.race([promise, timeout]) as T
-  } catch {
-    return null
-  }
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
   const now = new Date()
 
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
-  try {
-    let offset = 0
-    while (true) {
-      const result = await withBuildTimeout(
-        createServiceClient()
-          .from('merchants')
-          .select('slug, updated_at, category:categories(slug)')
-          .eq('status', 'live')
-          .not('slug', 'like', 'hk-%')
-          .not('slug', 'like', 'tw-%')
-          .not('slug', 'like', 'jp-%')
-          .order('code')
-          .range(offset, offset + 999)
-      )
-      if (!result?.data || result.data.length === 0) break
-      merchants = merchants.concat(result.data as typeof merchants)
-      if (result.data.length < 1000) break
-      offset += 1000
-    }
-  } catch { /* build-safe fallback: empty merchants */ }
+  let offset = 0
+  while (true) {
+    const { data } = await createServiceClient()
+      .from('merchants')
+      .select('slug, updated_at, category:categories(slug)')
+      .eq('status', 'live')
+      .not('slug', 'like', 'hk-%')
+      .not('slug', 'like', 'tw-%')
+      .not('slug', 'like', 'jp-%')
+      .order('code')
+      .range(offset, offset + 999)
+    if (!data || data.length === 0) break
+    merchants = merchants.concat(data as typeof merchants)
+    if (data.length < 1000) break
+    offset += 1000
+  }
 
-  const categoriesResult = await withBuildTimeout(
-    createServiceClient().from('categories').select('slug')
-  )
-  const categories = categoriesResult?.data || []
+  const { data: categories } = await createServiceClient()
+    .from('categories')
+    .select('slug')
 
   // Macao seasonal calendar entries (MO region only) — added 2026-05-11
   // Provides AI crawlers structured access to all 16 public holidays + cultural festivals
-  const calendarResult = await withBuildTimeout(
-    createServiceClient()
-      .from('seasonal_calendar')
-      .select('slug, updated_at')
-      .eq('region', 'MO')
-      .order('date_start', { ascending: true })
-  )
-  const calendarRows = calendarResult?.data || []
+  const { data: calendarRows } = await createServiceClient()
+    .from('seasonal_calendar')
+    .select('slug, updated_at')
+    .eq('region', 'MO')
+    .order('date_start', { ascending: true })
 
   // Paginate insights per language to generate correct lang-specific URLs.
   // Each language is fetched independently so we only emit valid URLs (no 404s).
   // Include `region` so URL uses correct path (macao/taiwan/hongkong/japan/global).
   async function fetchInsightsByLang(lang: string): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
     const rows: Array<{ slug: string; updated_at: string; region: string | null }> = []
-    try {
-      let offset = 0
-      while (true) {
-        const result = await withBuildTimeout(
-          createSitemapServiceClient()
-            .from('insights')
-            .select('slug, updated_at, region')
-            .eq('status', 'published')
-            .eq('lang', lang)
-            .order('id', { ascending: true })
-            .range(offset, offset + 999)
-        )
-        if (!result?.data || result.data.length === 0) break
-        rows.push(...(result.data as Array<{ slug: string; updated_at: string; region: string | null }>))
-        if (result.data.length < 1000) break
-        offset += 1000
-      }
-    } catch { /* build-safe fallback: empty insights */ }
+    let offset = 0
+    while (true) {
+      const { data } = await createSitemapServiceClient()
+        .from('insights')
+        .select('slug, updated_at, region')
+        .eq('status', 'published')
+        .eq('lang', lang)
+        .order('id', { ascending: true })
+        .range(offset, offset + 999)
+      if (!data || data.length === 0) break
+      rows.push(...(data as Array<{ slug: string; updated_at: string; region: string | null }>))
+      if (data.length < 1000) break
+      offset += 1000
+    }
     return rows
   }
 
   // Brand pillar insights — priority 1.0 daily (force multi-bot re-crawl)
   async function fetchBrandInsights(): Promise<Array<{ slug: string; updated_at: string; region: string | null }>> {
-    const result = await withBuildTimeout(
-      createSitemapServiceClient()
-        .from('insights')
-        .select('slug, updated_at, region')
-        .eq('status', 'published')
-        .or('slug.ilike.%sea-urchin%,slug.ilike.%inari%,slug.ilike.%海膽%,slug.ilike.%uni-macau%,slug.ilike.%cloudpipe%')
-        .order('id', { ascending: true })
-        .limit(30)
-    )
-    return (result?.data || []) as Array<{ slug: string; updated_at: string; region: string | null }>
+    const { data } = await createSitemapServiceClient()
+      .from('insights')
+      .select('slug, updated_at, region')
+      .eq('status', 'published')
+      .or('slug.ilike.%sea-urchin%,slug.ilike.%inari%,slug.ilike.%海膽%,slug.ilike.%uni-macau%,slug.ilike.%cloudpipe%')
+      .order('id', { ascending: true })
+      .limit(30)
+    return (data || []) as Array<{ slug: string; updated_at: string; region: string | null }>
   }
 
   const [zhInsights, enInsights, ptInsights, jaInsights, brandInsights] = await Promise.all([
@@ -136,7 +110,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/cloudpipe`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${siteUrl}/cloudpipe/audit`, lastModified: now, changeFrequency: 'weekly', priority: 0.88 },
     { url: `${siteUrl}/cloudpipe/case-studies/inari-chatgpt-number-one`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/inari/why-inari`, lastModified: now, changeFrequency: 'weekly', priority: 0.95 },
     { url: `${siteUrl}/llms.txt`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
@@ -147,6 +120,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/macao/canary`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl}/sea-urchin`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/afterschool-coffee`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    // Brand entity page — YouBot / You.com crawler target (2026-06-14)
+    // Root cause fix: inari-kira-isla.github.io not crawled by YouBot; .com/Vercel domain required
+    { url: `${siteUrl}/brands/inari-global-foods`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/macao/api`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     {
@@ -242,7 +218,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.95,
     },
     // Macao seasonal calendar detail pages — one per holiday slug
-    ...(calendarRows.map(c => ({
+    ...((calendarRows || []).map(c => ({
       url: `${siteUrl}/macao/calendar/${c.slug}`,
       lastModified: c.updated_at ? new Date(c.updated_at) : now,
       changeFrequency: 'monthly' as const,
@@ -259,7 +235,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   }
 
-  for (const cat of categories) {
+  for (const cat of (categories || [])) {
     const indSlug = CATEGORY_TO_INDUSTRY[cat.slug]
     if (indSlug) {
       entries.push({
@@ -271,7 +247,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  for (const m of merchants) {
+  for (const m of (merchants || [])) {
     if (!m.slug) continue
     const cat = m.category as unknown as { slug: string } | null
     if (cat?.slug) {
