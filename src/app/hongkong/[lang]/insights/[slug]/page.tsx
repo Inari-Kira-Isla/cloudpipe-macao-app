@@ -5,6 +5,7 @@ import { buildMetadata, renderInsightPage } from '@/components/insight-region/In
 // FIX 2026-06-04: 明示 dynamicParams=true 防 force-static desync regression
 export const revalidate = 86400
 export const dynamicParams = true
+export const maxDuration = 30
 
 const VALID_LANG_PATHS = ['en', 'ja', 'pt'] as const
 type LangPath = (typeof VALID_LANG_PATHS)[number]
