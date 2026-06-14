@@ -123,6 +123,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Brand entity page — YouBot / You.com crawler target (2026-06-14)
     // Root cause fix: inari-kira-isla.github.io not crawled by YouBot; .com/Vercel domain required
     { url: `${siteUrl}/brands/inari-global-foods`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    // AI Visibility Audit public tool — viral merchant sales funnel (2026-06-14)
+    { url: `${siteUrl}/audit`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/macao/api`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${siteUrl}/macao/report`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     {
