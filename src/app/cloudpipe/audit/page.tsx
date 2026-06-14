@@ -34,6 +34,20 @@ interface AuditResult {
   }[]
   topGap: string
   recommendation: string
+  crawlTotal?: number
+  crawlByBot?: Record<string, number>
+  platforms?: { google: boolean; openrice: boolean; tripadvisor: boolean; yp: boolean }
+  sourceDomains?: string[]
+  merchantSlug?: string | null
+  meta?: {
+    layer1Cited: boolean
+    layer2Score: number
+    factCount: number
+    hasVerified: boolean
+    hasInsight: boolean
+    hasFaq: boolean
+    youLive: boolean
+  }
 }
 
 export default function AuditPage() {
@@ -242,6 +256,65 @@ export default function AuditPage() {
                 ))}
               </div>
             </div>
+
+            {/* AI Crawl Records */}
+            {(result.crawlTotal ?? 0) > 0 && (
+              <div style={{ background: '#fff', borderRadius: 20, padding: '24px 20px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', marginBottom: 16 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: '#0A1628' }}>🤖 AI 爬蟲紀錄（過去 30 日）</h3>
+                <p style={{ margin: '0 0 16px', fontSize: 13, color: '#888' }}>CloudPipe 平台偵測到的 AI 引擎爬取次數</p>
+                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 56, fontWeight: 900, color: '#0A1628', lineHeight: 1 }}>{result.crawlTotal}</div>
+                  <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>次 AI 爬蟲訪問</div>
+                </div>
+                {Object.keys(result.crawlByBot ?? {}).length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {Object.entries(result.crawlByBot ?? {}).map(([bot, count]) => (
+                      <div key={bot} style={{ background: '#f8f9fc', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 18, fontWeight: 900, color: '#0A1628' }}>{count}</div>
+                        <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{bot}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Platform Presence Matrix */}
+            <div style={{ background: '#fff', borderRadius: 20, padding: '24px 20px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: '#0A1628' }}>📋 平台覆蓋偵測</h3>
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: '#888' }}>你的商戶資料是否出現在以下平台</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                {[
+                  { name: 'Google Business', present: result.platforms?.google ?? false, icon: '🔵' },
+                  { name: 'OpenRice', present: result.platforms?.openrice ?? false, icon: '🍴' },
+                  { name: 'TripAdvisor', present: result.platforms?.tripadvisor ?? false, icon: '🦉' },
+                  { name: 'yp.mo 澳門黃頁', present: result.platforms?.yp ?? false, icon: '📒' },
+                  { name: 'ChatGPT / You.com', present: result.engines.find(e => e.name === 'ChatGPT')?.cited ?? false, icon: '🤖' },
+                  { name: 'Perplexity', present: result.engines.find(e => e.name === 'Perplexity')?.cited ?? false, icon: '🔍' },
+                ].map(p => (
+                  <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: p.present ? '#25D36610' : '#f8f9fc', borderRadius: 10, border: `1px solid ${p.present ? '#25D36630' : '#f0f0f0'}` }}>
+                    <span style={{ fontSize: 18 }}>{p.icon}</span>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#0A1628' }}>{p.name}</span>
+                    <span style={{ fontSize: 14 }}>{p.present ? '✅' : '❌'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Data Sources */}
+            {(result.sourceDomains ?? []).length > 0 && (
+              <div style={{ background: '#fff', borderRadius: 20, padding: '24px 20px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', marginBottom: 16 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: '#0A1628' }}>📂 知識圖譜資料來源</h3>
+                <p style={{ margin: '0 0 14px', fontSize: 13, color: '#888' }}>AI 引擎引用你的資料來自以下網站</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {result.sourceDomains!.map(d => (
+                    <span key={d} style={{ padding: '5px 14px', background: '#0A162810', borderRadius: 20, fontSize: 13, color: '#0A1628', fontWeight: 600, border: '1px solid #0A162820' }}>
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Gap + recommendation */}
             <div style={{ background: '#fff8ed', border: '1.5px solid #C9A961', borderRadius: 20, padding: '24px 20px', marginBottom: 16 }}>

@@ -140,6 +140,115 @@ async function queryKnowledgeGraph(brand: string, region: string): Promise<KGRes
   return result
 }
 
+// ── Merchant Extended Data (crawl + platform + sources) ──────────────────────
+
+interface MerchantExtData {
+  merchantSlug: string | null
+  googlePlaceId: string | null
+  crawlTotal: number
+  crawlByBot: Record<string, number>
+  platforms: { google: boolean; openrice: boolean; tripadvisor: boolean; yp: boolean }
+  sourceDomains: string[]
+}
+
+async function queryMerchantExtData(brand: string, region: string): Promise<MerchantExtData> {
+  const supabase = createServiceClient()
+  const empty: MerchantExtData = {
+    merchantSlug: null, googlePlaceId: null, crawlTotal: 0,
+    crawlByBot: {}, platforms: { google: false, openrice: false, tripadvisor: false, yp: false },
+    sourceDomains: [],
+  }
+
+  try {
+    const { data: merchants } = await supabase
+      .from('merchants')
+      .select('id, slug, google_rating, openrice_rating, tripadvisor_rating, google_place_id')
+      .or(`name_zh.ilike.%${brand}%,name_en.ilike.%${brand}%,slug.ilike.%${brand}%`)
+      .eq('status', 'live')
+      .limit(1)
+
+    if (!merchants?.length) return empty
+    const m = merchants[0] as {
+      id: string; slug: string; google_rating: number | null;
+      openrice_rating: number | null; tripadvisor_rating: number | null; google_place_id: string | null
+    }
+
+    const platforms = {
+      google: m.google_rating != null || m.google_place_id != null,
+      openrice: m.openrice_rating != null,
+      tripadvisor: m.tripadvisor_rating != null,
+      yp: false,
+    }
+
+    const crawlByBot: Record<string, number> = { Claude: 0, GPT: 0, Perplexity: 0, Apple: 0, Bytedance: 0, Google: 0 }
+    let crawlTotal = 0
+
+    try {
+      const thirtyAgo = new Date(Date.now() - 30 * 86400000).toISOString()
+      const { data: visits } = await supabase
+        .from('crawler_visits')
+        .select('bot')
+        .like('path', `%${m.slug}%`)
+        .gte('ts', thirtyAgo)
+        .limit(2000)
+
+      if (visits?.length) {
+        crawlTotal = visits.length
+        for (const v of visits as Array<{ bot: string | null }>) {
+          const b = (v.bot || '').toLowerCase()
+          if (b.includes('claude') || b.includes('anthropic')) crawlByBot['Claude']++
+          else if (b.includes('gpt') || b.includes('chatgpt') || b.includes('openai')) crawlByBot['GPT']++
+          else if (b.includes('perplexity')) crawlByBot['Perplexity']++
+          else if (b.includes('apple')) crawlByBot['Apple']++
+          else if (b.includes('bytedance') || b.includes('bytespider')) crawlByBot['Bytedance']++
+          else if (b.includes('google')) crawlByBot['Google']++
+        }
+        // Remove zero-count bots
+        for (const k of Object.keys(crawlByBot)) {
+          if (crawlByBot[k] === 0) delete crawlByBot[k]
+        }
+      }
+    } catch { /* crawler_visits query failed gracefully */ }
+
+    const sourceDomains: string[] = []
+    try {
+      const { data: entities } = await supabase
+        .from('knowledge_entities')
+        .select('id')
+        .eq('primary_merchant_id', m.id)
+        .limit(5)
+
+      if (entities?.length) {
+        const { data: facts } = await supabase
+          .from('knowledge_facts')
+          .select('source_url')
+          .in('subject_entity_id', (entities as Array<{ id: string }>).map(e => e.id))
+          .not('source_url', 'is', null)
+          .limit(60)
+
+        if (facts?.length) {
+          const seen = new Set<string>()
+          for (const f of facts as Array<{ source_url: string | null }>) {
+            if (!f.source_url) continue
+            try {
+              const d = new URL(f.source_url).hostname.replace(/^www\./, '')
+              if (!seen.has(d)) { seen.add(d); sourceDomains.push(d) }
+            } catch { /* ignore invalid URL */ }
+          }
+          platforms.yp = sourceDomains.some(d => d.includes('yp.mo'))
+        }
+      }
+    } catch { /* entity/facts query failed gracefully */ }
+
+    return {
+      merchantSlug: m.slug, googlePlaceId: m.google_place_id ?? null,
+      crawlTotal, crawlByBot, platforms, sourceDomains: sourceDomains.slice(0, 8),
+    }
+  } catch {
+    return empty
+  }
+}
+
 // ── Scoring ───────────────────────────────────────────────────────────────────
 
 function buildScore(
@@ -247,9 +356,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'brand and category required' }, { status: 400 })
   }
 
-  const [youResult, kg] = await Promise.all([
+  const [youResult, kg, ext] = await Promise.all([
     checkYoucom(brand, category, region),
     queryKnowledgeGraph(brand, region),
+    queryMerchantExtData(brand, region),
   ])
 
   const { score, layer1Cited, layer2Score, engines, topGap, recommendation } =
@@ -263,6 +373,11 @@ export async function POST(request: NextRequest) {
     engines,
     topGap,
     recommendation,
+    crawlTotal: ext.crawlTotal,
+    crawlByBot: ext.crawlByBot,
+    platforms: ext.platforms,
+    sourceDomains: ext.sourceDomains,
+    merchantSlug: ext.merchantSlug,
     meta: {
       layer1Cited,
       layer2Score,
