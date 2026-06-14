@@ -354,39 +354,44 @@ async function getSpiderWebInsights(
       let fallbacksUsed = 0
       const fallbackByOrigSlug = new Map<string, { slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }>()
 
+      // Build candidate list (capped at FALLBACK_CAP) then fire all in parallel
       const missingOrigSlugs = targetSlugs.filter(s => !bySlug.has(s))
+      type FbCandidate = { origSlug: string; likeToken: string; region: string }
+      const fbCandidates: FbCandidate[] = []
       for (const origSlug of missingOrigSlugs) {
-        if (fallbacksUsed >= FALLBACK_CAP) break
-        // Extract keyword: strip trailing -NNN, strip *-industry- prefix, join with spaces
+        if (fbCandidates.length >= FALLBACK_CAP) break
         const keyword = origSlug
-          .replace(/-\d+$/, '')          // remove trailing -001 / -002 etc.
-          .replace(/^[a-z]{2,3}-industry-/, '')  // remove e.g. my-industry-
-          .replace(/-/g, ' ')            // dashes → spaces for readability (ilike uses %)
+          .replace(/-\d+$/, '')
+          .replace(/^[a-z]{2,3}-industry-/, '')
+          .replace(/-/g, ' ')
           .trim()
-        // Skip keywords too short to be meaningful
         if (keyword.length < 3) continue
-        // Use the first token as the ilike search term (most specific)
         const likeToken = keyword.split(' ')[0]
         if (likeToken.length < 3) continue
-
-        // Find the edge associated with this slug to know the target region
         const targetEdge = edges.find(e => e.to_entity_slug === origSlug)
         if (!targetEdge) continue
+        fbCandidates.push({ origSlug, likeToken, region: targetEdge.to_region })
+      }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: fallbackRows } = await (db as any)
+      // All LIKE fallback queries run in parallel — avoids sequential await chain causing timeouts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fbResults = await Promise.all(fbCandidates.map(({ origSlug, likeToken, region }) =>
+        (db as any)
           .from('insights')
           .select('slug, title, subtitle, read_time_minutes, region')
           .ilike('slug', `%${likeToken}%`)
-          .eq('region', targetEdge.to_region)
+          .eq('region', region)
           .eq('status', 'published')
           .eq('lang', lang)
           .neq('slug', currentSlug)
           .limit(1)
-
-        if (fallbackRows?.length) {
-          const fb = fallbackRows[0]
-          fallbackByOrigSlug.set(origSlug, fb)
+          .then(({ data }: { data: Array<{ slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }> | null }) =>
+            ({ origSlug, rows: data ?? [] }))
+          .catch(() => ({ origSlug, rows: [] as Array<{ slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }> }))
+      ))
+      for (const { origSlug, rows } of fbResults) {
+        if (rows.length && fallbacksUsed < FALLBACK_CAP) {
+          fallbackByOrigSlug.set(origSlug, rows[0])
           fallbacksUsed++
         }
       }
