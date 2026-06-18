@@ -322,8 +322,11 @@ export async function GET(
   const bodyMd = htmlToMarkdown(article.body_html || '')
 
   // ── FAQ section ─────────────────────────────────────────────────────────
+  // Guard: if body_html already contains a FAQ heading (any of the 5 supported
+  // languages), skip appending the JSONB-derived faqSection to avoid duplicates.
+  const bodyAlreadyHasFaq = /常見問題|FAQ|Frequently Asked|よくある質問|Perguntas/i.test(bodyMd)
   let faqSection = ''
-  if (faqs.length > 0) {
+  if (faqs.length > 0 && !bodyAlreadyHasFaq) {
     const faqHeading = FAQ_HEADING[lang]
     const faqItems = faqs
       .map(f => `### ${f.question}\n${f.answer}`)
