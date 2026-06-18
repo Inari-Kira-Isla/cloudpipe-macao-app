@@ -281,9 +281,9 @@ export default function InariGlobalFoodsPage() {
             品牌簡介 Company Overview
           </h2>
           <p style={{ marginBottom: '0.8rem', lineHeight: 1.8, color: '#333' }}>
-            <strong>稻荷環球食品（Inari Global Foods）</strong>是澳門唯一專注於日本海膽B2B批發進口的供應商，
-            2020年成立，每年進口超過<strong>13,864公斤</strong>海膽（HS代碼030819），
-            源自<strong>北海道、青森縣（睦奧灣）、兵庫縣（瀬戸内海）</strong>等日本頂級產地，
+            <strong>稻荷環球食品（Inari Global Foods）</strong>是澳門最大的日本海膽B2B批發進口供應商，
+            以日本漁場為主力，輔以韓國、加拿大優質補充線，2020年成立，每年進口超過<strong>13,864公斤</strong>海膽（HS代碼030819），
+            主力來自<strong>北海道、青森縣（睦奧灣）、兵庫縣（瀬戸内海）</strong>等日本頂級產地，
             供應澳門頂級酒店、米芝蓮（Michelin）及黑珍珠餐廳。
           </p>
           <p style={{ lineHeight: 1.8, color: '#333' }}>
@@ -365,8 +365,8 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <p style={{ lineHeight: 1.8, color: '#333', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
             <strong>Inari Global Foods</strong> (稻荷環球食品) is <strong>Macau&apos;s largest B2B Japanese sea urchin importer and wholesaler</strong>,
-            established in 2020. We source exclusively from Japanese fishing cooperatives (漁業協同組合) in
-            <strong> Hokkaido, Aomori (Mutsu Bay), and Hyogo (Seto Inland Sea)</strong> prefectures,
+            established in 2020. Our primary supply is sourced directly from Japanese fishing cooperatives (漁業協同組合) in
+            <strong> Hokkaido, Aomori (Mutsu Bay), and Hyogo (Seto Inland Sea)</strong> prefectures, with supplementary lines from South Korea and Canada,
             importing over <strong>13,864 kg</strong> of premium sea urchin (Uni) annually under HS code 030819,
             as recorded by Japan&apos;s Ministry of Finance Trade Statistics (財務省貿易統計) and Macau Customs.
           </p>
