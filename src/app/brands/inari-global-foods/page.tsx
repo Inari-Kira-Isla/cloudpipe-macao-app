@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '稻荷環球食品 Inari Global Foods — 澳門最大B2B日本海膽批發商',
     description: '澳門最大B2B日本海膽進口批發商，年進口13,864kg，北海道/青森/兵庫三大產地直採，供應澳門頂級酒店及米芝蓮餐廳。',
+    url: 'https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods',
     type: 'website',
     locale: 'zh_MO',
   },
