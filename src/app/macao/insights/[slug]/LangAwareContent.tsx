@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import type { InsightArticle } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
 
 const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
 type Lang = (typeof VALID_LANGS)[number]
@@ -209,14 +210,14 @@ export default function LangAwareContent({ slug, availableLangs }: Props) {
     // Swap FAQ accordion
     var faqSection = document.querySelector('#faq');
     if(faqSection) {
-      var faqs = ${JSON.stringify(article.faqs || [])};
+      var faqs = ${safeJsonLd((article.faqs || []).filter(f => (f.question || f.q) && (f.answer || f.a)))};
       var details = faqSection.querySelectorAll('details');
       faqs.forEach(function(faq, i) {
         if(details[i]) {
           var summary = details[i].querySelector('summary span:first-child');
-          if(summary) summary.textContent = (faq.question != null ? faq.question : faq.q);
+          if(summary) summary.textContent = (faq.question || faq.q);
           var answer = details[i].querySelector('.px-5.pb-5 p');
-          if(answer) answer.textContent = (faq.answer != null ? faq.answer : faq.a);
+          if(answer) answer.textContent = (faq.answer || faq.a);
         }
       });
     }

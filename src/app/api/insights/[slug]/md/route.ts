@@ -329,7 +329,8 @@ export async function GET(
   if (faqs.length > 0 && !bodyAlreadyHasFaq) {
     const faqHeading = FAQ_HEADING[lang]
     const faqItems = faqs
-      .map(f => `### ${f.question ?? f.q}\n${f.answer ?? f.a}`)
+      .filter(f => (f.question || f.q) && (f.answer || f.a))
+      .map(f => `### ${f.question || f.q}\n${f.answer || f.a}`)
       .join('\n\n')
     faqSection = `\n\n${faqHeading}\n\n${faqItems}`
   }
