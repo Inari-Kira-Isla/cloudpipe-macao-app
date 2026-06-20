@@ -214,9 +214,9 @@ export default function LangAwareContent({ slug, availableLangs }: Props) {
       faqs.forEach(function(faq, i) {
         if(details[i]) {
           var summary = details[i].querySelector('summary span:first-child');
-          if(summary) summary.textContent = faq.question;
+          if(summary) summary.textContent = (faq.question != null ? faq.question : faq.q);
           var answer = details[i].querySelector('.px-5.pb-5 p');
-          if(answer) answer.textContent = faq.answer;
+          if(answer) answer.textContent = (faq.answer != null ? faq.answer : faq.a);
         }
       });
     }

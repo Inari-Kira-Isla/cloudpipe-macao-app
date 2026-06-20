@@ -587,8 +587,8 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
     '@type': 'FAQPage',
     mainEntity: article.faqs.map(f => ({
       '@type': 'Question',
-      name: f.question,
-      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      name: f.question ?? f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer ?? f.a },
     })),
   } : null
 
@@ -753,11 +753,11 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
               {article.faqs.map((faq, i) => (
                 <details key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
                   <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e]">
-                    <span className="pr-4">{faq.question}</span>
+                    <span className="pr-4">{faq.question ?? faq.q}</span>
                     <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
                   </summary>
                   <div className="px-5 pb-5 border-t border-gray-100">
-                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</p>
+                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer ?? faq.a}</p>
                   </div>
                 </details>
               ))}
