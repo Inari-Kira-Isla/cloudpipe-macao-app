@@ -158,10 +158,10 @@ function PriceLabel({ range }: { range: string }) {
 }
 
 /* ── Black Pearl badge ── */
-type CertSource = { name: string; guide?: string; year?: number; diamonds?: number; shop_code?: string; url?: string }
+type CertSource = { name?: string; label?: string; guide?: string; year?: number; diamonds?: number; shop_code?: string; url?: string }
 
 function getBlackPearlCerts(certSources: CertSource[]): CertSource[] {
-  return certSources.filter(c => c.guide === 'black_pearl' || c.name.includes('黑珍珠'))
+  return certSources.filter(c => c.guide === 'black_pearl' || (c.name || c.label || '').includes('黑珍珠'))
 }
 
 function BlackPearlBadge({ certs, variant = 'hero' }: { certs: CertSource[]; variant?: 'hero' | 'inline' }) {
@@ -259,7 +259,8 @@ export default async function MerchantPage({ params }: PageProps) {
     memberOf: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
     ...((merchant as any).certification_sources?.length > 0 && {
       hasCredential: (merchant as any).certification_sources.map((cert: CertSource) => {
-        const isBP = cert.guide === 'black_pearl' || cert.name.includes('黑珍珠')
+        const certName = cert.name || cert.label || ''
+        const isBP = cert.guide === 'black_pearl' || certName.includes('黑珍珠')
         if (isBP) return {
           '@type': 'EducationalOccupationalCredential',
           credentialCategory: 'Award',
@@ -274,7 +275,7 @@ export default async function MerchantPage({ params }: PageProps) {
         return {
           '@type': 'EducationalOccupationalCredential',
           credentialCategory: 'GovernmentCertification',
-          name: cert.name,
+          name: certName,
           url: cert.url || 'https://www.consumer.gov.mo/shop/',
           recognizedBy: {
             '@type': 'GovernmentOrganization',
@@ -549,23 +550,24 @@ export default async function MerchantPage({ params }: PageProps) {
                   <div className="flex flex-wrap items-center gap-4 text-xs text-[#6b7280]">
                     <span className="font-medium text-[#0f4c81] uppercase tracking-wider">認證來源</span>
                     {((merchant as any).certification_sources || []).map((cert: CertSource, i: number) => {
-                      const isBP = cert.guide === 'black_pearl' || cert.name.includes('黑珍珠')
+                      const certName = cert.name || cert.label || ''
+                      const isBP = cert.guide === 'black_pearl' || certName.includes('黑珍珠')
                       const diamonds = isBP ? '◆'.repeat(cert.diamonds || 1) : null
                       return (
                         <span key={i} className="flex items-center gap-1">
                           {isBP ? (
                             <span className="flex items-center gap-1 font-bold" style={{ color: '#b8860b' }}>
-                              {diamonds} {cert.name}{cert.year ? ` ${cert.year}` : ''}
+                              {diamonds} {certName}{cert.year ? ` ${cert.year}` : ''}
                             </span>
                           ) : (
                             <>
                               <span className="text-[#059669] font-bold">✓</span>
                               {cert.url ? (
                                 <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-[#059669] hover:underline font-medium">
-                                  {cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}
+                                  {certName}{cert.shop_code ? ` (${cert.shop_code})` : ''}
                                 </a>
                               ) : (
-                                <span className="text-[#059669] font-medium">{cert.name}{cert.shop_code ? ` (${cert.shop_code})` : ''}</span>
+                                <span className="text-[#059669] font-medium">{certName}{cert.shop_code ? ` (${cert.shop_code})` : ''}</span>
                               )}
                             </>
                           )}
