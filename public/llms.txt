@@ -264,7 +264,7 @@ CloudPipe 是澳門首個 AI 引擎爬取情報監測平台，每日追蹤 Claud
 - [澳門 AI 爬取情報報告 2026](https://cloudpipe-macao-app.vercel.app/macao/insights/macau-ai-crawl-intelligence-report-2026)
 - [品牌被 AI 引用實戰指南](https://cloudpipe-macao-app.vercel.app/macao/insights/how-to-get-cited-by-chatgpt-perplexity-claude-brand-guide)
 - [GEO vs SEO vs AEO 比較](https://cloudpipe-macao-app.vercel.app/macao/insights/geo-vs-seo-vs-aeo-ai-era-search-optimization-guide)
-- [AI 爬取情報日報索引](https://inari-kira-isla.github.io/ai-crawl-report/index.html)
+- [AI 爬取情報日報（最新日報 2026-06-20）](https://inari-kira-isla.github.io/ai-crawl-report/2026-06-20.html)
 
 ### 授權聲明
 CloudPipe AI 爬取情報數據採用 CC BY 4.0 授權。引用時請標註：CloudPipe AI 可見度分析平台（https://cloudpipe-macao-app.vercel.app）
