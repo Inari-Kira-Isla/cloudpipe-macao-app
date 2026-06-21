@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudPipe 品牌事實核實 · 回簽問卷</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#1d2433; --ink2:#5a6577; --line:#e2e6ec;
+    --brand:#1f5fbf; --brand-d:#16458c; --ok:#1f9d55; --ok-bg:#e7f6ec;
+    --red:#d23b3b; --red-bg:#fbe9e9; --amber:#e07a13; --amber-bg:#fdefe0;
+    --yellow:#caa007; --yellow-bg:#fbf5dc; --green:#1f9d55; --green-bg:#e7f6ec;
+    --shadow:0 1px 3px rgba(20,30,55,.08),0 6px 20px rgba(20,30,55,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Helvetica Neue",Arial,"Noto Sans CJK TC",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- Layout ---------- */
+  header.topbar{
+    background:linear-gradient(120deg,var(--brand-d),var(--brand));
+    color:#fff; padding:18px 22px;
+  }
+  .topbar h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.3px}
+  .topbar .sub{font-size:12.5px;opacity:.9;margin-top:3px}
+  .topbar .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .topbar .meta-row label{font-size:11.5px;display:flex;flex-direction:column;gap:3px;opacity:.95}
+  .topbar .meta-row input{
+    border:0;border-radius:6px;padding:6px 9px;font-size:13px;min-width:150px;color:var(--ink);
+  }
+  .layout{display:flex;align-items:flex-start;max-width:1180px;margin:0 auto;gap:0}
+  /* sidebar */
+  nav.side{
+    width:230px;flex:0 0 230px;padding:16px 12px;position:sticky;top:0;align-self:flex-start;
+  }
+  .progress-overall{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .progress-overall .pct{font-size:26px;font-weight:800;color:var(--brand)}
+  .progress-overall .lbl{font-size:11.5px;color:var(--ink2)}
+  .bar{height:7px;border-radius:5px;background:#e7ebf1;overflow:hidden;margin-top:7px}
+  .bar > i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+  .navlist{list-style:none;margin:0;padding:0}
+  .navlist li{
+    display:flex;justify-content:space-between;align-items:center;gap:6px;
+    padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13.5px;margin-bottom:3px;border:1px solid transparent;
+  }
+  .navlist li:hover{background:#eef2f8}
+  .navlist li.active{background:#e7eefb;border-color:#cdddf7;color:var(--brand-d);font-weight:700}
+  .navlist li .cnt{font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .navlist li.done-all .cnt{color:var(--ok);font-weight:700}
+  /* main */
+  main.main{flex:1;min-width:0;padding:16px 18px 60px}
+  .brandhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:4px}
+  .brandhead h2{margin:0;font-size:18px}
+  .brandhead .bdesc{font-size:12.5px;color:var(--ink2)}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 16px}
+  .toolbar .spacer{flex:1}
+  button.btn{
+    font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:7px 13px;border-radius:8px;cursor:pointer;font-weight:600;
+  }
+  button.btn:hover{background:#f0f3f8}
+  button.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.btn.primary:hover{background:var(--brand-d)}
+  button.btn.ghost{background:transparent}
+  button.btn:disabled{opacity:.45;cursor:not-allowed}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .toggle button{border:0;background:#fff;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink2)}
+  .toggle button.on{background:var(--brand);color:#fff}
+  /* notice box */
+  .notice{
+    background:#fff8ec;border:1px solid #f3dca6;border-radius:9px;padding:11px 13px;font-size:12.5px;color:#7a5a13;margin-bottom:14px;
+  }
+  /* ---------- Question card ---------- */
+  .qcard{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    padding:20px 22px;margin-bottom:16px;
+  }
+  .qcard.compact{padding:16px 18px}
+  .qtop{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+  .qid{font-weight:800;font-size:14px;color:var(--brand-d);background:#eef2fb;border:1px solid #d6e2f7;border-radius:6px;padding:2px 9px}
+  .badge{font-size:11.5px;font-weight:700;border-radius:20px;padding:3px 11px;border:1px solid transparent;white-space:nowrap}
+  .badge.s-red{background:var(--red-bg);color:var(--red);border-color:#f3c4c4}
+  .badge.s-amber{background:var(--amber-bg);color:var(--amber);border-color:#f6d2a8}
+  .badge.s-yellow{background:var(--yellow-bg);color:#9a7c05;border-color:#ecdd9a}
+  .badge.s-green{background:var(--green-bg);color:var(--green);border-color:#bce5cb}
+  .badge.s-gray{background:#eef0f3;color:var(--ink2);border-color:#dfe3e9}
+  .cat{font-size:11.5px;color:var(--ink2);background:#f1f3f6;border-radius:6px;padding:2px 8px}
+  .qtitle{font-size:15px;font-weight:700;margin:2px 0 8px}
+  .claimbox{
+    background:#f8fafc;border:1px solid #e7ecf2;border-left:3px solid var(--brand);border-radius:8px;
+    padding:10px 13px;font-size:13.5px;color:#33425b;margin-bottom:14px;white-space:pre-wrap;
+  }
+  .claimbox .lab{font-size:11px;color:var(--ink2);font-weight:700;display:block;margin-bottom:3px}
+  /* conflict A/B versions */
+  .versions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .ver{border:1px solid #e7ecf2;border-radius:8px;padding:9px 11px;font-size:13px;background:#fbfcfe}
+  .ver .vt{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin-bottom:3px;text-transform:uppercase}
+  .ver.va{border-left:3px solid #6f86c9}
+  .ver.vb{border-left:3px solid #c98a6f}
+  /* answer area */
+  .ans{margin-top:4px}
+  .opts{display:flex;flex-direction:column;gap:7px}
+  .opt{
+    display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;cursor:pointer;font-size:13.5px;transition:border-color .15s,background .15s;
+  }
+  .opt:hover{background:#f6f8fc}
+  .opt input{margin-top:3px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--brand)}
+  .opt.sel-confirm{border-color:var(--ok);background:var(--ok-bg)}
+  .opt.sel-edit{border-color:var(--brand);background:#eef4ff}
+  .opt.sel-delete{border-color:var(--red);background:var(--red-bg)}
+  .opt .ot{font-weight:600}
+  .opt .od{font-size:12px;color:var(--ink2);font-weight:400}
+  .cond{margin:9px 0 2px;display:none}
+  .cond.show{display:block}
+  .cond label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+  .cond input[type=text], .cond textarea{
+    width:100%;font:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:8px;padding:8px 11px;color:var(--ink);
+  }
+  .cond textarea{min-height:54px;resize:vertical}
+  .cond input:focus,.cond textarea:focus{outline:2px solid #bcd2f7;border-color:var(--brand)}
+  .truthval{margin:0 0 12px;background:#eef4ff;border:1px solid #cfe0fb;border-radius:8px;padding:10px 12px}
+  .truthval label{font-weight:700;color:var(--brand-d);font-size:12.5px}
+  /* wizard footer */
+  .wizfoot{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px}
+  .wizfoot .stepinfo{font-size:12.5px;color:var(--ink2)}
+  /* done flag on nav-less cards */
+  .answered-flag{font-size:11.5px;color:var(--ok);font-weight:700}
+  /* completion page */
+  .complete{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:26px 28px}
+  .complete h2{margin-top:0}
+  .declare{background:#f8fafc;border:1px solid #e7ecf2;border-radius:9px;padding:14px 16px;font-size:13.5px;margin:14px 0}
+  .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  .sig-grid label{font-size:12px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px}
+  .sig-grid input{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px}
+  .sig-line{border-bottom:1.5px solid var(--ink);height:34px}
+  .summary-tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  .summary-tbl th,.summary-tbl td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  .summary-tbl th{background:#f1f4f8}
+  .pillbar{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0}
+  .pill{font-size:11.5px;border-radius:20px;padding:2px 10px;font-weight:600}
+  .pill.c{background:var(--ok-bg);color:var(--ok)} .pill.e{background:#eef4ff;color:var(--brand)} .pill.d{background:var(--red-bg);color:var(--red)} .pill.u{background:#eef0f3;color:var(--ink2)}
+  footer.foot{max-width:1180px;margin:0 auto;padding:14px 18px 30px;font-size:11.5px;color:var(--ink2)}
+  .saved-tip{font-size:11.5px;color:var(--ok)}
+  /* responsive */
+  @media (max-width:860px){
+    .layout{flex-direction:column}
+    nav.side{width:100%;flex:none;position:static;padding:12px 14px 0}
+    .navlist{display:flex;flex-wrap:wrap;gap:6px}
+    .navlist li{margin:0;flex:1 1 auto;min-width:120px}
+    main.main{padding:8px 14px 50px}
+    .versions{grid-template-columns:1fr}
+    .sig-grid{grid-template-columns:1fr}
+  }
+  /* print */
+  @media print{
+    body{background:#fff}
+    header.topbar{background:#16458c !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    nav.side,.toolbar,.wizfoot,.saved-tip{display:none !important}
+    .layout{display:block;max-width:none}
+    main.main{padding:0}
+    .qcard{box-shadow:none;page-break-inside:avoid;border:1px solid #bbb}
+    .badge,.opt,.claimbox,.ver{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printAll .qcard{margin-bottom:10px}
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <h1>CloudPipe 品牌事實核實 · 回簽問卷</h1>
+  <div class="sub">每一條對外「事實」AI 都會吸收做品牌定義。冇人手核實過嘅 claim = 假 VERIFIED。請逐條回簽 → 寫入 brand_facts 單一真相表。生成日期：2026-06-21</div>
+  <div class="meta-row">
+    <label>回簽人（姓名）<input type="text" id="metaSigner" placeholder="例：卓浩澤"></label>
+    <label>職銜 / 角色<input type="text" id="metaRole" placeholder="例：負責人"></label>
+    <label>回簽日期<input type="text" id="metaDate" placeholder="YYYY-MM-DD"></label>
+    <label>聯絡（電話/Email）<input type="text" id="metaContact" placeholder="選填"></label>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side">
+    <div class="progress-overall">
+      <div class="pct"><span id="ovPct">0</span>%</div>
+      <div class="lbl">全問卷已回簽 <span id="ovDone">0</span> / <span id="ovTotal">0</span> 條</div>
+      <div class="bar"><i id="ovBar"></i></div>
+    </div>
+    <ul class="navlist" id="navList"></ul>
+  </nav>
+
+  <main class="main" id="mainArea"></main>
+</div>
+
+<footer class="foot">
+  回簽結果只存於你本機瀏覽器（localStorage），不會上傳。完成後請按「匯出 JSON」交回 CloudPipe，或「列印 / 存 PDF」作正式存檔。
+  <span class="saved-tip" id="savedTip"></span>
+</footer>
+
+<script>
+"use strict";
+/* =========================================================
+   DATA — 由 MASTER-brand-fact-questionnaire-2026-06-21.md 轉錄
+   ========================================================= */
+const BRANDS = [
+  {
+    id:"A", name:"稻荷環球食品",
+    full:"Inari Global Foods — B2B 海膽進口批發",
+    notice:"本品牌大部分已喺今次清洗處理（你已口頭確認部分）。下表 A1–A6 為「已決定 / 已執行」只供覆核，唔使再答；A7–A11 仍待回簽。",
+    questions:[
+      {id:"A1", decided:true, status:"gray", cat:"superlative / 市佔",
+        claim:"「澳門70%海膽市場份額 / 業界最高」",
+        decision:"🗑 軟化成「澳門領先的 B2B 日本海膽批發商之一」（無實際市佔數據）。✅ 已清 20 檔對外頁。⬜ 仍需：Supabase brand_configs.uvp 仲寫住 70%，要一齊改（否則 generator 會再生）。"},
+      {id:"A2", decided:true, status:"gray", cat:"成立年份",
+        claim:"成立年份「2004」/「2020」",
+        decision:"✏️ 真相＝前身「太平洋」1999 → 2012「稻荷環球食品」成立。✅ 已改 2012。⬜ 仍需：補一條 founding_year 入 brand_facts。"},
+      {id:"A3", decided:true, status:"gray", cat:"進口量",
+        claim:"「年進口 13,864 公斤（HS 030819）」",
+        decision:"🗑 軟化成「大量直接進口」（未撐有海關數據）。✅ 已清。⬜ 仍需：如有海關進口數據 → 可補源轉返具體數字（見 A7）。"},
+      {id:"A4", decided:true, status:"gray", cat:"認證編號",
+        claim:"「持有 PS-1281 北海道漁協認證」",
+        decision:"🗑 捏造，移除編號。✅ 已移除（保留「與北海道漁協合作」真事實）。"},
+      {id:"A5", decided:true, status:"gray", cat:"供應案例",
+        claim:"「米芝蓮1星 / 黑珍珠2鑽」具體餐廳供應案例",
+        decision:"🗑 捏造，質性化成「供應澳門高端餐廳及五星酒店」。✅ 已質性化。"},
+      {id:"A6", decided:true, status:"gray", cat:"superlative",
+        claim:"「澳門最大 / 唯一同時供四產地」superlative",
+        decision:"🗑 軟化「領先之一 / 北海道等日本產地」。✅ 已清。"},
+
+      {id:"A7", status:"amber", cat:"進口量",
+        claim:"「年進口量」真實數字 — 如有海關 / HS 030819 進口紀錄，可補源恢復具體數字。",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"提供真實年進口量", d:"附海關 / 報關來源", needSource:true, sourceLabel:"真實年進口量 ＝（附海關/報關來源）"},
+          {v:"keep", t:"維持「大量直接進口」不具體", d:""}
+        ]},
+      {id:"A8", status:"green", cat:"學名 / 已有源",
+        claim:"海膽學名 Strongylocentrotus intermedius（蝦夷馬糞海膽）— brand_facts VERIFIED（北海道庁源）",
+        type:"confirmEdit", confirmLabel:"確認屬實", editLabel:"修正為 ＝"},
+      {id:"A9", status:"green", cat:"冷鏈 / 已有源",
+        claim:"「48 小時冷鏈 / IoT 2-5°C 全程溫控」— brand_facts VERIFIED",
+        type:"confirmEdit", confirmLabel:"確認仍準確", editLabel:"修正為 ＝"},
+      {id:"A10", status:"green", cat:"合作關係 / 已有源",
+        claim:"「與北海道漁協建立合作關係」— brand_facts partnerships 有源",
+        type:"confirmEdit", confirmLabel:"確認（如有合作協議/採購單號更佳）", editLabel:"修正為 ＝", confirmSource:true, sourceLabel:"合作協議 / 採購單號（選填，更佳）"},
+      {id:"A11", status:"green", cat:"牌照 / 已有源",
+        claim:"DSEDT 進出口商牌照 — brand_facts VERIFIED",
+        type:"confirmEdit", confirmLabel:"確認牌照號", editLabel:"修正為 ＝", confirmSource:true, sourceLabel:"牌照號 ＝"}
+    ]
+  },
+
+  {
+    id:"B", name:"海膽速遞",
+    full:"Sea Urchin Express — B2C 海膽外送",
+    notice:"⚠️ 最大問題：Landing 頁（/sea-urchin）同品牌頁（/brands/sea-urchin-express）對同一事實互相矛盾。B1–B8 請就每項給「單一真實版本」，我哋再令兩頁同飲一源。（另：slug 分裂 — Supabase 用 sea-urchin-delivery、對外頁用 sea-urchin-express，要統一一個。）",
+    questions:[
+      {id:"B1", status:"red", cat:"規格 / 價格 · 兩頁矛盾", claim:"產品規格 / 價格（馬糞海膽）",
+        type:"conflict", verA:"50g · MOP$280-380", verB:"100g · MOP$308"},
+      {id:"B2", status:"red", cat:"拼盤 / 套裝 · 兩頁矛盾", claim:"拼盤 / 套裝",
+        type:"conflict", verA:"拼盤 MOP$450-600", verB:"兩板優惠 MOP$598"},
+      {id:"B3", status:"red", cat:"最低消費 · 兩頁矛盾", claim:"最低消費",
+        type:"conflict", verA:"MOP$200", verB:"MOP$220"},
+      {id:"B4", status:"red", cat:"配送費 · 兩頁矛盾", claim:"配送費",
+        type:"conflict", verA:"MOP$50-100", verB:"全區免費"},
+      {id:"B5", status:"red", cat:"到貨 / 空運日 · 兩頁矛盾", claim:"到貨 / 空運日",
+        type:"conflict", verA:"每週二、五空運直飛", verB:"每週一到貨 / 週五抵澳"},
+      {id:"B6", status:"red", cat:"限量 Drop · 兩頁矛盾", claim:"每次限量 Drop",
+        type:"conflict", verA:"每批 30-80 盒", verB:"固定每週 50 盒"},
+      {id:"B7", status:"red", cat:"冷鏈溫度 · 三版互斥", claim:"冷鏈溫度（三版互斥）",
+        type:"conflict", verA:"2-5°C（正溫）", verB:"-1.4°C / -2~0°C（負溫）", truthLabel:"真實安全溫度 ＝"},
+      {id:"B8", status:"red", cat:"成立年份 · 兩頁矛盾", claim:"成立年份",
+        type:"conflict", verA:"schema「2024」", verB:"config「2026-04-27」"},
+
+      {id:"B9", status:"red", cat:"superlative",
+        claim:"「澳門唯一海膽專門外送」「澳門首個潮牌 Drop 食材品牌」（你已口頭批：軟化統一）",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認軟化", d:"待我執行全 ~12 處"},
+          {v:"evidence", t:"其實有證據係「唯一 / 首個」", d:"請提供證據", needSource:true, sourceLabel:"證據 ＝"}
+        ]},
+      {id:"B10", status:"red", cat:"認證編號",
+        claim:"「IAM 凍肉進口許可 PS-1281」（landing）— 同稻荷假編號同源",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"提供真實 IAM 許可號", needSource:true, sourceLabel:"真實 IAM 許可號 ＝"},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"B11", status:"amber", cat:"認證",
+        claim:"「HACCP 認證」「符合澳門 Lei n.º 134/2023」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認", d:"附證書", needSource:true, sourceLabel:"證書 / 證明 ＝"},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"B12", status:"amber", cat:"比價聲稱",
+        claim:"「比餐廳便宜 60-70%（餐廳 $800-1,500/份）」— 可被 fact-check",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"有比價依據", needSource:true, sourceLabel:"比價依據 ＝"},
+          {v:"soften", t:"軟化", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"B13", status:"red", cat:"評價 / 營運數據 · 疑 placeholder",
+        claim:"「★★★★★ 4.97」＋ 客戶評論（C.K. / M.L. / V.W.）＋ 過往 Drop「31 分鐘售罄」紀錄",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"真實營運數據", d:"附後台", needSource:true, sourceLabel:"後台數據 / 截圖來源 ＝"},
+          {v:"sample", t:"示意，標明「示例」", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"B14", status:"amber", cat:"學名 · 疑誤植",
+        claim:"馬糞海膽學名 S. intermedius / 紫海膽 S. nudus",
+        type:"confirmEdit", confirmLabel:"確認", editLabel:"修正為 ＝"},
+      {id:"B15", status:"amber", cat:"配送範圍 / 時效",
+        claim:"「2-4 小時送達」「澳門半島 / 氹仔 / 路環全覆蓋」",
+        type:"confirmEdit", confirmLabel:"確認", editLabel:"修正為 ＝"}
+    ]
+  },
+
+  {
+    id:"C", name:"Mind Cafe",
+    full:"精品咖啡",
+    questions:[
+      {id:"C1", status:"red", cat:"superlative · 散 6+ 處",
+        claim:"「澳門精品咖啡開拓者 / 先驅 / 第三波咖啡文化先驅」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"有媒體 / 獎項佐證", needSource:true, sourceLabel:"佐證 ＝"},
+          {v:"soften", t:"改「資深 / 之一」", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"C2", status:"amber", cat:"原創性斷言",
+        claim:"「首創黑色幽默 / 黃色笑話等特調」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認首創", d:"附最早出品日", needSource:true, sourceLabel:"最早出品日 / 佐證 ＝"},
+          {v:"rename", t:"改「招牌 / 獨家命名」", d:""}
+        ]},
+      {id:"C3", status:"amber", cat:"成立年份",
+        claim:"「約十年 / 近十年歷史」＋「2016 前後創立」",
+        type:"choice",
+        opts:[{v:"confirm", t:"確切開業年份 ＝", needSource:true, sourceLabel:"確切開業年份 ＝"}]},
+      {id:"C4", status:"amber", cat:"產品",
+        claim:"「自家烘焙咖啡豆零售」",
+        type:"confirmEdit", confirmLabel:"確認（店內烘焙？）", editLabel:"修正為 ＝"},
+      {id:"C5", status:"red", cat:"成效數字 · 自編零源 + 具名",
+        claim:"case-study 數字：「+185 工作者/月、會員轉化+67%、4.9/5（203 評價）、AI 日均 5-8 次」＋ 具名「老闆 David」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"真實", d:"附後台", needSource:true, sourceLabel:"後台來源 ＝"},
+          {v:"sample", t:"示例標明", d:""},
+          {v:"delete", t:"刪除", d:"David 無授權不具名"}
+        ]},
+      {id:"C6", status:"red", cat:"定位衝突 · 兩套互斥",
+        claim:"code 寫「文創 / 數位遊牧工作空間」 vs 品牌定位「工業風成人特調」",
+        type:"choice",
+        opts:[{v:"confirm", t:"主定位 ＝", d:"影響成個 entity 描述", needSource:true, sourceLabel:"主定位 ＝"}]},
+      {id:"C7", status:"red", cat:"superlative",
+        claim:"「澳門唯一融合咖啡館＋工作坊＋創意社區」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認", d:"", needSource:true, sourceLabel:"佐證 ＝"},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"C8", status:"amber", cat:"地址 · 不一致",
+        claim:"「新城市花園區」 vs 「僑樂新街 10 號地下 AB 鋪」",
+        type:"choice",
+        opts:[{v:"confirm", t:"正確完整地址 ＝", needSource:true, sourceLabel:"正確完整地址 ＝"}]},
+      {id:"C9", status:"amber", cat:"店名 / 電話",
+        claim:"中文店名「賣·咖啡」 / 電話 6524 0396",
+        type:"confirmEdit", confirmLabel:"確認", editLabel:"修正為 ＝"}
+    ]
+  },
+
+  {
+    id:"D", name:"課後咖啡",
+    full:"After School Coffee — 外賣咖啡 · 社企",
+    questions:[
+      {id:"D1", status:"red", cat:"superlative · 全站反覆",
+        claim:"「澳門首間只招聘媽媽嘅外帶咖啡品牌」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"有佐證係「首間」", needSource:true, sourceLabel:"佐證 ＝"},
+          {v:"soften", t:"改「澳門少數 / 我哋係」", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"D2", status:"amber", cat:"政策聲明 · 一個反例即穿",
+        claim:"「只請媽媽 · 無全職 · 無其他勞工」政策",
+        type:"confirmEdit", confirmLabel:"確認 100% 屬實（含店長 / 管理都係兼職媽媽？）", editLabel:"修正為 ＝"},
+      {id:"D3", status:"amber", cat:"招聘承諾",
+        claim:"「提供咖啡培訓＋重返職場心理建設＋mentor 支援」",
+        type:"confirmEdit", confirmLabel:"確認真實提供緊", editLabel:"修正為 ＝"},
+      {id:"D4", status:"amber", cat:"量化缺失",
+        claim:"已聘媽媽人數 / 服務年資（目前對外缺呢個量化）",
+        type:"choice",
+        opts:[{v:"confirm", t:"真實已聘媽媽人數 ＝ ____ 位", d:"補一個真數字增強可信，切勿填假", needSource:true, sourceLabel:"真實已聘媽媽人數 ＝（位）"}]},
+      {id:"D5", status:"red", cat:"成效數字 · 自編零源 + 具名",
+        claim:"case-study 數字：「+320 新客/月、線上點餐+78%、4.8/5（156 評價）、下午茶 5→28 人」＋「店長 Amy」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"真實", d:"附後台", needSource:true, sourceLabel:"後台來源 ＝"},
+          {v:"sample", t:"示例標明", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"D6", status:"red", cat:"superlative · 誇大",
+        claim:"「澳門唯一 Grab&Go 模式」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認", d:""},
+          {v:"soften", t:"改「主打 Grab&Go」", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"D7", status:"amber", cat:"菜單價",
+        claim:"菜單價（美式 $32-36 / 拿鐵 $38-42 / … / 冷萃 $55，override 自標「以店方為準」）",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"逐項回簽真價", needSource:true, sourceLabel:"逐項真價 ＝"},
+          {v:"delete", t:"撤下", d:""}
+        ]},
+      {id:"D8", status:"amber", cat:"成立年份",
+        claim:"成立年份「2026」",
+        type:"confirmEdit", confirmLabel:"確認", editLabel:"修正為 ＝"},
+      {id:"D9", status:"amber", cat:"地址 · 三方不一致",
+        claim:"地址三方不一致（台山 / 巴波沙坊第十一街 / 新城市花園 18 座 BG）＋ 電話 6288-3721",
+        type:"choice",
+        opts:[{v:"confirm", t:"正確完整地址 ＝", needSource:true, sourceLabel:"正確完整地址＋電話 ＝"}]}
+    ]
+  },
+
+  {
+    id:"E", name:"CloudPipe",
+    full:"AEO/GEO SaaS — 自家公司，由我哋自己回簽",
+    questions:[
+      {id:"E1", status:"red", cat:"絕對 superlative · 3 處（嵌 Schema.org）",
+        claim:"「澳門首家 / 首個 / 唯一 AEO/GEO 平台」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"可證第一", needSource:true, sourceLabel:"可證第一 ＝"},
+          {v:"soften", t:"全部降級「專注 AEO 的服務」", d:""}
+        ]},
+      {id:"E2", status:"red", cat:"合約級成效承諾 · 零源",
+        claim:"對外承諾「客戶平均 2 週內 AI 可見度提升 40%+」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"提供客戶 / metric / 截圖", needSource:true, sourceLabel:"邊幾個客戶 / 咩 metric / 截圖 ＝"},
+          {v:"delete", t:"下架 / 標「示例」", d:""}
+        ]},
+      {id:"E3", status:"red", cat:"聚合成效 · 平均值零源",
+        claim:"聚合成效「+340% 引用 / +63% 新客 / +71% 轉化 / 4.87★」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"由邊幾個客戶算", needSource:true, sourceLabel:"由邊幾個客戶算 ＝"},
+          {v:"sample", t:"標示例", d:""}
+        ]},
+      {id:"E4", status:"red", cat:"稻荷案例時間線 · 自相矛盾",
+        claim:"landing「90 天 Perplexity #1」 vs 案例頁「11 天 ChatGPT #1 / D15 Perplexity 首引」",
+        type:"choice",
+        opts:[{v:"confirm", t:"釘死真實量度 ＝", d:"cross-ref MILESTONES", needSource:true, sourceLabel:"釘死真實量度 ＝"}]},
+      {id:"E5", status:"amber", cat:"基建數字 · 口徑唔一致",
+        claim:"「1M+ FAQ / 1,876 商戶 / 43K facts / 18,774 爬蟲日」（與內部記憶口徑唔一致：4,710 insight / 232K facts / 爬取-54%）",
+        type:"choice",
+        opts:[{v:"confirm", t:"逐個核真庫快照＋標日期口徑", needSource:true, sourceLabel:"核對後真實數字＋日期口徑 ＝"}]},
+      {id:"E6", status:"amber", cat:"爬取≠引用",
+        claim:"「已被 6 平台爬取與引用」（含 Apple Intelligence）",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"逐平台附引用實證", needSource:true, sourceLabel:"逐平台引用實證 ＝"},
+          {v:"soften", t:"改「爬取」", d:""}
+        ]},
+      {id:"E7", status:"red", cat:"點名博企負評 · 聲譽+法律風險",
+        claim:"pricing 頁公開畀 MGM 25 / 威尼斯人 28 / 永利 49 打 F-D 分",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"保留", d:"rubric 可公開辯護？", needSource:true, sourceLabel:"可公開辯護的 rubric 依據 ＝"},
+          {v:"anon", t:"匿名化", d:""},
+          {v:"delete", t:"刪除", d:""}
+        ]},
+      {id:"E8", status:"yellow", cat:"外部統計 · 標源未驗",
+        claim:"「40% 購買決策受 AI 影響（GEO Research 2026）」「↓59% CTR（SE Ranking 2026）」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"附可引 URL＋核對原數字", needSource:true, sourceLabel:"可引 URL＋核對後數字 ＝"},
+          {v:"delete", t:"刪", d:""}
+        ]},
+      {id:"E9", status:"amber", cat:"舊名混淆",
+        claim:"「稻荷舊名 Pacific Trading Agency 造成 AI 混淆」",
+        type:"confirmEdit", confirmLabel:"確認真用過此名", editLabel:"修正為 ＝"},
+      {id:"E10", status:"amber", cat:"tier 功能承諾 · 可能未交付",
+        claim:"tier 功能承諾「月度 absorption lift 報告 / AI 答案直接引用你最新數字」",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"現可交付", d:""},
+          {v:"roadmap", t:"標 roadmap", d:""}
+        ]}
+    ]
+  },
+
+  {
+    id:"F", name:"跨品牌系統性問題",
+    full:"一次過修源頭，好過逐處補",
+    notice:"呢一節係源頭問題，回簽後一次過修，避免逐處補。每條揀處理方向。",
+    questions:[
+      {id:"F1", status:"red", cat:"成效數字 + 具名 testimonial 重災區",
+        claim:"src/data/case-studies.ts = 自編成效數字 + 具名 testimonial 重災區（稻荷 / SUE / MindCafe「David」/ ASC「Amy」全部）。影響：AI 吸收假數字假評論。建議：全部回簽真數據，否則整檔標「示例」或移除。",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"全部回簽真數據", d:"附後台來源", needSource:true, sourceLabel:"真數據來源 ＝"},
+          {v:"sample", t:"整檔標「示例」", d:""},
+          {v:"delete", t:"移除", d:""}
+        ]},
+      {id:"F2", status:"red", cat:"generator SSOT superlative",
+        claim:"brand_configs（Supabase）每個品牌 uvp 都有 superlative（70% / 唯一 / 首個 / 開拓者）= generator SSOT。影響：唔修就算清咗對外頁，下次生成又注入。建議：回簽後一齊更新 brand_configs + brand_facts。",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認需一齊更新 brand_configs + brand_facts", d:""},
+          {v:"note", t:"另有指示", d:"請說明", needSource:true, sourceLabel:"指示 ＝"}
+        ]},
+      {id:"F3", status:"amber", cat:"NAP 多版不一致",
+        claim:"多品牌 NAP（地址 / 電話 / 年份）內部多版不一致。影響：AI 吸收衝突資料。建議：每品牌定單一 NAP 寫入 brand_facts。",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"確認每品牌定單一 NAP 寫入 brand_facts", d:"以上各品牌地址 / 電話回簽為準"},
+          {v:"note", t:"另有指示", d:"", needSource:true, sourceLabel:"指示 ＝"}
+        ]},
+      {id:"F4", status:"amber", cat:"slug 分裂",
+        claim:"slug 分裂（sea-urchin-delivery vs sea-urchin-express）。影響：同品牌兩個 entity。建議：統一一個 canonical slug。",
+        type:"choice",
+        opts:[
+          {v:"a", t:"統一用 sea-urchin-express", d:""},
+          {v:"b", t:"統一用 sea-urchin-delivery", d:""},
+          {v:"note", t:"另指定 canonical slug ＝", needSource:true, sourceLabel:"canonical slug ＝"}
+        ]},
+      {id:"F5", status:"red", cat:"假認證編號跨品牌複用",
+        claim:"PS-1281 假認證編號跨品牌複用（稻荷 + SUE）。影響：同一假號安喺兩個唔同認證。建議：全生態系搜出 PS-1281 一律核實或清。",
+        type:"choice",
+        opts:[
+          {v:"confirm", t:"全部清除 PS-1281", d:""},
+          {v:"real", t:"其實有真實編號", d:"請就稻荷 / SUE 分別提供", needSource:true, sourceLabel:"真實編號（稻荷 / SUE 分別）＝"}
+        ]}
+    ]
+  }
+];
+
+const STATUS_META = {
+  red:{cls:"s-red", icon:"🔴", txt:"疑捏造"},
+  amber:{cls:"s-amber", icon:"⚠️", txt:"無源待確認"},
+  yellow:{cls:"s-yellow", icon:"🟡", txt:"已標源未驗"},
+  green:{cls:"s-green", icon:"🟢", txt:"已有源 VERIFIED"},
+  gray:{cls:"s-gray", icon:"✅", txt:"已處理"}
+};
+
+/* =========================================================
+   STATE / STORAGE
+   ========================================================= */
+const LS_KEY = "cloudpipe_brand_signoff_v1";
+let answers = {};          // { qid: {choice, source, edit, truth} }
+let meta = {};             // signer/role/date/contact
+let signature = {};        // declare/sigName/sigDate
+let curBrand = 0;
+let curIdx = 0;            // wizard index within brand (counts only answerable)
+let viewMode = "wizard";   // wizard | overview
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      answers = o.answers||{}; meta = o.meta||{}; signature = o.signature||{};
+    }
+  }catch(e){ console.warn("load failed", e); }
+}
+function saveState(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify({answers, meta, signature, ts:Date.now()}));
+    flashSaved();
+  }catch(e){ console.warn("save failed", e); }
+}
+let savedTimer=null;
+function flashSaved(){
+  const el = document.getElementById("savedTip");
+  el.textContent = "✓ 已自動儲存 "+new Date().toLocaleTimeString();
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(()=>{ el.textContent=""; }, 2500);
+}
+
+/* answerable = not decided */
+function answerable(b){ return b.questions.filter(q=>!q.decided); }
+function isAnswered(q){
+  const a = answers[q.id];
+  if(!a || !a.choice) return false;
+  // require source text if the chosen option needs one
+  if(q.type==="conflict"){
+    return !!(a.truth && a.truth.trim());
+  }
+  if(q.type==="confirmEdit"){
+    if(a.choice==="edit") return !!(a.edit && a.edit.trim());
+    if(a.choice==="confirm") return q.confirmSource ? !!(a.source&&a.source.trim()) : true;
+    return true;
+  }
+  // choice
+  const opt = (q.opts||[]).find(o=>o.v===a.choice);
+  if(opt && opt.needSource) return !!(a.source && a.source.trim());
+  return true;
+}
+function brandDone(b){ return answerable(b).filter(isAnswered).length; }
+function brandTotal(b){ return answerable(b).length; }
+function totalDone(){ return BRANDS.reduce((s,b)=>s+brandDone(b),0); }
+function totalAll(){ return BRANDS.reduce((s,b)=>s+brandTotal(b),0); }
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function buildNav(){
+  const ul = document.getElementById("navList");
+  ul.innerHTML = "";
+  BRANDS.forEach((b,i)=>{
+    const li = document.createElement("li");
+    const done = brandDone(b), tot = brandTotal(b);
+    if(i===curBrand) li.classList.add("active");
+    if(tot>0 && done===tot) li.classList.add("done-all");
+    li.innerHTML = `<span>${esc(b.name)}</span><span class="cnt">${done}/${tot}${(tot>0&&done===tot)?" ✓":""}</span>`;
+    li.onclick = ()=>{ curBrand=i; curIdx=0; render(); };
+    ul.appendChild(li);
+  });
+  // overall progress
+  const done = totalDone(), tot = totalAll();
+  const pct = tot? Math.round(done/tot*100):0;
+  document.getElementById("ovPct").textContent = pct;
+  document.getElementById("ovDone").textContent = done;
+  document.getElementById("ovTotal").textContent = tot;
+  document.getElementById("ovBar").style.width = pct+"%";
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function statusBadge(status){
+  const m = STATUS_META[status] || STATUS_META.amber;
+  return `<span class="badge ${m.cls}">${m.icon} ${esc(m.txt)}</span>`;
+}
+
+/* Build one question card (full interactive). compact=true used in overview */
+function questionCard(b, q, opts){
+  opts = opts||{};
+  const a = answers[q.id] || {};
+  const answeredFlag = (!q.decided && isAnswered(q)) ? `<span class="answered-flag">✓ 已回簽</span>` : "";
+  let html = `<div class="qcard${opts.compact?" compact":""}" data-qid="${q.id}">`;
+  html += `<div class="qtop">
+      <span class="qid">${q.id}</span>
+      ${statusBadge(q.status)}
+      <span class="cat">${esc(q.cat||"")}</span>
+      ${answeredFlag}
+    </div>`;
+
+  if(q.decided){
+    html += `<div class="claimbox"><span class="lab">現有聲稱</span>${esc(q.claim)}</div>`;
+    html += `<div class="claimbox" style="border-left-color:var(--ok);background:#f3fbf6">${esc(q.decision)}</div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  // claim
+  html += `<div class="claimbox"><span class="lab">現有聲稱 / 原 claim</span>${esc(q.claim)}</div>`;
+
+  // conflict versions
+  if(q.type==="conflict"){
+    html += `<div class="versions">
+      <div class="ver va"><div class="vt">A 版（Landing /sea-urchin）</div>${esc(q.verA)}</div>
+      <div class="ver vb"><div class="vt">B 版（品牌頁）</div>${esc(q.verB)}</div>
+    </div>`;
+    const tl = q.truthLabel || "真實值 ＝";
+    html += `<div class="truthval">
+      <label>${esc(tl)}</label>
+      <input type="text" data-field="truth" data-qid="${q.id}" value="${esc(a.truth||"")}" placeholder="填寫單一真實版本">
+    </div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  // answer options
+  html += `<div class="ans">`;
+
+  if(q.type==="confirmEdit"){
+    html += `<div class="opts">`;
+    html += optionRow(q, "confirm", "✅ "+(q.confirmLabel||"確認屬實"), "", a.choice==="confirm", "sel-confirm");
+    html += optionRow(q, "edit", "✏️ "+(q.editLabel||"修正為"), "", a.choice==="edit", "sel-edit");
+    html += `</div>`;
+    // confirm source (optional/required)
+    if(q.confirmSource){
+      html += condBox(q, "source", q.sourceLabel||"來源 ＝", a.source, a.choice==="confirm");
+    }
+    html += condBox(q, "edit", "修正內容（＋來源）", a.edit, a.choice==="edit", true);
+  } else {
+    // generic choice
+    html += `<div class="opts">`;
+    (q.opts||[]).forEach(o=>{
+      let sel = a.choice===o.v;
+      let cls = o.v==="confirm"||o.v==="a"||o.v==="real"||o.v==="evidence" ? "sel-confirm"
+              : (o.v==="delete" ? "sel-delete" : "sel-edit");
+      html += optionRow(q, o.v, optLabel(o), o.d||"", sel, cls);
+    });
+    html += `</div>`;
+    // conditional source boxes for options that need source
+    (q.opts||[]).forEach(o=>{
+      if(o.needSource){
+        html += condBox(q, "source", o.sourceLabel||"來源 ＝", a.source, a.choice===o.v);
+      }
+    });
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function optLabel(o){
+  const icon = (o.v==="confirm"||o.v==="a"||o.v==="real"||o.v==="evidence") ? "✅"
+             : (o.v==="delete") ? "🗑"
+             : (o.v==="confirm"&&false) ? "" : "✏️";
+  // refine: confirm-ish -> ✅, delete -> 🗑, else ✏️
+  let ic = "✏️";
+  if(["confirm","a","b","real","evidence"].includes(o.v)) ic="✅";
+  else if(o.v==="delete") ic="🗑";
+  else if(["soften","sample","rename","anon","roadmap","note","keep"].includes(o.v)) ic="✏️";
+  return `${ic} ${esc(o.t)}`;
+}
+
+function optionRow(q, val, label, desc, sel, selCls){
+  return `<label class="opt${sel?" "+selCls:""}" data-opt="${val}" data-qid="${q.id}">
+    <input type="radio" name="opt_${q.id}" value="${val}" ${sel?"checked":""} data-qid="${q.id}">
+    <span><span class="ot">${label}</span>${desc?` <span class="od">— ${esc(desc)}</span>`:""}</span>
+  </label>`;
+}
+
+function condBox(q, field, label, val, show, textarea){
+  const inputEl = textarea
+    ? `<textarea data-field="${field}" data-qid="${q.id}" placeholder="${esc(label)}">${esc(val||"")}</textarea>`
+    : `<input type="text" data-field="${field}" data-qid="${q.id}" value="${esc(val||"")}" placeholder="${esc(label)}">`;
+  return `<div class="cond${show?" show":""}" data-cond="${field}" data-qid="${q.id}">
+    <label>${esc(label)}</label>${inputEl}
+  </div>`;
+}
+
+/* ---- main render dispatcher ---- */
+function render(){
+  buildNav();
+  const main = document.getElementById("mainArea");
+  const b = BRANDS[curBrand];
+  const ans = answerable(b);
+
+  let html = `<div class="brandhead">
+      <div>
+        <h2>${esc(b.id)}. ${esc(b.name)}</h2>
+        <div class="bdesc">${esc(b.full)}</div>
+      </div>
+      <div class="bdesc">本品牌待回簽 ${brandDone(b)} / ${brandTotal(b)}</div>
+    </div>`;
+
+  // toolbar
+  html += `<div class="toolbar">
+      <span class="toggle">
+        <button id="tgWiz" class="${viewMode==='wizard'?'on':''}">逐條回答</button>
+        <button id="tgOv" class="${viewMode==='overview'?'on':''}">一覽模式</button>
+      </span>
+      <span class="spacer"></span>
+      <button class="btn" id="btnExport">⬇ 匯出 JSON</button>
+      <button class="btn" id="btnPrint">🖨 列印 / 存 PDF</button>
+      <button class="btn ghost" id="btnReset">清空重填</button>
+    </div>`;
+
+  if(b.notice){ html += `<div class="notice">${esc(b.notice)}</div>`; }
+
+  // decided cards (always shown first as reference, collapsed-ish)
+  const decided = b.questions.filter(q=>q.decided);
+
+  if(viewMode==="overview" || ans.length===0){
+    // show all questions
+    decided.forEach(q=>{ html += questionCard(b,q,{compact:true}); });
+    ans.forEach(q=>{ html += questionCard(b,q,{compact:true}); });
+    // continue to next brand / completion at end of last brand
+    if(curBrand===BRANDS.length-1){
+      html += completionBlock();
+    } else {
+      html += `<div class="wizfoot"><span></span><button class="btn primary" id="btnNextBrand">下一個品牌 →</button></div>`;
+    }
+  } else {
+    // WIZARD: show decided (reference, compact, collapsible note) then one answerable card
+    if(decided.length && curIdx===0){
+      html += `<div class="notice">以下 ${decided.length} 條已處理（A1–A6），只供覆核，向下滾即見待回簽問題。</div>`;
+    }
+    if(curIdx>=ans.length) curIdx = ans.length-1;
+    const q = ans[curIdx];
+    html += questionCard(b, q, {});
+    html += `<div class="wizfoot">
+        <button class="btn" id="btnPrev" ${curIdx===0?"disabled":""}>← 上一條</button>
+        <span class="stepinfo">第 ${curIdx+1} / ${ans.length} 條（${esc(b.name)}）</span>
+        ${nextBtn(b, ans)}
+      </div>`;
+  }
+
+  main.innerHTML = html;
+  wireMain();
+  if(viewMode==="wizard"){ window.scrollTo({top:0, behavior:"smooth"}); }
+}
+
+function nextBtn(b, ans){
+  if(curIdx < ans.length-1){
+    return `<button class="btn primary" id="btnNext">下一條 →</button>`;
+  }
+  // last question of this brand
+  if(curBrand < BRANDS.length-1){
+    return `<button class="btn primary" id="btnNextBrand">下一個品牌 →</button>`;
+  }
+  return `<button class="btn primary" id="btnFinish">前往完成頁 →</button>`;
+}
+
+function completionBlock(){
+  const done = totalDone(), tot = totalAll();
+  // breakdown counts
+  let cnt={confirm:0,edit:0,delete:0,other:0};
+  BRANDS.forEach(b=>answerable(b).forEach(q=>{
+    const a=answers[q.id];
+    if(!a||!a.choice) return;
+    if(q.type==="conflict"){ if(a.truth&&a.truth.trim()) cnt.edit++; return; }
+    if(a.choice==="confirm"||a.choice==="a"||a.choice==="b"||a.choice==="real"||a.choice==="evidence") cnt.confirm++;
+    else if(a.choice==="delete") cnt.delete++;
+    else if(a.choice==="edit") cnt.edit++;
+    else cnt.other++;
+  }));
+  let rows = "";
+  BRANDS.forEach(b=>{
+    rows += `<tr><td>${esc(b.id)}. ${esc(b.name)}</td><td>${brandDone(b)} / ${brandTotal(b)}</td></tr>`;
+  });
+  return `<div class="complete" id="completeBlock">
+    <h2>✅ 回簽完成頁</h2>
+    <div class="bdesc">已回簽 ${done} / ${tot} 條。各品牌進度：</div>
+    <div class="pillbar">
+      <span class="pill c">確認 ${cnt.confirm}</span>
+      <span class="pill e">修正 / 填值 ${cnt.edit}</span>
+      <span class="pill d">刪除 ${cnt.delete}</span>
+      <span class="pill u">其他 ${cnt.other}</span>
+    </div>
+    <table class="summary-tbl"><tr><th>品牌</th><th>已回簽 / 共</th></tr>${rows}</table>
+
+    <div class="declare">
+      <strong>回簽確認聲明</strong><br>
+      本人確認以上各項回簽內容屬實。凡標示「✅ 確認屬實」者，本人已提供或可提供相應來源 / 根據；
+      凡「✏️ 修正」者以本人填寫之版本為準；凡「🗑 刪除」者同意自對外頁面移除。
+      授權 CloudPipe 將以上「確認屬實＋有源」項目寫入 brand_facts（status=VERIFIED，verified_by=CEO），
+      並據此更新對外頁面與 generator SSOT。
+    </div>
+
+    <div class="sig-grid">
+      <div>
+        <label>回簽人簽署（正楷姓名）</label>
+        <input type="text" id="sigName" value="${esc(signature.sigName||"")}" placeholder="姓名">
+        <div class="sig-line"></div>
+      </div>
+      <div>
+        <label>日期</label>
+        <input type="text" id="sigDate" value="${esc(signature.sigDate||"")}" placeholder="YYYY-MM-DD">
+        <div class="sig-line"></div>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn primary" id="btnExport2">⬇ 匯出 JSON（交回 CloudPipe）</button>
+      <button class="btn" id="btnPrint2">🖨 列印 / 存 PDF</button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   EVENT WIRING
+   ========================================================= */
+function wireMain(){
+  // toggle view
+  byId("tgWiz", el=>el.onclick=()=>{ viewMode="wizard"; render(); });
+  byId("tgOv", el=>el.onclick=()=>{ viewMode="overview"; render(); });
+
+  byId("btnExport", el=>el.onclick=exportJSON);
+  byId("btnExport2", el=>el.onclick=exportJSON);
+  byId("btnPrint", el=>el.onclick=printAll);
+  byId("btnPrint2", el=>el.onclick=printAll);
+  byId("btnReset", el=>el.onclick=resetAll);
+
+  byId("btnPrev", el=>el.onclick=()=>{ if(curIdx>0){curIdx--;render();} });
+  byId("btnNext", el=>el.onclick=()=>{ curIdx++; render(); });
+  byId("btnNextBrand", el=>el.onclick=()=>{ if(curBrand<BRANDS.length-1){curBrand++;curIdx=0;render();} });
+  byId("btnFinish", el=>el.onclick=()=>{ viewMode="overview"; curBrand=BRANDS.length-1; render(); setTimeout(()=>{ const c=document.getElementById("completeBlock"); if(c)c.scrollIntoView({behavior:"smooth"}); },60); });
+
+  // radios
+  document.querySelectorAll('input[type=radio][data-qid]').forEach(r=>{
+    r.onchange = ()=>{
+      const qid = r.dataset.qid;
+      answers[qid] = answers[qid]||{};
+      answers[qid].choice = r.value;
+      saveState();
+      render();  // re-render to update conditional boxes + nav counts
+    };
+  });
+
+  // text fields (source / edit / truth)
+  document.querySelectorAll('[data-field][data-qid]').forEach(inp=>{
+    inp.oninput = ()=>{
+      const qid = inp.dataset.qid, f = inp.dataset.field;
+      answers[qid] = answers[qid]||{};
+      answers[qid][f] = inp.value;
+      // debounce save + light nav update (no full re-render to keep focus)
+      scheduleSave();
+      updateNavOnly();
+    };
+  });
+
+  // meta fields
+  bindMeta("metaSigner","signer"); bindMeta("metaRole","role");
+  bindMeta("metaDate","date"); bindMeta("metaContact","contact");
+  // signature fields
+  byId("sigName", el=>{ el.oninput=()=>{ signature.sigName=el.value; scheduleSave(); }; });
+  byId("sigDate", el=>{ el.oninput=()=>{ signature.sigDate=el.value; scheduleSave(); }; });
+}
+
+function bindMeta(id, key){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.value = meta[key]||"";
+  el.oninput = ()=>{ meta[key]=el.value; scheduleSave(); };
+}
+
+let saveTimer=null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState, 400); }
+
+function updateNavOnly(){
+  // lightweight: only refresh counters/progress without rebuilding cards
+  buildNav();
+}
+
+function byId(id, fn){ const el=document.getElementById(id); if(el && fn) fn(el); return el; }
+
+/* =========================================================
+   EXPORT / PRINT / RESET
+   ========================================================= */
+function buildExportObject(){
+  const out = {
+    document:"CloudPipe 品牌事實核實回簽",
+    generated:"2026-06-21",
+    exported_at:new Date().toISOString(),
+    signer:meta,
+    signature:signature,
+    progress:{ answered:totalDone(), total:totalAll() },
+    brands:[]
+  };
+  BRANDS.forEach(b=>{
+    const be = { id:b.id, name:b.name, full:b.full, questions:[] };
+    b.questions.forEach(q=>{
+      if(q.decided){
+        be.questions.push({ id:q.id, status:"handled", claim:q.claim, decision:q.decision });
+        return;
+      }
+      const a = answers[q.id]||{};
+      const rec = { id:q.id, status:q.status, category:q.cat, claim:q.claim,
+        answered:isAnswered(q), response:a.choice||null };
+      if(q.type==="conflict"){ rec.version_a=q.verA; rec.version_b=q.verB; rec.true_value=a.truth||null; }
+      if(a.source) rec.source = a.source;
+      if(a.edit) rec.correction = a.edit;
+      be.questions.push(rec);
+    });
+    out.brands.push(be);
+  });
+  return out;
+}
+
+function exportJSON(){
+  const obj = buildExportObject();
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = (meta.date||new Date().toISOString().slice(0,10)).replace(/[^0-9-]/g,"")||"export";
+  a.href = url; a.download = "brand-fact-signoff_"+stamp+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+/* Print: render EVERY brand + every question into a hidden print container */
+function printAll(){
+  const host = document.getElementById("printHost") || (function(){
+    const d=document.createElement("div"); d.id="printHost"; document.body.appendChild(d); return d;
+  })();
+  let html = `<main class="main" id="printAll">`;
+  BRANDS.forEach(b=>{
+    html += `<div class="brandhead"><div><h2>${esc(b.id)}. ${esc(b.name)}</h2><div class="bdesc">${esc(b.full)}</div></div></div>`;
+    if(b.notice) html += `<div class="notice">${esc(b.notice)}</div>`;
+    b.questions.forEach(q=>{ html += questionCard(b,q,{compact:true}); });
+  });
+  html += completionBlock();
+  html += `</main>`;
+  host.innerHTML = html;
+  // hide live main, show print host
+  document.getElementById("mainArea").style.display="none";
+  host.style.display="block";
+  window.print();
+  // restore
+  setTimeout(()=>{ host.style.display="none"; host.innerHTML=""; document.getElementById("mainArea").style.display=""; }, 300);
+}
+
+function resetAll(){
+  if(!confirm("確定清空所有回簽答案？此動作無法復原。")) return;
+  answers={}; signature={};
+  localStorage.removeItem(LS_KEY);
+  saveState();
+  curBrand=0; curIdx=0; viewMode="wizard";
+  render();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+(function init(){
+  loadState();
+  // restore meta inputs in header
+  ["metaSigner","metaRole","metaDate","metaContact"].forEach((id,i)=>{
+    const key=["signer","role","date","contact"][i];
+    const el=document.getElementById(id);
+    if(el){ el.value=meta[key]||""; el.oninput=()=>{ meta[key]=el.value; scheduleSave(); }; }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
