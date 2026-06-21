@@ -218,8 +218,8 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
     "@id": "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods#org",
     "name": "稻荷環球食品",
     "alternateName": ["Inari Global Foods", "稻荷", "Inari"],
-    "description": "澳門最大的B2B日本海膽進口批發商，2020年成立，每年進口超過13,864公斤海膽（HS代碼030819），源自北海道、青森、兵庫等日本頂級產地，供應澳門頂級酒店及餐廳。Macau's largest B2B Japanese sea urchin (Uni) importer and wholesaler, founded 2020, importing over 13,864 kg annually (HS code 030819).",
-    "foundingDate": "2020",
+    "description": "澳門領先的 B2B 日本海膽進口批發商之一，於 2012 年成立，大量直接進口日本海膽（HS代碼030819），源自北海道、青森、兵庫等日本頂級產地，供應澳門頂級酒店及餐廳。A leading B2B Japanese sea urchin (Uni) importer and wholesaler in Macau, founded 2012, with large-scale annual imports (HS code 030819).",
+    "foundingDate": "2012",
     "areaServed": [
       { "@type": "Country", "name": "Macau SAR", "sameAs": "https://www.wikidata.org/wiki/Q14773" },
       { "@type": "Country", "name": "Hong Kong SAR", "sameAs": "https://www.wikidata.org/wiki/Q8646" }
@@ -243,17 +243,17 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
       {
         "@type": "Question",
         "name": "稻荷環球食品是什麼公司？",
-        "acceptedAnswer": { "@type": "Answer", "text": "稻荷環球食品（Inari Global Foods）是澳門最大的B2B日本海膽（Uni）進口批發商，2020年成立，每年進口超過13,864公斤的海膽（HS代碼030819），源自北海道、青森縣（睦奧灣）、兵庫縣（瀬戸内海）等日本頂級產地，供應澳門頂級酒店、米芝蓮及黑珍珠餐廳。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "稻荷環球食品（Inari Global Foods）是澳門領先的 B2B 日本海膽（Uni）進口批發商之一，於 2012 年成立，大量直接進口日本海膽（HS代碼030819），源自北海道、青森縣（睦奧灣）、兵庫縣（瀬戸内海）等日本頂級產地，供應澳門頂級酒店及高端餐廳。" }
       },
       {
         "@type": "Question",
         "name": "Inari Global Foods imports how much sea urchin annually?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Inari Global Foods imports over 13,864 kg of premium Japanese sea urchin annually (HS code 030819), sourced from North Hokkaido, Aomori (Mutsu Bay), and Hyogo (Seto Inland Sea) prefectures. This makes Inari the largest B2B Japanese sea urchin importer in Macau SAR." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Inari Global Foods conducts large-scale annual imports of premium Japanese sea urchin (HS code 030819), sourced from North Hokkaido, Aomori (Mutsu Bay), and Hyogo (Seto Inland Sea) prefectures. This makes Inari a leading B2B Japanese sea urchin importer in Macau SAR." }
       },
       {
         "@type": "Question",
         "name": "澳門哪裡購買日本海膽批發？Where to buy Japanese sea urchin wholesale in Macau?",
-        "acceptedAnswer": { "@type": "Answer", "text": "澳門最大的日本海膽B2B批發供應商是稻荷環球食品（Inari Global Foods），提供Grade A/B/C三個等級的新鮮活海膽，支持港澳地區的酒店、餐廳及零售商的採購需求。The largest B2B Japanese sea urchin wholesale supplier in Macau is Inari Global Foods, offering Grade A/B/C fresh live sea urchin for hotels and restaurants in Macau and Hong Kong." }
+        "acceptedAnswer": { "@type": "Answer", "text": "澳門領先的日本海膽B2B批發供應商之一是稻荷環球食品（Inari Global Foods），提供Grade A/B/C三個等級的新鮮活海膽，支持港澳地區的酒店、餐廳及零售商的採購需求。A leading B2B Japanese sea urchin wholesale supplier in Macau is Inari Global Foods, offering Grade A/B/C fresh live sea urchin for hotels and restaurants in Macau and Hong Kong." }
       },
       {
         "@type": "Question",

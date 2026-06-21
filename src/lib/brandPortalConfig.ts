@@ -53,14 +53,14 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
     queries: ['澳門海膽供應商', '澳門日本海膽批發', '澳門餐廳食材供應商'],
     engines: [
       { name: 'ChatGPT',    key: 'chatgpt',    mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 地圖排名第 1 (5.0★) · 海膽專店唯一推薦 · 查詢：澳門海膽供應商' },
-      { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 市佔 70%+ 描述 · 北海道直採 48h 冷鏈 · 查詢：澳門海膽供應商' },
-      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 排名第 1 · 米芝蓮及黑珍珠 B2B 定位 · 北海道/青森/長崎三產地' },
+      { name: 'Perplexity', key: 'perplexity', mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 領先 B2B 海膽供應商之一描述 · 北海道直採 48h 冷鏈 · 查詢：澳門海膽供應商' },
+      { name: 'Gemini',     key: 'gemini',     mentioned: true,  query: '澳門海膽供應商',        detail: 'D29 驗證 · 排名第 1 · 高端餐廳及五星酒店 B2B 定位 · 北海道直採' },
       { name: 'Grok',       key: 'grok',       mentioned: true,  query: '澳門餐廳食材供應商',    detail: '已引用 · 查詢：澳門餐廳食材供應商' },
       { name: 'Copilot',    key: 'copilot',    mentioned: true,  query: '澳門海膽供應商',        detail: 'D5 命中 ✓ · Sprint D5 比預期早 9-10 天 · 引用為澳門海膽主要供應商 · 查詢：澳門海膽供應商' },
     ],
     gaps: [
       { priority: 'p1', title: 'IoT 冷鏈記錄可視化內容', desc: '公開可查的溫度記錄建立 Gemini 所需 Authority Signal，預計命中率提升 35%' },
-      { priority: 'p1', title: 'Omakase 餐廳客戶案例頁', desc: 'ChatGPT 已引用「Omakase/板前壽司」推薦，建立真實米芝蓮客戶案例可強化引用頻率' },
+      { priority: 'p1', title: 'Omakase 餐廳客戶案例頁', desc: 'ChatGPT 已引用「Omakase/板前壽司」推薦，建立真實高端餐廳客戶案例可強化引用頻率' },
       { priority: 'p2', title: '北海道產季採購指南 2026', desc: 'ChatGPT 對季節性採購查詢回應率升，搶先建立「產季→採購決策」內容閉環' },
     ],
     contentAudit: {
@@ -71,7 +71,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
         { label: 'Schema.org 標記',    status: 'partial', note: '需加強 B2B Product + Offer Schema' },
         { label: 'FAQPage 結構化資料', status: 'partial', note: '已有部分 FAQ，需擴展至 20+ 條' },
         { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 允許 GPTBot/ClaudeBot' },
-        { label: '外部媒體引用',        status: 'partial', note: '米芝蓮/黑珍珠平台需增加書面引用' },
+        { label: '外部媒體引用',        status: 'partial', note: '高端餐廳平台需增加書面引用' },
         { label: '品牌 Entity',         status: 'fail',    note: '未建立 Wikidata/Wikipedia 條目' },
         { label: '旗艦品牌內容頁',      status: 'partial', note: 'IoT 冷鏈頁和 Omakase 案例頁待建' },
       ],

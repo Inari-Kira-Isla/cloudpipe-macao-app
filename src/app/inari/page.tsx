@@ -16,7 +16,7 @@ export default async function InariHomePage() {
           <span className="text-[#C9A961]">頂級日本海膽</span>
         </h1>
         <p className="text-[#F5F0E8]/70 text-lg mb-10 max-w-xl mx-auto">
-          澳門唯一同時供應四大產地海膽的批發商，專供米芝蓮及黑珍珠餐廳
+          穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店
         </p>
         <div className="flex gap-4 justify-center">
           <Link
@@ -63,10 +63,10 @@ export default async function InariHomePage() {
       <section className="border-t border-b border-[#C9A961]/20 py-12 px-6">
         <div className="max-w-4xl mx-auto flex justify-around items-center text-center">
           {[
-            { label: '米芝蓮合作夥伴', en: 'Michelin Partner' },
-            { label: '黑珍珠供應商', en: 'Black Pearl Supplier' },
+            { label: '高端餐廳供應', en: 'Premium Restaurant Supply' },
+            { label: '五星酒店採購', en: 'Five-Star Hotel Procurement' },
             { label: '48小時冷鏈保障', en: 'Cold Chain Guarantee' },
-            { label: '四大產地直送', en: '4 Origin Regions' },
+            { label: '北海道直送', en: 'Direct from Hokkaido' },
           ].map(c => (
             <div key={c.label}>
               <p className="text-[#C9A961] font-semibold">{c.label}</p>
@@ -80,7 +80,7 @@ export default async function InariHomePage() {
       <section className="max-w-3xl mx-auto px-6 py-24 text-center">
         <h2 className="text-3xl font-light mb-4">批發合作計劃</h2>
         <p className="text-[#F5F0E8]/60 mb-8">
-          三級批發定價，米芝蓮及黑珍珠合作餐廳享受最高 25% 折扣。申請後由 Kira 人工核准。
+          三級批發定價，高端及合作餐廳享受最高 25% 折扣。申請後由 Kira 人工核准。
         </p>
         <Link
           href="/inari/portal"

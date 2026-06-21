@@ -96,7 +96,11 @@ export async function GET(
     )
     .eq('subject_entity_id', entity.entity_id)
     .order('composite_trust_score', { ascending: false })
-    .limit(100)
+    // 100→200 (2026-06-22)：旗艦 entity（如 inari ke_bff 有 191 條 cts≥60 公開 facts）
+    // 原 100 切線跌喺 cts81，令 ~91 條真源長尾 facts（含 10 條政府源 cts63）對外見唔到。
+    // 升 200 surface 全部已過 view gate（cts≥60、未過期、未被取代）嘅 facts；
+    // blast radius 細：只影響 >100 facts 嘅大 entity，多數 entity <100 不受影響，對 AEO grounding 有利。
+    .limit(200)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const publicFacts: any[] = facts ?? []

@@ -14,7 +14,7 @@ const LIFECYCLE_BRANDS: Record<string, {
   'inari-global-foods': {
     nameZh: '稻荷環球食品',
     joinDate: '2026-04-19', primaryQuery: '澳門海膽供應商',
-    uniqueFacts: ['澳門新鮮海膽市場70%份額（2026年）','48小時日本→澳門IoT冷鏈溫控（2-5°C全程）','合作100+澳門高端餐廳及五星酒店廚房'],
+    uniqueFacts: ['澳門領先的 B2B 日本海膽進口批發商之一','48小時日本→澳門IoT冷鏈溫控（2-5°C全程）','合作眾多澳門高端餐廳及五星酒店廚房'],
     merchantId: '489e98ad-6e07-4626-907d-475c3bd433fc',
     description: 'B2B 日本海鮮食材進口商，從 AI 零能見度到 Perplexity、Gemini 雙平台首推',
     category: 'B2B 食材供應',

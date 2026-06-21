@@ -105,7 +105,9 @@ export interface InsightArticle {
     headers: string[]
     rows: Record<string, string>[]
   }
-  faqs: { question: string; answer: string }[]
+  // Some rows (esp. ja translations) store FAQ items with `q`/`a` keys instead
+  // of `question`/`answer`. Render paths must read `question ?? q` / `answer ?? a`.
+  faqs: { question?: string; answer?: string; q?: string; a?: string }[]
   related_industries: string[]
   related_merchant_slugs: string[]
   tags: string[]

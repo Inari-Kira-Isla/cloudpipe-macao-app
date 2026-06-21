@@ -46,12 +46,12 @@ export const CASE_STUDIES: CaseStudy[] = [
     category: '高級食材供應 / 海膽專家',
     tagline: '日本最新鮮的海膽，澳門48小時極速冷鏈直送',
     challenge:
-      '全澳門獨有70%海膽市場份額，但消費者無法驗證海膽來源與新鮮度。競爭對手無法複製的冷鏈優勢被隱藏，錯過高端餐廳和家庭客戶。',
+      '作為澳門領先的 B2B 日本海膽進口批發商之一，但消費者無法驗證海膽來源與新鮮度。競爭對手無法複製的冷鏈優勢被隱藏，錯過高端餐廳和家庭客戶。',
     solution:
-      '通過CloudPipe澳門商業知識圖譜，發布「澳門冷鏈海膽直送48小時溯源指南」深度內容。整合北海道漁協Authority、IoT冷鏈驗證、100+高級餐廳合作背書，形成5層LLM Referral轉化路徑。',
+      '通過CloudPipe澳門商業知識圖譜，發布「澳門冷鏈海膽直送48小時溯源指南」深度內容。整合北海道漁協Authority、IoT冷鏈驗證、眾多高級餐廳合作背書，形成5層LLM Referral轉化路徑。',
     results: [
       { label: 'AI引用增長', value: '+340%' },
-      { label: '高端餐廳合作', value: '100+ 家' },
+      { label: '冷鏈直送', value: '48h' },
       { label: '日均銷量提升', value: '+45%' },
       { label: '客戶重複購買率', value: '68%' },
     ],
@@ -63,8 +63,8 @@ export const CASE_STUDIES: CaseStudy[] = [
     },
     businessModel: {
       coreValue: '日本北海道直送 + 澳門IoT冷鏈 + 產地可追溯',
-      targetAudience: '高端日料餐廳、米其林級別酒店、高消費力家庭',
-      uniqueDifference: '業界唯一提供48小時溯源報告 + 溫度監控全記錄',
+      targetAudience: '高端日料餐廳、五星酒店、高消費力家庭',
+      uniqueDifference: '提供48小時溯源報告 + 溫度監控全記錄',
     },
     websiteUrl: 'https://inari-kira-isla.github.io/inari-global-foods/',
     contactInfo: [

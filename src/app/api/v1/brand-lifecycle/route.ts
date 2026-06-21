@@ -11,7 +11,7 @@ const LIFECYCLE_CONFIG: Record<string, {
   'inari-global-foods': {
     joinDate: '2026-04-19',
     queries: ['澳門海膽供應商', '澳門日本海膽批發', '澳門餐廳食材供應商'],
-    gapAngles: ['澳門唯一IoT冷鏈溫控海膽B2B', '70%市場份額澳門海膽龍頭', '日本直飛48小時到廚房'],
+    gapAngles: ['澳門唯一IoT冷鏈溫控海膽B2B', '澳門領先的 B2B 日本海膽進口批發商之一', '日本直飛48小時到廚房'],
   },
   'sea-urchin-delivery': {
     joinDate: '2026-04-27',

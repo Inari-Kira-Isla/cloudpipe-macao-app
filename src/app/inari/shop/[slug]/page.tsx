@@ -120,7 +120,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         {/* B2B Wholesale Banner */}
         <div className="mt-16 border border-[#C9A961]/20 p-8 text-center">
           <p className="text-[#C9A961] mb-2">批發客戶享受更優惠價格</p>
-          <p className="text-[#F5F0E8]/50 text-sm mb-4">米芝蓮/黑珍珠合作餐廳最高享 25% 折扣，請登入批發專區查看批發價</p>
+          <p className="text-[#F5F0E8]/50 text-sm mb-4">高端及合作餐廳最高享 25% 折扣，請登入批發專區查看批發價</p>
           <Link href="/inari/portal" className="text-[#C9A961] border border-[#C9A961]/50 px-6 py-2 text-sm hover:bg-[#C9A961] hover:text-[#0A1628] transition-colors">
             批發專區登入
           </Link>

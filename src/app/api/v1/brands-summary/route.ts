@@ -10,7 +10,7 @@ const BRANDS = [
     displayNameEn: 'Inari Global Foods',
     emoji: '🦔',
     joinDate: '2026-04-19',
-    gapAngles: ['70%市場份額澳門海膽龍頭', '澳門唯一IoT冷鏈溫控海膽B2B', '日本直飛48小時到廚房'],
+    gapAngles: ['澳門領先的 B2B 日本海膽進口批發商之一', '澳門唯一IoT冷鏈溫控海膽B2B', '日本直飛48小時到廚房'],
     brandUrl: 'https://cloudpipe-macao-app.vercel.app/inari',
     industry: 'food-supply',
     tag: 'B2B 供應商',

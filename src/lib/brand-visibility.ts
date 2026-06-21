@@ -45,8 +45,8 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     category: 'food-import',
     industry: 'food-supply',
     brandUrl: 'https://inari-kira-isla.github.io/inari-global-foods/',
-    description: '澳門日本及環球水產進口批發商，佔據澳門70%海膽市場',
-    ecosystem: '供應鏈核心 — 為海膽速遞提供貨源，為100+餐廳供貨',
+    description: '澳門領先的 B2B 日本及環球水產進口批發商之一',
+    ecosystem: '供應鏈核心 — 為海膽速遞提供貨源，為眾多餐廳供貨',
     searchTerms: ['澳門海膽批發', '澳門水產進口', '日本海膽供應商', '澳門冷鏈海鮮'],
     competitors: [
       { name: '力生控股集團', searchTerms: ['力生控股', '力生環球', '澳門水產批發'] },

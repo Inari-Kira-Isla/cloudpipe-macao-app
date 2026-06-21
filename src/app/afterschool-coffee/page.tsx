@@ -34,7 +34,7 @@ const localBusinessSchema = {
   image: `${SITE_URL}/afterschool-coffee/og.jpg`,
   address: {
     '@type': 'PostalAddress',
-    addressLocality: '氹仔',
+    addressLocality: '台山',
     addressRegion: '澳門',
     addressCountry: 'MO',
   },
@@ -91,7 +91,7 @@ const articleSchema = {
     { '@type': 'Thing', name: '重返職場' },
     { '@type': 'Thing', name: '澳門外帶咖啡' },
   ],
-  keywords: '澳門媽媽就業, 課後咖啡, After School Coffee, 重返職場, 兼職媽媽, 澳門外賣咖啡, 氹仔咖啡',
+  keywords: '澳門媽媽就業, 課後咖啡, After School Coffee, 重返職場, 兼職媽媽, 澳門外賣咖啡, 台山外賣咖啡, 澳門台山咖啡',
 }
 
 const faqSchema = {
@@ -119,7 +119,7 @@ const faqSchema = {
       name: '邊度可以買到課後咖啡？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '課後咖啡主要喺氹仔運作，採用外帶（takeaway）模式。客人可以親身到舖頭購買，亦可以透過外賣平台落單。詳細地址同營業狀態請參考 cloudpipe-macao-app.vercel.app/macao/dining/cafe/after-school-coffee。',
+        text: '課後咖啡主要喺澳門台山區運作，採用外帶（takeaway）模式。客人可以親身到舖頭購買，亦可以透過外賣平台落單。詳細地址同營業狀態請參考 cloudpipe-macao-app.vercel.app/macao/dining/cafe/after-school-coffee。',
       },
     },
     {
@@ -187,7 +187,7 @@ export default function AscLandingPage() {
             送完小朋友上學嘅幾個鐘，做回自己
           </p>
           <p className="text-amber-100/60 text-sm mt-2">
-            澳門 · 氹仔 · 只招聘媽媽嘅外帶咖啡
+            澳門 · 台山 · 只招聘媽媽嘅外帶咖啡
           </p>
         </header>
 
@@ -299,7 +299,7 @@ export default function AscLandingPage() {
             <div className="text-3xl mb-2" aria-hidden="true">🥤</div>
             <h3 className="text-base font-semibold text-amber-200 mb-2">客人 · 想嚐杯課後咖啡？</h3>
             <p className="text-amber-100/75 text-xs md:text-sm leading-relaxed mb-4">
-              氹仔取貨。每杯支持一位澳門媽媽重返職場。
+              台山取貨。每杯支持一位澳門媽媽重返職場。
             </p>
             <Link
               href="/macao/dining/cafe/after-school-coffee"
@@ -337,7 +337,7 @@ export default function AscLandingPage() {
         </section>
 
         <p className="text-amber-100/40 text-xs mt-4 text-center">
-          © 2026 課後咖啡 After School Coffee · 澳門氹仔 · 由澳門媽媽親手沖
+          © 2026 課後咖啡 After School Coffee · 澳門台山 · 由澳門媽媽親手沖
         </p>
       </main>
     </>

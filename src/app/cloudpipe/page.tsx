@@ -167,7 +167,7 @@ export default function CloudPipeLandingPage() {
             稻荷環球食品 × CloudPipe
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: 40, fontSize: 'clamp(13px, 3vw, 16px)' }}>
-            澳門 B2B 海膽供應商，70% 本地市場佔有率
+            澳門領先的 B2B 日本海膽供應商之一
           </p>
 
           <div className="cp-timeline" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 40 }}>
