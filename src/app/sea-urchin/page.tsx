@@ -18,33 +18,33 @@ const DROP_INFO = {
   origin: '北海道 / 利尻島',
   coords: 'N 45°15′ E 141°14′',
   qtyLeft: 23,
-  qtyTotal: 50,
-  temp: -1.4,
+  qtyTotal: 60,
+  temp: 3.5,
 }
 
 const SIZES = [
-  { id: 'wood',       name: '木板海膽',   weight: '100g',       price: 308,  sub: '1–2 人',  isB2B: false },
-  { id: 'double',     name: '兩板優惠',   weight: '100g × 2',   price: 598,  sub: '2–4 人',  isB2B: false },
+  { id: 'wood',       name: '馬糞海膽',   weight: '180g',       price: 328,  sub: '1–2 人',  isB2B: false },
+  { id: 'double',     name: '兩板優惠',   weight: '180g × 2',   price: 598,  sub: '2–4 人',  isB2B: false },
   { id: 'restaurant', name: '餐廳採購',   weight: '1kg 起訂',   price: 0,    sub: '歡迎查詢', isB2B: true  },
 ]
 
-// Next Saturday 23:59 cutoff (for Monday delivery)
+// Next Thursday 23:59 cutoff (order window before Friday air freight)
 function nextCutoff(): number {
   const d = new Date()
   const day = d.getDay()           // 0=Sun … 6=Sat
-  const daysUntilSat = (6 - day + 7) % 7 || 7
-  d.setDate(d.getDate() + daysUntilSat)
+  const daysUntilThu = (4 - day + 7) % 7 || 7
+  d.setDate(d.getDate() + daysUntilThu)
   d.setHours(23, 59, 0, 0)
   return d.getTime()
 }
 
-// Next 4 Monday delivery slots
+// Next 4 Friday/Saturday delivery slots (Friday air freight, weekend delivery)
 function deliverySlots(): string[] {
   const slots: string[] = []
   const d = new Date()
   for (let i = 0; slots.length < 4; i++) {
     d.setDate(d.getDate() + 1)
-    if (d.getDay() === 1) {
+    if (d.getDay() === 6) {
       slots.push(d.toLocaleDateString('zh-HK', { month: 'long', day: 'numeric', weekday: 'short' }))
     }
   }
@@ -63,27 +63,29 @@ type ReviewItem = { q: string; n: string; m: string; a: string }
 type FaqItem = { q: string; a: string }
 
 const STEPS_DATA: StepItem[] = [
-  { lbl: 'RELEASE', name: '預告掉落', desc: '每週三在 Facebook 公布本週秘寶預告，記得開啟通知提早鎖定。' },
-  { lbl: 'SECURE',  name: '鎖定下單', desc: '每週六 23:59 截單，下單後 24H 內 WhatsApp 確認，售完即止。' },
-  { lbl: 'DROP',    name: '空運直送', desc: '北海道捕撈後封箱，經香港轉口直運澳門，全程冷鏈不間斷。' },
+  { lbl: 'RELEASE', name: '預告掉落', desc: '每週二在 Facebook / IG 公布本週秘寶預告，記得開啟通知提早鎖定。' },
+  { lbl: 'SECURE',  name: '鎖定下單', desc: '每週四 23:59 截單，下單後 24H 內 WhatsApp 確認，售完即止。' },
+  { lbl: 'DROP',    name: '空運直送', desc: '北海道捕撈後封箱，每週二、五空運直飛澳門，全程冷鏈不間斷。' },
   { lbl: 'UNBOX',   name: '即食開箱', desc: '已完整去殼處理，掃 QR 解鎖履歷儀表板，開盒即食。' },
 ]
+// NOTE: 以下為示例展示數據（sample），非真實過往 Drop 紀錄。
 const ARCHIVE_DATA: ArchiveItem[] = [
-  { no: '023', name: '利尻馬糞海膽', date: '2026.05.09', sold: 23, time: '31 分鐘售罄', available: false },
-  { no: '022', name: '禮文島紫海膽', date: '2026.05.02', sold: 20, time: '45 分鐘售罄', available: false },
-  { no: '021', name: '積丹半島馬糞', date: '2026.04.25', sold: 23, time: '28 分鐘售罄', available: false },
+  { no: '023', name: '利尻馬糞海膽', date: '2026.05.09', sold: 30, time: '示例', available: false },
+  { no: '022', name: '禮文島紫海膽', date: '2026.05.02', sold: 30, time: '示例', available: false },
+  { no: '021', name: '積丹半島馬糞', date: '2026.04.25', sold: 30, time: '示例', available: false },
 ]
+// NOTE: 以下為示例展示文案（sample），非真實客戶評論。
 const REVIEWS_DATA: ReviewItem[] = [
-  { q: '開箱嗰一刻所有人都拍曬相，新鮮程度完全唔輸日本當地！', n: 'C.K.', m: 'DROP 022 · 馬糞 100g', a: 'C' },
-  { q: '冷鏈追蹤好安心，一直保持 −1.4°C，比好多餐廳食嘅更新鮮。', n: 'M.L.', m: 'DROP 021 · 主廚精選', a: 'M' },
-  { q: '海膽鮮甜完全無腥味，配清酒係神仙享受，下週繼續訂！', n: 'V.W.', m: 'DROP 023 · 家庭套裝', a: 'V' },
+  { q: '開箱嗰一刻所有人都拍曬相，新鮮程度完全唔輸日本當地！', n: '示例', m: '示例展示', a: 'U' },
+  { q: '冷鏈追蹤好安心，全程保持正溫冷鏈，比好多餐廳食嘅更新鮮。', n: '示例', m: '示例展示', a: 'U' },
+  { q: '海膽鮮甜完全無腥味，配清酒係神仙享受，下週繼續訂！', n: '示例', m: '示例展示', a: 'U' },
 ]
 const FAQ_DATA: FaqItem[] = [
-  { q: '海膽幾時到貨？截單時間係幾時？', a: '每週一新鮮到貨，截單時間為每週六 23:59。如未能及時截單，可提前預訂下週。' },
-  { q: '配送範圍及費用？', a: '免費配送至澳門半島、氹仔及路環全區。週一到貨後 WhatsApp 確認送達時段（上午或下午）。' },
+  { q: '海膽幾時到貨？如何運作？', a: '海膽速遞採用週限量 Drop 機制，每批僅發售 30-80 盒。每週二、五由北海道空運直飛抵澳，下單後 2-4 小時內配送。如本週售完，可提前預訂下週 Drop。' },
+  { q: '配送範圍及費用？', a: '配送至澳門半島、氹仔及路環全區，配送費 MOP$50-100（視地區及訂單金額）。下單後 WhatsApp 確認送達時段。' },
   { q: '如何付款？', a: '支持 MBway、轉數快、現金（送貨時付款）。確認訂單後提供付款詳情。' },
-  { q: '限量數量是多少？為何這麼少？', a: '每週僅放出 50 盒，以確保頂級鮮度及品質。每週六截單，售完即止。提早截單更有保障。' },
-  { q: '到貨品質不符預期怎麼辦？', a: '我們提供 100% 鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
+  { q: '限量數量是多少？為何這麼少？', a: '每批僅放出 30-80 盒，以確保頂級鮮度及品質。每週四截單，售完即止。提早截單更有保障。' },
+  { q: '到貨品質不符預期怎麼辦？', a: '我們提供鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
 ]
 
 // ─────────────────────────────────────────────
@@ -119,8 +121,8 @@ function TopBar() {
 function Marquee() {
   const items = [
     `DROP NO. ${DROP_INFO.no}`, 'LIVE — 利尻島直送', '深海秘寶．秒速掉落',
-    'DEEP SEA TREASURE', `限量 ${DROP_INFO.qtyTotal} 盒`, '北海道 → 澳門直送',
-    `COLD CHAIN ${DROP_INFO.temp}°C`, 'BAFUN UNI SEASON', '每週一到貨 · 週六截單',
+    'DEEP SEA TREASURE', `限量 30-80 盒`, '北海道 → 澳門直送',
+    `COLD CHAIN ${DROP_INFO.temp}°C`, 'BAFUN UNI SEASON', '每週二、五空運直飛',
   ]
   return (
     <div className="ud-marquee">
@@ -227,7 +229,7 @@ function Hero() {
                 <div>
                   <div className="ph-label">DROP 024 / PRODUCT SHOT</div>
                   <div className="ph-name">馬糞海膽</div>
-                  <div className="ph-en">BAFUN UNI · 100G</div>
+                  <div className="ph-en">BAFUN UNI · 180G</div>
                 </div>
               </div>
             </div>
@@ -297,8 +299,8 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
             <h2>立即輸入<br /><span className="ud-accent">解鎖寶箱</span></h2>
           </div>
           <div className="right">
-            <span>● 每週一到貨</span>
-            <span>· 週六 23:59 截單</span>
+            <span>● 每週二、五空運直飛</span>
+            <span>· 週四 23:59 截單</span>
           </div>
         </div>
 
@@ -419,7 +421,7 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
                 <div className="ud-receipt-row"><span className="k">ORIGIN</span><span>RISHIRI, JP</span></div>
                 <div className="ud-receipt-row"><span className="k">CHAIN</span><span>{DROP_INFO.temp}°C / 全程冷鏈</span></div>
                 <div className="ud-receipt-row"><span className="k">ETA</span><span>{size.isB2B ? '週固定供應' : (form.date || DATES[0])}</span></div>
-                <div className="ud-receipt-row"><span className="k">DELIVERY</span><span>澳門全區免費</span></div>
+                <div className="ud-receipt-row"><span className="k">DELIVERY</span><span>澳門全區 · 配送費 $50-100</span></div>
               </div>
               <div className="ud-receipt-foot">
                 <span className="total-k">TOTAL DUE</span>
@@ -428,7 +430,7 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
             </div>
 
             <div className="ud-trust-strip">
-              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', 'IAM 認證'], ['◆', '週一到貨']].map(([icon, txt]) => (
+              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', '進口許可'], ['◆', '空運直飛']].map(([icon, txt]) => (
                 <div key={txt} className="ud-trust-cell"><span className="icon">{icon}</span>{txt}</div>
               ))}
             </div>
@@ -443,11 +445,11 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
 // Dashboard
 // ─────────────────────────────────────────────
 function Dashboard() {
-  const [temp, setTemp] = useState(-1.4)
+  const [temp, setTemp] = useState(3.5)
   const [pulse, setPulse] = useState(0)
   useEffect(() => {
     const t = setInterval(() => {
-      setTemp(prev => +Math.max(-2.2, Math.min(-0.8, prev + (Math.random() - 0.5) * 0.2)).toFixed(1))
+      setTemp(prev => +Math.max(2.0, Math.min(5.0, prev + (Math.random() - 0.5) * 0.4)).toFixed(1))
       setPulse(p => p + 1)
     }, 2400)
     return () => clearInterval(t)
@@ -479,10 +481,10 @@ function Dashboard() {
               <div className="ud-track-route">
                 {[
                   { cls: 'done',   ico: '✓', name: '利尻港 · 漁船捕撈',   when: 'RISHIRI HARBOR · HARVEST',  time: '04:00 JST' },
-                  { cls: 'done',   ico: '✓', name: '板付出貨 · 冷鏈封箱', when: 'PACKING · −1.5°C SEALED',   time: '07:00 JST' },
+                  { cls: 'done',   ico: '✓', name: '板付出貨 · 冷鏈封箱', when: 'PACKING · 2-5°C SEALED',    time: '07:00 JST' },
                   { cls: 'active', ico: '●', name: '東京成田 · 空運直飛',  when: 'NRT → MFM AIR FREIGHT',     time: '10:00 JST' },
-                  { cls: '',       ico: '04', name: '澳門機場 · 清關提領', when: 'MFM AIRPORT · CUSTOMS',      time: '週一上午' },
-                  { cls: '',       ico: '05', name: '指定地址 · 完成掉落', when: 'YOUR DOOR · DROP COMPLETE',  time: '週一下午' },
+                  { cls: '',       ico: '04', name: '澳門機場 · 清關提領', when: 'MFM AIRPORT · CUSTOMS',      time: '週五' },
+                  { cls: '',       ico: '05', name: '指定地址 · 完成掉落', when: 'YOUR DOOR · DROP COMPLETE',  time: '週六' },
                 ].map((step, i) => (
                   <div key={i} className={`ud-track-step ${step.cls}`}>
                     <div className="ico">{step.ico}</div>
@@ -498,7 +500,7 @@ function Dashboard() {
 
             <div className="ud-dash-card">
               <div className="ud-card-id">SENSOR-T1 / 30 MIN</div>
-              <h3><span className="ud-pulse-dot" />冷鏈溫度 / COLD CHAIN −2.0°C ~ 0°C</h3>
+              <h3><span className="ud-pulse-dot" />冷鏈溫度 / COLD CHAIN 2°C ~ 5°C</h3>
               <div className="ud-kpi-row">
                 <div className="ud-kpi-cell">
                   <div className="k">CURRENT TEMP</div>
@@ -507,7 +509,7 @@ function Dashboard() {
                 </div>
                 <div className="ud-kpi-cell">
                   <div className="k">PEAK TEMP</div>
-                  <div className="v">−0.8°C</div>
+                  <div className="v">4.8°C</div>
                   <div className="sub">@ 06:22 JST · OK</div>
                 </div>
               </div>
@@ -557,8 +559,8 @@ function Dashboard() {
                 {[
                   { k: '捕獲海域', v: '利尻島沿岸' },
                   { k: '空運路線', v: 'NRT → MFM' },
-                  { k: '冷藏標準', v: '−2°C ~ 0°C 全程' },
-                  { k: '進口商',   v: '稻荷環球食品 · IAM' },
+                  { k: '冷藏標準', v: '2°C ~ 5°C 全程' },
+                  { k: '進口商',   v: '稻荷環球食品' },
                 ].map(r => (
                   <div key={r.k} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em' }}>
                     <span style={{ color: 'var(--ink-3)' }}>{r.k}</span>
@@ -671,8 +673,8 @@ function Reviews({ items = REVIEWS_DATA }: { items?: ReviewItem[] }) {
             <h2>每一盒<br /><span className="ud-accent">都是現場</span></h2>
           </div>
           <div className="right">
-            <span style={{ color: 'var(--accent)' }}>★★★★★ 4.97</span>
-            <span>· 澳門客戶真實評價</span>
+            <span style={{ color: 'var(--accent)' }}>★★★★★</span>
+            <span>· 示例展示</span>
           </div>
         </div>
         <div className="ud-reviews-row">
@@ -746,7 +748,7 @@ function Footer() {
             <div className="ud-mono" style={{ marginTop: 16, fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.1em', maxWidth: 320 }}>
               深海秘寶．秒速掉落。<br />
               每週限量釋出，北海道直送澳門。<br />
-              稻荷環球食品 · IAM PS-1281
+              稻荷環球食品 · 持有澳門進口許可
             </div>
           </div>
           <div className="ud-footer-col">
@@ -880,7 +882,7 @@ export default function SeaUrchinPage() {
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
       <TopBar />
-      <div className="ud-notice">🧊 週一新鮮到貨 · 截單：每週六 23:59 · 澳門全區免費配送</div>
+      <div className="ud-notice">🧊 每週二、五空運直飛 · 截單：每週四 23:59 · 配送費 MOP$50-100</div>
       <Marquee />
 
       <div className="ud-reveal"><Hero /></div>

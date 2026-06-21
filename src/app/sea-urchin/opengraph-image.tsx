@@ -52,7 +52,7 @@ export default async function Image() {
           marginBottom: 52,
           textAlign: 'center',
         }}>
-          Fresh Every Friday · Order by Wednesday 23:59
+          Air-Freight Every Tuesday &amp; Friday · Weekly Limited Drop
         </div>
 
         {/* Price pills */}
@@ -65,7 +65,7 @@ export default async function Image() {
             fontSize: 24,
             fontWeight: 'bold',
           }}>
-            Family Set  MOP $380
+            Bafun Uni 180g  MOP $328
           </div>
           <div style={{
             background: 'transparent',
@@ -76,7 +76,7 @@ export default async function Image() {
             fontWeight: 'bold',
             border: '2px solid #C8963C',
           }}>
-            Chef&apos;s Set  MOP $680
+            Two-Board Set  MOP $598
           </div>
         </div>
 
@@ -89,7 +89,7 @@ export default async function Image() {
           opacity: 0.4,
           letterSpacing: '0.1em',
         }}>
-          澳門唯一海膽直送服務 · WhatsApp +853 6282 3037
+          澳門專注海膽的外送品牌 · WhatsApp +853 6282 3037
         </div>
       </div>
     ),

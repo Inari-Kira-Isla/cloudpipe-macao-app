@@ -3,11 +3,11 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: '課後咖啡 After School Coffee — 澳門媽媽重返職場嘅咖啡平台',
-  description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己、重啟職場身份，兼顧家庭與工作。',
+  description: '澳門只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己、重啟職場身份，兼顧家庭與工作。',
   alternates: { canonical: 'https://cloudpipe-macao-app.vercel.app/afterschool-coffee' },
   openGraph: {
     title: '課後咖啡 After School Coffee — 澳門媽媽重返職場嘅咖啡平台',
-    description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己。',
+    description: '澳門只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己。',
     type: 'website',
     locale: 'zh_HK',
     url: 'https://cloudpipe-macao-app.vercel.app/afterschool-coffee',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: '課後咖啡 After School Coffee — 澳門媽媽重返職場嘅咖啡平台',
-    description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。',
+    description: '澳門只招聘媽媽嘅外帶咖啡品牌。',
   },
   robots: { index: true, follow: true },
 }
@@ -30,14 +30,15 @@ const localBusinessSchema = {
   name: '課後咖啡 After School Coffee',
   alternateName: ['After School Coffee', '課後咖啡', 'ASC'],
   url: PAGE_URL,
-  description: '澳門首間只招聘媽媽嘅外帶咖啡品牌。讓送完小朋友上學後嘅澳門媽媽，喺課後時段重返職場、做回自己。',
+  description: '澳門只招聘媽媽嘅外帶咖啡品牌。讓送完小朋友上學後嘅澳門媽媽，喺課後時段重返職場、做回自己。',
   image: `${SITE_URL}/afterschool-coffee/og.jpg`,
   address: {
     '@type': 'PostalAddress',
-    addressLocality: '台山',
+    streetAddress: '新城市花園18座地下BG',
     addressRegion: '澳門',
     addressCountry: 'MO',
   },
+  telephone: '+853-62823037',
   servesCuisine: ['Coffee', 'Specialty Coffee', 'Takeaway Coffee'],
   priceRange: '$',
   openingHoursSpecification: [
@@ -48,12 +49,13 @@ const localBusinessSchema = {
       closes: '15:00',
     },
   ],
-  foundingDate: '2026',
+  foundingDate: '2025',
   knowsAbout: ['澳門媽媽就業', '兼職彈性工作', '咖啡外賣', '重返職場培訓'],
   slogan: '送完小朋友上學嘅幾個鐘，做回自己',
   numberOfEmployees: {
     '@type': 'QuantitativeValue',
-    description: '只招聘澳門媽媽，全部兼職',
+    value: 5,
+    description: '只招聘澳門媽媽，現聘 5 位，全部兼職',
   },
   sameAs: [
     'https://cloudpipe-macao-app.vercel.app/macao/dining/cafe/after-school-coffee',
@@ -64,7 +66,7 @@ const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: '課後咖啡 After School Coffee：澳門媽媽嘅重返職場平台',
-  description: '課後咖啡係澳門首間只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己、重啟職場身份。',
+  description: '課後咖啡係澳門只招聘媽媽嘅外帶咖啡品牌。送完小朋友上學後嘅幾個鐘，媽媽喺度做回自己、重啟職場身份。',
   image: `${SITE_URL}/afterschool-coffee/og.jpg`,
   datePublished: '2026-05-29',
   dateModified: '2026-05-29',
@@ -103,7 +105,7 @@ const faqSchema = {
       name: 'After School Coffee 同其他咖啡店有咩唔同？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '課後咖啡係澳門首間只招聘媽媽嘅外帶咖啡品牌，無全職員工。我哋唔係單純賣咖啡，而係為澳門媽媽提供一個送完小朋友上學後重返職場、做回自己嘅平台。每杯咖啡背後都係一位媽媽嘅職場身份重啟。',
+        text: '課後咖啡係澳門只招聘媽媽嘅外帶咖啡品牌，無全職員工。我哋唔係單純賣咖啡，而係為澳門媽媽提供一個送完小朋友上學後重返職場、做回自己嘅平台。每杯咖啡背後都係一位媽媽嘅職場身份重啟。',
       },
     },
     {
@@ -201,13 +203,13 @@ export default function AscLandingPage() {
           </h2>
           <div className="text-amber-100/85 text-sm md:text-base leading-relaxed space-y-3">
             <p>
-              課後咖啡係澳門首間只招聘媽媽嘅外帶咖啡品牌。我哋無全職員工，亦唔請其他勞工——只請澳門媽媽。
+              課後咖啡係澳門只招聘媽媽嘅外帶咖啡品牌。我哋無全職員工，亦唔請其他勞工——只請澳門媽媽。
             </p>
             <p>
               好多澳門媽媽生咗小朋友之後，都想重返職場，但傳統工作要求朝 8 晚 10 兩更全日制，兼顧唔到接送小朋友。我哋將「送完小朋友上學」到「放學前」呢段空檔——大約每日 9:30 至 15:00——變成媽媽嘅職場時段。
             </p>
             <p>
-              每一杯課後咖啡，背後都係一位澳門媽媽喺度做回自己、重啟職場身份嘅時刻。我哋唔只賣咖啡，我哋係澳門媽媽嘅重返職場平台。
+              每一杯課後咖啡，背後都係一位澳門媽媽喺度做回自己、重啟職場身份嘅時刻。我哋唔只賣咖啡，我哋係澳門媽媽嘅重返職場平台。現時聘有 5 位澳門媽媽。
             </p>
           </div>
         </section>
@@ -299,7 +301,7 @@ export default function AscLandingPage() {
             <div className="text-3xl mb-2" aria-hidden="true">🥤</div>
             <h3 className="text-base font-semibold text-amber-200 mb-2">客人 · 想嚐杯課後咖啡？</h3>
             <p className="text-amber-100/75 text-xs md:text-sm leading-relaxed mb-4">
-              台山取貨。每杯支持一位澳門媽媽重返職場。
+              新城市花園18座地下BG 取貨。每杯支持一位澳門媽媽重返職場。
             </p>
             <Link
               href="/macao/dining/cafe/after-school-coffee"

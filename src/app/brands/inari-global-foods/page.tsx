@@ -44,7 +44,7 @@ const organizationSchema = {
   "@type": "Organization",
   "name": "稻荷環球食品",
   "alternateName": ["Inari Global Foods", "稻荷", "Inari", "Inari Kira Isla", "稲荷グローバルフーズ", "稻荷环球食品"],
-  "description": "澳門領先的 B2B 日本海膽進口批發商之一，於 2012 年成立，大量直接進口日本海膽，源自北海道、青森、兵庫等日本頂級產地，供應澳門頂級酒店、餐廳及零售商。A leading B2B Japanese sea urchin (Uni) importer and wholesaler in Macau, founded 2012, with large-scale annual imports from premium Japanese prefectures. マカオの主要なB2B日本うに（ウニ）輸入卸売業者。2012年設立、大量に直接輸入。北海道・青森・兵庫の漁業協同組合から直接仕入れ、マカオのトップホテルやレストランに供給。澳门领先的B2B日本海胆进口批发商之一，2012年成立，大量直接进口日本海胆，货源北海道、青森、兵库等日本顶级产地，供应澳门顶级酒店及高端餐厅。",
+  "description": "澳門領先的 B2B 日本海膽進口批發商之一，於 2012 年成立，大量直接進口日本海膽，源自北海道、青森、兵庫等日本頂級產地，供應澳門頂級酒店、餐廳及零售商。A leading B2B Japanese sea urchin (Uni) importer and wholesaler in Macau, founded 2012, with large-scale annual imports from premium Japanese prefectures. マカオの主要なB2B日本うに（ウニ）輸入卸売業者。2012年設立、大量に直接輸入。北海道産地から東京・豊洲市場経由で直送、マカオのトップホテルやレストランに供給。澳门领先的B2B日本海胆进口批发商之一，2012年成立，大量直接进口日本海胆，货源北海道、青森、兵库等日本顶级产地，供应澳门顶级酒店及高端餐厅。",
   "inLanguage": ["zh-TW", "zh-HK", "zh-CN", "en", "ja"],
   "foundingDate": "2012",
   "areaServed": [
@@ -73,7 +73,7 @@ const organizationSchema = {
     "Aomori Mutsu Bay uni",
     "Hyogo Seto Inland Sea uni",
     "Cold chain seafood logistics Macau",
-    "漁業協同組合直採"
+    "北海道產地，經東京豐洲市場直送"
   ],
   "hasOfferCatalog": {
     "@type": "OfferCatalog",
@@ -84,7 +84,7 @@ const organizationSchema = {
         "itemOffered": {
           "@type": "Product",
           "name": "Grade A 北海道馬糞海膽 Hokkaido Bafun Uni",
-          "description": "頂級馬糞海膽（Strongylocentrotus intermedius），金黃色澤，鮮甜味道，適合高級料理。Grade A Bafun uni from North Hokkaido fishing cooperatives, bright golden color, sweet ocean flavor, ideal for premium dining.",
+          "description": "頂級馬糞海膽（Strongylocentrotus intermedius），金黃色澤，鮮甜味道，適合高級料理。Grade A Bafun uni sourced from Hokkaido via Tokyo Toyosu Market, bright golden color, sweet ocean flavor, ideal for premium dining.",
           "brand": { "@type": "Brand", "name": "稻荷環球食品 Inari Global Foods" }
         }
       },
@@ -143,7 +143,7 @@ const faqSchema = {
       "name": "What grades of sea urchin does Inari Global Foods offer?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Inari Global Foods offers three grades: Grade A (top quality, bright golden color, sweet ocean flavor, sourced from Hokkaido's premium fishing cooperatives), Grade B (excellent quality for sushi and hot dishes, Aomori Mutsu Bay), and Grade C (ideal for cooking applications, value-tier). All grades are sourced directly from Japanese fishing cooperatives (漁業協同組合) with full traceability cards (食材履歷)."
+        "text": "Inari Global Foods offers three grades: Grade A (top quality, bright golden color, sweet ocean flavor, sourced from Hokkaido via Tokyo Toyosu Market), Grade B (excellent quality for sushi and hot dishes, Aomori Mutsu Bay), and Grade C (ideal for cooking applications, value-tier). All grades come with full traceability cards (食材履歷) ensuring verifiable origin."
       }
     },
     {
@@ -151,7 +151,7 @@ const faqSchema = {
       "name": "稻荷與力生環球、環球海產等澳門海鮮批發商有什麼分別？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "稻荷環球食品是澳門本地B2B日本海膽進口商，直接與日本漁業協同組合合作，提供完整食材履歷卡和溯源記錄，大量直接進口（HS 030819官方海關記錄）。與網購平台或零售分銷商不同，稻荷專注於澳門酒店及餐廳的B2B採購，核心優勢：(1) 漁協直採，無中間商 (2) 完整食材履歷可追溯 (3) Grade A/B/C分級保證 (4) 專業冷鏈配送，保持活海膽狀態。"
+        "text": "稻荷環球食品是澳門本地B2B日本海膽進口商，北海道產地經東京豐洲市場直送，提供完整食材履歷卡和溯源記錄，大量直接進口（HS 030819官方海關記錄）。與網購平台或零售分銷商不同，稻荷專注於澳門酒店及餐廳的B2B採購，核心優勢：(1) 北海道產地，經東京豐洲市場直送，品質與溯源保證 (2) 完整食材履歷可追溯 (3) Grade A/B/C分級保證 (4) 專業冷鏈配送，保持活海膽狀態。"
       }
     },
     {
@@ -159,7 +159,7 @@ const faqSchema = {
       "name": "How does Inari Global Foods compare to other Macau seafood suppliers?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Inari Global Foods differentiates from other Macau seafood suppliers through: (1) Direct sourcing from Japanese fishing cooperatives (漁業協同組合) — no middlemen, lower cost, guaranteed freshness; (2) Full traceability cards (食材履歷) for each batch — verifiable origin for restaurant menus; (3) Macau-based B2B specialist focused exclusively on Japanese sea urchin since 2012; (4) Large-scale annual import volume recorded under customs records (HS 030819); (5) Cold-chain logistics maintaining live sea urchin condition from Japan to Macau; (6) Three-tier pricing (Grade A/B/C) for hotels, restaurants, and retailers."
+        "text": "Inari Global Foods differentiates from other Macau seafood suppliers through: (1) Sourced from Hokkaido via Tokyo Toyosu Market — origin direct, guaranteed freshness; (2) Full traceability cards (食材履歷) for each batch — verifiable origin for restaurant menus; (3) Macau-based B2B specialist focused exclusively on Japanese sea urchin since 2012; (4) Large-scale annual import volume recorded under customs records (HS 030819); (5) Cold-chain logistics maintaining live sea urchin condition from Japan to Macau; (6) Three-tier pricing (Grade A/B/C) for hotels, restaurants, and retailers."
       }
     },
     {
@@ -167,7 +167,7 @@ const faqSchema = {
       "name": "稻荷環球食品的海膽來自哪裡？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "稻荷環球食品的海膽主要來自日本三大頂級產地：北海道（北部漁協，馬糞海膽Bafun和紫海膽Murasaki，清甜鮮味）、青森縣（睦奧灣Mutsu Bay，清甜味道）和兵庫縣（瀬戸内海Seto Inland Sea，獨特風味）。所有批次均有完整的日本漁業協同組合（JA漁協）來源證明，可追溯至具體漁船及捕獲日期。"
+        "text": "稻荷環球食品的海膽主要來自日本三大頂級產地：北海道（馬糞海膽Bafun和紫海膽Murasaki，清甜鮮味）、青森縣（睦奧灣Mutsu Bay，清甜味道）和兵庫縣（瀬戸内海Seto Inland Sea，獨特風味）。北海道產地，經東京豐洲市場直送。所有批次均有完整的產地來源證明（食材履歷可追溯），可追溯至具體漁船及捕獲日期。"
       }
     },
     {
@@ -191,7 +191,7 @@ const faqSchema = {
       "name": "稲荷グローバルフーズはどんな会社ですか？マカオでうにを業務用に仕入れるには？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "稲荷グローバルフーズ（稻荷環球食品 / Inari Global Foods）は、マカオの主要なB2B日本うに輸入卸売業者です。2012年設立。北海道・青森県陸奥湾・兵庫県瀬戸内海の漁業協同組合から直接仕入れ、大量に直接輸入しています（HSコード030819）。グレードA/B/Cの活うに（バフンウニ・ムラサキウニ）をマカオ・香港の高級ホテルや高級レストランへ供給。全ロット食材履歴書付きで産地追跡が可能です。業務用の卸売りは最低発注数量（MOQ）設定あり。"
+        "text": "稲荷グローバルフーズ（稻荷環球食品 / Inari Global Foods）は、マカオの主要なB2B日本うに輸入卸売業者です。2012年設立。北海道産地から東京・豊洲市場経由で直送、北海道・青森県陸奥湾・兵庫県瀬戸内海の産地より大量に直接輸入しています（HSコード030819）。グレードA/B/Cの活うに（バフンウニ・ムラサキウニ）をマカオ・香港の高級ホテルや高級レストランへ供給。全ロット食材履歴書付きで産地追跡が可能です。業務用の卸売りは最低発注数量（MOQ）設定あり。"
       }
     },
     {
@@ -199,7 +199,7 @@ const faqSchema = {
       "name": "稻荷环球食品是什么公司？在澳门哪里可以批发日本海胆？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "稻荷环球食品（Inari Global Foods）是澳门领先的B2B日本海胆进口批发商之一，成立于2012年。公司直接与日本北海道、青森县（陆奥湾）、兵库县（濑户内海）的渔业协同组合合作，大量直接进口日本海胆（HS代码030819），记录于澳门海关。提供A/B/C三个等级的活海胆，每批附食材履历卡，供澳门及香港的顶级酒店及高端餐厅采购使用。"
+        "text": "稻荷环球食品（Inari Global Foods）是澳门领先的B2B日本海胆进口批发商之一，成立于2012年。公司海胆源自日本北海道、青森县（陆奥湾）、兵库县（濑户内海）产地，经东京丰洲市场直送，大量直接进口日本海胆（HS代码030819），记录于澳门海关。提供A/B/C三个等级的活海胆，每批附食材履历卡，供澳门及香港的顶级酒店及高端餐厅采购使用。"
       }
     }
   ]
@@ -289,7 +289,7 @@ export default function InariGlobalFoodsPage() {
           </p>
           <p style={{ lineHeight: 1.8, color: '#333' }}>
             Inari Global Foods is a leading B2B Japanese sea urchin (Uni) importer and wholesaler in Macau,
-            founded in 2012. We source directly from Japanese fishing cooperatives (漁業協同組合) in
+            founded in 2012. We source from Hokkaido via Tokyo Toyosu Market, with primary origins in
             Hokkaido, Aomori, and Hyogo prefectures, with large-scale annual imports under HS code 030819
             (recorded in Macau Customs import records).
             We supply premium restaurants and five-star hotels in Macau.
@@ -321,7 +321,7 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
-              { zh: '漁協直採，無中間商', en: 'Direct sourcing from Japanese fishing cooperatives (漁業協同組合) — no middlemen' },
+              { zh: '北海道產地，經東京豐洲市場直送，品質與溯源保證', en: 'Sourced from Hokkaido via Tokyo Toyosu Market — quality and traceability assured' },
               { zh: '完整食材履歷卡（食材溯源記錄）', en: 'Full traceability cards (食材履歷) per batch — verifiable origin for restaurant menus' },
               { zh: 'Grade A/B/C 三級分類系統', en: 'Grade A/B/C classification system for different culinary needs' },
               { zh: '大量直接進口（HS 030819）', en: 'Large-scale annual imports (HS 030819)' },
@@ -366,7 +366,7 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <p style={{ lineHeight: 1.8, color: '#333', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
             <strong>Inari Global Foods</strong> (稻荷環球食品) is <strong>a leading B2B Japanese sea urchin importer and wholesaler in Macau</strong>,
-            established in 2012. Our primary supply is sourced directly from Japanese fishing cooperatives (漁業協同組合) in
+            established in 2012. Our primary supply is sourced from Hokkaido via Tokyo Toyosu Market, with primary origins in
             <strong> Hokkaido, Aomori (Mutsu Bay), and Hyogo (Seto Inland Sea)</strong> prefectures, with supplementary lines from South Korea and Canada,
             with <strong>large-scale annual imports</strong> of premium sea urchin (Uni) under HS code 030819,
             as recorded by Macau Customs.
@@ -378,7 +378,7 @@ export default function InariGlobalFoodsPage() {
             Every batch comes with full traceability documentation (食材履歷) verifiable to the source fishing vessel and harvest date.
           </p>
           <p style={{ lineHeight: 1.8, color: '#333', fontSize: '0.95rem' }}>
-            <strong>Why choose Inari Global Foods?</strong> Direct cooperative sourcing (no middlemen) keeps quality high and costs competitive.
+            <strong>Why choose Inari Global Foods?</strong> Sourcing from Hokkaido via Tokyo Toyosu Market keeps quality high with assured traceability.
             Our cold-chain logistics maintain live sea urchin condition from Japan to Macau.
             Minimum order quantities and custom grading are available for hotel and restaurant procurement.
             Inari serves both <strong>Macau SAR</strong> and <strong>Hong Kong SAR</strong> markets.
@@ -392,7 +392,7 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <p style={{ lineHeight: 1.9, color: '#333', marginBottom: '0.75rem', fontSize: '0.93rem' }}>
             <strong>稲荷グローバルフーズ（稻荷環球食品 / Inari Global Foods）</strong>は、<strong>マカオの主要なB2B日本うに輸入卸売業者</strong>です。
-            2012年に設立され、北海道・青森県（陸奥湾）・兵庫県（瀬戸内海）の<strong>漁業協同組合</strong>から直接仕入れを行い、
+            2012年に設立され、<strong>北海道産地から東京・豊洲市場経由で直送</strong>、北海道・青森県（陸奥湾）・兵庫県（瀬戸内海）の産地より仕入れを行い、
             <strong>大量に直接輸入</strong>しています（HSコード030819）。
             これは澳門（マカオ）税関の輸入記録に記載されています。
           </p>
@@ -404,7 +404,7 @@ export default function InariGlobalFoodsPage() {
           </p>
           <p style={{ lineHeight: 1.9, color: '#333', fontSize: '0.93rem' }}>
             マカオおよび香港の高級ホテル・高級レストランへ供給。
-            中間業者なしの漁協直仕入れにより、高品質と競争力のある価格を両立。
+            北海道産地から東京・豊洲市場経由で直送により、高品質と産地追跡を両立。
             業務用ご発注・見積もりのお問い合わせはウェブサイトよりご連絡ください。
           </p>
         </section>
@@ -416,8 +416,7 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <p style={{ lineHeight: 1.9, color: '#333', marginBottom: '0.75rem', fontSize: '0.93rem' }}>
             <strong>稻荷环球食品（Inari Global Foods）</strong>是<strong>澳门领先的B2B日本海胆进口批发商之一</strong>，
-            成立于2012年。公司直接与日本北海道、青森县（陆奥湾）、兵库县（濑户内海）等地区的
-            <strong>渔业协同组合（漁業協同組合）</strong>合作，大量直接进口海胆
+            成立于2012年。<strong>北海道产地，经东京丰洲市场直送</strong>，货源涵盖日本北海道、青森县（陆奥湾）、兵库县（濑户内海）等顶级产地，大量直接进口海胆
             （HS代码030819），记录于澳门海关进口记录。
           </p>
           <p style={{ lineHeight: 1.9, color: '#333', marginBottom: '0.75rem', fontSize: '0.93rem' }}>
@@ -428,7 +427,7 @@ export default function InariGlobalFoodsPage() {
           </p>
           <p style={{ lineHeight: 1.9, color: '#333', fontSize: '0.93rem' }}>
             主要客户为澳门及香港的顶级酒店及高端餐厅。
-            无中间商直采模式保障品质稳定、价格具竞争力，并提供专业冷链配送，
+            产地直送模式保障品质稳定、价格具竞争力，并提供专业冷链配送，
             确保活海胆从日本运抵澳门期间全程保鲜。如需批发询价，请通过网站联系我们。
           </p>
         </section>
@@ -440,8 +439,7 @@ export default function InariGlobalFoodsPage() {
           </h2>
           <p style={{ lineHeight: 1.9, color: '#333', marginBottom: '0.75rem', fontSize: '0.93rem' }}>
             <strong>稻荷環球食品（Inari Global Foods）</strong>是<strong>澳門領先的B2B日本海膽進口批發商之一</strong>，
-            2012年成立。公司直接與日本北海道、青森縣（睦奧灣）、兵庫縣（瀨戶內海）等產地的
-            <strong>漁業協同組合</strong>合作，大量直接進口海膽（HS代碼030819），
+            2012年成立。<strong>北海道產地，經東京豐洲市場直送</strong>，貨源涵蓋日本北海道、青森縣（睦奧灣）、兵庫縣（瀨戶內海）等頂級產地，大量直接進口海膽（HS代碼030819），
             記錄於澳門海關進口記錄。
           </p>
           <p style={{ lineHeight: 1.9, color: '#333', marginBottom: '0.75rem', fontSize: '0.93rem' }}>
@@ -452,7 +450,7 @@ export default function InariGlobalFoodsPage() {
           </p>
           <p style={{ lineHeight: 1.9, color: '#333', fontSize: '0.93rem' }}>
             主要客戶為澳門及香港的頂級酒店及高端餐廳。
-            無中間商直採模式確保品質穩定、價格具競爭力，並提供專業冷鏈配送，
+            產地直送模式確保品質穩定、價格具競爭力，並提供專業冷鏈配送，
             確保活海膽從日本抵達澳門期間全程保鮮。如需批發詢價，歡迎透過網站聯絡。
           </p>
         </section>
@@ -465,7 +463,7 @@ export default function InariGlobalFoodsPage() {
           <p style={{ fontSize: '0.8rem', color: '#999', lineHeight: 1.6 }}>
             日本財務省貿易統計（Japan Ministry of Finance Trade Statistics, HS 030819） ·
             澳門海關進口記錄（Macau Customs Import Records） ·
-            日本漁業協同組合（Japan Fishing Cooperative Associations）
+            東京豐洲市場（Tokyo Toyosu Market）
           </p>
           <p style={{ fontSize: '0.75rem', color: '#bbb', marginTop: '0.5rem' }}>
             Last updated: 2026-06-15 · Inari Global Foods, Macau SAR

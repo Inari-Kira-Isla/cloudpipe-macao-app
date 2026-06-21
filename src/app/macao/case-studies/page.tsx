@@ -28,8 +28,8 @@ export default function CaseStudiesPage() {
       <section className="px-4 md:px-8 py-8 md:py-12 bg-gradient-to-r from-[#0f4c81] to-[#1a7eb8] text-white">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
           <div>
-            <div className="text-3xl font-bold mb-2">+340%</div>
-            <div className="text-sm text-blue-100">平均 AI 引用增長</div>
+            <div className="text-3xl font-bold mb-2">提升</div>
+            <div className="text-sm text-blue-100">AI 引用增長</div>
           </div>
           <div>
             <div className="text-3xl font-bold mb-2">+63%</div>

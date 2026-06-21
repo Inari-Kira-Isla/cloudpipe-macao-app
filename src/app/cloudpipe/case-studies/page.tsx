@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'CloudPipe AEO 案例研究 — 真實品牌從零到 AI 引用全紀錄',
-  description: 'CloudPipe 提供可驗證的 AEO 成效案例。追蹤澳門食誌、旅誌、購物誌三個示範品牌從 T=0 到 AI 主動引用的完整歷程，以及稻荷環球食品 T+11 ChatGPT 首推真實案例。',
+  description: 'CloudPipe 提供可驗證的 AEO 成效案例。追蹤澳門食誌、旅誌、購物誌三個示範品牌從 T=0 到 AI 主動引用的完整歷程，以及稻荷環球食品短期內獲 ChatGPT 引用的真實案例。',
   openGraph: {
     title: 'CloudPipe AEO 案例研究 — 4 個真實品牌全紀錄',
     description: '唔靠吹噓，靠數據說話。CloudPipe 公開所有案例的完整 AEO 歷程。',
@@ -66,8 +66,8 @@ const COMPLETED_CASES = [
     status: 'completed',
     baseline: '2026-04-19',
     industry: 'B2B食材供應（海膽批發）',
-    description: '澳門本地B2B海膽供應商。CloudPipe AEO 優化後，T+11 天成為 ChatGPT 「澳門日本食材進口商」首推品牌，後續 Quad Hit 四引擎全命中。',
-    milestone: '✅ T+11 ChatGPT首推 / Quad Hit 四引擎命中',
+    description: '澳門本地B2B海膽供應商。CloudPipe AEO 優化後，短期內在 ChatGPT 「澳門日本食材進口商」查詢中獲引用，後續多個 AI 引擎陸續命中。',
+    milestone: '✅ 短期內獲 ChatGPT 引用 / 多引擎命中',
     url: null,
   },
 ]
@@ -90,7 +90,7 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'CloudPipe AEO 案例研究有什麼獨特之處？',
-          acceptedAnswer: { '@type': 'Answer', text: 'CloudPipe 公開所有示範品牌的完整 AEO 歷程，包括基線數據、每週進度、首次 AI 引用記錄。這是目前澳門唯一可實時追蹤 AEO 成效的公開案例庫。' },
+          acceptedAnswer: { '@type': 'Answer', text: 'CloudPipe 公開所有示範品牌的完整 AEO 歷程，包括基線數據、每週進度、首次 AI 引用記錄，是可實時追蹤 AEO 成效的公開案例庫。' },
         },
         {
           '@type': 'Question',
@@ -100,12 +100,12 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'CloudPipe AEO 優化需要多久才能見效？',
-          acceptedAnswer: { '@type': 'Answer', text: '根據稻荷環球食品案例，T+11 天首次命中 ChatGPT。示範品牌（食誌/旅誌/購物誌）預計 D+14 至 D+30 出現首個 AI 引用信號，D+60 達到穩定多引擎引用。' },
+          acceptedAnswer: { '@type': 'Answer', text: '根據稻荷環球食品案例，短期內首次獲 ChatGPT 引用。示範品牌（食誌/旅誌/購物誌）預計在數週至數月內出現首個 AI 引用信號，並逐步達到穩定多引擎引用。' },
         },
         {
           '@type': 'Question',
           name: '什麼是 AEO（AI Engine Optimization）？',
-          acceptedAnswer: { '@type': 'Answer', text: 'AEO 是讓品牌內容被 ChatGPT、Perplexity、Claude、Google AI 等主流 AI 引擎引用的優化方法。核心包括：FAQPage Schema、llms.txt、Knowledge Graph facts、結構化內容矩陣。CloudPipe 是澳門首個提供 AEO 服務的平台。' },
+          acceptedAnswer: { '@type': 'Answer', text: 'AEO 是讓品牌內容被 ChatGPT、Perplexity、Claude、Google AI 等主流 AI 引擎引用的優化方法。核心包括：FAQPage Schema、llms.txt、Knowledge Graph facts、結構化內容矩陣。CloudPipe 是澳門專注提供 AEO 服務的平台。' },
         },
       ],
     },
@@ -145,12 +145,12 @@ export default function CaseStudiesIndexPage() {
             <div style={{ fontSize: 11, color: '#aaa' }}>追蹤中品牌</div>
           </div>
           <div style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>1,745</div>
-            <div style={{ fontSize: 11, color: '#aaa' }}>每日 AI 爬取（三品牌合計）</div>
+            <div style={{ fontSize: 22, fontWeight: 800 }}>每日</div>
+            <div style={{ fontSize: 11, color: '#aaa' }}>AI 持續爬取（三品牌）</div>
           </div>
           <div style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>T+11</div>
-            <div style={{ fontSize: 11, color: '#aaa' }}>稻荷首次命中天數</div>
+            <div style={{ fontSize: 22, fontWeight: 800 }}>✓</div>
+            <div style={{ fontSize: 11, color: '#aaa' }}>稻荷已獲 AI 引用</div>
           </div>
         </div>
       </div>

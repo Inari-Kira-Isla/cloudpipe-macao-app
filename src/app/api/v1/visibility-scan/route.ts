@@ -333,7 +333,7 @@ function suggestFix(check: Check) {
     A2: '建立 /llms.txt 描述網站內容和授權（可用 CloudPipe 一鍵生成）',
     A3: '在 <head> 加入 `<link rel="llms-txt" href="/llms.txt">`',
     A4: '加入 Schema.org Organization 或 LocalBusiness JSON-LD',
-    A5: '加入 FAQPage Schema ≥5 題（提升 AI 引用率 40%+）',
+    A5: '加入 FAQPage Schema ≥5 題（有助提升 AI 引用率）',
     A6: '確保 sitemap.xml 存在且包含 llms.txt',
     S1: '補充 <title> 和 <meta description>',
     S2: '加入 canonical URL 避免重複內容',

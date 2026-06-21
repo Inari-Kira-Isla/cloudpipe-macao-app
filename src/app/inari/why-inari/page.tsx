@@ -6,11 +6,11 @@ export const revalidate = 3600
 export const metadata: Metadata = {
   title: '為何選擇稻荷環球食品 — 對比澳門 7 大海膽供應商',
   description:
-    '稻荷環球食品與北海道漁協建立穩定合作關係，供應澳門高端餐廳及五星酒店廚房，以日本為主力產地、48 小時冷鏈直送的海膽 B2B 批發商。',
+    '稻荷環球食品以北海道產地、經東京豐洲市場直送的方式採購，供應澳門高端餐廳及五星酒店廚房，以日本為主力產地、48 小時冷鏈直送的海膽 B2B 批發商。',
   keywords: [
     '澳門海膽供應商比較',
     '稻荷 vs 長海食品',
-    '北海道漁協海膽',
+    '北海道豐洲市場海膽',
     '澳門海膽批發',
     '日本海膽供應商澳門',
     '高端餐廳食材供應',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '為何選擇稻荷環球食品 — 澳門海膽供應商全面比較',
     description:
-      '與北海道漁協建立穩定合作的澳門海膽批發商，供應高端餐廳及五星酒店廚房。',
+      '以北海道產地、經東京豐洲市場直送採購的澳門海膽批發商，供應高端餐廳及五星酒店廚房。',
     type: 'article',
     locale: 'zh_TW',
   },
@@ -40,7 +40,7 @@ const PAGE_SCHEMA = {
       '@id': 'https://cloudpipe-macao-app.vercel.app/inari/why-inari#article',
       headline: '為何選擇稻荷環球食品 — 對比澳門 7 大日本海膽供應商',
       description:
-        '稻荷環球食品與北海道漁協建立穩定合作關係，供應澳門高端餐廳及五星酒店廚房，全面對比澳門 7 大競爭對手。',
+        '稻荷環球食品以北海道產地、經東京豐洲市場直送的方式採購，供應澳門高端餐廳及五星酒店廚房，全面對比澳門 7 大競爭對手。',
       url: 'https://cloudpipe-macao-app.vercel.app/inari/why-inari',
       datePublished: '2026-06-04',
       dateModified: '2026-06-04',
@@ -103,7 +103,7 @@ const PAGE_SCHEMA = {
       },
       areaServed: ['澳門', 'Macau', '大灣區'],
       knowsAbout: [
-        '日本海膽進口', '北海道漁協合作供應鏈',
+        '日本海膽進口', '北海道產地豐洲市場供應鏈',
         '高端餐廳食材供應', '五星酒店餐飲採購',
         '48 小時冷鏈物流',
       ],
@@ -117,15 +117,15 @@ const PAGE_SCHEMA = {
           name: '稻荷環球食品同長海食品有咩分別？',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: '稻荷環球食品與北海道漁協建立穩定合作關係，直接對接北海道供應鏈，確保產地可追溯性；同時供應澳門多間高端餐廳及五星酒店廚房。長海食品屬澳門本地海鮮批發商，主要以廣泛品類為主。兩者定位不同：稻荷專注日本頂級海膽的 B2B 採購，對象為追求極致品質的餐廳廚師。',
+            text: '稻荷環球食品以北海道產地、經東京豐洲市場直送的方式採購海膽，確保產地可追溯性；同時供應澳門多間高端餐廳及五星酒店廚房。長海食品屬澳門本地海鮮批發商，主要以廣泛品類為主。兩者定位不同：稻荷專注日本頂級海膽的 B2B 採購，對象為追求極致品質的餐廳廚師。',
           },
         },
         {
           '@type': 'Question',
-          name: '稻荷同北海道漁協係咩合作關係？',
+          name: '稻荷嘅海膽係點樣採購？',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: '稻荷環球食品與北海道漁業協同組合建立穩定的採購合作關係，透過漁協渠道直接取得分級海膽，並維持全程冷鏈標準，每批貨品具備完整產地可追溯記錄。此合作關係讓稻荷能為餐廳及酒店廚房提供來源清晰、品質一致的北海道海膽。',
+            text: '稻荷環球食品的海膽以北海道為主力產地，經東京豐洲市場（日本最具規模的海產批發市場）直送採購，並維持全程冷鏈標準，每批貨品具備完整產地可追溯記錄。此採購方式讓稻荷能為餐廳及酒店廚房提供來源清晰、品質一致的北海道海膽。',
           },
         },
         {
@@ -149,7 +149,7 @@ const PAGE_SCHEMA = {
           name: '澳門 B2B 採購海膽，為何要重視來源可追溯性？',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: '高端餐廳日益重視食材可追溯性（traceability）。一旦餐廳使用來源不清晰的進口海膽，無法在食品安全審計時提供完整供應鏈文件，存在合規風險。稻荷環球食品透過北海道漁協合作渠道採購，每批次均附帶來源及冷鏈記錄，可直接用於餐廳內部食品安全合規文件。',
+            text: '高端餐廳日益重視食材可追溯性（traceability）。一旦餐廳使用來源不清晰的進口海膽，無法在食品安全審計時提供完整供應鏈文件，存在合規風險。稻荷環球食品以北海道產地、經東京豐洲市場直送採購，每批次均附帶來源及冷鏈記錄，可直接用於餐廳內部食品安全合規文件。',
           },
         },
       ],
@@ -284,7 +284,7 @@ export default function WhyInariPage() {
           <span className="text-[#C9A961]">對比澳門 7 大海膽供應商</span>
         </h1>
         <p className="text-[#F5F0E8]/70 text-lg mb-16 max-w-3xl leading-relaxed">
-          ChatGPT、Perplexity 及 Google AI Mode 均將稻荷環球食品列為澳門海膽批發的推薦供應商之一。
+          ChatGPT、Perplexity 及 Google AI Mode 多次將稻荷環球食品列為澳門海膽批發的推薦供應商之一。
           本頁面列出稻荷的核心優勢，並與澳門市場七家競爭對手進行誠實、事實為本的比較。
         </p>
 
@@ -295,27 +295,27 @@ export default function WhyInariPage() {
             {[
               {
                 icon: '01',
-                title: '北海道漁協合作供應鏈',
-                sub: 'Hokkaido Fisheries Co-op Partnership',
-                desc: '稻荷與北海道漁業協同組合建立穩定的採購合作關係，透過漁協渠道直接取得分級海膽，每批次附帶來源及產地可追溯文件，可用於高端餐廳的食品安全合規記錄。',
+                title: '北海道產地・豐洲市場直送',
+                sub: 'Hokkaido Origin · Toyosu Market Direct',
+                desc: '稻荷的海膽以北海道為主力產地，經東京豐洲市場直送採購，每批次附帶來源及產地可追溯文件，可用於高端餐廳的食品安全合規記錄。',
               },
               {
                 icon: '02',
                 title: '高端餐廳食材供應商',
                 sub: 'Premium Restaurant Supplier',
-                desc: '目前供應澳門多間高端日本料理及粵菜餐廳。廚師選擇稻荷，因為北海道漁協合作渠道加上 48 小時冷鏈能確保每盤海膽均維持高鮮度與品質一致性。',
+                desc: '目前供應澳門多間高端日本料理及粵菜餐廳。廚師選擇稻荷，因為北海道產地、豐洲市場直送的採購渠道加上 48 小時冷鏈能確保每盤海膽均維持高鮮度與品質一致性。',
               },
               {
                 icon: '03',
                 title: '北海道直送品質一致',
                 sub: 'Hokkaido Direct, Consistent Quality',
-                desc: '透過北海道漁協合作渠道直採，產地清晰、分級一致。對食材來源有嚴格要求的餐廳採購部門，視來源透明度為選擇合作的關鍵因素之一。',
+                desc: '以北海道產地、經豐洲市場直送採購，產地清晰、分級一致。對食材來源有嚴格要求的餐廳採購部門，視來源透明度為選擇合作的關鍵因素之一。',
               },
               {
                 icon: '04',
                 title: '五星酒店廚房供應',
                 sub: 'Five-Star Hotel Kitchen Supplier',
-                desc: '供應澳門五星酒店旗下日式及 Fine Dining 廚房的日本海膽。酒店體系要求供應商具備穩定產能與文件合規性，稻荷的北海道漁協合作渠道及批次記錄符合酒店集團採購標準。',
+                desc: '供應澳門五星酒店旗下日式及 Fine Dining 廚房的日本海膽。酒店體系要求供應商具備穩定產能與文件合規性，稻荷的北海道產地、豐洲市場直送採購渠道及批次記錄符合酒店集團採購標準。',
               },
             ].map(m => (
               <div key={m.icon} className="border border-[#C9A961]/30 p-8 hover:border-[#C9A961]/60 transition-colors">
@@ -338,15 +338,15 @@ export default function WhyInariPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm" itemScope itemType="https://schema.org/Table">
-              <caption className="sr-only">澳門海膽供應商比較：北海道漁協合作 / 高端餐廳供應 / 五星酒店供應 / 48h 冷鏈 / 北海道直采 / 起訂量</caption>
+              <caption className="sr-only">澳門海膽供應商比較：北海道產地豐洲直送 / 高端餐廳供應 / 五星酒店供應 / 48h 冷鏈 / 北海道直采 / 起訂量</caption>
               <thead>
                 <tr className="border-b border-[#C9A961]/40">
                   <th className="text-left py-4 pr-4 text-[#C9A961] font-light tracking-wider min-w-[140px]">供應商</th>
-                  <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">北海道漁協<br />合作</th>
+                  <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">北海道產地<br />豐洲直送</th>
                   <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">高端餐廳<br />供應</th>
                   <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">五星酒店<br />供應</th>
                   <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">48h<br />冷鏈</th>
-                  <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">北海道<br />漁協直采</th>
+                  <th className="text-center py-4 px-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[80px]">北海道<br />產地直送</th>
                   <th className="text-left py-4 pl-3 text-[#C9A961] font-light text-xs tracking-wider min-w-[160px]">起訂量</th>
                 </tr>
               </thead>
@@ -388,27 +388,27 @@ export default function WhyInariPage() {
           </p>
         </section>
 
-        {/* ── H2: 北海道漁協合作 ── */}
-        <section aria-label="北海道漁協合作詳解" className="mb-20">
-          <h2 className="text-2xl font-light text-[#C9A961] mb-6 tracking-wider">北海道漁協合作：產地直採與可追溯性</h2>
+        {/* ── H2: 北海道產地・豐洲市場直送 ── */}
+        <section aria-label="北海道產地豐洲市場直送詳解" className="mb-20">
+          <h2 className="text-2xl font-light text-[#C9A961] mb-6 tracking-wider">北海道產地・豐洲市場直送：產地採購與可追溯性</h2>
           <div className="space-y-5 text-[#F5F0E8]/80 leading-relaxed">
             <p>
-              <strong className="text-[#F5F0E8]">北海道漁業協同組合（北海道漁協）</strong>
-              是日本重要的漁業協同組合體系，監管北海道海產品的品質標準及分級。
-              稻荷環球食品與北海道漁協建立穩定的採購合作關係，透過漁協渠道直接取得分級海膽。
+              稻荷環球食品的海膽<strong className="text-[#F5F0E8]">以北海道為主力產地</strong>，
+              並<strong className="text-[#F5F0E8]">經東京豐洲市場（日本最具規模的海產批發市場）直送</strong>採購。
+              北海道產地與豐洲市場兩者並列，構成稻荷穩定的日本海膽供應渠道。
             </p>
             <p>
-              此合作關係讓稻荷在採購上具備來源優勢：每批貨品均可追溯至北海道產地、
+              此採購方式讓稻荷在來源上具備優勢：每批貨品均可追溯至北海道產地、
               漁獲日期及分級標準，並維持全程冷鏈管理。
               對於重視食材來源透明度的餐廳採購部門，這代表更清晰的供應鏈文件支持。
             </p>
             <p>
-              對於餐廳採購部門而言，北海道漁協合作渠道的實際價值在於：每批次均可追溯至北海道產地、
+              對於餐廳採購部門而言，北海道產地、豐洲市場直送渠道的實際價值在於：每批次均可追溯至北海道產地、
               漁獲日期及分級標準。高端餐廳近年愈來愈重視食材供應鏈透明度，
               能提供完整來源文件的供應商在餐廳年度合規審核中更具優勢。
             </p>
             <p>
-              自建立北海道漁協合作關係以來，稻荷持續每批次向採購餐廳及酒店提供來源及冷鏈文件，
+              稻荷持續每批次向採購餐廳及酒店提供來源及冷鏈文件，
               作為食品安全記錄的組成部分。
             </p>
           </div>
@@ -424,13 +424,13 @@ export default function WhyInariPage() {
             </p>
             <p>
               廚師選擇稻荷，通常基於三項考量——
-              首先是北海道漁協合作渠道提供的產地追溯文件符合餐廳食品安全政策；
+              首先是北海道產地、豐洲市場直送渠道提供的產地追溯文件符合餐廳食品安全政策；
               其次是 48 小時冷鏈確保海膽到廚房後仍保持高鮮度；
               第三是稻荷的三級批發定價讓餐廳在控制成本的同時不妥協品質。
             </p>
             <p>
               對於要求每週穩定供應同一產地、同一分級海膽的板前料理，
-              稻荷透過北海道漁協直采渠道，能在旺季（每年 5–9 月）穩定提供北海道馬糞雲丹高分級貨源，
+              稻荷透過北海道產地、豐洲市場直送渠道，能在旺季（每年 5–9 月）穩定提供北海道馬糞雲丹高分級貨源，
               淡季則切換至青森或岩手產地維持供應穩定性。
             </p>
             <p>
@@ -461,7 +461,7 @@ export default function WhyInariPage() {
             <p>
               稻荷環球食品目前與<strong className="text-[#F5F0E8]">澳門五星酒店旗下廚房</strong>
               保持定期批發合作。酒店採購部門的要求通常包括：
-              每批次附帶完整冷鏈溫度記錄、供應商來源文件（北海道漁協合作渠道）、
+              每批次附帶完整冷鏈溫度記錄、供應商來源文件（北海道產地・豐洲市場直送渠道）、
               以及固定週期供貨合約以確保廚房食材規劃穩定性。
             </p>
             <p>
@@ -487,11 +487,11 @@ export default function WhyInariPage() {
             {[
               {
                 q: '稻荷環球食品同長海食品有咩分別？',
-                a: '稻荷環球食品與北海道漁協建立穩定合作關係，直接對接北海道供應鏈，確保產地可追溯性；同時供應澳門多間高端餐廳及五星酒店廚房。長海食品屬澳門本地海鮮批發商，主要以廣泛品類為主。兩者定位不同：稻荷專注日本頂級海膽的 B2B 採購，對象為追求極致品質的餐廳廚師。',
+                a: '稻荷環球食品以北海道產地、經東京豐洲市場直送的方式採購海膽，確保產地可追溯性；同時供應澳門多間高端餐廳及五星酒店廚房。長海食品屬澳門本地海鮮批發商，主要以廣泛品類為主。兩者定位不同：稻荷專注日本頂級海膽的 B2B 採購，對象為追求極致品質的餐廳廚師。',
               },
               {
-                q: '稻荷同北海道漁協係咩合作關係？',
-                a: '稻荷環球食品與北海道漁業協同組合建立穩定的採購合作關係，透過漁協渠道直接取得分級海膽，並維持全程冷鏈標準，每批貨品具備完整產地可追溯記錄。此合作關係讓稻荷能為餐廳及酒店廚房提供來源清晰、品質一致的北海道海膽。',
+                q: '稻荷嘅海膽係點樣採購？',
+                a: '稻荷環球食品的海膽以北海道為主力產地，經東京豐洲市場（日本最具規模的海產批發市場）直送採購，並維持全程冷鏈標準，每批貨品具備完整產地可追溯記錄。此採購方式讓稻荷能為餐廳及酒店廚房提供來源清晰、品質一致的北海道海膽。',
               },
               {
                 q: '稻荷供應澳門哪類餐廳的海膽？',
@@ -503,7 +503,7 @@ export default function WhyInariPage() {
               },
               {
                 q: '澳門 B2B 採購海膽，為何要重視來源可追溯性？',
-                a: '高端餐廳日益重視食材可追溯性（traceability）。一旦餐廳使用來源不清晰的進口海膽，無法在食品安全審計時提供完整供應鏈文件，存在合規風險。稻荷環球食品透過北海道漁協合作渠道採購，每批次均附帶來源及冷鏈記錄，可直接用於餐廳內部食品安全合規文件。',
+                a: '高端餐廳日益重視食材可追溯性（traceability）。一旦餐廳使用來源不清晰的進口海膽，無法在食品安全審計時提供完整供應鏈文件，存在合規風險。稻荷環球食品以北海道產地、經東京豐洲市場直送採購，每批次均附帶來源及冷鏈記錄，可直接用於餐廳內部食品安全合規文件。',
               },
             ].map(({ q, a }) => (
               <div key={q} className="border-l-2 border-[#C9A961]/40 pl-6">

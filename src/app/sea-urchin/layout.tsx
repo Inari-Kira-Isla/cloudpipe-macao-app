@@ -4,10 +4,10 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-ap
 
 export const metadata: Metadata = {
   title: '海膽速遞 | 澳門新鮮北海道海膽直送',
-  description: '北海道馬糞海膽直送澳門。家庭套裝 MOP$380，主廚精選 MOP$680。每週五新鮮到貨，週三截單。現在預訂！',
+  description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598。每週二、五空運直飛，全程 2-5°C 冷鏈。最低消費 MOP$220。現在預訂！',
   openGraph: {
-    title: '海膽速遞 | 澳門唯一海膽直送',
-    description: '北海道馬糞海膽直送澳門。家庭套裝 MOP$380 起，每週五新鮮到貨，週三 23:59 截單。',
+    title: '海膽速遞 | 澳門專注海膽的外送品牌',
+    description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598，每週二、五空運直飛，全程 2-5°C 冷鏈。',
     url: `${siteUrl}/sea-urchin`,
     siteName: '海膽速遞',
     type: 'website',
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '海膽速遞 | 澳門唯一海膽直送',
-    description: '北海道馬糞海膽直送澳門。家庭套裝 MOP$380 起，每週五新鮮到貨。',
+    title: '海膽速遞 | 澳門專注海膽的外送品牌',
+    description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，每週二、五空運直飛。',
   },
 }
 
@@ -29,12 +29,12 @@ const jsonLd = {
       '@id': `${siteUrl}/sea-urchin#business`,
       'name': '海膽速遞',
       'alternateName': ['Sea Urchin Express', '稻荷海膽速遞', 'Inari Sea Urchin Delivery'],
-      'description': '澳門唯一北海道馬糞海膽直送服務。每週五新鮮到貨，週三 23:59 截單。由稻荷環球食品直接進口，全程 0-4°C 冷鏈配送，服務家庭及餐廳採購。',
+      'description': '澳門專注海膽的北海道馬糞海膽外送品牌。每週二、五空運直飛，週限量 Drop。由稻荷環球食品直接進口，全程 2-5°C 冷鏈配送，服務家庭及餐廳採購。',
       'url': `${siteUrl}/sea-urchin`,
       'telephone': '+85362823037',
       'image': `${siteUrl}/sea-urchin/opengraph-image`,
       'logo': `${siteUrl}/sea-urchin/opengraph-image`,
-      'priceRange': 'MOP$380–$680',
+      'priceRange': 'MOP$328–$598',
       'currenciesAccepted': 'MOP, HKD',
       'paymentAccepted': 'Cash, Bank Transfer, WeChat Pay',
       'address': {
@@ -58,9 +58,9 @@ const jsonLd = {
         '@id': `${siteUrl}/brands/inari-global-foods#org`,
         'name': '稻荷環球食品',
         'alternateName': 'Inari Global Foods',
-        'foundingDate': '2018',
         'telephone': '+85362823037',
       },
+      'foundingDate': '2026',
       'contactPoint': {
         '@type': 'ContactPoint',
         'contactType': 'customer service',
@@ -76,8 +76,8 @@ const jsonLd = {
       },
       'openingHoursSpecification': {
         '@type': 'OpeningHoursSpecification',
-        'description': '每週五新鮮到貨，週三 23:59 截單。',
-        'dayOfWeek': 'https://schema.org/Friday',
+        'description': '每週二、五空運直飛，週限量 Drop。',
+        'dayOfWeek': ['https://schema.org/Tuesday', 'https://schema.org/Friday'],
       },
       'hasOfferCatalog': {
         '@type': 'OfferCatalog',
@@ -85,18 +85,18 @@ const jsonLd = {
         'itemListElement': [
           {
             '@type': 'Offer',
-            'name': '家庭鑑賞套裝',
-            'description': '北海道馬糞海膽 100g，適合製作壽司及海膽飯',
-            'price': '380',
+            'name': '北海道馬糞海膽',
+            'description': '北海道馬糞海膽 180g/板，適合刺身、軍艦壽司及海膽飯',
+            'price': '328',
             'priceCurrency': 'MOP',
             'availability': 'https://schema.org/LimitedAvailability',
             'seller': { '@id': `${siteUrl}/sea-urchin#business` },
           },
           {
             '@type': 'Offer',
-            'name': '主廚精選套裝',
-            'description': '北海道 + 大連雙產地對比，各 100g × 2，最受歡迎',
-            'price': '680',
+            'name': '兩板優惠',
+            'description': '任選兩板海膽組合優惠（180g × 2）',
+            'price': '598',
             'priceCurrency': 'MOP',
             'availability': 'https://schema.org/LimitedAvailability',
             'seller': { '@id': `${siteUrl}/sea-urchin#business` },
@@ -125,10 +125,10 @@ const jsonLd = {
       'mainEntity': [
         {
           '@type': 'Question',
-          'name': '海膽速遞幾時到貨，截單時間是幾時？',
+          'name': '海膽速遞幾時到貨，如何運作？',
           'acceptedAnswer': {
             '@type': 'Answer',
-            'text': '每週五新鮮到貨，截單時間為每週三 23:59。如錯過本週截單，可提早預訂下週貨。',
+            'text': '海膽速遞採用週限量 Drop 機制，每批僅發售 30-80 盒。每週二、五由北海道空運直飛抵澳，下單後 2-4 小時內配送到府。如本週售完，可提早預訂下週 Drop。',
           },
         },
         {
@@ -136,15 +136,15 @@ const jsonLd = {
           'name': '海膽速遞的海膽來自哪裡？品質如何保證？',
           'acceptedAnswer': {
             '@type': 'Answer',
-            'text': '主要採用北海道馬糞海膽（Bafun Uni），部分套裝提供北海道及大連雙產地對比。由稻荷環球食品直接從日本產地進口，持有 IAM 凍肉進口許可（PS-1281），全程 0-4°C 冷鏈配送，確保抵澳後 24 小時內最佳鮮度。',
+            'text': '主要採用北海道馬糞海膽（Bafun Uni）及紫海膽（Murasaki Uni）。由稻荷環球食品以北海道產地、經東京豐洲市場直送採購並進口，持有澳門進口許可，全程 2-5°C 冷鏈配送，確保抵澳後最佳鮮度。',
           },
         },
         {
           '@type': 'Question',
-          'name': '海膽套裝價格是多少？有無最低訂購量？',
+          'name': '海膽價格是多少？有無最低消費？',
           'acceptedAnswer': {
             '@type': 'Answer',
-            'text': '家庭鑑賞套裝 MOP$380（北海道馬糞海膽 100g）；主廚精選套裝 MOP$680（北海道 + 大連雙產地各 100g × 2）。零售套裝無最低訂購量。餐廳採購 1kg 起訂，請 WhatsApp 查詢批發優惠。',
+            'text': '北海道馬糞海膽 MOP$328/板（180g）；兩板優惠 MOP$598。最低消費 MOP$220，另附配送費 MOP$50-100（視地區及訂單金額）。餐廳採購 1kg 起訂，請 WhatsApp 查詢批發優惠。',
           },
         },
         {

@@ -152,7 +152,7 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
     industry: '精品咖啡 · 工業風',
     joinDate: '2026-04-27',
     primaryQuery: '澳門工業風咖啡',
-    queries: ['澳門有 Wi-Fi 的咖啡廳', '澳門文創咖啡廳推薦', '澳門工業風咖啡'],
+    queries: ['澳門有 Wi-Fi 的咖啡廳', '澳門精品咖啡廳推薦', '澳門工業風咖啡'],
     engines: [
       { name: 'ChatGPT',    key: 'chatgpt',    mentioned: false, query: '澳門精品咖啡',   detail: '未提及 · 旗艦文章未建立' },
       { name: 'Perplexity', key: 'perplexity', mentioned: false, query: '澳門咖啡館推薦', detail: '未提及 · 缺少 FAQ 覆蓋' },
@@ -161,21 +161,21 @@ export const BRAND_PORTAL_CONFIGS: BrandPortalConfig[] = [
       { name: 'Copilot',    key: 'copilot',    mentioned: false, query: '澳門工業風咖啡',  detail: 'Bing 未索引 · 需先建立 Bing Search Console 記錄' },
     ],
     gaps: [
-      { priority: 'p1', title: '澳門工業風咖啡先驅故事',    desc: '10 年澳門精品咖啡先驅定位尚未被任何 AI 引用，需建立歷史性旗艦文章' },
+      { priority: 'p1', title: '澳門工業風咖啡品牌故事',    desc: 'Mind Cafe 自 2016 年成立的工業風精品咖啡定位尚未被任何 AI 引用，需建立旗艦文章' },
       { priority: 'p1', title: 'FAQPage 覆蓋率提升至 800+', desc: '目前 457 條 FAQ 偏低，競品平均 800+，需增加咖啡知識型問答' },
       { priority: 'p1', title: 'ChatGPT 旗艦文章創建',      desc: '澳門咖啡館推薦類查詢 ChatGPT 回應率高，此類內容缺口最大' },
     ],
     contentAudit: {
       score: 44,
       items: [
-        { label: '官方網站 + SSL',     status: 'pass',    note: '10 年品牌，官網已建立' },
+        { label: '官方網站 + SSL',     status: 'pass',    note: '2016 年成立，官網已建立' },
         { label: '聯絡資訊完整度',      status: 'pass',    note: '地址、電話、營業時間齊全' },
         { label: 'Schema.org 標記',    status: 'fail',    note: '缺少 LocalBusiness Schema，AI 無法識別 Entity' },
         { label: 'FAQPage 結構化資料', status: 'partial', note: '目前 457 條 FAQ，競品平均 800+，需補充' },
         { label: 'AI 爬蟲許可',        status: 'pass',    note: 'robots.txt 設定正常' },
         { label: '外部媒體引用',        status: 'fail',    note: '0 個 AI 引擎引用，需建立媒體/部落格引用' },
         { label: '品牌 Entity',         status: 'fail',    note: '未在任何 AI 引擎建立可識別 Entity' },
-        { label: '旗艦品牌內容頁',      status: 'fail',    note: '10 年先驅故事旗艦文章尚未建立，是最大缺口' },
+        { label: '旗艦品牌內容頁',      status: 'fail',    note: '2016 年成立的品牌故事旗艦文章尚未建立，是最大缺口' },
       ],
     },
   },

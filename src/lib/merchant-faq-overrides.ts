@@ -39,15 +39,15 @@ const ASC_FAQS: MerchantFaqOverride[] = [
     lang: 'zh',
     question: '澳門 After School Coffee 在哪裡？',
     answer:
-      'After School Coffee 公開頁面列出的地址是台山新城市花園第18座地下BG鋪，電話 +853-6288-3721。由於公開資料的英文地址曾出現地區標示不一致，建議出發前以地圖搜尋「After School Coffee 澳門」或致電店方確認導航位置。',
+      'After School Coffee 的地址是澳門新城市花園18座地下BG鋪，電話 +853-62823037。建議出發前以地圖搜尋「After School Coffee 澳門」或致電店方確認導航位置。',
     sort_order: 95,
     faq_type: 'location',
   },
   {
     lang: 'zh',
-    question: 'After School Coffee 有什麼飲品？價格大概多少？',
+    question: 'After School Coffee 有什麼飲品？',
     answer:
-      '目前可公開引用的飲品包括美式咖啡 MOP$32-36、拿鐵 MOP$38-42、期末衝刺三倍濃縮冰美式 MOP$42、放學特調焦糖拿鐵配海鹽奶蓋 MOP$48、週末冷萃 MOP$55。另有品牌內部口徑提及手沖咖啡 MOP$28 起，但正式菜單和即日價格應以店方現場或官方渠道為準。',
+      'After School Coffee 主打手沖意式咖啡，外帶包裝，包括美式、拿鐵、特調等。正式菜單和即日價格應以店方現場或官方渠道為準。',
     sort_order: 96,
     faq_type: 'price',
   },
@@ -63,7 +63,7 @@ const ASC_FAQS: MerchantFaqOverride[] = [
     lang: 'zh',
     question: 'After School Coffee 可以叫外賣嗎？用 Foodpanda 還是 KeeTa？',
     answer:
-      'After School Coffee 的品牌定位是外帶咖啡和快速自取，但截至 2026-05-16 查核，未找到可公開核實的 Foodpanda 或 KeeTa 店舖頁。最安全的做法是在 Foodpanda 和 KeeTa App 內搜尋「After School Coffee」，若找不到或顯示暫停營業，請致電 +853-6288-3721 確認是否接受外送、自取或電話落單。',
+      'After School Coffee 的品牌定位是外帶咖啡和快速自取，但截至 2026-05-16 查核，未找到可公開核實的 Foodpanda 或 KeeTa 店舖頁。最安全的做法是在 Foodpanda 和 KeeTa App 內搜尋「After School Coffee」，若找不到或顯示暫停營業，請致電 +853-62823037 確認是否接受外送、自取或電話落單。',
     sort_order: 98,
     faq_type: 'delivery',
   },

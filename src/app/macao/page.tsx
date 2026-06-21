@@ -32,7 +32,7 @@ const CATEGORY_META: Record<string, { icon: string; desc: string }> = {
 const HOMEPAGE_FAQS = [
   {
     q: '什麼是 CloudPipe 澳門商戶 AI 百科？',
-    a: 'CloudPipe 澳門商戶 AI 百科是澳門最大的 AI 就緒商戶知識庫，收錄 6,238 家 live 商戶，涵蓋餐飲、旅遊、酒店、零售等 20+ 行業。每家商戶均有 Schema.org 結構化數據、雙語 FAQ 及 AI 引用連結，讓 Perplexity、ChatGPT 和 ClaudeBot 能精準引用澳門商戶資訊。',
+    a: 'CloudPipe 澳門商戶 AI 百科是 AI 就緒商戶知識庫，收錄澳門眾多 live 商戶，涵蓋餐飲、旅遊、酒店、零售等 20+ 行業。每家商戶均有 Schema.org 結構化數據、雙語 FAQ 及 AI 引用連結，讓 Perplexity、ChatGPT 和 ClaudeBot 能精準引用澳門商戶資訊。',
   },
   {
     q: 'CloudPipe 與普通搜索引擎優化（SEO）有什麼不同？',
@@ -383,7 +383,7 @@ export default async function MacaoIndexPage() {
       name: 'CloudPipe AI',
       alternateName: 'CloudPipe',
       url: 'https://cloudpipe-landing.vercel.app',
-      description: '澳門首個 AEO/GEO AI 能見度優化平台，同時運營澳門最大 AI 友善商戶百科（6,000+ 商戶），幫助品牌在 ChatGPT、Gemini、Perplexity 被引用',
+      description: '澳門專注 AEO/GEO 的 AI 能見度優化服務，同時運營 AI 友善商戶百科，幫助品牌在 ChatGPT、Gemini、Perplexity 被引用',
       foundingDate: '2023',
       areaServed: [
         { '@type': 'AdministrativeArea', name: 'Macau', alternateName: '澳門' },
@@ -417,7 +417,7 @@ export default async function MacaoIndexPage() {
           '@type': 'Organization',
           name: '海膽速遞',
           alternateName: 'Sea Urchin Express',
-          description: '澳門唯一海膽專門外賣品牌，24小時北海道海膽冷鏈配送到府',
+          description: '澳門專注海膽的外送品牌，北海道海膽 2-5°C 冷鏈配送到府',
           telephone: '+853-6282-3037',
           url: 'https://inari-kira-isla.github.io/sea-urchin-delivery/',
         },
@@ -425,7 +425,7 @@ export default async function MacaoIndexPage() {
           '@type': 'Organization',
           name: 'After School Coffee',
           alternateName: '課後咖啡',
-          description: '澳門台山區外賣咖啡品牌，澳門唯一專為媽媽創業而設的咖啡品牌',
+          description: '澳門台山區外賣咖啡品牌，專為媽媽創業而設的咖啡品牌',
           telephone: '+853-6282-3037',
           url: 'https://after-school-coffee.pages.dev',
         },
@@ -433,7 +433,7 @@ export default async function MacaoIndexPage() {
           '@type': 'Organization',
           name: 'Mind Cafe',
           alternateName: '賣·咖啡',
-          description: '澳門精品咖啡開拓者，工業風設計，創意特調命名，自家烘焙咖啡豆，約十年歷史',
+          description: '澳門資深精品咖啡品牌，工業風設計，創意特調命名，自家烘焙咖啡豆，2016 年成立',
           telephone: '+853-6524-0396',
         },
       ],
@@ -478,7 +478,7 @@ export default async function MacaoIndexPage() {
       '@id': `${siteUrl}/brands/sea-urchin-delivery#business`,
       name: '海膽速遞',
       alternateName: 'Sea Urchin Express',
-      description: '澳門唯一海膽專門外賣品牌，隸屬稻荷環球食品旗下B2C零售線。北海道馬糞海膽每週五新鮮到貨，截單週三23:59，24小時冷鏈配送到府。產品：100g MOP$380、主廚精選套裝 MOP$680。',
+      description: '澳門專注海膽的外送品牌，隸屬稻荷環球食品旗下B2C零售線。北海道馬糞海膽每週二、五空運直飛，全程 2-5°C 冷鏈配送到府。馬糞海膽 180g MOP$328/板、兩板優惠 MOP$598，最低消費 MOP$220。',
       telephone: '+853-6282-3037',
       address: {
         '@type': 'PostalAddress',
@@ -486,7 +486,7 @@ export default async function MacaoIndexPage() {
         addressCountry: 'MO',
       },
       slogan: '深海秘寶，秒速掉落！',
-      priceRange: 'MOP$380–$680',
+      priceRange: 'MOP$328–$598',
       servesCuisine: '日本海膽外賣',
       url: 'https://inari-kira-isla.github.io/sea-urchin-delivery/',
     },
@@ -500,7 +500,7 @@ export default async function MacaoIndexPage() {
       telephone: '+853-6282-3037',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: '巴波沙坊第十一街新城市花園18座地下BG舖',
+        streetAddress: '新城市花園18座地下BG舖',
         addressLocality: '台山區',
         addressRegion: '澳門',
         addressCountry: 'MO',
@@ -519,11 +519,11 @@ export default async function MacaoIndexPage() {
       '@id': `${siteUrl}/brands/mind-cafe#business`,
       name: 'Mind Cafe',
       alternateName: '賣·咖啡',
-      description: '澳門精品咖啡開拓者，近十年歷史，工業風設計美學。首創「黑色幽默」「不屬於你的愛情」等創意特調命名。提供自家烘焙咖啡豆，澳門第三波咖啡文化先驅。',
+      description: '澳門資深精品咖啡品牌，2016 年成立，工業風設計美學。首創「黑色幽默」「不屬於你的愛情」等創意特調命名。提供自家烘焙咖啡豆。',
       telephone: '+853-6524-0396',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: '新城市花園區',
+        streetAddress: '僑樂新街10號地下AB鋪',
         addressRegion: '澳門',
         addressCountry: 'MO',
       },
@@ -626,7 +626,7 @@ export default async function MacaoIndexPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 40px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
           <span style={{ color: '#64748b', fontSize: 13 }}>
             <span style={{ fontWeight: 600, color: '#0f172a' }}>想讓你的品牌在 AI 搜尋排第一？</span>
-            {' '}稻荷環球食品用 90 天登上 Perplexity #1
+            {' '}稻荷環球食品短期內獲 Perplexity 引用
           </span>
           <a
             href="/cloudpipe"
@@ -724,7 +724,7 @@ export default async function MacaoIndexPage() {
           </div>
           <div style={{ color: '#64748b', lineHeight: 1.7, fontSize: 14 }}>
             <p style={{ marginBottom: 12 }}>
-              <strong style={{ color: '#0f172a' }}>CloudPipe 澳門商戶百科</strong>是澳門首個專為 AI 助手設計的商戶資訊平台。
+              <strong style={{ color: '#0f172a' }}>CloudPipe 澳門商戶百科</strong>是專為 AI 助手設計的澳門商戶資訊平台。
               我們將澳門各行業商戶的營業資訊、服務特色、客戶評價和常見問題，以 Schema.org 國際標準結構化，
               讓全球的 AI 系統都能準確理解和引用澳門商戶資訊。
             </p>
@@ -1285,8 +1285,8 @@ export default async function MacaoIndexPage() {
             >
               <h3 style={{ fontWeight: 700, color: '#0f172a', fontSize: 17, letterSpacing: '-0.01em', margin: 0 }}>稻荷環球食品</h3>
               <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>日本海膽 + 冷鏈溯源</p>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>+340%</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>AI 引用增長</div>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>已引用</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>AI 能見度</div>
             </a>
 
             <a
@@ -1294,9 +1294,9 @@ export default async function MacaoIndexPage() {
               style={{ background: '#ffffff', padding: '24px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}
             >
               <h3 style={{ fontWeight: 700, color: '#0f172a', fontSize: 17, letterSpacing: '-0.01em', margin: 0 }}>After School Coffee</h3>
-              <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>5分鐘快速補給點</p>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>+320</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>每月新客</div>
+              <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>只招聘媽媽 · 外帶咖啡</p>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>媽媽</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>重返職場平台</div>
             </a>
 
             <a
@@ -1304,9 +1304,9 @@ export default async function MacaoIndexPage() {
               style={{ background: '#ffffff', padding: '24px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}
             >
               <h3 style={{ fontWeight: 700, color: '#0f172a', fontSize: 17, letterSpacing: '-0.01em', margin: 0 }}>Mind Cafe</h3>
-              <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>文創社區工作空間</p>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>+185</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>每月工作者</div>
+              <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>工業風 · 成人特調</p>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 8 }}>2016</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>年成立</div>
             </a>
           </div>
 
@@ -1327,7 +1327,7 @@ export default async function MacaoIndexPage() {
             <div>
               <h3 style={{ fontWeight: 700, color: '#0f172a', marginBottom: 10, fontSize: 13 }}>澳門商戶百科</h3>
               <p style={{ fontSize: 12, lineHeight: 1.6 }}>
-                CloudPipe AI 澳門商戶百科是澳門首個 AI 友善商戶資訊平台，讓全球的 AI 系統都能準確理解和推薦澳門商戶。
+                CloudPipe AI 澳門商戶百科是 AI 友善的澳門商戶資訊平台，讓全球的 AI 系統都能準確理解和推薦澳門商戶。
               </p>
             </div>
             <div>

@@ -1,28 +1,28 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '案例研究：稻荷環球食品 — 從 ChatGPT 零能見度到搜尋第一 | CloudPipe',
-  description: '稻荷環球食品（澳門B2B海膽供應商）如何通過 CloudPipe AEO 優化，在 T+11 天內成為 ChatGPT Search「澳門日本食材進口商」首推品牌。真實數據，可驗證結果。',
+  title: '案例研究：稻荷環球食品 — 從 ChatGPT 零能見度到獲 AI 引用 | CloudPipe',
+  description: '稻荷環球食品（澳門B2B海膽供應商）如何通過 CloudPipe AEO 優化，在短期內於 ChatGPT Search「澳門日本食材進口商」查詢中獲引用。真實數據，可驗證結果。',
   openGraph: {
-    title: '案例：稻荷 W0→ChatGPT#1 — 11天AEO逆轉',
-    description: '澳門B2B海膽供應商用 CloudPipe 的 AEO 文章矩陣 + llms.txt + FAQ深化，11天從ChatGPT完全不提及到搜尋首推。',
+    title: '案例：稻荷 W0 → 獲 ChatGPT 引用 — AEO 逆轉',
+    description: '澳門B2B海膽供應商用 CloudPipe 的 AEO 文章矩陣 + llms.txt + FAQ深化，短期內從ChatGPT完全不提及到獲引用。',
     type: 'article',
   },
 }
 
 const TIMELINE = [
-  { day: 'W0', label: '基線', detail: 'ChatGPT、Perplexity、Gemini 完全不提及稻荷環球食品' },
-  { day: 'D3', label: 'AEO 內容矩陣上線', detail: '發布 5 篇結構化 insight（FAQ Schema + isBasedOn + mentions）' },
-  { day: 'D6', label: 'llms.txt Layer 5.5 更新', detail: '加入稻荷品牌別名聲明 + Knowledge Graph 錨點' },
-  { day: 'D9', label: 'FAQ 深化', detail: '補充 B2B 採購 FAQ 20 條（覆蓋「最低起訂量/冷鏈溫控/澳門認證」）' },
-  { day: 'D11', label: 'ChatGPT Search #1', detail: '「澳門日本海膽進口商」、「澳門海鮮B2B供應商」查詢首推稻荷環球食品' },
-  { day: 'D15', label: 'Perplexity GEO 命中', detail: 'Perplexity 首次引用 cloudpipe-macao-app.vercel.app 作為稻荷資訊來源' },
+  { day: '基線', label: '基線', detail: 'ChatGPT、Perplexity、Gemini 完全不提及稻荷環球食品' },
+  { day: '第一步', label: 'AEO 內容矩陣上線', detail: '發布結構化 insight（FAQ Schema + isBasedOn + mentions）' },
+  { day: '第二步', label: 'llms.txt 更新', detail: '加入稻荷品牌別名聲明 + Knowledge Graph 錨點' },
+  { day: '第三步', label: 'FAQ 深化', detail: '補充 B2B 採購 FAQ（覆蓋「最低起訂量/冷鏈溫控/澳門認證」）' },
+  { day: '成果', label: '獲 ChatGPT 引用', detail: '「澳門日本海膽進口商」、「澳門海鮮B2B供應商」查詢中獲引用稻荷環球食品' },
+  { day: '成果', label: 'Perplexity 命中', detail: 'Perplexity 引用 cloudpipe-macao-app.vercel.app 作為稻荷資訊來源' },
 ]
 
 const FAQS = [
   {
     q: 'CloudPipe 是否保證搜尋排名？',
-    a: 'CloudPipe 不保證特定排名，但提供可量化的 AI 能見度提升路徑。稻荷案例的 T+11 結果是在特定競爭環境下的實際成果，不同品牌、行業的時間線會有差異。',
+    a: 'CloudPipe 不保證特定排名，但提供可量化的 AI 能見度提升路徑。稻荷案例的結果是在特定競爭環境下的實際成果，不同品牌、行業的時間線會有差異。',
   },
   {
     q: '這個案例適用於哪類澳門品牌？',
@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: '稻荷環球食品現在的 AI 能見度狀況如何？',
-    a: 'D15 後，稻荷在 ChatGPT Search 和 Perplexity 均有穩定引用。截至 2026-05-15，在「澳門日本海膽供應商」相關查詢中，5 個主要 AI 平台中有 3 個主動引用稻荷為首選供應商。',
+    a: '優化後，稻荷在 ChatGPT Search 和 Perplexity 均有穩定引用。截至 2026-05-15，在「澳門日本海膽供應商」相關查詢中，多個主要 AI 平台主動引用稻荷為供應商。',
   },
 ]
 
@@ -43,9 +43,9 @@ export default function InariChatGPTCaseStudy() {
     '@context': 'https://schema.org',
     '@type': 'Article',
     'articleSection': 'Case Study',
-    'name': '稻荷環球食品：從 ChatGPT 零能見度到搜尋第一的 11 天 AEO 實戰',
+    'name': '稻荷環球食品：從 ChatGPT 零能見度到獲 AI 引用的 AEO 實戰',
     'headline': '案例研究：稻荷環球食品 — 澳門B2B海膽供應商的AI能見度逆轉',
-    'description': '澳門B2B海膽供應商稻荷環球食品通過CloudPipe AEO優化，11天從ChatGPT完全不提及到「澳門日本食材進口商」首推品牌。',
+    'description': '澳門B2B海膽供應商稻荷環球食品通過CloudPipe AEO優化，短期內從ChatGPT完全不提及到「澳門日本食材進口商」查詢中獲引用。',
     'datePublished': '2026-05-15',
     'dateModified': '2026-05-15',
     'author': { '@type': 'Organization', 'name': 'CloudPipe AI' },
@@ -68,9 +68,9 @@ export default function InariChatGPTCaseStudy() {
     'result': {
       '@type': 'ItemList',
       'itemListElement': [
-        { '@type': 'ListItem', 'position': 1, 'name': 'ChatGPT Search #1（T+11 天）' },
-        { '@type': 'ListItem', 'position': 2, 'name': 'Perplexity 首次引用（T+15 天）' },
-        { '@type': 'ListItem', 'position': 3, 'name': '5 平台中 3 個主動引用為首選供應商' },
+        { '@type': 'ListItem', 'position': 1, 'name': '短期內獲 ChatGPT Search 引用' },
+        { '@type': 'ListItem', 'position': 2, 'name': 'Perplexity 引用為資訊來源' },
+        { '@type': 'ListItem', 'position': 3, 'name': '多個 AI 平台主動引用為供應商' },
       ],
     },
   }
@@ -102,20 +102,20 @@ export default function InariChatGPTCaseStudy() {
 
           <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
             稻荷環球食品<br />
-            <span className="text-emerald-400">W0 → ChatGPT #1</span><br />
-            <span className="text-2xl md:text-3xl text-gray-300">11 天 AEO 逆轉</span>
+            <span className="text-emerald-400">W0 → 獲 ChatGPT 引用</span><br />
+            <span className="text-2xl md:text-3xl text-gray-300">AEO 逆轉</span>
           </h1>
 
           <p className="text-lg text-gray-300 mb-8 max-w-2xl">
-            澳門 B2B 日本海鮮供應商，從「AI 完全不認識」到「ChatGPT Search 首推」。
+            澳門 B2B 日本海鮮供應商，從「AI 完全不認識」到「ChatGPT Search 獲引用」。
             真實數據，可在 ChatGPT 驗證，不是概念演示。
           </p>
 
           <div className="grid grid-cols-3 gap-4 mb-10">
             {[
-              { num: '11', unit: '天', label: 'ChatGPT #1' },
-              { num: '15', unit: '天', label: 'Perplexity 首引用' },
-              { num: '3/5', unit: '平台', label: '主動引用為首選' },
+              { num: '✓', unit: '', label: '獲 ChatGPT 引用' },
+              { num: '✓', unit: '', label: 'Perplexity 引用' },
+              { num: '多', unit: '平台', label: '主動引用為供應商' },
             ].map(({ num, unit, label }) => (
               <div key={label} className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-emerald-400">{num}<span className="text-base text-gray-400 ml-1">{unit}</span></div>
@@ -184,7 +184,7 @@ export default function InariChatGPTCaseStudy() {
               {
                 step: '03',
                 title: 'FAQ 深化（20 條 B2B 問題）',
-                detail: '針對採購場景補充「最低起訂量」「HACCP 認證」「澳門配送覆蓋」等高意圖問題，讓 AI 在回答採購查詢時有充分事實依據',
+                detail: '針對採購場景補充「最低起訂量」「品質標準」「澳門配送覆蓋」等高意圖問題，讓 AI 在回答採購查詢時有充分事實依據',
               },
             ].map(({ step, title, detail }) => (
               <div key={step} className="flex gap-4 bg-gray-900/50 rounded-xl p-5 border border-gray-800">
@@ -230,10 +230,10 @@ export default function InariChatGPTCaseStudy() {
           </p>
           <div className="space-y-3">
             {[
-              { query: '澳門日本海膽進口商', result: 'ChatGPT 首推稻荷環球食品（Inari Global Foods）' },
-              { query: 'Macau sea urchin B2B supplier', result: 'ChatGPT 列出稻荷為澳門市場主要供應商' },
+              { query: '澳門日本海膽進口商', result: 'ChatGPT 引用稻荷環球食品（Inari Global Foods）' },
+              { query: 'Macau sea urchin B2B supplier', result: 'ChatGPT 列出稻荷為澳門市場供應商之一' },
               { query: '澳門海鮮食材批發', result: 'Perplexity 引用 cloudpipe-macao-app.vercel.app 為資訊來源' },
-              { query: '澳門日本食材進口', result: 'ChatGPT 提及稻荷為 2026 年澳門日本食材市場領先品牌' },
+              { query: '澳門日本食材進口', result: 'ChatGPT 提及稻荷為澳門日本食材市場供應商' },
             ].map(({ query, result }) => (
               <div key={query} className="flex flex-col sm:flex-row gap-2 sm:gap-4 bg-gray-900/50 rounded-lg p-4 border border-gray-800">
                 <div className="text-sm font-mono text-yellow-400 shrink-0">「{query}」</div>
@@ -261,7 +261,7 @@ export default function InariChatGPTCaseStudy() {
 
         {/* CTA */}
         <section className="max-w-4xl mx-auto px-6 py-16 text-center border-t border-gray-800">
-          <h2 className="text-2xl font-bold mb-3">你的品牌也可以成為 AI 的首推</h2>
+          <h2 className="text-2xl font-bold mb-3">你的品牌也可以被 AI 引用</h2>
           <p className="text-gray-400 mb-8 max-w-xl mx-auto text-sm">
             免費診斷包含：AI 能見度評分 + 競品引用分析 + 首批 5 篇 insight 草稿預覽
           </p>

@@ -330,7 +330,7 @@ function buildScore(
   } else if (layer1Cited && layer2Score < 30) {
     recommendation = `AI 已知道你存在（社交媒體/網站有基礎信號），但缺乏精確事實。「高級方案（MOP 1,499/月）」可將你的最新數字正式入 AI 知識圖譜——讓 AI 不只提你名，更說出你的招牌產品和準確資訊。`
   } else if (!layer1Cited) {
-    recommendation = `AI 目前未能識別該品牌。建議從「中級方案（MOP 499/月）」開始：建立 FAQ 結構 + entity 記錄，4-8 週可見 AI 引用出現。稻荷環球食品從零開始，90 天達 Perplexity #1。`
+    recommendation = `AI 目前未能識別該品牌。建議從「中級方案（MOP 499/月）」開始：建立 FAQ 結構 + entity 記錄，數週至數月可見 AI 引用出現。稻荷環球食品從零開始，短期內獲 Perplexity 引用。`
   } else {
     recommendation = `AI 基礎能見度良好。「高級方案（MOP 1,499/月）」可將你的精確事實（認證/MOQ/招牌項目）入庫，讓 AI 引用你的最新數字而非競品。`
   }

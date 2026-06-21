@@ -287,7 +287,7 @@ export default function EcosystemPage() {
                 <strong style={{ color: C.gold }}>稻荷環球食品</strong> ← B2B 供貨 → <strong style={{ color: C.accent }}>海膽速遞</strong>
               </div>
               <div>
-                <strong style={{ color: C.gold }}>稻荷</strong> + <strong style={{ color: C.accent }}>ASC</strong> + <strong style={{ color: '#059669' }}>Mind Cafe</strong> = 新城市花園社區服務鏈
+                <strong style={{ color: C.gold }}>稻荷</strong> + <strong style={{ color: C.accent }}>ASC</strong> + <strong style={{ color: '#059669' }}>Mind Cafe</strong> = 澳門社區服務鏈
               </div>
               <div>
                 <strong style={{ color: '#6366f1' }}>靈動智境</strong> → AI 策略諮詢 → 全部品牌

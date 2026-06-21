@@ -47,7 +47,7 @@ const FAQS = [
   },
   {
     q: 'AEO 優化需要多長時間才能見效？',
-    a: '根據 CloudPipe 監測的稻荷環球食品案例，T+11 天首次命中 ChatGPT。澳門旅誌作為新品牌，預計 D+14 至 D+30 內出現首個 AI 引用信號，D+60 達到穩定引用。',
+    a: '根據 CloudPipe 監測的稻荷環球食品案例，短期內首次獲 ChatGPT 引用。澳門旅誌作為新品牌，預計在數週至數月內出現首個 AI 引用信號，並逐步達到穩定引用。',
   },
   {
     q: '如何追蹤澳門旅誌的 AEO 進度？',
@@ -167,7 +167,7 @@ export default async function MacauFoodCaseStudyPage() {
         )}
         {!hasFirstCitation && (
           <div style={{ marginTop: 12, padding: '10px 14px', background: '#fafafa', border: '1px solid #e9ecef', borderRadius: 8, fontSize: 12, color: '#6c757d' }}>
-            ⏳ 尚未記錄到 AI 引用（正常，稻荷案例亦用 11 天才有首個命中）。CloudPipe Citation Monitor 每日 06:15 HKT 自動掃描。
+            ⏳ 尚未記錄到 AI 引用（正常，稻荷案例亦需一段時間才有首個命中）。CloudPipe Citation Monitor 每日 06:15 HKT 自動掃描。
           </div>
         )}
       </section>
@@ -252,9 +252,9 @@ export default async function MacauFoodCaseStudyPage() {
         <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>📁 同期追蹤的 AEO 案例</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           {[
-            { name: '澳門食誌', slug: 'macau-food-aeo-journey', color: '#E64A19', desc: '飲食垂直品牌，AI爬取841次/日' },
-            { name: '澳門購物誌', slug: 'macau-shopping-aeo-journey', color: '#6A1B9A', desc: '購物垂直品牌，AI爬取355次/日' },
-            { name: '稻荷環球食品', slug: 'inari-chatgpt-number-one', color: '#2d6a4f', desc: '海膽批發B2B，T+11 ChatGPT首推' },
+            { name: '澳門食誌', slug: 'macau-food-aeo-journey', color: '#E64A19', desc: '飲食垂直品牌，AI 持續爬取' },
+            { name: '澳門購物誌', slug: 'macau-shopping-aeo-journey', color: '#6A1B9A', desc: '購物垂直品牌，AI 持續爬取' },
+            { name: '稻荷環球食品', slug: 'inari-chatgpt-number-one', color: '#2d6a4f', desc: '海膽批發B2B，短期內獲 ChatGPT 引用' },
           ].map(cs => (
             <a key={cs.slug} href={`/cloudpipe/case-studies/${cs.slug}`}
               style={{ display: 'block', padding: '14px', background: '#f8f9fa', borderRadius: 8, border: '1px solid #e9ecef', textDecoration: 'none', color: 'inherit' }}>

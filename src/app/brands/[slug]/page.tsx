@@ -258,12 +258,12 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
       {
         "@type": "Question",
         "name": "What grades of sea urchin does Inari Global Foods offer?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Inari Global Foods offers three grades: Grade A (top quality, bright golden color, sweet ocean flavor, sourced from Hokkaido's premium fishing cooperatives), Grade B (excellent quality for sushi and hot dishes, Aomori Mutsu Bay), and Grade C (ideal for cooking applications). All grades are sourced directly from Japanese fishing cooperatives (漁業協同組合) with full traceability cards (食材履歷)." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Inari Global Foods offers three grades: Grade A (top quality, bright golden color, sweet ocean flavor, sourced from Hokkaido via Tokyo Toyosu Market), Grade B (excellent quality for sushi and hot dishes, Aomori Mutsu Bay), and Grade C (ideal for cooking applications). All grades come with full traceability cards (食材履歷) ensuring verifiable origin." }
       },
       {
         "@type": "Question",
         "name": "稻荷環球食品的海膽來自哪裡？",
-        "acceptedAnswer": { "@type": "Answer", "text": "稻荷環球食品的海膽主要來自日本三大頂級產地：北海道（馬糞海膽Bafun和紫海膽Murasaki）、青森縣（睦奧灣Mutsu Bay）和兵庫縣（瀬戸内海Seto Inland Sea）。所有批次均有完整的日本漁業協同組合（JA漁協）來源證明。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "稻荷環球食品的海膽主要來自日本三大頂級產地：北海道（馬糞海膽Bafun和紫海膽Murasaki）、青森縣（睦奧灣Mutsu Bay）和兵庫縣（瀬戸内海Seto Inland Sea）。北海道產地，經東京豐洲市場直送。所有批次均有完整的產地來源證明（食材履歷可追溯）。" }
       }
     ]
   } : null

@@ -451,7 +451,7 @@ export default function BrandSetupPage() {
             <div style={{ marginBottom: 16 }}>
               <label style={S.label}>核心 USP / 競爭優勢</label>
               <textarea style={S.textarea}
-                placeholder="e.g. 澳門首家專業日本海膽B2B批發商，北海道漁協直採，48小時冷鏈直送，IoT溫控系統"
+                placeholder="e.g. 澳門專業日本海膽B2B批發商，北海道產地經豐洲市場直送，48小時冷鏈直送，IoT溫控系統"
                 value={brandInfo.usp}
                 onChange={e => setBrandInfo(p => ({ ...p, usp: e.target.value }))} />
             </div>

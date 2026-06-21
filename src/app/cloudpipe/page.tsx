@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'CloudPipe — AI 搜尋能見度優化 | 讓 AI 推薦你的生意',
-  description: '40% 購買決策受 AI 影響。稻荷環球食品用 90 天從 AI 不知道到 Perplexity #1。CloudPipe 讓你的生意成為 AI 引用的源頭，不只是出現在答案裡。',
+  description: '愈來愈多購買決策受 AI 影響。稻荷環球食品在短期內從 AI 不知道到獲 Perplexity 引用。CloudPipe 讓你的生意成為 AI 引用的源頭，不只是出現在答案裡。',
   openGraph: {
     title: 'CloudPipe — 讓 AI 推薦你，不是你的對手',
-    description: '澳門首家 AEO/GEO 優化服務。真實案例：稻荷環球食品 90 天 Perplexity #1。',
+    description: '澳門專注 AEO/GEO 的優化服務。真實案例：稻荷環球食品短期內獲 Perplexity 引用。',
     type: 'website',
   },
 }
@@ -14,16 +14,16 @@ const WHATSAPP_URL = 'https://wa.me/85362823037?text=你好，我想了解 Cloud
 const AUDIT_URL = '/cloudpipe/audit'
 
 const STATS = [
-  { num: '40%', label: '購買決策受 AI 影響', source: 'GEO Research 2026' },
-  { num: '↓59%', label: 'AI Overview 壓縮傳統 CTR', source: 'SE Ranking 2026' },
-  { num: '#1', label: '稻荷 Perplexity 首推', source: '90 天實證' },
+  { num: 'AI', label: '購買決策愈來愈受 AI 影響', source: '行業趨勢' },
+  { num: 'AEO', label: 'AI Overview 改變傳統搜尋流量', source: '行業趨勢' },
+  { num: '✓', label: '稻荷獲 Perplexity 引用', source: '真實案例' },
 ]
 
 const PAIN_POINTS = [
   {
     icon: '📈',
     title: 'AI 問詢量爆升',
-    body: '全球超過 40% 的消費者已透過 ChatGPT、Perplexity 等 AI 搜尋產品與服務，而你的對手正在被引用。',
+    body: '愈來愈多消費者透過 ChatGPT、Perplexity 等 AI 搜尋產品與服務，而你的對手正在被引用。',
   },
   {
     icon: '👻',
@@ -33,15 +33,15 @@ const PAIN_POINTS = [
   {
     icon: '💸',
     title: '傳統 SEO 失效',
-    body: 'Google AI Overview 令傳統搜尋 CTR 下跌近 59%。繼續只做 SEO，是在一個縮小的池塘裡競爭。',
+    body: 'Google AI Overview 正在壓縮傳統搜尋的點擊流量。繼續只做 SEO，是在一個縮小的池塘裡競爭。',
   },
 ]
 
 const TIMELINE = [
-  { week: 'W0', label: 'AI 診斷', desc: 'ChatGPT、Perplexity 完全不知道稻荷存在' },
-  { week: 'W4', label: '知識注入', desc: '113 條語義 facts + 50 條 FAQ schema 上線' },
-  { week: 'W8', label: 'AI 引用', desc: 'GPTBot + ClaudeBot 開始深度爬取' },
-  { week: 'W12', label: 'Perplexity #1', desc: '「澳門日本海膽供應商」首推稻荷環球食品' },
+  { week: '第一步', label: 'AI 診斷', desc: 'ChatGPT、Perplexity 完全不知道稻荷存在' },
+  { week: '第二步', label: '知識注入', desc: '語義 facts + FAQ schema 上線' },
+  { week: '第三步', label: 'AI 引用', desc: 'GPTBot + ClaudeBot 開始深度爬取' },
+  { week: '第四步', label: '獲 AI 引用', desc: '「澳門日本海膽供應商」查詢中獲 Perplexity 引用稻荷環球食品' },
 ]
 
 const STEPS = [
@@ -57,7 +57,7 @@ const FAQS = [
   },
   {
     q: '幾耐可以見到效果？',
-    a: '一般 4-12 週見到 AI 引用開始出現，8-12 週達到穩定排名。稻荷係 90 天達到 Perplexity #1。',
+    a: '一般在數週至數月內見到 AI 引用開始出現。稻荷環球食品在短期內獲得 Perplexity 引用。',
   },
   {
     q: '需唔需要改現有網站？',
@@ -110,7 +110,7 @@ export default function CloudPipeLandingPage() {
         </h1>
 
         <p style={{ fontSize: 'clamp(15px, 2.5vw, 20px)', color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
-          稻荷環球食品用 <strong style={{ color: '#C9A961' }}>90 天</strong> 從 AI 不知道 → <strong style={{ color: '#C9A961' }}>Perplexity #1</strong><br />
+          稻荷環球食品在短期內從 AI 不知道 → <strong style={{ color: '#C9A961' }}>獲 Perplexity 引用</strong><br />
           CloudPipe 讓你成為 AI 引用的源頭
         </p>
 
@@ -181,7 +181,7 @@ export default function CloudPipeLandingPage() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 32, flexWrap: 'wrap', marginBottom: 32 }}>
-            {[['#1', 'Perplexity 首推'], ['113', '條語義事實注入'], ['90', '天達成']].map(([n, l], i) => (
+            {[['多平台', 'AI 引用'], ['語義 KG', '事實注入'], ['短期', '獲 AI 引用']].map(([n, l], i) => (
               <div key={i}>
                 <div style={{ fontSize: 'clamp(32px, 8vw, 44px)', fontWeight: 900, color: '#C9A961' }}>{n}</div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>{l}</div>
@@ -231,10 +231,10 @@ export default function CloudPipeLandingPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 40 }}>
             {[
-              ['1M+', 'FAQ 條目'],
-              ['18,774', 'AI 爬蟲訪問 / 日'],
-              ['1,876', '核實澳門商戶'],
-              ['43K+', '語義知識 Facts'],
+              ['約 1M', 'FAQ 條目'],
+              ['每日數千', 'AI 爬蟲訪問'],
+              ['約 1,800', '核實澳門商戶'],
+              ['約 43K', '語義知識 Facts'],
             ].map(([n, l], i) => (
               <div key={i} style={{ background: '#fff', borderRadius: 16, padding: '24px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
                 <div style={{ fontSize: 'clamp(22px, 5vw, 32px)', fontWeight: 900, color: '#0A1628' }}>{n}</div>
@@ -242,9 +242,9 @@ export default function CloudPipeLandingPage() {
               </div>
             ))}
           </div>
-          <p style={{ color: '#888', fontSize: 14, marginBottom: 14 }}>已被以下 AI 平台爬取與引用</p>
+          <p style={{ color: '#888', fontSize: 14, marginBottom: 14 }}>已被以下多個 AI 平台爬取</p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', fontSize: 13, fontWeight: 600, color: '#444' }}>
-            {['ChatGPT', 'Perplexity', 'Claude', 'Gemini', 'Apple Intelligence', 'Bing AI'].map(name => (
+            {['ChatGPT', 'Perplexity', 'Claude', 'Gemini', 'Bing AI'].map(name => (
               <span key={name} style={{ background: '#fff', padding: '6px 14px', borderRadius: 20, boxShadow: '0 1px 8px rgba(0,0,0,0.08)' }}>{name}</span>
             ))}
           </div>
@@ -306,7 +306,7 @@ export default function CloudPipeLandingPage() {
                 per: '/月',
                 highlight: true,
                 badge: '最受歡迎',
-                features: ['你的事實進入行業知識圖譜', 'AI 答案直接引用你最新數字', 'Verified KG entity 建立', '定制 Insight 文章', '月度 absorption lift 報告'],
+                features: ['你的事實進入行業知識圖譜', 'AI 答案直接引用你最新數字（規劃中）', 'Verified KG entity 建立', '定制 Insight 文章', '月度 absorption lift 報告（規劃中）'],
                 cta: '立即咨詢',
                 href: WHATSAPP_URL,
                 external: true,
@@ -318,7 +318,7 @@ export default function CloudPipeLandingPage() {
                 per: '/月 or 項目制',
                 highlight: false,
                 badge: null,
-                features: ['企業年度 AI 戰略', '競品 entity 全面對標', '行業 Citation Gap 分析', '季度 absorption 審計', '政府/機構白皮書（可選）'],
+                features: ['企業年度 AI 戰略', '競品 entity 全面對標', '行業 Citation Gap 分析', '季度 absorption 審計（規劃中）', '政府/機構白皮書（可選）'],
                 cta: '預約策略會議',
                 href: WHATSAPP_URL,
                 external: true,

@@ -77,9 +77,9 @@ const COMPARISONS = [
   { name: '稻荷環球食品', score: 95, grade: 'A+', type: 'CloudPipe 客戶' },
   { name: 'After School Coffee', score: 97, grade: 'A+', type: 'CloudPipe 客戶' },
   { name: 'Mind Coffee', score: 90, grade: 'A', type: 'CloudPipe 客戶' },
-  { name: 'MGM 澳門', score: 25, grade: 'F', type: '六大博企' },
-  { name: '威尼斯人', score: 28, grade: 'F', type: '六大博企' },
-  { name: '永利澳門', score: 49, grade: 'D', type: '六大博企' },
+  { name: '澳門大型企業 A', score: 25, grade: 'F', type: '大型企業平均' },
+  { name: '澳門大型企業 B', score: 28, grade: 'F', type: '大型企業平均' },
+  { name: '澳門大型企業 C', score: 49, grade: 'D', type: '大型企業平均' },
 ]
 
 export default function PricingPage() {
@@ -94,7 +94,7 @@ export default function PricingPage() {
           讓 AI 和搜尋引擎<br />都看見你的生意
         </h1>
         <p style={{ fontSize: 16, color: '#666', maxWidth: 600, margin: '0 auto' }}>
-          AEO + SEO + GEO 三維優化 — 澳門唯一專注 AI 搜索引擎可見度的平台
+          AEO + SEO + GEO 三維優化 — 澳門專注 AI 搜索引擎可見度的服務
         </p>
       </div>
 
@@ -193,8 +193,8 @@ export default function PricingPage() {
       <div style={{ maxWidth: 700, margin: '0 auto 48px' }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', margin: '0 0 24px' }}>常見問題</h2>
         {[
-          { q: '什麼是 AEO？為什麼重要？', a: 'AEO（AI Engine Optimization）是讓你的網站被 ChatGPT、Perplexity、Claude 等 AI 搜索引擎看見的優化技術。2026 年超過 40% 的搜尋流量來自 AI，但澳門 95% 的企業完全沒有 AEO。' },
-          { q: '多久能看到效果？', a: 'llms.txt 和 Schema.org 加上後，通常 1-2 週內 AI 爬蟲就會開始訪問。我們的客戶平均 2 週內 AI 可見度提升 40%+。' },
+          { q: '什麼是 AEO？為什麼重要？', a: 'AEO（AI Engine Optimization）是讓你的網站被 ChatGPT、Perplexity、Claude 等 AI 搜索引擎看見的優化技術。愈來愈多搜尋流量來自 AI，但大部分澳門企業仍未做 AEO。' },
+          { q: '多久能看到效果？', a: 'llms.txt 和 Schema.org 加上後，通常 1-2 週內 AI 爬蟲就會開始訪問。我們協助品牌逐步提升 AI 可見度。' },
           { q: '跟傳統 SEO 有什麼不同？', a: '傳統 SEO 只管 Google 排名。CloudPipe 同時管 AEO（AI 搜索）+ SEO（Google）+ GEO（本地搜索），三維一體。而且我們有 AI 爬蟲即時追蹤，能看到哪個 AI bot 在訪問你。' },
           { q: '免費掃描有什麼限制？', a: '完全沒有！掃描結果包含 18 項檢查 + 修復建議 + 一鍵生成修復檔案。付費方案提供持續監控和 AI 顧問。' },
         ].map(faq => (

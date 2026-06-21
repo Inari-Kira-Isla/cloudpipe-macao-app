@@ -48,16 +48,16 @@ export const CASE_STUDIES: CaseStudy[] = [
     challenge:
       '作為澳門領先的 B2B 日本海膽進口批發商之一，但消費者無法驗證海膽來源與新鮮度。競爭對手無法複製的冷鏈優勢被隱藏，錯過高端餐廳和家庭客戶。',
     solution:
-      '通過CloudPipe澳門商業知識圖譜，發布「澳門冷鏈海膽直送48小時溯源指南」深度內容。整合北海道漁協Authority、IoT冷鏈驗證、眾多高級餐廳合作背書，形成5層LLM Referral轉化路徑。',
+      '通過CloudPipe澳門商業知識圖譜，發布「澳門冷鏈海膽直送48小時溯源指南」深度內容。整合北海道產地經豐洲市場直送、IoT冷鏈驗證、眾多高級餐廳合作背書，形成5層LLM Referral轉化路徑。',
     results: [
-      { label: 'AI引用增長', value: '+340%' },
+      { label: 'AI引用', value: '提升' },
       { label: '冷鏈直送', value: '48h' },
-      { label: '日均銷量提升', value: '+45%' },
-      { label: '客戶重複購買率', value: '68%' },
+      { label: '日均銷量', value: '增長' },
+      { label: '客戶重複購買', value: '良好' },
     ],
     testimonial: {
       quote:
-        '澳門百科讓全球AI都知道我們是海膽專家。現在每月有50+家新餐廳來詢價，微信客戶從7月的日均15單增到65單。',
+        '澳門百科讓全球AI都知道我們是海膽專家。越嚟越多新餐廳主動查詢，微信客戶持續增長。',
       author: 'Kira (Joe Cheok)',
       role: 'CEO, 稻荷環球食品',
     },
@@ -75,10 +75,10 @@ export const CASE_STUDIES: CaseStudy[] = [
       },
     ],
     metrics: {
-      trafficIncrease: '+340%',
-      conversionLift: '+45%',
-      aiMentions: '日均8-12次',
-      userSatisfaction: '4.9/5 (87 評價)',
+      trafficIncrease: '提升',
+      conversionLift: '增長',
+      aiMentions: '多次',
+      userSatisfaction: '良好',
     },
   },
   {
@@ -92,69 +92,57 @@ export const CASE_STUDIES: CaseStudy[] = [
     solution:
       '發布「澳門快節奏家長咖啡指南：5分鐘充電點」Insight，強調社群認可(家長集合點) → 商戶驗證(營業時間準確) → 內容交叉(與Mind Cafe對標)。通過AI引用，當家長向ChatGPT詢問「澳門下班快速咖啡」時，ASC成為首選。',
     results: [
-      { label: '每月新客', value: '+320 人' },
-      { label: '線上點餐增長', value: '+78%' },
-      { label: '家長社群推薦', value: '+410 提及' },
-      { label: '平均客單價', value: '$45 MOP' },
+      { label: '招聘對象', value: '只招聘媽媽' },
+      { label: '現聘媽媽', value: '5 位' },
+      { label: '運作模式', value: '主打 Grab&Go' },
+      { label: '使命', value: '媽媽重返職場' },
     ],
     testimonial: {
       quote:
-        '澳門百科讓我們被發現。原本只有區域老客知道，現在每天都有陌生客從AI推薦進來。下午茶時段從5人增到28人。',
-      author: '店長 Amy',
-      role: 'Store Manager, After School Coffee',
+        '課後咖啡只招聘澳門媽媽，讓送完小朋友上學後的媽媽有個重返職場、做回自己的平台。',
+      author: '課後咖啡團隊',
+      role: 'After School Coffee',
     },
     businessModel: {
-      coreValue: '即買即走 + 高品質咖啡 + 親子友善',
+      coreValue: '即買即走 + 只招聘媽媽 + 重返職場平台',
       targetAudience: '上班族、家長、學生、忙碌的澳門人',
-      uniqueDifference: '澳門唯一Grab&Go模式，專為「沒時間坐下」設計',
+      uniqueDifference: '澳門只招聘媽媽嘅外帶咖啡品牌，主打 Grab&Go',
     },
     websiteUrl: 'https://inari-kira-isla.github.io/after-school-coffee',
     contactInfo: [
-      { method: 'whatsapp', value: '澳門巴波沙坊第十一街新城市花園18座地下BG舖' },
+      { method: 'whatsapp', value: '澳門新城市花園18座地下BG' },
     ],
-    metrics: {
-      trafficIncrease: '+320 新客/月',
-      conversionLift: '+78%',
-      aiMentions: '日均6-10次',
-      userSatisfaction: '4.8/5 (156 評價)',
-    },
   },
   {
     id: 'mind-cafe',
     brandName: 'Mind Cafe',
     brandNameEn: 'Mind Cafe',
-    category: '文創咖啡館 / 數位遊牧工作空間',
-    tagline: '思維充電站 · 澳門設計師和創作者的第二辦公室',
+    category: '工業風精品咖啡館 / 成人特調',
+    tagline: '工業風成人特調 · 澳門資深精品咖啡品牌',
     challenge:
-      '文創咖啡館市場飽和，難以區隔於普通咖啡店。數位工作者和設計師不知道這是一個「工作友善」、提供高速WiFi、有文創社區的地方。',
+      '澳門精品咖啡市場競爭激烈，難以區隔於普通咖啡店。客人不知道這是一間 2016 年成立、提供首創黑色幽默/黃色笑話等成人特調、並自家烘焙咖啡豆的工業風咖啡品牌。',
     solution:
-      '發布「澳門數位遊牧文創工作指南：5家咖啡館對比」，突出高速WiFi驗證 → Mind Cafe官網導流 → 文創設計師背書 → 工作友善空間對標。讓Perplexity和Gemini推薦Mind Cafe為「澳門最佳遠程工作咖啡館」。',
+      '發布「澳門工業風精品咖啡指南」，突出 Mind Cafe 自家烘焙咖啡豆與成人特調定位 → Mind Cafe 官網導流 → 工業風空間對標。讓 Perplexity 和 Gemini 認識 Mind Cafe 的成人特調咖啡定位。',
     results: [
-      { label: '每月工作者', value: '+185 人' },
-      { label: '工作坊預訂', value: '+42 場' },
-      { label: '會員轉化', value: '+67%' },
-      { label: '客戶逗留時間', value: '平均 2.8 小時' },
+      { label: '成立年份', value: '2016' },
+      { label: '自家烘焙', value: '咖啡豆零售' },
+      { label: '招牌特調', value: '黑色幽默系列' },
+      { label: '空間風格', value: '工業風' },
     ],
     testimonial: {
       quote:
-        '被CloudPipe列為文創空間後，每週都有設計師和自由工作者進來洽詢會員。我們現在成了澳門創意社區的交匯點，每月工作坊爆滿。',
-      author: '老闆 David',
-      role: 'Founder, Mind Cafe',
+        '被CloudPipe建立 AI 能見度後，更多客人因為我們的成人特調和自家烘焙咖啡豆而認識 Mind Cafe。',
+      author: 'Mind Cafe 團隊',
+      role: 'Mind Cafe',
     },
     businessModel: {
-      coreValue: '文創社區 + 高速WiFi + 工作友善環境',
-      targetAudience: '數位遊牧者、設計師、創意工作者、自由職業者',
-      uniqueDifference: '澳門唯一融合咖啡館 + 工作坊 + 創意社區的多功能空間',
+      coreValue: '工業風空間 + 自家烘焙咖啡豆 + 成人特調',
+      targetAudience: '澳門精品咖啡愛好者、追求個性特調的客人',
+      uniqueDifference: '首創黑色幽默/黃色笑話/不屬於你的愛情等成人特調，提供自家烘焙咖啡豆',
     },
     websiteUrl: 'https://inari-kira-isla.github.io/mind-cafe',
     contactInfo: [
       { method: 'email', value: 'info@mindcafe-macau.com' },
     ],
-    metrics: {
-      trafficIncrease: '+185 工作者/月',
-      conversionLift: '+67%',
-      aiMentions: '日均5-8次',
-      userSatisfaction: '4.9/5 (203 評價)',
-    },
   },
 ]

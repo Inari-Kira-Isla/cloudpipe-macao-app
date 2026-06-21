@@ -5,12 +5,12 @@ import { useState, useEffect, useRef } from 'react'
 const WA_BASE = 'https://wa.me/85362823037'
 const WA = (msg: string) => `${WA_BASE}?text=${encodeURIComponent(msg)}`
 
-function nextMondays(count = 4): string[] {
+function nextSaturdays(count = 4): string[] {
   const slots: string[] = []
   const d = new Date()
   for (let i = 0; slots.length < count; i++) {
     d.setDate(d.getDate() + 1)
-    if (d.getDay() === 1) {
+    if (d.getDay() === 6) {
       slots.push(d.toLocaleDateString('zh-HK', { month: 'long', day: 'numeric', weekday: 'short' }))
     }
   }
@@ -36,7 +36,7 @@ export default function CartPage() {
   const orderNoRef = useRef(`DRP-${Math.floor(Math.random() * 9000 + 1000)}`)
 
   useEffect(() => {
-    const d = nextMondays(4)
+    const d = nextSaturdays(4)
     setDates(d)
 
     // Read cart from URL params (set by main page) or localStorage
@@ -44,9 +44,9 @@ export default function CartPage() {
     const fromUrl: CartItem | null = p.get('name')
       ? {
           size: p.get('size') || 'wood',
-          name: decodeURIComponent(p.get('name') || '木板海膽'),
-          weight: decodeURIComponent(p.get('weight') || '100g'),
-          price: parseInt(p.get('price') || '308'),
+          name: decodeURIComponent(p.get('name') || '馬糞海膽'),
+          weight: decodeURIComponent(p.get('weight') || '180g'),
+          price: parseInt(p.get('price') || '328'),
           qty: 1,
         }
       : null
@@ -55,7 +55,7 @@ export default function CartPage() {
       try { return JSON.parse(localStorage.getItem('sue_cart') || 'null') } catch { return null }
     })()
 
-    setItem(fromUrl || fromStorage || { size: 'wood', name: '木板海膽', weight: '100g', price: 308, qty: 1 })
+    setItem(fromUrl || fromStorage || { size: 'wood', name: '馬糞海膽', weight: '180g', price: 328, qty: 1 })
     setForm(f => ({ ...f, delivery_day: d[0] || '' }))
   }, [])
 
@@ -211,7 +211,7 @@ export default function CartPage() {
               required
               style={inputStyle}
             />
-            <div style={{ marginTop: 6, fontSize: 11, color: '#555', fontFamily: 'JetBrains Mono, monospace' }}>澳門全區免費配送</div>
+            <div style={{ marginTop: 6, fontSize: 11, color: '#555', fontFamily: 'JetBrains Mono, monospace' }}>澳門全區配送 · 配送費 MOP$50-100（視地區）</div>
           </Field>
 
           {/* Delivery Day */}
@@ -311,7 +311,7 @@ export default function CartPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {[
                   ['小計 SUBTOTAL', `MOP$ ${total.toLocaleString()}`],
-                  ['配送 DELIVERY', '免費 FREE'],
+                  ['配送 DELIVERY', 'MOP$50-100（另計）'],
                   ['付款 PAYMENT', 'MBway / 轉數快 / 現金'],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.06em' }}>
