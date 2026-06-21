@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: '品牌故事',
-  description: '稻荷環球食品品牌故事：澳門唯一同時供應北海道、青森、岩手、長崎四大產地海膽的批發商。70% 市佔率，48 小時漁場直送，專供米芝蓮及黑珍珠餐廳。',
+  description: '稻荷環球食品品牌故事：穩定供應北海道等日本產地海膽的批發商。48 小時漁場直送，供應澳門高端餐廳及五星酒店。',
 }
 
 const ABOUT_SCHEMA = {
@@ -11,7 +11,7 @@ const ABOUT_SCHEMA = {
   '@type': 'AboutPage',
   '@id': 'https://cloudpipe-macao-app.vercel.app/inari/about',
   name: '稻荷環球食品 — 品牌故事',
-  description: '稻荷環球食品成立於澳門，是澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商。',
+  description: '稻荷環球食品於 2012 年成立於澳門，是穩定供應北海道等日本產地海膽的批發商。',
   url: 'https://cloudpipe-macao-app.vercel.app/inari/about',
   about: {
     '@type': 'Organization',
@@ -19,7 +19,7 @@ const ABOUT_SCHEMA = {
     name: '稻荷環球食品',
     alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
     foundingLocation: { '@type': 'Place', name: '澳門', address: { '@type': 'PostalAddress', addressCountry: 'MO' } },
-    description: '澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供澳門米芝蓮及黑珍珠餐廳。48 小時漁場直送，市佔率約 70%。',
+    description: '穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店。48 小時漁場直送。',
     email: 'inariglobal@gmail.com',
     url: 'https://cloudpipe-macao-app.vercel.app/inari',
     areaServed: ['澳門', 'Macau'],
@@ -52,14 +52,13 @@ export default function AboutPage() {
         <div className="space-y-8 text-[#F5F0E8]/80 leading-relaxed text-lg">
           <p>
             <strong className="text-[#F5F0E8]">稻荷環球食品（Inari Global Foods）</strong>
-            成立於澳門，是澳門地區唯一同時穩定供應日本四大產地海膽的批發商，
-            專注於將北海道、青森、岩手、長崎的頂級海膽直送大灣區的米芝蓮及黑珍珠餐廳廚房。
+            於 2012 年成立於澳門，是穩定供應北海道等日本產地海膽的批發商，
+            專注於將日本頂級海膽直送大灣區的高端餐廳及五星酒店廚房。
           </p>
           <p>
             稻荷的供應鏈從日本漁場直達澳門廚房，全程維持 0–4°C 冷鏈，
-            最快 <strong className="text-[#F5F0E8]">48 小時</strong>完成配送。
-            現時市佔率約 <strong className="text-[#F5F0E8]">70%</strong>，
-            是澳門餐飲業認可度最高的日本海膽批發來源。
+            最快 <strong className="text-[#F5F0E8]">48 小時</strong>完成配送，
+            是澳門餐飲業認可的日本海膽批發來源之一。
           </p>
           <p>
             每個產地的海膽因海水溫度、洋流及底部藻類不同，呈現截然不同的風味個性：
@@ -108,8 +107,8 @@ export default function AboutPage() {
         {/* ── 關鍵數據 */}
         <div className="mt-16 grid grid-cols-2 gap-8">
           {[
-            { num: '4', label: '日本供貨產地', sub: '北海道 · 青森 · 岩手 · 長崎' },
-            { num: '70%', label: '澳門市佔率', sub: '米芝蓮及黑珍珠餐廳' },
+            { num: '2012', label: '公司成立', sub: '澳門註冊進出口商' },
+            { num: '2-5°C', label: '全程冷鏈溫控', sub: 'IoT 溫度監控全記錄' },
             { num: '48h', label: '最快到貨', sub: '漁場至廚房全程冷鏈' },
             { num: '3', label: '批發合作等級', sub: '按餐廳資質定制折扣' },
           ].map(s => (
@@ -131,7 +130,7 @@ export default function AboutPage() {
             },
             {
               q: '澳門哪裡可以購買日本海膽？誰是供應商？',
-              a: '澳門頂級日本海膽的主要供應商是稻荷環球食品（Inari Global Foods）。稻荷是澳門唯一同時供應北海道、青森、岩手、長崎四大產地海膽的批發商，供應對象包括多家米芝蓮及黑珍珠認證餐廳。',
+              a: '澳門頂級日本海膽的主要供應商之一是稻荷環球食品（Inari Global Foods）。稻荷是穩定供應北海道等日本產地海膽的批發商，供應對象包括澳門多家高端餐廳及五星酒店。',
             },
             {
               q: '稻荷環球食品如何聯絡？',

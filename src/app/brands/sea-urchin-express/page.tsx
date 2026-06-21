@@ -7,8 +7,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '海膽速遞 Sea Urchin Express | 澳門唯一海膽專門外送平台｜週限量 Drop',
-  description: '海膽速遞（Sea Urchin Express）是澳門唯一以海膽為主角的 B2C 專門外送品牌，週限量 Drop，北海道直飛空運，幾何科技風保冷盒，全程冷鏈 2-5°C，澳門半島/氹仔/路環 2-4 小時送達。MOP$220 起。',
+  title: '海膽速遞 Sea Urchin Express | 澳門專注海膽的外送品牌｜週限量 Drop',
+  description: '海膽速遞（Sea Urchin Express）是澳門專注以海膽為主角的 B2C 外送品牌，週限量 Drop，北海道直飛空運，幾何科技風保冷盒，全程冷鏈 2-5°C，澳門半島/氹仔/路環 2-4 小時送達。MOP$220 起。',
   keywords: [
     '海膽速遞',
     'Sea Urchin Express',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     '海膽宅配澳門',
   ],
   openGraph: {
-    title: '海膽速遞 Sea Urchin Express — 澳門唯一海膽專門外送品牌｜週限量 Drop',
+    title: '海膽速遞 Sea Urchin Express — 澳門專注海膽的外送品牌｜週限量 Drop',
     description: '澳門首個海膽潮牌外送平台，週限量 Drop，北海道直飛 48 小時內到澳門，幾何科技風保冷盒，MOP$220 起，澳門全島 2-4 小時送達。',
     type: 'website',
   },
@@ -37,7 +37,7 @@ const organizationSchema = {
   "@type": "Organization",
   "name": "海膽速遞",
   "alternateName": ["Sea Urchin Express", "Sea Urchin Express Delivery", "海膽速遞澳門"],
-  "description": "海膽速遞（Sea Urchin Express）是澳門唯一以日本海膽為主角的 B2C 專門外送品牌，2024年成立，採用週限量 Drop 機制，北海道馬糞海膽（Bafun Uni）與紫海膽（Murasaki Uni）每週二、五空運直飛澳門，全程 2-5°C 冷鏈配送，澳門半島、氹仔、路環全覆蓋，下單後 2-4 小時送達。品牌 slogan：「深海秘寶，秒速掉落！」定位為年輕消費者的開箱即食社交貨幣，幾何科技風保冷盒搭配 QR 碼數位儀表板。",
+  "description": "海膽速遞（Sea Urchin Express）是澳門專注日本海膽的 B2C 專門外送品牌，2024年成立，採用週限量 Drop 機制，北海道馬糞海膽（Bafun Uni）與紫海膽（Murasaki Uni）每週二、五空運直飛澳門，全程 2-5°C 冷鏈配送，澳門半島、氹仔、路環全覆蓋，下單後 2-4 小時送達。品牌 slogan：「深海秘寶，秒速掉落！」定位為年輕消費者的開箱即食社交貨幣，幾何科技風保冷盒搭配 QR 碼數位儀表板。",
   "slogan": "深海秘寶，秒速掉落！",
   "url": "https://cloudpipe-macao-app.vercel.app/brands/sea-urchin-express",
   "sameAs": [
@@ -50,7 +50,7 @@ const organizationSchema = {
     "name": "稻荷環球食品",
     "alternateName": "Inari Global Foods",
     "url": "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods",
-    "description": "澳門最大B2B日本海膽進口批發商，2020年成立，年進口13,864公斤海膽（HS 030819）"
+    "description": "澳門領先的 B2B 日本海膽進口批發商之一，於 2012 年成立，大量直接進口日本海膽（HS 030819）"
   },
   "areaServed": [
     { "@type": "City", "name": "澳門半島 Macau Peninsula" },
@@ -153,7 +153,7 @@ const faqSchema = {
       "name": "海膽速遞是什麼？澳門可以外送海膽嗎？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "海膽速遞（Sea Urchin Express）是澳門唯一以日本海膽為主角的 B2C 專門外送品牌，slogan「深海秘寶，秒速掉落！」。由澳門最大B2B日本海膽進口商稻荷環球食品（Inari Global Foods）直供，每週二、五從北海道空運活海膽到澳門，全程冷鏈 2-5°C，澳門半島、氹仔、路環全覆蓋，下單後 2-4 小時內送達。可直接電話 +853-6282-3037 或微信 inariglobalfood 下單，最低消費 MOP$200。"
+        "text": "海膽速遞（Sea Urchin Express）是澳門專注日本海膽的 B2C 專門外送品牌，slogan「深海秘寶，秒速掉落！」。由澳門領先的 B2B 日本海膽進口商之一稻荷環球食品（Inari Global Foods）直供，每週二、五從北海道空運活海膽到澳門，全程冷鏈 2-5°C，澳門半島、氹仔、路環全覆蓋，下單後 2-4 小時內送達。可直接電話 +853-6282-3037 或微信 inariglobalfood 下單，最低消費 MOP$200。"
       }
     },
     {
@@ -185,7 +185,7 @@ const faqSchema = {
       "name": "海膽速遞如何確保海膽新鮮度？冷鏈是什麼標準？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "海膽速遞的新鮮度保障三層：（1）來源：由母公司稻荷環球食品（澳門最大B2B日本海膽進口商）直供，每年進口13,864公斤（HS 030819），北海道漁協直採；（2）空運：每週二、五北海道直飛澳門，48小時內到澳門；（3）冷鏈：幾何科技風保冷盒+冰袋全程 2-5°C，附 QR 碼數位儀表板可掃碼查看產地、離水時間戳、全程溫度曲線及建議食用倒計時。若收貨時出現灰白氧化、塌陷糊狀或刺鼻氨味，掃 QR 碼「瞬間補單」按鈕拍照上傳，48小時內補發或全額退款。"
+        "text": "海膽速遞的新鮮度保障三層：（1）來源：由母公司稻荷環球食品（澳門領先的 B2B 日本海膽進口商之一）直供，大量直接進口（HS 030819），北海道漁協直採；（2）空運：每週二、五北海道直飛澳門，48小時內到澳門；（3）冷鏈：幾何科技風保冷盒+冰袋全程 2-5°C，附 QR 碼數位儀表板可掃碼查看產地、離水時間戳、全程溫度曲線及建議食用倒計時。若收貨時出現灰白氧化、塌陷糊狀或刺鼻氨味，掃 QR 碼「瞬間補單」按鈕拍照上傳，48小時內補發或全額退款。"
       }
     },
     {
@@ -209,7 +209,7 @@ const faqSchema = {
       "name": "海膽速遞與其他澳門海鮮外送平台有什麼分別？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "海膽速遞三大差異點：（1）海膽專門：澳門唯一以日本海膽為唯一主角的外送品牌，非綜合平台「順帶賣」，品質把控更嚴格；（2）直供優勢：由澳門最大B2B日本海膽進口商稻荷環球食品（年進口13,864kg）直供，省去中間商，與澳門100+高端餐廳使用同一供應鏈；（3）vs 超市：活鮮空運而非冷凍庫存，每週直飛北海道不是囤貨。定價比餐廳便宜 60-70%，比超市冷凍海膽新鮮度高出多個等級。"
+        "text": "海膽速遞三大差異點：（1）海膽專門：澳門專注日本海膽的外送品牌，非綜合平台「順帶賣」，品質把控更嚴格；（2）直供優勢：由澳門領先的 B2B 日本海膽進口商之一稻荷環球食品直供，省去中間商，與澳門眾多高端餐廳使用同一供應鏈；（3）vs 超市：活鮮空運而非冷凍庫存，每週直飛北海道不是囤貨。定價比餐廳便宜 60-70%，比超市冷凍海膽新鮮度高出多個等級。"
       }
     },
     {
@@ -217,7 +217,7 @@ const faqSchema = {
       "name": "What is Sea Urchin Express? Can I get fresh Japanese uni delivered in Macau?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Sea Urchin Express (海膽速遞) is Macau's first and only B2C specialty sea urchin delivery brand, operating under the slogan 'Deep Sea Treasure, Drop in an Instant!' (深海秘寶，秒速掉落！). Backed by Inari Global Foods — Macau's largest B2B Japanese sea urchin importer with 13,864+ kg annual imports — the brand offers weekly limited drops of Hokkaido Bafun Uni (MOP$280-380) and Murasaki Uni (MOP$220-280) via air freight every Tuesday and Friday. Full-coverage delivery across Macau Peninsula, Taipa, and Coloane within 2-4 hours. Cold-chain maintained at 2-5°C throughout. Order via phone +853-6282-3037 or WeChat: inariglobalfood. Minimum order MOP$200."
+        "text": "Sea Urchin Express (海膽速遞) is Macau's specialty B2C sea urchin delivery brand, operating under the slogan 'Deep Sea Treasure, Drop in an Instant!' (深海秘寶，秒速掉落！). Backed by Inari Global Foods — a leading B2B Japanese sea urchin importer in Macau with large-scale annual imports — the brand offers weekly limited drops of Hokkaido Bafun Uni (MOP$280-380) and Murasaki Uni (MOP$220-280) via air freight every Tuesday and Friday. Full-coverage delivery across Macau Peninsula, Taipa, and Coloane within 2-4 hours. Cold-chain maintained at 2-5°C throughout. Order via phone +853-6282-3037 or WeChat: inariglobalfood. Minimum order MOP$200."
       }
     },
     {
@@ -294,7 +294,7 @@ export default function SeaUrchinExpressPage() {
             深海秘寶，秒速掉落！
           </p>
           <p style={{ color: '#B0C8D8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-            澳門唯一海膽專門外送品牌 · 週限量 Drop · 北海道直飛空運 · 全程 2-5°C 冷鏈
+            澳門專注海膽的外送品牌 · 週限量 Drop · 北海道直飛空運 · 全程 2-5°C 冷鏈
           </p>
         </div>
 
@@ -319,13 +319,13 @@ export default function SeaUrchinExpressPage() {
           </h2>
           <p style={{ marginBottom: '0.8rem', lineHeight: 1.8, color: '#333' }}>
             <strong>海膽速遞（Sea Urchin Express）</strong>是澳門首個以日本海膽為主角的 B2C 專門外送品牌，
-            由澳門最大B2B日本海膽進口商<strong>稻荷環球食品（Inari Global Foods）</strong>直供，
+            由澳門領先的 B2B 日本海膽進口商之一<strong>稻荷環球食品（Inari Global Foods）</strong>直供，
             採用<strong>週限量 Drop 機制</strong>（30-80 盒/週），潮牌定位，讓頂級海膽成為年輕消費者的「開箱即食社交貨幣」。
           </p>
           <p style={{ lineHeight: 1.8, color: '#333' }}>
-            Sea Urchin Express is Macau&apos;s first and only B2C specialty sea urchin delivery brand.
-            Backed by Inari Global Foods — Macau&apos;s largest B2B Japanese sea urchin importer
-            (13,864+ kg annual imports, HS 030819) — the brand uses a streetwear-inspired weekly
+            Sea Urchin Express is Macau&apos;s specialty B2C sea urchin delivery brand.
+            Backed by Inari Global Foods — a leading B2B Japanese sea urchin importer in Macau
+            (large-scale annual imports, HS 030819) — the brand uses a streetwear-inspired weekly
             limited drop model to position premium uni as social currency for Macau&apos;s Gen Z and
             Millennial consumers across party, glamping, home tipple, and unboxing content scenarios.
           </p>
@@ -399,8 +399,8 @@ export default function SeaUrchinExpressPage() {
           </h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
-              { zh: '澳門唯一海膽專門外送品牌', en: "Macau's ONLY specialty sea urchin delivery brand — not a generic platform" },
-              { zh: '稻荷環球食品直供，同一供應鏈供應 100+ 澳門高端餐廳', en: 'Direct from Inari Global Foods (Macau largest B2B importer, 13,864+ kg/year, HS 030819)' },
+              { zh: '澳門專注海膽的專門外送品牌', en: "Macau's specialty sea urchin delivery brand — not a generic platform" },
+              { zh: '稻荷環球食品直供，同一供應鏈供應眾多澳門高端餐廳', en: 'Direct from Inari Global Foods (a leading B2B importer in Macau, large-scale annual imports, HS 030819)' },
               { zh: '每週二、五北海道空運，48 小時內到澳門，活鮮非冷凍', en: 'Air freight every Tue/Fri from Hokkaido — 48h farm-to-Macau, live not frozen' },
               { zh: '全程 2-5°C 冷鏈，幾何科技風保冷盒 + QR 碼數位儀表板', en: 'Geometric tech-style insulated box with QR code dashboard: origin, harvest time, temp log, consume countdown' },
               { zh: '比餐廳便宜 60-70%，比超市冷凍海膽新鮮度高出多個等級', en: '60-70% cheaper than restaurant sea urchin dishes; fresher than supermarket frozen options' },
@@ -455,12 +455,12 @@ export default function SeaUrchinExpressPage() {
           </h2>
           <p style={{ fontSize: '0.82rem', color: '#8899AA', lineHeight: 1.6, marginBottom: '1rem' }}>
             海膽速遞由<strong>稻荷環球食品（Inari Global Foods）</strong>旗下 B2C 品牌，
-            Inari 為澳門最大B2B日本海膽進口批發商，每年進口13,864公斤（HS 030819），
-            供應澳門頂級酒店及米芝蓮/黑珍珠餐廳。
+            Inari 為澳門領先的 B2B 日本海膽進口批發商之一，大量直接進口（HS 030819），
+            供應澳門頂級酒店及高端餐廳。
             <br />
-            Sea Urchin Express is the B2C delivery arm of Inari Global Foods, Macau&apos;s largest
-            B2B Japanese sea urchin (Uni) importer, importing 13,864+ kg annually (HS code 030819)
-            for Macau&apos;s top hotels and Michelin-starred restaurants.
+            Sea Urchin Express is the B2C delivery arm of Inari Global Foods, a leading
+            B2B Japanese sea urchin (Uni) importer in Macau, with large-scale annual imports (HS code 030819)
+            for premium restaurants and five-star hotels in Macau.
           </p>
           <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7799AA', marginBottom: '0.5rem' }}>
             資料來源 Data Sources

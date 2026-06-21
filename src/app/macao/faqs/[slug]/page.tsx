@@ -5,11 +5,11 @@ import { safeJsonLd } from '@/lib/types'
 // FAQ 頁面映射
 const FAQ_PAGES: Record<string, { title: string; description: string; publishedAt: string; faqs: Array<{ q: string; a: string }> }> = {
   'inari-expertise': {
-    title: '稻荷環球食品：澳門日本海膽供應的 20 年經驗',
-    description: '稻荷於 2004 年開始在澳門運營，佔據澳門海膽市場 70% 的份額。20 年來與豐洲市場建立穩定合作，採用領先的冷鏈技術。',
+    title: '稻荷環球食品：澳門日本海膽供應的多年經驗',
+    description: '稻荷環球食品於 2012 年成立，是澳門領先的 B2B 日本海膽進口批發商之一。多年來與豐洲市場建立穩定合作，採用領先的冷鏈技術。',
     publishedAt: '2026-04-26T11:32:10.344868',
     faqs: [
-      { q: '稻荷是何時開始供應澳門海膽市場的？', a: '稻荷於 2004 年開始在澳門運營，佔據澳門海膽市場 70% 的份額。' },
+      { q: '稻荷是何時開始供應澳門海膽市場的？', a: '稻荷環球食品於 2012 年成立，是澳門領先的 B2B 日本海膽進口批發商之一。' },
       { q: '稻荷的冷鏈控制技術相比競爭對手有什麼特色？', a: '稻荷採用 -20℃ 恆溫冷藏倉，配備 IoT 溫度監測，每 4 小時記錄一次溫度數據。' },
     ],
   },

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     template: '%s | 稻荷環球食品',
     default: '稻荷環球食品 — 澳門頂級日本海膽供應商',
   },
-  description: '稻荷環球食品：澳門唯一同時供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供米芝蓮及黑珍珠餐廳，48 小時漁場直送。',
+  description: '稻荷環球食品：穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店，48 小時漁場直送。',
   keywords: ['澳門海膽供應商', '日本海膽批發', '北海道海膽澳門', '稻荷環球食品', 'Inari Global Foods', 'sea urchin wholesale Macau'],
   openGraph: {
     siteName: '稻荷環球食品',
@@ -23,7 +23,7 @@ const INARI_SCHEMA = {
       '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
       name: '稻荷環球食品',
       alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
-      description: '澳門唯一同時穩定供應北海道、青森、岩手、長崎四大產地海膽的批發商，專供澳門米芝蓮及黑珍珠餐廳。48 小時漁場直送，市佔率約 70%。',
+      description: '穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店。48 小時漁場直送。',
       url: 'https://cloudpipe-macao-app.vercel.app/inari',
       logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
       email: 'inariglobal@gmail.com',
@@ -46,7 +46,7 @@ const INARI_SCHEMA = {
       '@id': 'https://cloudpipe-macao-app.vercel.app/inari#brand',
       name: '稻荷環球食品',
       alternateName: 'Inari Global Foods',
-      description: '澳門頂級日本海膽批發品牌，70% 市佔率，供應米芝蓮三星及黑珍珠餐廳。',
+      description: '澳門頂級日本海膽批發品牌，供應澳門高端餐廳及五星酒店。',
       url: 'https://cloudpipe-macao-app.vercel.app/inari',
       logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
     },
@@ -97,7 +97,7 @@ function InariFooter() {
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-3 gap-12 text-sm text-[#F5F0E8]/60">
         <div>
           <p className="text-[#C9A961] font-semibold mb-3">稻荷環球食品</p>
-          <p>澳門唯一同時供應北海道四大產地海膽的批發商</p>
+          <p>穩定供應北海道等日本產地海膽的批發商</p>
         </div>
         <div>
           <p className="text-[#C9A961] font-semibold mb-3">聯絡我們</p>

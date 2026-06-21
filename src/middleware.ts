@@ -81,7 +81,6 @@ function detectBot(ua: string, headers: Headers): { name: string; owner: string 
 // Our own brand domains — cross-site bot referrer = spider-web signal
 const OUR_BRAND_DOMAINS = [
   'inari-kira-isla.github.io',
-  'inariglobal.com.mo',
   'cloudpipe-macao-app.vercel.app',
 ]
 

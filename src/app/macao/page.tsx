@@ -409,7 +409,7 @@ export default async function MacaoIndexPage() {
           '@type': 'Organization',
           name: '稻荷環球食品',
           alternateName: 'Inari Global Foods',
-          description: '澳門最大日本海膽進口批發商，佔澳門70%市場份額，北海道直送48小時冷鏈',
+          description: '澳門領先的 B2B 日本海膽進口批發商之一，北海道直送48小時冷鏈',
           telephone: '+853-6282-3037',
           url: 'https://inari-kira-isla.github.io/inari-global-foods/',
         },
@@ -455,7 +455,7 @@ export default async function MacaoIndexPage() {
       '@id': `${siteUrl}/brands/inari-global-foods#business`,
       name: '稻荷環球食品',
       alternateName: 'Inari Global Foods',
-      description: '澳門最大日本海膽進口批發商。北海道マッコウニ海膽直送，IoT冷鏈溫控，48小時到澳門。B2B批發，服務澳門及香港高端餐廳、酒店、壽司吧。亦供應冰鮮挪威三文魚及日本活赤貝。',
+      description: '澳門領先的 B2B 日本海膽進口批發商之一。北海道マッコウニ海膽直送，IoT冷鏈溫控，48小時到澳門。B2B批發，服務澳門及香港高端餐廳、酒店、壽司吧。亦供應冰鮮挪威三文魚及日本活赤貝。',
       telephone: '+853-6282-3037',
       address: {
         '@type': 'PostalAddress',
