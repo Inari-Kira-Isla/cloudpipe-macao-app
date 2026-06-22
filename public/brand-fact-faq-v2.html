@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商戶 Fact 確認問卷 v2</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a212b; --panel2:#222c38; --line:#2e3a48;
+    --txt:#e8edf2; --mut:#8b97a6; --acc:#3ba3ff; --ok:#34c77b; --warn:#f5a623;
+    --bad:#ff6b6b; --hi:#ff3b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.55;font-size:15px}
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#11171f 0%,#11171fee 100%);
+    border-bottom:1px solid var(--line);padding:12px 16px;backdrop-filter:blur(6px)}
+  h1{margin:0 0 2px;font-size:18px}
+  .sub{color:var(--mut);font-size:12px}
+  .wrap{max-width:880px;margin:0 auto;padding:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .card h2{margin:0 0 10px;font-size:16px}
+  label.fld{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}
+  input[type=text],input[type=date],textarea,select{
+    width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    color:var(--txt);padding:9px 10px;font-size:14px;font-family:inherit}
+  textarea{min-height:90px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .req{color:var(--bad)}
+  /* nav */
+  .nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .nav button{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .nav button.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .nav button.done{border-color:var(--ok)}
+  /* progress */
+  .progwrap{margin:8px 0}
+  .progbar{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden}
+  .progfill{height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--acc));transition:width .25s}
+  .progtxt{font-size:12px;color:var(--mut);margin-top:4px}
+  /* toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .toolbar button{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+  .toolbar button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .toolbar button.ok{background:var(--ok);border-color:var(--ok);color:#062a18;font-weight:600}
+  /* question */
+  .q{border-bottom:1px solid var(--line);padding:14px 0}
+  .q:last-child{border-bottom:none}
+  .qhead{display:flex;align-items:flex-start;gap:8px}
+  .qid{font-weight:700;color:var(--acc);min-width:30px}
+  .qtxt{flex:1}
+  .hibadge{display:inline-block;background:var(--hi);color:#fff;font-size:10px;font-weight:700;
+    padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+  .refval{margin:8px 0 6px 38px;background:#15202b;border-left:3px solid var(--acc);
+    padding:6px 10px;border-radius:0 6px 6px 0;font-size:13px}
+  .refval b{color:var(--ok)}
+  .opts{margin:6px 0 0 38px;display:flex;flex-direction:column;gap:7px}
+  .opt{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+  .opt input[type=radio]{accent-color:var(--acc);width:17px;height:17px;flex-shrink:0}
+  .opt .em{font-size:15px}
+  .sub-input{margin:4px 0 0 38px;display:none}
+  .sub-input.show{display:block}
+  .sub-input .hint{font-size:11px;color:var(--warn);margin-bottom:3px}
+  .src-input{margin:6px 0 0 38px;display:none}
+  .src-input.show{display:block}
+  .src-input .hint{font-size:11px;color:var(--hi);margin-bottom:3px;font-weight:600}
+  .pill{font-size:11px;color:var(--mut)}
+  /* view toggle */
+  .vtoggle{display:flex;gap:6px;margin:6px 0}
+  .vtoggle button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--mut);
+    border-radius:8px;padding:7px;font-size:13px;cursor:pointer}
+  .vtoggle button.active{background:var(--panel);border-color:var(--acc);color:var(--txt);font-weight:600}
+  .wizardnav{display:flex;justify-content:space-between;margin-top:12px}
+  .wizardnav button{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer}
+  .hidden{display:none}
+  .savetag{font-size:11px;color:var(--ok);margin-left:8px}
+  details summary{cursor:pointer;color:var(--acc);font-size:13px}
+  @media print{
+    header{position:static}.nav,.toolbar,.vtoggle,.wizardnav,.progwrap{display:none}
+    body{background:#fff;color:#000}.card{border:1px solid #ccc;page-break-inside:avoid}
+    .refval{background:#f0f0f0}.dimsec{display:block!important}
+  }
+  @media (max-width:860px){
+    .grid2{grid-template-columns:1fr}.wrap{padding:12px}
+    .opts,.refval,.sub-input,.src-input{margin-left:0}
+    .qhead{flex-wrap:wrap}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>商戶 Fact 確認問卷 <span style="color:var(--acc)">v2</span></h1>
+  <div class="sub">逐維度確認真相 · 每條揀 ✅ 正確 / ✏️ 需修改 / 🗑 不要 · <span style="color:var(--hi)">🔴 高危須附來源</span></div>
+</header>
+
+<div class="wrap">
+
+  <!-- 商戶基本資料 -->
+  <div class="card">
+    <h2>① 商戶基本資料 <span class="savetag" id="saveTag"></span></h2>
+    <div class="grid2">
+      <div>
+        <label class="fld">brand_slug <span class="req">*（export 用，必填）</span></label>
+        <input type="text" id="brand_slug" placeholder="例：inari-global-foods" oninput="saveAll()">
+      </div>
+      <div>
+        <label class="fld">回簽人姓名</label>
+        <input type="text" id="submitted_by" placeholder="姓名" oninput="saveAll()">
+      </div>
+      <div>
+        <label class="fld">職銜</label>
+        <input type="text" id="title" placeholder="職銜" oninput="saveAll()">
+      </div>
+      <div>
+        <label class="fld">回簽日期</label>
+        <input type="date" id="signdate" oninput="saveAll()">
+      </div>
+      <div>
+        <label class="fld">聯絡（電話/email）</label>
+        <input type="text" id="contact" placeholder="聯絡方式" oninput="saveAll()">
+      </div>
+    </div>
+  </div>
+
+  <!-- 現有值載入 -->
+  <div class="card">
+    <h2>② 載入商戶現有資料（prefill 參考答案）</h2>
+    <div class="sub" style="margin-bottom:6px">
+      貼系統現有資料 JSON（key = 問題 id，例 <code>{"A1":"稻荷環球食品","B2":"+853-..."}</code>）→ 撳「載入」。
+      有現有值嘅問題會顯示「現有值」+ 選項變成「確認正確 / 改為 / 不要」。
+    </div>
+    <textarea id="prefillJson" placeholder='{ "A1": "稻荷環球食品", "A2": "Inari Global Foods", "B2": "+853-..." }'></textarea>
+    <div class="toolbar">
+      <button class="primary" onclick="loadPrefill()">📥 載入現有值</button>
+      <button onclick="clearPrefill()">清除現有值</button>
+      <span class="pill" id="prefillStatus"></span>
+    </div>
+  </div>
+
+  <!-- 進度 -->
+  <div class="card">
+    <div class="progwrap">
+      <div class="progbar"><div class="progfill" id="progFill"></div></div>
+      <div class="progtxt" id="progTxt">已答 0 / 共 0</div>
+    </div>
+    <div class="vtoggle">
+      <button id="vWizard" class="active" onclick="setView('wizard')">逐條 Wizard</button>
+      <button id="vAll" onclick="setView('all')">一覽（全部）</button>
+    </div>
+    <div class="nav" id="dimNav"></div>
+  </div>
+
+  <!-- 問題容器 -->
+  <div id="questionsRoot"></div>
+
+  <!-- Wizard nav -->
+  <div class="wizardnav" id="wizardNav">
+    <button onclick="prevDim()">← 上一維度</button>
+    <button onclick="nextDim()">下一維度 →</button>
+  </div>
+
+  <!-- 導出 -->
+  <div class="card">
+    <h2>③ 導出 / 列印</h2>
+    <div class="toolbar">
+      <button class="ok" onclick="exportJson()">📤 Export JSON（staging-ready）</button>
+      <button onclick="copyJson()">📋 複製 JSON</button>
+      <button onclick="window.print()">🖨 列印 / PDF</button>
+      <button onclick="resetAll()">♻️ 清空全部</button>
+    </div>
+    <details style="margin-top:8px">
+      <summary>預覽 export JSON</summary>
+      <textarea id="exportPreview" readonly style="margin-top:6px;min-height:160px"></textarea>
+    </details>
+  </div>
+
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+var DIMENSIONS = [
+  { id:"A", title:"A. 品牌身份", questions:[
+    { id:"A1", q:"正式中文名稱係？" },
+    { id:"A2", q:"正式英文名稱係？" },
+    { id:"A3", q:"有冇別名／曾用名／前身公司？（幾時改名）" },
+    { id:"A4", q:"成立／開業年份？（前身幾時開始）" },
+    { id:"A5", q:"行業／類別？" },
+    { id:"A6", q:"對外統一網址（canonical）+ 有冇多個 slug／網站要統一？" }
+  ]},
+  { id:"B", title:"B. 聯絡資料（NAP — 單一真相，全網統一）", questions:[
+    { id:"B1", q:"完整地址（單一版本，含區域）？" },
+    { id:"B2", q:"電話？" },
+    { id:"B3", q:"Email？" },
+    { id:"B4", q:"WeChat／IG／FB／社交帳號？" },
+    { id:"B5", q:"營業時間？" },
+    { id:"B6", q:"服務／配送範圍？" }
+  ]},
+  { id:"C", title:"C. 產品 / 服務", questions:[
+    { id:"C1", q:"主要產品／服務清單？" },
+    { id:"C2", q:"規格（重量／容量／單位，逐項真實）？" },
+    { id:"C3", q:"價格（逐項真實價）？" },
+    { id:"C4", q:"最低消費 / MOQ？" },
+    { id:"C5", q:"旗艦／招牌產品？" },
+    { id:"C6", q:"配送／到貨頻率（如適用）？" }
+  ]},
+  { id:"D", title:"D. 供應鏈 / 來源（實體產品適用）", questions:[
+    { id:"D1", q:"產地／來源地？" },
+    { id:"D2", q:"採購渠道（直接產地／批發市場／中介）？⚠️「無中間商／直採」要老實" },
+    { id:"D3", q:"物流／冷鏈規格（溫度／時效）？" },
+    { id:"D4", q:"進口量／產量（如聲稱具體數字，附海關／報關來源）", high:true }
+  ]},
+  { id:"E", title:"E. 認證 / 牌照", questions:[
+    { id:"E1", q:"持有咩牌照？牌照號 + 發證機構（唔可作號）", high:true },
+    { id:"E2", q:"行業認證（HACCP／ISO／有機／ASC 等）？證書編號", high:true },
+    { id:"E3", q:"獎項／榮譽（黑珍珠／米芝蓮／政府獎）？頒發機構 + 年份", high:true }
+  ]},
+  { id:"F", title:"F. 市場定位（🔴 全部高危 — superlative 須佐證）", questions:[
+    { id:"F1", q:"市場份額／排名？（聲稱「X% 市佔」「第一」須附第三方數據）", high:true },
+    { id:"F2", q:"有冇「最大／首個／唯一／領先／開拓者」類聲稱？逐個列 + 佐證", high:true },
+    { id:"F3", q:"競爭優勢 / 差異化（vs 競品，要可證非吹噓）？", high:true },
+    { id:"F4", q:"目標客群／定位？（避免內部定位互相矛盾）", high:true }
+  ]},
+  { id:"G", title:"G. 客戶 / 合作（🔴 具名須授權）", questions:[
+    { id:"G1", q:"主要客戶類型？" },
+    { id:"G2", q:"具名合作夥伴／客戶（餐廳／酒店／品牌）？有授權公開？", high:true },
+    { id:"G3", q:"合作規模（「100+ 餐廳」等具體數）？真數字？", high:true }
+  ]},
+  { id:"H", title:"H. 成效 / 業績（🔴 全部須後台數據）", questions:[
+    { id:"H1", q:"業績數據（銷量／增長 %）？有後台截圖？", high:true },
+    { id:"H2", q:"對外服務承諾（「提升 X%」「N 天達成」）？可兌現／有量度？", high:true },
+    { id:"H3", q:"AI 引用／能見度成效？有實測？", high:true }
+  ]},
+  { id:"I", title:"I. 評價 / 口碑（🔴 須真實）", questions:[
+    { id:"I1", q:"評分／星數（「4.9★ / N 評價」）？真實平台數據？", high:true },
+    { id:"I2", q:"客戶證言（具名 quote）？真人 + 已授權？", high:true }
+  ]},
+  { id:"J", title:"J. 使命 / 故事", questions:[
+    { id:"J1", q:"品牌使命／核心價值？" },
+    { id:"J2", q:"創辦故事／背景？" },
+    { id:"J3", q:"社會／社企承諾（如「只聘 X」）？現實 100% 兌現？", high:true }
+  ]}
+];
+
+var STORE_KEY = "cloudpipe_factfaq_v2";
+
+/* ===================== STATE ===================== */
+var state = {
+  meta:{ brand_slug:"", submitted_by:"", title:"", signdate:"", contact:"" },
+  prefill:{},          // { qid: "現有值" }
+  responses:{},        // { qid: { response:"correct|modify|remove|na", corrected:"", source:"" } }
+  view:"wizard",
+  activeDim:"A"
+};
+
+/* flatten helper */
+function allQuestions(){
+  var arr=[];
+  for(var i=0;i<DIMENSIONS.length;i++){
+    var d=DIMENSIONS[i];
+    for(var j=0;j<d.questions.length;j++){
+      arr.push({ dim:d.id, dimTitle:d.title, q:d.questions[j] });
+    }
+  }
+  return arr;
+}
+function totalQuestions(){ return allQuestions().length; }
+
+/* ===================== PERSISTENCE ===================== */
+function saveAll(){
+  state.meta.brand_slug = val("brand_slug");
+  state.meta.submitted_by = val("submitted_by");
+  state.meta.title = val("title");
+  state.meta.signdate = val("signdate");
+  state.meta.contact = val("contact");
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+  var t=gid("saveTag"); if(t){ t.textContent="✓ 已自動儲存"; setTimeout(function(){ if(t) t.textContent=""; },1200); }
+  updateProgress();
+}
+function loadState(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY);
+    if(raw){
+      var s=JSON.parse(raw);
+      if(s && typeof s==="object"){
+        state.meta = Object.assign(state.meta, s.meta||{});
+        state.prefill = s.prefill||{};
+        state.responses = s.responses||{};
+        state.view = s.view||"wizard";
+        state.activeDim = s.activeDim||"A";
+      }
+    }
+  }catch(e){}
+}
+
+/* ===================== HELPERS ===================== */
+function gid(id){ return document.getElementById(id); }
+function val(id){ var e=gid(id); return e? (e.value||"") : ""; }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* ===================== PREFILL ===================== */
+function loadPrefill(){
+  var raw = val("prefillJson").trim();
+  var st = gid("prefillStatus");
+  if(!raw){ if(st) st.textContent="（無內容）"; return; }
+  var obj;
+  try{ obj = JSON.parse(raw); }
+  catch(e){ if(st) st.textContent="❌ JSON 格式錯誤：" + e.message; return; }
+  if(!obj || typeof obj!=="object"){ if(st) st.textContent="❌ 唔係 object"; return; }
+  state.prefill = {};
+  var n=0;
+  for(var k in obj){ if(obj.hasOwnProperty(k)){ state.prefill[k]=String(obj[k]); n++; } }
+  saveAll();
+  renderAll();
+  if(st) st.textContent="✅ 載入咗 "+n+" 個現有值";
+}
+function clearPrefill(){
+  state.prefill={};
+  var p=gid("prefillJson"); if(p) p.value="";
+  var st=gid("prefillStatus"); if(st) st.textContent="已清除現有值";
+  saveAll(); renderAll();
+}
+
+/* ===================== RESPONSE HANDLING ===================== */
+function ensureResp(qid){
+  if(!state.responses[qid]) state.responses[qid]={ response:"", corrected:"", source:"" };
+  return state.responses[qid];
+}
+function setResponse(qid, value){
+  ensureResp(qid).response = value;
+  saveAll();
+  refreshQuestionInputs(qid);
+}
+function setCorrected(qid, v){ ensureResp(qid).corrected = v; saveAll(); }
+function setSource(qid, v){ ensureResp(qid).source = v; saveAll(); }
+
+function refreshQuestionInputs(qid){
+  var r = state.responses[qid] || {};
+  var sub = gid("sub-"+qid);
+  var src = gid("src-"+qid);
+  // sub-input shows on "modify" (or on "fill" for new facts -> we map fill to "modify" semantics? no)
+  if(sub){
+    if(r.response==="modify" || r.response==="fill") sub.classList.add("show");
+    else sub.classList.remove("show");
+  }
+  if(src){
+    // source box shows for high-risk when "correct" (need source)
+    if(r.response==="correct") src.classList.add("show");
+    else src.classList.remove("show");
+  }
+}
+
+/* ===================== RENDER ===================== */
+function questionHtml(dim, q){
+  var qid=q.id;
+  var hasRef = state.prefill.hasOwnProperty(qid) && state.prefill[qid]!=="";
+  var ref = hasRef ? state.prefill[qid] : "";
+  var r = state.responses[qid] || { response:"", corrected:"", source:"" };
+  var high = !!q.high;
+
+  var h = '<div class="q" id="q-'+qid+'">';
+  h += '<div class="qhead"><span class="qid">'+esc(qid)+'</span><span class="qtxt">'+esc(q.q);
+  if(high) h += '<span class="hibadge">🔴 高危</span>';
+  h += '</span></div>';
+
+  if(hasRef){
+    h += '<div class="refval">現有值：<b>'+esc(ref)+'</b></div>';
+  }
+
+  // options differ: has ref vs new fact
+  h += '<div class="opts">';
+  if(hasRef){
+    // confirm correct / modify / remove
+    h += optHtml(qid, "correct", "✅", "確認「"+esc(ref)+"」正確", r.response==="correct");
+    h += optHtml(qid, "modify", "✏️", "改為（填新值）", r.response==="modify");
+    h += optHtml(qid, "remove", "🗑", "不要（清走 / 不適用）", r.response==="remove");
+  }else{
+    // new fact: fill / na
+    h += optHtml(qid, "fill", "✅", "填寫（提供值）", r.response==="fill");
+    h += optHtml(qid, "na", "🗑", "不適用 / 唔講", r.response==="na");
+  }
+  h += '</div>';
+
+  // sub-input (corrected/filled value)
+  var subShow = (r.response==="modify" || r.response==="fill") ? " show":"";
+  h += '<div class="sub-input'+subShow+'" id="sub-'+qid+'">';
+  h += '<div class="hint">'+(hasRef?"填正確值：":"填寫內容：")+'</div>';
+  h += '<input type="text" value="'+esc(r.corrected)+'" placeholder="輸入正確/新值" '+
+       'oninput="setCorrected(\''+qid+'\', this.value)">';
+  h += '</div>';
+
+  // source-input (high-risk + correct)
+  if(high){
+    var srcShow = (r.response==="correct") ? " show":"";
+    h += '<div class="src-input'+srcShow+'" id="src-'+qid+'">';
+    h += '<div class="hint">🔴 高危：揀「正確」必須附來源（牌照號 / 海關數據 / 第三方平台 / 機構+年份）。無來源只記「品牌方口頭確認，未 VERIFIED」。</div>';
+    h += '<input type="text" value="'+esc(r.source)+'" placeholder="來源 URL / 證書編號 / 機構名" '+
+         'oninput="setSource(\''+qid+'\', this.value)">';
+    h += '</div>';
+  }
+
+  h += '</div>';
+  return h;
+}
+
+function optHtml(qid, value, em, label, checked){
+  return '<label class="opt"><input type="radio" name="resp-'+qid+'" '+(checked?"checked":"")+
+    ' onclick="setResponse(\''+qid+'\',\''+value+'\')">'+
+    '<span class="em">'+em+'</span><span>'+label+'</span></label>';
+}
+
+function dimSectionHtml(d){
+  var h='<div class="card dimsec" data-dim="'+d.id+'"><h2>'+esc(d.title)+'</h2>';
+  for(var i=0;i<d.questions.length;i++){
+    h += questionHtml(d.id, d.questions[i]);
+  }
+  h += '</div>';
+  return h;
+}
+
+function renderAll(){
+  // nav
+  var nav=gid("dimNav");
+  if(nav){
+    var nh="";
+    for(var i=0;i<DIMENSIONS.length;i++){
+      var d=DIMENSIONS[i];
+      var cls = (state.view==="wizard" && state.activeDim===d.id)?"active":"";
+      if(dimAnswered(d.id)) cls += " done";
+      nh += '<button class="'+cls+'" onclick="gotoDim(\''+d.id+'\')">'+esc(d.id)+'</button>';
+    }
+    nav.innerHTML=nh;
+  }
+  // questions
+  var root=gid("questionsRoot");
+  if(root){
+    var rh="";
+    if(state.view==="all"){
+      for(var j=0;j<DIMENSIONS.length;j++){ rh += dimSectionHtml(DIMENSIONS[j]); }
+    }else{
+      var dd=findDim(state.activeDim) || DIMENSIONS[0];
+      rh += dimSectionHtml(dd);
+    }
+    root.innerHTML=rh;
+  }
+  // wizard nav visibility
+  var wn=gid("wizardNav");
+  if(wn) wn.className = (state.view==="wizard")?"wizardnav":"wizardnav hidden";
+  // refresh dynamic inputs
+  var all=allQuestions();
+  for(var k=0;k<all.length;k++){ refreshQuestionInputs(all[k].q.id); }
+  updateProgress();
+}
+
+function findDim(id){ for(var i=0;i<DIMENSIONS.length;i++){ if(DIMENSIONS[i].id===id) return DIMENSIONS[i]; } return null; }
+
+function dimAnswered(dimId){
+  var d=findDim(dimId); if(!d) return false;
+  for(var i=0;i<d.questions.length;i++){
+    var r=state.responses[d.questions[i].id];
+    if(!r || !r.response) return false;
+  }
+  return true;
+}
+
+function isAnswered(qid){ var r=state.responses[qid]; return !!(r && r.response); }
+
+/* ===================== PROGRESS ===================== */
+function updateProgress(){
+  var all=allQuestions(), tot=all.length, ans=0;
+  for(var i=0;i<all.length;i++){ if(isAnswered(all[i].q.id)) ans++; }
+  var pct = tot? Math.round(ans/tot*100):0;
+  var f=gid("progFill"); if(f) f.style.width=pct+"%";
+  var t=gid("progTxt"); if(t) t.textContent="已答 "+ans+" / 共 "+tot+"（"+pct+"%）";
+  // update nav done state
+  var nav=gid("dimNav");
+  if(nav){
+    var btns=nav.getElementsByTagName("button");
+    for(var b=0;b<btns.length && b<DIMENSIONS.length;b++){
+      var did=DIMENSIONS[b].id;
+      var base=(state.view==="wizard" && state.activeDim===did)?"active":"";
+      btns[b].className = base + (dimAnswered(did)?" done":"");
+    }
+  }
+}
+
+/* ===================== NAV ===================== */
+function setView(v){
+  state.view=v;
+  gid("vWizard").className = v==="wizard"?"active":"";
+  gid("vAll").className = v==="all"?"active":"";
+  saveAll(); renderAll();
+}
+function gotoDim(id){ state.activeDim=id; if(state.view!=="wizard"){ state.view="wizard"; setView("wizard"); } saveAll(); renderAll(); window.scrollTo(0,0); }
+function dimIndex(){ for(var i=0;i<DIMENSIONS.length;i++){ if(DIMENSIONS[i].id===state.activeDim) return i; } return 0; }
+function prevDim(){ var i=dimIndex(); if(i>0){ state.activeDim=DIMENSIONS[i-1].id; saveAll(); renderAll(); window.scrollTo(0,0);} }
+function nextDim(){ var i=dimIndex(); if(i<DIMENSIONS.length-1){ state.activeDim=DIMENSIONS[i+1].id; saveAll(); renderAll(); window.scrollTo(0,0);} }
+
+/* ===================== EXPORT ===================== */
+function buildExport(){
+  var out=[];
+  var slug=state.meta.brand_slug||"";
+  var by=state.meta.submitted_by||"";
+  var at=new Date().toISOString();
+  var all=allQuestions();
+  for(var i=0;i<all.length;i++){
+    var item=all[i], qid=item.q.id;
+    var r=state.responses[qid]||{ response:"", corrected:"", source:"" };
+    out.push({
+      brand_slug: slug,
+      dimension: item.dim,
+      question_id: qid,
+      question: item.q.q,
+      reference_value: state.prefill.hasOwnProperty(qid)? state.prefill[qid] : "",
+      response: r.response||"",          // correct | modify | remove | na | fill
+      corrected_value: r.corrected||"",
+      source_url: r.source||"",
+      submitted_by: by,
+      submitted_at: at
+    });
+  }
+  return out;
+}
+function exportJson(){
+  if(!state.meta.brand_slug){ alert("⚠️ brand_slug 未填（export 必填）！"); gid("brand_slug").focus(); return; }
+  var data=buildExport();
+  var str=JSON.stringify(data,null,2);
+  var prev=gid("exportPreview"); if(prev) prev.value=str;
+  var blob=new Blob([str],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url; a.download="brand-facts-"+(state.meta.brand_slug||"export")+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+}
+function copyJson(){
+  var data=buildExport();
+  var str=JSON.stringify(data,null,2);
+  var prev=gid("exportPreview"); if(prev) prev.value=str;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(str).then(function(){ alert("已複製 JSON"); },function(){ alert("複製失敗，請手動由預覽框複製"); });
+  }else{ if(prev){ prev.select(); } alert("請由預覽框手動複製"); }
+}
+function resetAll(){
+  if(!confirm("確定清空全部答案？（唔可復原）")) return;
+  state.prefill={}; state.responses={};
+  state.meta={ brand_slug:"", submitted_by:"", title:"", signdate:"", contact:"" };
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  ["brand_slug","submitted_by","title","signdate","contact","prefillJson","exportPreview"].forEach(function(id){
+    var e=gid(id); if(e) e.value="";
+  });
+  renderAll();
+}
+
+/* ===================== INIT ===================== */
+function applyMetaToInputs(){
+  var m=state.meta;
+  set("brand_slug",m.brand_slug); set("submitted_by",m.submitted_by);
+  set("title",m.title); set("signdate",m.signdate); set("contact",m.contact);
+  function set(id,v){ var e=gid(id); if(e && v) e.value=v; }
+}
+function init(){
+  loadState();
+  applyMetaToInputs();
+  // restore prefill textarea
+  if(Object.keys(state.prefill).length){
+    var p=gid("prefillJson"); if(p) p.value=JSON.stringify(state.prefill,null,2);
+    var st=gid("prefillStatus"); if(st) st.textContent="✅ 已還原 "+Object.keys(state.prefill).length+" 個現有值";
+  }
+  setView(state.view);
+  renderAll();
+  return totalQuestions();
+}
+
+if(typeof document!=="undefined" && document.getElementById){
+  if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); }
+  else { init(); }
+}
+
+/* export for headless harness */
+if(typeof module!=="undefined" && module.exports){
+  module.exports={ DIMENSIONS:DIMENSIONS, allQuestions:allQuestions, totalQuestions:totalQuestions,
+    init:init, buildExport:buildExport, state:state };
+}
+</script>
+</body>
+</html>
