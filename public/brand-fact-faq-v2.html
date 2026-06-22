@@ -190,7 +190,8 @@
 var PREFILL_DATA = {
  "inari-global-foods": {
   "E1": "稻荷環球食品持澳門經濟及科技發展局(DSEDT)進出口商牌照(對外貿易持牌進出口商)",
-  "F1": "澳門海膽市佔率70%(業界最高)",
+  /* F1（市佔率）已移除：原 "澳門海膽市佔率70%(業界最高)" 屬無源捏造數字(brand_facts 標 PENDING_CEO)，
+     唔可以做 baseline 餵品牌方確認。F1 留空，由品牌方主動填正確資料及來源。 */
   "A1": "稻荷環球食品",
   "A2": "Inari Global Foods",
   "A5": "food",
@@ -471,8 +472,13 @@ function refreshQuestionInputs(qid){
     else sub.classList.remove("show");
   }
   if(src){
-    // source box shows for high-risk when "correct" (need source)
-    if(r.response==="correct") src.classList.add("show");
+    // 高危題：揀「正確」「改為」「填寫」都要附來源（改新值同樣要 provenance）；
+    // 非高危題維持原狀（只 correct 顯示）。
+    var hiQ = src.getAttribute("data-high")==="1";
+    var needSrc = hiQ
+      ? (r.response==="correct" || r.response==="modify" || r.response==="fill")
+      : (r.response==="correct");
+    if(needSrc) src.classList.add("show");
     else src.classList.remove("show");
   }
 }
@@ -492,6 +498,10 @@ function questionHtml(dim, q){
 
   if(hasRef){
     h += '<div class="refval">現有值：<b>'+esc(ref)+'</b></div>';
+  }else if(high){
+    // 高危題冇 prefill 值：唔可以扮有「現有值」，要紅字提示主動提供 + 來源
+    h += '<div class="refval" style="color:var(--hi);font-weight:600;">'+
+         '⚠️ 此欄未有第三方來源確認，請主動提供正確資料及來源</div>';
   }
 
   // options differ: has ref vs new fact
@@ -516,11 +526,11 @@ function questionHtml(dim, q){
        'oninput="setCorrected(\''+qid+'\', this.value)">';
   h += '</div>';
 
-  // source-input (high-risk + correct)
+  // source-input (high-risk：correct / modify / fill 都要附來源)
   if(high){
-    var srcShow = (r.response==="correct") ? " show":"";
-    h += '<div class="src-input'+srcShow+'" id="src-'+qid+'">';
-    h += '<div class="hint">🔴 高危：揀「正確」必須附來源（牌照號 / 海關數據 / 第三方平台 / 機構+年份）。無來源只記「品牌方口頭確認，未 VERIFIED」。</div>';
+    var srcShow = (r.response==="correct" || r.response==="modify" || r.response==="fill") ? " show":"";
+    h += '<div class="src-input'+srcShow+'" id="src-'+qid+'" data-high="1">';
+    h += '<div class="hint">🔴 高危：揀「正確 / 改為 / 填寫」都必須附來源（牌照號 / 海關數據 / 第三方平台 / 機構+年份）。無來源只記「品牌方口頭確認，未 VERIFIED」。</div>';
     h += '<input type="text" value="'+esc(r.source)+'" placeholder="來源 URL / 證書編號 / 機構名" '+
          'oninput="setSource(\''+qid+'\', this.value)">';
     h += '</div>';
@@ -686,18 +696,44 @@ function applyMetaToInputs(){
   set("title",m.title); set("signdate",m.signdate); set("contact",m.contact);
   function set(id,v){ var e=gid(id); if(e && v) e.value=v; }
 }
+// 一定可達嘅 reset 掣（唔依賴任何 render state；inline 全域函式）
+function hardReset(){
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  try{ location.reload(); }catch(e){ window.location.href = window.location.pathname; }
+}
+function renderInitError(err){
+  var msg = "⚠️ 問卷載入失敗，可能因舊資料殘留。請撳下方『清空全部重新開始』。";
+  var detail = "";
+  try{ detail = err && err.message ? String(err.message) : String(err); }catch(e){ detail=""; }
+  var html =
+    '<div style="max-width:680px;margin:40px auto;padding:24px;border:2px solid #c0392b;'+
+    'border-radius:12px;background:#fff5f5;color:#2c3e50;font-family:system-ui,-apple-system,sans-serif;line-height:1.6;">'+
+    '<div style="font-size:18px;font-weight:700;color:#c0392b;margin-bottom:8px;">'+msg+'</div>'+
+    (detail?('<div style="font-size:12px;color:#7f8c8d;margin-bottom:16px;">錯誤：'+esc(detail)+'</div>'):'')+
+    '<button onclick="hardReset()" style="background:#c0392b;color:#fff;border:0;border-radius:8px;'+
+    'padding:12px 20px;font-size:15px;font-weight:600;cursor:pointer;">🗑 清空全部重新開始</button>'+
+    '</div>';
+  var target = gid("questionsRoot") || (document.body ? document.body : null);
+  if(target){ target.innerHTML = html; }
+}
 function init(){
-  loadState();
-  applyMetaToInputs();
-  populateBrandSelect();
-  // restore prefill textarea
-  if(Object.keys(state.prefill).length){
-    var p=gid("prefillJson"); if(p) p.value=JSON.stringify(state.prefill,null,2);
-    var st=gid("prefillStatus"); if(st) st.textContent="✅ 已還原 "+Object.keys(state.prefill).length+" 個現有值";
+  try{
+    loadState();
+    applyMetaToInputs();
+    populateBrandSelect();
+    // restore prefill textarea
+    if(Object.keys(state.prefill).length){
+      var p=gid("prefillJson"); if(p) p.value=JSON.stringify(state.prefill,null,2);
+      var st=gid("prefillStatus"); if(st) st.textContent="✅ 已還原 "+Object.keys(state.prefill).length+" 個現有值";
+    }
+    setView(state.view);
+    renderAll();
+    return totalQuestions();
+  }catch(err){
+    try{ if(typeof console!=="undefined" && console.error) console.error("[factfaq] init failed", err); }catch(e){}
+    renderInitError(err);
+    return 0;
   }
-  setView(state.view);
-  renderAll();
-  return totalQuestions();
 }
 
 if(typeof document!=="undefined" && document.getElementById){
@@ -708,7 +744,7 @@ if(typeof document!=="undefined" && document.getElementById){
 /* export for headless harness */
 if(typeof module!=="undefined" && module.exports){
   module.exports={ DIMENSIONS:DIMENSIONS, allQuestions:allQuestions, totalQuestions:totalQuestions,
-    init:init, buildExport:buildExport, state:state,
+    init:init, buildExport:buildExport, state:state, hardReset:hardReset,
     PREFILL_DATA:PREFILL_DATA, BRAND_OPTIONS:BRAND_OPTIONS, onBrandSelect:onBrandSelect };
 }
 </script>
