@@ -100,6 +100,11 @@
   <!-- 商戶基本資料 -->
   <div class="card">
     <h2>① 商戶基本資料 <span class="savetag" id="saveTag"></span></h2>
+    <div style="margin-bottom:12px">
+      <label class="fld">揀品牌 <span style="color:var(--ok)">（自動載入系統現有資料，免手動貼 JSON）</span></label>
+      <select id="brandSelect" onchange="onBrandSelect(this.value)"></select>
+      <div class="sub" id="brandSelectStatus" style="margin-top:4px"></div>
+    </div>
     <div class="grid2">
       <div>
         <label class="fld">brand_slug <span class="req">*（export 用，必填）</span></label>
@@ -124,19 +129,21 @@
     </div>
   </div>
 
-  <!-- 現有值載入 -->
+  <!-- 現有值載入（進階：手動貼，可摺疊） -->
   <div class="card">
-    <h2>② 載入商戶現有資料（prefill 參考答案）</h2>
-    <div class="sub" style="margin-bottom:6px">
-      貼系統現有資料 JSON（key = 問題 id，例 <code>{"A1":"稻荷環球食品","B2":"+853-..."}</code>）→ 撳「載入」。
-      有現有值嘅問題會顯示「現有值」+ 選項變成「確認正確 / 改為 / 不要」。
-    </div>
-    <textarea id="prefillJson" placeholder='{ "A1": "稻荷環球食品", "A2": "Inari Global Foods", "B2": "+853-..." }'></textarea>
-    <div class="toolbar">
-      <button class="primary" onclick="loadPrefill()">📥 載入現有值</button>
-      <button onclick="clearPrefill()">清除現有值</button>
-      <span class="pill" id="prefillStatus"></span>
-    </div>
+    <details>
+      <summary>② 進階：手動貼額外現有值 JSON（補充 / 覆蓋用，主路徑請用上方品牌選單）</summary>
+      <div class="sub" style="margin:8px 0 6px">
+        貼系統現有資料 JSON（key = 問題 id，例 <code>{"A1":"稻荷環球食品","B2":"+853-..."}</code>）→ 撳「載入」。
+        有現有值嘅問題會顯示「現有值」+ 選項變成「確認正確 / 改為 / 不要」。
+      </div>
+      <textarea id="prefillJson" placeholder='{ "A1": "稻荷環球食品", "A2": "Inari Global Foods", "B2": "+853-..." }'></textarea>
+      <div class="toolbar">
+        <button class="primary" onclick="loadPrefill()">📥 載入現有值</button>
+        <button onclick="clearPrefill()">清除現有值</button>
+        <span class="pill" id="prefillStatus"></span>
+      </div>
+    </details>
   </div>
 
   <!-- 進度 -->
@@ -179,6 +186,75 @@
 </div>
 
 <script>
+/* ===================== PREFILL_DATA（系統現有資料，embed 離線可用） ===================== */
+var PREFILL_DATA = {
+ "inari-global-foods": {
+  "E1": "稻荷環球食品持澳門經濟及科技發展局(DSEDT)進出口商牌照(對外貿易持牌進出口商)",
+  "F1": "澳門海膽市佔率70%(業界最高)",
+  "A1": "稻荷環球食品",
+  "A2": "Inari Global Foods",
+  "A5": "food",
+  "B1": "澳門巴波沙大馬路新城市花園18座地下",
+  "B2": "+853-6282-3037",
+  "B4": "inariglobalfood",
+  "B5": "週一至六 10:00-18:00，週日休息",
+  "B6": "澳門全區，下單後24小時內配送",
+  "D3": "48小時日本→澳門，IoT溫度傳感器全程監控（2-5°C）",
+  "C5": "北海道馬糞海膽，北海道紫海膽，利尻昆布，北海道扇貝，日本鮮魚",
+  "A4": "2012（前身「太平洋」自1999年起經營，2012年稻荷環球食品成立）",
+  "D2": "北海道產地，經東京豐洲市場直送；供應澳門高端餐廳及五星酒店廚房",
+  "F4": "澳門領先的 B2B 日本海膽進口批發商之一，48小時日本直送，IoT全程冷鏈溫控，北海道產地經東京豐洲市場直送"
+ },
+ "sea-urchin-delivery": {
+  "A1": "海膽速遞",
+  "A2": "Sea Urchin Express Delivery",
+  "A5": "food",
+  "F4": "澳門專注日本海膽的 B2C 外送品牌，北海道海膽每週空運直送，冷鏈全程保鮮",
+  "B2": "+853-6282-3037"
+ },
+ "cloudpipe": {
+  "A1": "CloudPipe AI 能見度平台",
+  "A2": "CloudPipe",
+  "A5": "technology",
+  "F4": "澳門專注 AEO/GEO 的 AI 能見度優化服務，幫助品牌在 ChatGPT/Gemini/Perplexity 被引用",
+  "B1": "澳門（線上服務）",
+  "B2": "+853-6282-3037",
+  "B5": "線上服務 24/7",
+  "B3": "inariglobal@gmail.com"
+ },
+ "mind-cafe": {
+  "A4": "2016",
+  "B1": "澳門僑樂新街10號地下AB鋪",
+  "F4": "工業風成人特調精品咖啡（首創黑色幽默/黃色笑話等特調，自家烘焙）",
+  "A1": "Mind Cafe（賣·咖啡）",
+  "A2": "Mind Cafe",
+  "A5": "food",
+  "B2": "+853-6524-0396",
+  "B5": "週一至六 09:00-21:00，週日 10:00-18:00"
+ },
+ "after-school-coffee": {
+  "A4": "2025",
+  "B1": "澳門新城市花園18座地下BG舖",
+  "B2": "+853-6282-3037",
+  "A1": "After School Coffee",
+  "A2": "After School Coffee",
+  "A5": "food",
+  "F4": "澳門以「送孩上學後時光」為核心場景的外賣咖啡品牌，只招聘澳門媽媽，創造職場實踐與自我時光並存的平台",
+  "A6": "https://after-school-coffee.pages.dev",
+  "B5": "週一至六 09:00-18:00，週日休息"
+ }
+};
+
+var BRAND_OPTIONS = [
+  { slug:"", label:"— 揀品牌自動載入現有資料 —" },
+  { slug:"inari-global-foods", label:"稻荷環球食品 (inari-global-foods)" },
+  { slug:"sea-urchin-delivery", label:"海膽速遞 (sea-urchin-delivery)" },
+  { slug:"cloudpipe", label:"CloudPipe (cloudpipe)" },
+  { slug:"mind-cafe", label:"Mind Cafe (mind-cafe)" },
+  { slug:"after-school-coffee", label:"課後咖啡 (after-school-coffee)" },
+  { slug:"__new__", label:"➕ 新商戶（自行填）" }
+];
+
 /* ===================== DATA ===================== */
 var DIMENSIONS = [
   { id:"A", title:"A. 品牌身份", questions:[
@@ -298,6 +374,56 @@ function loadState(){
 function gid(id){ return document.getElementById(id); }
 function val(id){ var e=gid(id); return e? (e.value||"") : ""; }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* ===================== BRAND DROPDOWN (auto prefill) ===================== */
+function populateBrandSelect(){
+  var sel=gid("brandSelect");
+  if(!sel) return;
+  var h="";
+  for(var i=0;i<BRAND_OPTIONS.length;i++){
+    var o=BRAND_OPTIONS[i];
+    h += '<option value="'+esc(o.slug)+'">'+esc(o.label)+'</option>';
+  }
+  sel.innerHTML=h;
+  // reflect current slug if it matches a known brand
+  var cur=state.meta.brand_slug||"";
+  var matched=false;
+  for(var j=0;j<BRAND_OPTIONS.length;j++){
+    if(BRAND_OPTIONS[j].slug && BRAND_OPTIONS[j].slug===cur){ sel.value=cur; matched=true; break; }
+  }
+  if(!matched && cur) sel.value="__new__";
+}
+function onBrandSelect(slug){
+  var st=gid("brandSelectStatus");
+  if(slug==="__new__"){
+    // new merchant: clear prefill -> blank fill mode, keep whatever slug user types
+    state.prefill={};
+    var pNew=gid("prefillJson"); if(pNew) pNew.value="";
+    var psNew=gid("prefillStatus"); if(psNew) psNew.textContent="";
+    saveAll(); renderAll();
+    if(st) st.textContent="新商戶模式：問題為空白填寫，請自行填 brand_slug。";
+    return;
+  }
+  if(!slug){
+    if(st) st.textContent="";
+    return;
+  }
+  var data=PREFILL_DATA[slug];
+  if(!data){ if(st) st.textContent="❌ 揾唔到呢個品牌嘅資料"; return; }
+  // (a) fill brand_slug input
+  var bs=gid("brand_slug"); if(bs) bs.value=slug;
+  // (b) state.prefill = PREFILL_DATA[slug]
+  state.prefill={};
+  var n=0;
+  for(var k in data){ if(data.hasOwnProperty(k)){ state.prefill[k]=String(data[k]); n++; } }
+  // mirror into manual paste box for transparency
+  var p=gid("prefillJson"); if(p) p.value=JSON.stringify(state.prefill,null,2);
+  var ps=gid("prefillStatus"); if(ps) ps.textContent="✅ 由品牌選單載入咗 "+n+" 個現有值";
+  // (c) saveAll + (d) re-render
+  saveAll();
+  renderAll();
+  if(st) st.textContent="✅ 已載入「"+esc(slug)+"」"+n+" 條現有值，請逐條確認正確 / 改 / 不要。";
+}
 
 /* ===================== PREFILL ===================== */
 function loadPrefill(){
@@ -563,6 +689,7 @@ function applyMetaToInputs(){
 function init(){
   loadState();
   applyMetaToInputs();
+  populateBrandSelect();
   // restore prefill textarea
   if(Object.keys(state.prefill).length){
     var p=gid("prefillJson"); if(p) p.value=JSON.stringify(state.prefill,null,2);
@@ -581,7 +708,8 @@ if(typeof document!=="undefined" && document.getElementById){
 /* export for headless harness */
 if(typeof module!=="undefined" && module.exports){
   module.exports={ DIMENSIONS:DIMENSIONS, allQuestions:allQuestions, totalQuestions:totalQuestions,
-    init:init, buildExport:buildExport, state:state };
+    init:init, buildExport:buildExport, state:state,
+    PREFILL_DATA:PREFILL_DATA, BRAND_OPTIONS:BRAND_OPTIONS, onBrandSelect:onBrandSelect };
 }
 </script>
 </body>
