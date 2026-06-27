@@ -450,6 +450,37 @@ async function getSpiderWebInsights(
   return merged
 }
 
+// FIX 2026-06-28: authority_sources and faqs can be stored as double-JSON-encoded
+// strings (string instead of JSONB array) by the translation pipeline → `.map()`
+// throws TypeError → HTTP 500. Normalize before rendering.
+function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
+  if (!a) return null
+
+  let faqs: unknown = (a as { faqs?: unknown }).faqs
+  if (typeof faqs === 'string') {
+    try {
+      const parsed = JSON.parse(faqs)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+  if (!Array.isArray(faqs)) faqs = []
+
+  let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
+  if (typeof authSources === 'string') {
+    try {
+      const parsed = JSON.parse(authSources)
+      authSources = Array.isArray(parsed) ? parsed : undefined
+    } catch {
+      authSources = undefined
+    }
+  }
+  if (authSources !== undefined && !Array.isArray(authSources)) authSources = undefined
+
+  return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
+}
+
 export interface InsightPageProps {
   params: Promise<{ slug: string }>
   searchParams?: Promise<{ lang?: string }>
@@ -512,10 +543,11 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
   const ui = UI_STRINGS[lang]
   const lc = LANG_CONFIG[lang]
 
-  const [article, availableLangs] = await Promise.all([
+  const [rawArticle, availableLangs] = await Promise.all([
     getInsight(slug, lang, region),
     getAvailableLangs(slug, region),
   ])
+  const article = normalizeInsight(rawArticle)
   if (!article) notFound()
 
   const [merchants, spiderWebInsights] = await Promise.all([

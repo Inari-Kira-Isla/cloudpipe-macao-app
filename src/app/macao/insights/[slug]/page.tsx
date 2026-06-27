@@ -109,6 +109,9 @@ const sbTimeout = <T,>(p: PromiseLike<T>, ms = 6000): Promise<T | { data: null }
 // truthy → downstream `.faqs.map()` throws TypeError → HTTP 500 (digest
 // 3742347000, 2026-06-11). Normalize any non-array faqs to an array so the
 // render path is robust to this legal-but-wrong data shape.
+// FIX 2026-06-28: authority_sources also suffers the same double-JSON-encoding
+// bug (string instead of JSONB array → `.map()` throws TypeError → 5,804 pages
+// 500). Added authority_sources normalization here to guard against it.
 function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
   if (!a) return a
   let faqs: unknown = (a as { faqs?: unknown }).faqs
@@ -121,7 +124,19 @@ function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
     }
   }
   if (!Array.isArray(faqs)) faqs = []
-  return { ...a, faqs } as InsightArticle
+
+  let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
+  if (typeof authSources === 'string') {
+    try {
+      const parsed = JSON.parse(authSources)
+      authSources = Array.isArray(parsed) ? parsed : undefined
+    } catch {
+      authSources = undefined
+    }
+  }
+  if (authSources !== undefined && !Array.isArray(authSources)) authSources = undefined
+
+  return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
 }
 
 async function getInsight(slug: string, lang: Lang) {
