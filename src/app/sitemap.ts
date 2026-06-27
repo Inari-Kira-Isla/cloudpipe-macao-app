@@ -111,6 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/macao`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/cloudpipe`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/cloudpipe/about`, lastModified: now, changeFrequency: 'weekly', priority: 0.90 },
+    { url: `${siteUrl}/cloudpipe/audit`, lastModified: now.toISOString(), changeFrequency: 'weekly' as const, priority: 0.85 },
     { url: `${siteUrl}/cloudpipe/case-studies/inari-chatgpt-number-one`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/inari/why-inari`, lastModified: now, changeFrequency: 'weekly', priority: 0.95 },
     // Brand entity pages — AI crawler absorption targets (ClaudeBot / YouBot / Perplexity)
