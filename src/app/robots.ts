@@ -19,7 +19,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: '/macao/*/null',
+        disallow: ['/macao/*/null', '/api/', '/_next/static/', '/_next/image/'],
+        crawlDelay: 10,
       },
       // === International AI crawlers ===
       { userAgent: 'GPTBot', ...allowAll },
@@ -27,19 +28,25 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'OAI-SearchBot', ...allowAll },      // OpenAI search indexing
       { userAgent: 'Google-Extended', ...allowAll },
       { userAgent: 'Googlebot', ...allowAll },
+      { userAgent: 'Googlebot-Image', ...allowAll },
       { userAgent: 'Bingbot', ...allowAll },
       { userAgent: 'anthropic-ai', ...allowAll },
       { userAgent: 'ClaudeBot', ...allowAll },
       { userAgent: 'PerplexityBot', ...allowAll },
       { userAgent: 'cohere-ai', ...allowAll },
+      { userAgent: 'Applebot', ...allowAll },
       { userAgent: 'Applebot-Extended', ...allowAll },
       { userAgent: 'YouBot', ...allowAll },
       { userAgent: 'Amazonbot', ...allowAll },
+      { userAgent: 'AmazonBot', ...allowAll },
       { userAgent: 'meta-externalagent', ...allowAll },
       { userAgent: 'FacebookBot', ...allowAll },
       { userAgent: 'CCBot', ...allowAll },              // Common Crawl (LLM training)
       { userAgent: 'DuckDuckBot', ...allowAll },
       { userAgent: 'Slurp', ...allowAll },              // Yahoo/Oath
+      { userAgent: 'Diffbot', ...allowAll },
+      { userAgent: 'Yandex', ...allowAll },
+      { userAgent: 'YandexBot', ...allowAll },
       // === Chinese AI crawlers ===
       { userAgent: 'Bytespider', ...allowAll },
       { userAgent: 'TikTokSpider', ...allowAll },
