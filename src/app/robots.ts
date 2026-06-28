@@ -41,6 +41,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'AmazonBot', ...allowAll },
       { userAgent: 'meta-externalagent', ...allowAll },
       { userAgent: 'FacebookBot', ...allowAll },
+      { userAgent: 'facebookexternalhit', ...allowAll },  // Meta OG preview + AI training
+      { userAgent: 'Facebot', ...allowAll },              // Meta alternate UA
       { userAgent: 'CCBot', ...allowAll },              // Common Crawl (LLM training)
       { userAgent: 'DuckDuckBot', ...allowAll },
       { userAgent: 'Slurp', ...allowAll },              // Yahoo/Oath
