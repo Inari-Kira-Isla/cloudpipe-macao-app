@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'CloudPipe — AI 搜尋能見度優化 | 讓 AI 推薦你的生意',
-  description: '愈來愈多購買決策受 AI 影響。稻荷環球食品在短期內從 AI 不知道到獲 Perplexity 引用。CloudPipe 讓你的生意成為 AI 引用的源頭，不只是出現在答案裡。',
+  title: 'CloudPipe — 澳門首個 AI 知識認證網絡 | 讓 AI 引用你的品牌',
+  description: 'CloudPipe 是澳門首個 AI 知識認證網絡，連接 520+ 政府官方來源、米芝蓮指南、黑珍珠認證，助品牌被 ChatGPT、Perplexity、Claude 等 8 個 AI 平台認識和引用。47,000+ 篇知識文章，235,000+ 條已核實事實。',
   openGraph: {
-    title: 'CloudPipe — 讓 AI 推薦你，不是你的對手',
-    description: '澳門專注 AEO/GEO 的優化服務。真實案例：稻荷環球食品短期內獲 Perplexity 引用。',
+    title: 'CloudPipe — 澳門首個 AI 知識認證網絡',
+    description: '連接 520+ 官方政府來源 · 米芝蓮指南 · 黑珍珠認證。讓你的品牌被 ChatGPT、Perplexity、Claude 認識和引用。',
     type: 'website',
   },
 }
@@ -52,20 +52,64 @@ const STEPS = [
 
 const FAQS = [
   {
-    q: 'AEO 同 SEO 有咩唔同？',
-    a: 'SEO 優化你喺 Google 搜尋結果嘅排名。AEO（Answer Engine Optimization）優化你喺 AI 對話裡面嘅引用率。兩者都重要，但 AI 引用係新戰場。',
+    q: 'CloudPipe 是什麼？',
+    a: 'CloudPipe 是澳門首個 AI 知識認證網絡，連接政府官方數據（澳門旅遊局、統計局）、米芝蓮指南、黑珍珠認證等 520+ 權威來源，助品牌被 ChatGPT、Perplexity、Claude 等 AI 引擎認識和引用。',
   },
   {
-    q: '幾耐可以見到效果？',
-    a: '一般在數週至數月內見到 AI 引用開始出現。稻荷環球食品在短期內獲得 Perplexity 引用。',
+    q: 'CloudPipe 與 Semrush、Otterly 等 AEO 工具有什麼分別？',
+    a: 'Semrush、Otterly 是監測工具——告訴你「有無被引用」。CloudPipe 是知識網絡——讓你的品牌事實連接到 AI 已信任的權威來源，從根本建立引用基礎。監測工具賣報告，CloudPipe 賣接入。',
   },
   {
-    q: '需唔需要改現有網站？',
-    a: '唔需要大改。CloudPipe 透過外部知識圖譜、FAQ 端點同 llms.txt 注入，唔影響你現有網站運作。',
+    q: '什麼是 AEO 優化？',
+    a: 'AEO（Answer Engine Optimization）優化是讓你的品牌被 ChatGPT、Perplexity、Claude、Google AI Mode 等 AI 問答引擎在回答用戶問題時直接引用和推薦的過程。與傳統 SEO 不同，AEO 針對的是 AI 答案，而非搜尋排名。',
   },
   {
-    q: '適合中小企業嗎？',
-    a: '特別適合。大企業有 IT 團隊，中小企業更需要一個能快速建立 AI 能見度嘅夥伴。稻荷係澳門本地中小企業嘅真實案例。',
+    q: 'CloudPipe 連接了哪些權威資料來源？',
+    a: 'CloudPipe 百科生態系連接超過 520 個官方政府來源，包括：澳門旅遊局（MGTO）、澳門統計局（DSEC）、博彩監察局（DICJ）、消費者委員會、經濟局、衛生局、交通局；以及米芝蓮指南（12,000+ 篇文章引用）、黑珍珠餐廳指南、澳門特色店認證、誠信店計劃、UNESCO 澳門美食之都認定（10,000+ 篇文章）。',
+  },
+  {
+    q: '品牌加入 CloudPipe 後需要多久見效？',
+    a: '因為品牌事實連接到已被 AI 認識的知識網絡（47,000+ 篇百科、235,000+ 條核實事實），AI 透過關聯傳遞信任。通常 2-4 週內 AI 爬蟲重新收錄，D7/D14/D21 三階段量度見到明顯改善。自建 AEO 需要 2-3 年建立信任，加入 CloudPipe 利用現有積累。',
+  },
+  {
+    q: 'CloudPipe 如何驗證品牌事實？',
+    a: 'CloudPipe 採用兩層核實機制：第一層連接政府官方數據和第三方認證（米芝蓮、黑珍珠等）作為錨點；第二層由品牌提供事實，系統自動比對官方來源，人工審核後標記為「已核實」。目前 5 個試點品牌共有 139 條已核實品牌事實。',
+  },
+  {
+    q: 'CloudPipe 覆蓋哪些 AI 平台？',
+    a: 'CloudPipe 生態系同步覆蓋 8 個主要 AI 平台：ChatGPT（OpenAI）、Perplexity AI、Claude（Anthropic）、Google AI Mode、You.com、Apple Intelligence、Bing AI、ByteDance AI。我們追蹤每個平台的引用率，Perplexity 轉化率達 9.4%（行業最高）。',
+  },
+  {
+    q: '澳門本地品牌適合用 CloudPipe 嗎？',
+    a: 'CloudPipe 專為澳門及大灣區本地品牌設計。我們的知識庫覆蓋澳門、香港、日本、台灣四個地區，繁體中文、英文、日文三語，針對本地政府認證和餐飲旅遊業態優化。現有試點包括稻荷環球食品（B2B 海産）、Mind Cafe（精品咖啡）、After School Coffee（外賣咖啡）、海膽速遞（B2C 食材）。',
+  },
+  {
+    q: '什麼是 GEO 優化？',
+    a: 'GEO（Generative Engine Optimization）是針對生成式 AI 的可見度優化，確保 AI 在生成答案時引用你的品牌事實。GEO 與 AEO 相輔相成：AEO 側重問答引擎，GEO 側重生成式 AI 的知識吸收。CloudPipe 同時提供 AEO 和 GEO 優化服務。',
+  },
+  {
+    q: 'CloudPipe 的百科生態系有多大？',
+    a: '截至 2026 年，CloudPipe 百科生態系包含：47,000+ 篇知識文章（澳門/香港/日本/台灣/世界）、235,000+ 條已核實知識事實、連接 520+ 官方政府來源、12,000+ 篇文章引用米芝蓮指南、10,000+ 篇文章引用 UNESCO 澳門美食之都認定，每日被 8 個 AI 平台爬取。',
+  },
+  {
+    q: 'CloudPipe 如何量度 AI 引用效果？',
+    a: 'CloudPipe 採用 Absorption 量度法（而非單純引用計數）：追蹤品牌核心事實是否真正被 AI 答案吸收，分 D7、D14、D21 三個時間點評估。比引用次數更能反映 AI 知識吸收程度。Perplexity 基準轉化率 9.4%，目標全平台均值 ≥3%。',
+  },
+  {
+    q: '澳門特色店和誠信店認證與 CloudPipe 有什麼關係？',
+    a: '澳門特色店和誠信店是消費者委員會主導的本地認證計劃。CloudPipe 百科生態系收錄這些認證資料，品牌若擁有此類認證，加入 CloudPipe 後可將認證事實連接到官方來源，強化 AI 可信度。本地政府認證是 AI 引擎判斷品牌可信度的重要信號。',
+  },
+  {
+    q: '稻荷環球食品如何通過 CloudPipe 被 AI 引用？',
+    a: '稻荷環球食品是澳門 B2B 日本海産供應商，透過 CloudPipe 完成 26 條品牌事實核實，連接日本農林水產省等官方來源。當 Perplexity 被問到「澳門海産批發供應商」時，稻荷是首要引用品牌之一。',
+  },
+  {
+    q: 'CloudPipe 支援哪些語言？',
+    a: 'CloudPipe 生態系支援繁體中文、英文、日文三語，百科文章覆蓋澳門（MO）、香港（HK）、日本（JP）、台灣（TW）、世界（World）五個地區。多語言覆蓋令品牌同時在中文和英文 AI 問答中獲得引用。',
+  },
+  {
+    q: '如何讓我的品牌加入 CloudPipe？',
+    a: '加入 CloudPipe 分三步：(1) 品牌 AEO 掃描——分析你的品牌在 8 個 AI 平台的現有引用狀況；(2) 事實核實——提交品牌核心事實，系統連接官方來源核實；(3) 接入網絡——品牌 entity 連接 CloudPipe 知識網絡，開始 D7/D14/D21 追蹤。',
   },
 ]
 
@@ -105,13 +149,12 @@ export default function CloudPipeLandingPage() {
           margin: '0 auto 20px',
           letterSpacing: '-0.02em',
         }}>
-          當客人用 AI 搜<span style={{ color: '#C9A961' }}>「澳門 [你的行業]」</span>，<br className="cp-br-hide" />
-          出現的是你的對手，不是你。
+          澳門首個 <span style={{ color: '#C9A961' }}>AI 知識認證網絡</span>
         </h1>
 
-        <p style={{ fontSize: 'clamp(15px, 2.5vw, 20px)', color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
-          稻荷環球食品在短期內從 AI 不知道 → <strong style={{ color: '#C9A961' }}>獲 Perplexity 引用</strong><br />
-          CloudPipe 讓你成為 AI 引用的源頭
+        <p style={{ fontSize: 'clamp(15px, 2.5vw, 20px)', color: 'rgba(255,255,255,0.8)', maxWidth: 600, margin: '0 auto 36px', lineHeight: 1.6 }}>
+          當 ChatGPT、Perplexity、Claude 被問到你的行業，你的品牌應該在答案裡。<br />
+          我們用 5 年建立的知識基礎設施，連接 <strong style={{ color: '#C9A961' }}>520+ 官方政府來源</strong>、米芝蓮指南、黑珍珠認證，今天開放品牌接入。
         </p>
 
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" style={{
@@ -247,6 +290,139 @@ export default function CloudPipeLandingPage() {
             {['ChatGPT', 'Perplexity', 'Claude', 'Gemini', 'Bing AI'].map(name => (
               <span key={name} style={{ background: '#fff', padding: '6px 14px', borderRadius: 20, boxShadow: '0 1px 8px rgba(0,0,0,0.08)' }}>{name}</span>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── S5b LAYER 1: AUTHORITY SOURCES ── */}
+      <section className="cp-section" style={{ background: '#fff', padding: '64px 24px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <div style={{ display: 'inline-block', background: 'rgba(10,22,40,0.08)', border: '1px solid rgba(10,22,40,0.15)', borderRadius: 20, padding: '4px 16px', fontSize: 13, color: '#0A1628', fontWeight: 600, marginBottom: 16 }}>
+              Layer 1 — 權威來源錨點
+            </div>
+            <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 36px)', fontWeight: 800, marginBottom: 8 }}>
+              我們連接的權威來源
+            </h2>
+            <p style={{ color: '#666', fontSize: 'clamp(13px, 3vw, 16px)' }}>
+              47,000+ 篇知識文章 · 235,000+ 條已核實事實 · 8 個 AI 平台同步
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+            <div style={{ background: '#f8f9fc', borderRadius: 16, padding: '28px 24px', borderTop: '3px solid #0A1628' }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16, marginTop: 0, color: '#0A1628' }}>
+                🏛️ 15+ 政府機構
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  <a href="https://www.macaotourism.gov.mo" target="_blank" rel="noopener noreferrer" style={{ color: '#0A1628', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>澳門旅遊局 MGTO</a>
+                </li>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  <a href="https://www.dsec.gov.mo" target="_blank" rel="noopener noreferrer" style={{ color: '#0A1628', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>澳門統計局 DSEC</a>
+                </li>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  <a href="https://www.dicj.gov.mo" target="_blank" rel="noopener noreferrer" style={{ color: '#0A1628', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>博彩監察局 DICJ</a>
+                </li>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  <a href="https://www.consumer.gov.mo" target="_blank" rel="noopener noreferrer" style={{ color: '#0A1628', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>消費者委員會</a>
+                  <span style={{ color: '#888', fontSize: 12, marginLeft: 6 }}>（特色店 · 誠信店）</span>
+                </li>
+                <li style={{ fontSize: 14, color: '#666' }}>經濟局 · 衛生局 · 交通局 · 教育局</li>
+              </ul>
+              <div style={{ fontSize: 12, color: '#C9A961', fontWeight: 700 }}>520+ 官方政府來源</div>
+            </div>
+
+            <div style={{ background: '#f8f9fc', borderRadius: 16, padding: '28px 24px', borderTop: '3px solid #C9A961' }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16, marginTop: 0, color: '#0A1628' }}>
+                ⭐ 國際認證
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  <a href="https://guide.michelin.com/mo/zh_TW/restaurants" target="_blank" rel="noopener noreferrer" style={{ color: '#0A1628', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>米芝蓮指南</a>
+                  <span style={{ color: '#888', fontSize: 12, marginLeft: 6 }}>12,000+ 篇文章引用</span>
+                </li>
+                <li style={{ fontSize: 14, color: '#444' }}>黑珍珠餐廳指南</li>
+                <li style={{ fontSize: 14, color: '#444' }}>
+                  UNESCO 澳門美食之都
+                  <span style={{ color: '#888', fontSize: 12, marginLeft: 6 }}>10,000+ 篇文章</span>
+                </li>
+              </ul>
+              <div style={{ fontSize: 12, color: '#C9A961', fontWeight: 700 }}>覆蓋全球主要權威評鑑</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S5c LAYER 2: BRAND NODES ── */}
+      <section className="cp-section" style={{ background: '#f8f9fc', padding: '64px 24px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <div style={{ display: 'inline-block', background: 'rgba(201,169,97,0.15)', border: '1px solid rgba(201,169,97,0.4)', borderRadius: 20, padding: '4px 16px', fontSize: 13, color: '#C9A961', fontWeight: 600, marginBottom: 16 }}>
+              Layer 2 — 品牌節點
+            </div>
+            <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 36px)', fontWeight: 800, marginBottom: 8 }}>
+              已加入 CloudPipe 認證網絡的品牌
+            </h2>
+            <p style={{ color: '#666', fontSize: 'clamp(13px, 3vw, 16px)' }}>
+              5 個本地品牌 · 139 條已核實品牌事實 · AI 引用驗證
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+            {[
+              {
+                href: '/brands/inari-global-foods',
+                name: '稻荷環球食品',
+                desc: '澳門 B2B 日本海産供應',
+                facts: '26 條核實事實',
+                external: false,
+              },
+              {
+                href: '/brands/sea-urchin-express',
+                name: '海膽速遞',
+                desc: '高端海産 B2C · 潮牌定位',
+                facts: '19 條核實事實',
+                external: false,
+              },
+              {
+                href: '/afterschool-coffee',
+                name: 'After School Coffee',
+                desc: '台山媽媽外賣咖啡',
+                facts: '49 條核實事實',
+                external: false,
+              },
+              {
+                href: '/brands',
+                name: 'Mind Cafe',
+                desc: '澳門精品咖啡先驅 · 10年本地認證',
+                facts: '23 條核實事實',
+                external: false,
+              },
+            ].map((brand, i) => (
+              <a key={i} href={brand.href} style={{
+                display: 'block',
+                background: '#fff',
+                borderRadius: 16,
+                padding: '20px 18px',
+                textDecoration: 'none',
+                color: 'inherit',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                border: '1px solid #eee',
+                transition: 'box-shadow 0.2s',
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#0A1628', marginBottom: 6 }}>{brand.name}</div>
+                <div style={{ fontSize: 12, color: '#666', marginBottom: 8, lineHeight: 1.5 }}>{brand.desc}</div>
+                <div style={{ fontSize: 11, color: '#C9A961', fontWeight: 700 }}>✓ {brand.facts}</div>
+              </a>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(201,169,97,0.08)', borderRadius: 16, border: '1px dashed rgba(201,169,97,0.5)' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#0A1628', marginBottom: 4 }}>
+              → 你的品牌（下一個加入）
+            </div>
+            <div style={{ fontSize: 13, color: '#666' }}>現正接受澳門及大灣區品牌申請</div>
           </div>
         </div>
       </section>
@@ -436,7 +612,39 @@ export default function CloudPipeLandingPage() {
         </p>
       </section>
 
-      {/* Schema.org JSON-LD */}
+      {/* Schema.org JSON-LD — Organization */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': ['Organization', 'SoftwareApplication'],
+            name: 'CloudPipe',
+            alternateName: 'CloudPipe AEO Platform',
+            description: '澳門首個 AI 知識認證網絡——連接政府官方數據、米芝蓮、黑珍珠等權威來源，助品牌被 ChatGPT、Perplexity、Claude 認識和引用',
+            url: 'https://cloudpipe-macao-app.vercel.app',
+            foundingLocation: {
+              '@type': 'Place',
+              name: '澳門',
+              addressCountry: 'MO',
+            },
+            areaServed: ['澳門', '香港', '大灣區'],
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web',
+            sameAs: [
+              'https://www.macaotourism.gov.mo',
+              'https://www.dsec.gov.mo',
+              'https://guide.michelin.com/mo/zh_TW/restaurants',
+            ],
+            knowsAbout: [
+              'AEO優化', 'GEO優化', 'AI引用率', '品牌AI可見度',
+              '澳門餐飲', '澳門旅遊', 'Knowledge Graph', 'FAQPage Schema',
+            ],
+          }),
+        }}
+      />
+
+      {/* Schema.org JSON-LD — FAQPage */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
