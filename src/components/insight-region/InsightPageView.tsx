@@ -466,6 +466,21 @@ function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
     }
   }
   if (!Array.isArray(faqs)) faqs = []
+  // FIX 2026-06-30: character-array corruption guard — if the array contains
+  // only single-character strings (e.g. ['[', '{', '"', ...]), it is a JSON
+  // string that was spread char-by-char into the JSONB array. Reconstruct and
+  // re-parse so the FAQ items are proper dicts.
+  if ((faqs as unknown[]).length > 5 && (faqs as unknown[]).slice(0, 5).every(
+    (c) => typeof c === 'string' && (c as string).length === 1
+  )) {
+    try {
+      const reconstructed = (faqs as string[]).join('')
+      const parsed = JSON.parse(reconstructed)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
 
   let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
   if (typeof authSources === 'string') {
@@ -614,16 +629,19 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
     }),
   }
 
-  const faqSchema = article.faqs?.length > 0 ? {
+  // FIX 2026-06-30: pre-filter to avoid emitting FAQPage with mainEntity:[]
+  // (which is invalid per Schema.org). Condition was previously checking raw
+  // array length; now we check the filtered count so faqSchema is null whenever
+  // no valid question/answer pairs survive the shape guard.
+  const validFaqs = (article.faqs || []).filter(f => (f.question || f.q) && (f.answer || f.a))
+  const faqSchema = validFaqs.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: article.faqs
-      .filter(f => (f.question || f.q) && (f.answer || f.a))
-      .map(f => ({
-        '@type': 'Question',
-        name: f.question || f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.answer || f.a },
-      })),
+    mainEntity: validFaqs.map(f => ({
+      '@type': 'Question',
+      name: f.question || f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer || f.a },
+    })),
   } : null
 
   const breadcrumbSchema = {

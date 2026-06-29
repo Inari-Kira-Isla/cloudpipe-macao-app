@@ -11,6 +11,24 @@ function parseLang(raw?: string | null): Lang {
   return 'zh'
 }
 
+// FIX 2026-06-30: normalize faqs/authority_sources before returning so
+// LangAwareContent client-side swap doesn't receive double-JSON-encoded strings
+// (same normalization applied in the server page render).
+function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
+  if (!a) return null
+  let faqs: unknown = (a as { faqs?: unknown }).faqs
+  if (typeof faqs === 'string') {
+    try { const p = JSON.parse(faqs); faqs = Array.isArray(p) ? p : [] } catch { faqs = [] }
+  }
+  if (!Array.isArray(faqs)) faqs = []
+  let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
+  if (typeof authSources === 'string') {
+    try { const p = JSON.parse(authSources); authSources = Array.isArray(p) ? p : undefined } catch { authSources = undefined }
+  }
+  if (authSources !== undefined && !Array.isArray(authSources)) authSources = undefined
+  return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -31,7 +49,7 @@ export async function GET(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-  const article = (data as InsightArticle | null) || getStaticInsight(slug, lang)
+  const article = normalizeInsight((data as InsightArticle | null) || getStaticInsight(slug, lang))
   if (!article) {
     return NextResponse.json({ error: 'not found' }, { status: 404 })
   }
