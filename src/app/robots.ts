@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/macao/*/null', '/api/', '/_next/static/', '/_next/image/'],
+        disallow: ['/macao/*/null', '/api/', '/dashboard/', '/_next/static/', '/_next/image/'],
         crawlDelay: 10,
       },
       // === International AI crawlers ===

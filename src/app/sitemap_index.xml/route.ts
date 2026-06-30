@@ -22,6 +22,8 @@ export async function GET() {
   const now = new Date().toISOString()
 
   const childSitemaps = [
+    'sitemap-priority.xml',
+    'sitemap-standard.xml',
     'sitemap.xml',
     'sitemap-merchants.xml',
     'sitemap-insights.xml',

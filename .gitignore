@@ -39,7 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-llms.txt
+public/llms.txt
+# App Router dynamic route for llms.txt is tracked (src/app/llms.txt/)
+!src/app/llms.txt/
+!src/app/llms.txt/**
 
 # Secrets (DO NOT COMMIT)
 credentials.json
