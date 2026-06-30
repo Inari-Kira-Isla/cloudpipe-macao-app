@@ -36,14 +36,20 @@ export async function GET() {
     'sitemap-world.xml',
   ]
 
-  const body = childSitemaps
-    .map(
+  const manifestEntry = `  <sitemap>
+    <loc>${escapeXml(`${siteUrl}/api/v1/manifest`)}</loc>
+    <lastmod>${now}</lastmod>
+  </sitemap>`
+
+  const body = [
+    manifestEntry,
+    ...childSitemaps.map(
       (path) => `  <sitemap>
     <loc>${escapeXml(`${siteUrl}/${path}`)}</loc>
     <lastmod>${now}</lastmod>
   </sitemap>`,
-    )
-    .join('\n')
+    ),
+  ].join('\n')
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
