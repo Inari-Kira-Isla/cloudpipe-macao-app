@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
   // Commercial secret paths blocked from AI crawlers
   const aiCrawlerDisallows = [
     '/api/',
+    '/api/v1/facts/',   // double-insurance: API endpoints are for programmatic access, not AI crawling
     '/macao/crawler-dashboard',
     '/macao/citation-stats',
   ]
