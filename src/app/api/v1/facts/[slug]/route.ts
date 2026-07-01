@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { validateApiKey } from '@/lib/api-key-validator'
+import { logApiEvent } from '@/lib/routescope'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,13 +9,16 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const t0 = Date.now()
   const { slug } = await params
 
   // Validate API key from X-API-Key header
   const apiKey = req.headers.get('x-api-key')
   const authResult = await validateApiKey(apiKey)
+  const keyPrefix = apiKey ? apiKey.slice(0, 8) : undefined
 
   if (!authResult.valid) {
+    logApiEvent({ req, tier: 'layer1', apiKeyPrefix: keyPrefix, responseMs: Date.now() - t0, statusCode: authResult.status ?? 401 })
     return NextResponse.json(
       {
         error: authResult.error,
@@ -26,6 +30,7 @@ export async function GET(
   }
 
   const tier = authResult.tier!
+  const routeScopeTier = tier === 'premium' ? 'layer2' : 'layer1'
   const db = createServiceClient()
 
   // Resolve slug → subject_entity_id
@@ -55,6 +60,7 @@ export async function GET(
     .order('predicate')
 
   if (error || !facts || facts.length === 0) {
+    logApiEvent({ req, tier: routeScopeTier, apiKeyPrefix: keyPrefix, responseMs: Date.now() - t0, statusCode: 404 })
     return NextResponse.json(
       {
         error: 'Entity not found',
@@ -85,6 +91,7 @@ export async function GET(
     return base
   })
 
+  logApiEvent({ req, tier: routeScopeTier, apiKeyPrefix: keyPrefix, responseMs: Date.now() - t0, statusCode: 200 })
   return NextResponse.json({
     entity: entityId,
     slug,

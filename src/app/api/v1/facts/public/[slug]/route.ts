@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
+import { logApiEvent } from '@/lib/routescope'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,6 +8,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const t0 = Date.now()
   const { slug } = await params
   const db = createServiceClient()
 
@@ -31,12 +33,14 @@ export async function GET(
     .order('predicate')
 
   if (error || !facts || facts.length === 0) {
+    logApiEvent({ req: _req, tier: 'layer0', responseMs: Date.now() - t0, statusCode: 404 })
     return NextResponse.json(
       { error: 'Entity not found', hint: `No public facts for '${slug}'` },
       { status: 404 }
     )
   }
 
+  logApiEvent({ req: _req, tier: 'layer0', responseMs: Date.now() - t0, statusCode: 200 })
   return NextResponse.json({
     entity: entityId,
     slug,
