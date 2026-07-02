@@ -36,20 +36,16 @@ export async function GET() {
     'sitemap-world.xml',
   ]
 
-  const manifestEntry = `  <sitemap>
-    <loc>${escapeXml(`${siteUrl}/api/v1/manifest`)}</loc>
-    <lastmod>${now}</lastmod>
-  </sitemap>`
+  // NOTE: /api/v1/manifest is a JSON API endpoint, NOT a sitemap — removed 2026-07-03.
+  // A <sitemap> entry must resolve to a valid XML <urlset> or <sitemapindex>; listing
+  // a JSON manifest URL here causes Googlebot to log a sitemap parse error.
 
-  const body = [
-    manifestEntry,
-    ...childSitemaps.map(
+  const body = childSitemaps.map(
       (path) => `  <sitemap>
     <loc>${escapeXml(`${siteUrl}/${path}`)}</loc>
     <lastmod>${now}</lastmod>
   </sitemap>`,
-    ),
-  ].join('\n')
+    ).join('\n')
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
