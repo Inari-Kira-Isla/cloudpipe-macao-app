@@ -1,8 +1,12 @@
-import { createServiceClient } from '@/lib/supabase'
+import { createSitemapServiceClient } from '@/lib/supabase'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 
-export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
-export const maxDuration = 60
+// ISR 30min. Was force-dynamic, which disabled the CDN cache → every crawler hit
+// re-ran the merchant pagination. Safe under ISR because of the 503-on-incomplete
+// guard below (this route once collapsed to 1 URL and dropped AI crawlers -99%,
+// 2026-05-13 — never let ISR cache a collapsed sitemap). 2026-07-03.
+export const revalidate = 1800
+export const maxDuration = 120 // headroom for the graceful 503 under a 30s-per-fetch timeout storm (see budget guard)
 
 interface SitemapURL {
   loc: string
@@ -18,14 +22,20 @@ export async function GET() {
   const entries: SitemapURL[] = []
 
   // Fetch ALL live MO merchants (paginated to bypass 1000-row default limit).
-  // 2026-05-13 fix: switched from anon `supabase` client to service-role
-  // `createServiceClient()` — RLS on merchants table blocks anon SELECT and
-  // was returning 0 rows (sitemap collapsed to 1 URL → AI-crawler -99% drop).
-  // Service-role mirrors what src/app/sitemap.ts already does.
+  // 2026-05-13 fix: switched from anon `supabase` client to service-role — RLS on
+  // merchants blocks anon SELECT and returned 0 rows (sitemap collapsed to 1 URL →
+  // AI-crawler -99% drop). 2026-07-03: use createSitemapServiceClient() (30s
+  // timeout) not createServiceClient() (8s) — under ISR the 8s limit times out
+  // regeneration and caches an empty sitemap (see src/lib/supabase.ts).
+  const MERCHANT_WALL_CLOCK_BUDGET_MS = 50_000 // trip before the platform kill so the graceful 503 can return (30s/fetch × retries); maxDuration = 120 covers it
   let merchants: Array<{ slug: string; updated_at: string; category: unknown }> = []
   let offset = 0
+  let consecutiveErrors = 0
+  let complete = false
+  const startedAt = Date.now()
   while (true) {
-    const { data } = await createServiceClient()
+    if (Date.now() - startedAt > MERCHANT_WALL_CLOCK_BUDGET_MS) break // budget guard: never get killed mid-page
+    const { data, error } = await createSitemapServiceClient()
       .from('merchants')
       .select('slug, updated_at, category:categories(slug)')
       .eq('status', 'live')
@@ -34,16 +44,28 @@ export async function GET() {
       .not('slug', 'like', 'jp-%')
       .order('code')
       .range(offset, offset + 999)
-    if (!data || data.length === 0) break
+    if (error || !data) {
+      consecutiveErrors++
+      if (consecutiveErrors >= 3) { console.error(`[sitemap merchants] gave up after 3 fetch errors at offset ${offset}:`, error?.message ?? error); break } // partial → 503 below
+      await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+      continue // retry the SAME offset — do not advance past a failed page
+    }
+    consecutiveErrors = 0
+    if (data.length === 0) { complete = true; break }
     merchants = merchants.concat(data as typeof merchants)
-    if (data.length < 1000) break
+    if (data.length < 1000) { complete = true; break }
     offset += 1000
   }
 
-  // Fetch categories for the 3-layer structure
-  const { data: categories } = await createServiceClient()
-    .from('categories')
-    .select('slug')
+  // Guard: an incomplete walk or zero merchants must NOT be cached by ISR. This
+  // route once collapsed to 1 URL (2026-05-13 RLS bug) and dropped AI crawlers
+  // -99%. A non-cacheable 503 keeps the last good cached copy and retries next hit.
+  if (!complete || merchants.length === 0) {
+    return new Response('Service temporarily unavailable — merchant sitemap regeneration incomplete, retry shortly', {
+      status: 503,
+      headers: { 'Retry-After': '120', 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' },
+    })
+  }
 
   // Layer 1: Root business directory
   entries.push({
@@ -102,7 +124,7 @@ ${entries.map(e => `  <url>
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=1800, stale-while-revalidate=86400',
     },
   })
 }

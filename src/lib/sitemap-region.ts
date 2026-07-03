@@ -119,13 +119,29 @@ export interface InsightRow {
  * Fetch every published insight for one region, paginated to bypass the
  * 1000-row PostgREST default limit. Service-role required (RLS blocks anon).
  */
+export interface RegionFetchResult {
+  rows: InsightRow[]
+  /** True only when the loop walked every page to completion (short/empty final page). */
+  complete: boolean
+}
+
+// Break before the platform kill so a mid-loop timeout storm can't prevent the
+// graceful 503 from returning. With createSitemapServiceClient's 30s per-fetch
+// timeout, this 50s budget trips before the 3rd retry (~62s worst case); the
+// wrappers set maxDuration = 120 so that 503 return still fits under the ceiling.
+const REGION_WALL_CLOCK_BUDGET_MS = 50_000
+
 export async function fetchInsightsByRegion(
   region: SitemapRegion,
-): Promise<InsightRow[]> {
+): Promise<RegionFetchResult> {
   const rows: InsightRow[] = []
   let offset = 0
+  let consecutiveErrors = 0
+  let complete = false
+  const startedAt = Date.now()
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    if (Date.now() - startedAt > REGION_WALL_CLOCK_BUDGET_MS) break // budget guard: never get killed mid-page
     try {
       const { data, error } = await createSitemapServiceClient()
         .from('insights')
@@ -134,17 +150,24 @@ export async function fetchInsightsByRegion(
         .eq('region', region)
         .order('id', { ascending: true })
         .range(offset, offset + 999)
-      if (error || !data || data.length === 0) break
+      if (error || !data) {
+        consecutiveErrors++
+        if (consecutiveErrors >= 3) { console.error(`[sitemap ${region}] gave up after 3 fetch errors at offset ${offset}:`, error?.message ?? error); break } // partial; complete stays false → 503
+        await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
+        continue // retry the SAME offset — do not advance past a failed page
+      }
+      consecutiveErrors = 0
+      if (data.length === 0) { complete = true; break }
       rows.push(...(data as InsightRow[]))
-      if (data.length < 1000) break
+      if (data.length < 1000) { complete = true; break } // short page = last page = walked to the end
       offset += 1000
-    } catch {
-      // Build-time / DB-overload safety: return partial data instead of
-      // crashing the build. ISR will retry at runtime.
-      break
+    } catch (e) {
+      consecutiveErrors++
+      if (consecutiveErrors >= 3) { console.error(`[sitemap ${region}] fetch threw 3x at offset ${offset}:`, e); break }
+      await new Promise(r => setTimeout(r, 800 * consecutiveErrors))
     }
   }
-  return rows
+  return { rows, complete }
 }
 
 /**
@@ -234,11 +257,29 @@ function regionChangefreqAndPriority(
  * 2026-05-27: upgraded from flat 'weekly' to age-based stratification to fix
  * HK/TW/JP "single-batch then 5-day silence" crawl pattern.
  */
-export async function buildRegionSitemapXml(
+/** Non-cacheable 503 — see buildRegionSitemapResponse guards. */
+function sitemapUnavailable(reason: string): Response {
+  return new Response(`Service temporarily unavailable — ${reason}, retry shortly`, {
+    status: 503,
+    headers: { 'Retry-After': '120', 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' },
+  })
+}
+
+export async function buildRegionSitemapResponse(
   siteUrl: string,
   region: SitemapRegion,
-): Promise<string> {
-  const rows = await fetchInsightsByRegion(region)
+): Promise<Response> {
+  const { rows, complete } = await fetchInsightsByRegion(region)
+  // Guard: an INCOMPLETE walk (DB error / budget hit) must NOT be cached by ISR.
+  // These routes were force-dynamic (never cached, so a transient empty result
+  // self-healed on the next hit); under revalidate=1800 a partial <urlset> served
+  // 200 + stale-while-revalidate=86400 would poison AI crawler discovery for up
+  // to 24h (the 2026-05-11 -99% pattern). A 503 is not cached, so ISR keeps the
+  // last good copy and retries next request.
+  if (!complete) return sitemapUnavailable('region sitemap regeneration incomplete')
+  // A COMPLETE walk returning 0 rows is GENUINE emptiness — createSitemapServiceClient
+  // uses the service role, so 0 rows ≠ an RLS block. Serve a valid empty <urlset>
+  // 200, NOT a permanent 503 (which Google/Bing penalise as a broken sitemap URL).
   const now = new Date().toISOString().split('T')[0]
   const urls = rows
     .filter((r) => r.slug)
@@ -252,7 +293,7 @@ export async function buildRegionSitemapXml(
         priority,
       }
     })
-  return renderUrlsetXml(urls)
+  return new Response(renderUrlsetXml(urls), { headers: SITEMAP_HEADERS })
 }
 
 /**
@@ -265,5 +306,5 @@ export async function buildRegionSitemapXml(
  */
 export const SITEMAP_HEADERS = {
   'Content-Type': 'application/xml; charset=utf-8',
-  'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+  'Cache-Control': 'public, max-age=1800, stale-while-revalidate=86400',
 } as const

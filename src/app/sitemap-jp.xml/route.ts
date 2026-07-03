@@ -1,10 +1,14 @@
-import { buildRegionSitemapXml, SITEMAP_HEADERS } from '@/lib/sitemap-region'
+import { buildRegionSitemapResponse } from '@/lib/sitemap-region'
 
-export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
-export const maxDuration = 60
+// ISR 30min. Was force-dynamic, which disabled the CDN cache → every crawler hit
+// ran the paginated Supabase walk (~12.8s for JP, the worst region — over the
+// ~10s crawler timeout line) → strict-timeout bots abandoned. Safe under ISR:
+// buildRegionSitemapResponse returns a non-cacheable 503 on any incomplete/empty
+// fetch, so a bad regeneration never gets cached. 2026-07-03.
+export const revalidate = 1800
+export const maxDuration = 120 // headroom for the graceful 503 under a 30s-per-fetch timeout storm
 
 export async function GET() {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
-  const xml = await buildRegionSitemapXml(siteUrl, 'JP')
-  return new Response(xml, { headers: SITEMAP_HEADERS })
+  return buildRegionSitemapResponse(siteUrl, 'JP')
 }
