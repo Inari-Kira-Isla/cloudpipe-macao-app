@@ -9,7 +9,7 @@ const AI_BOT_PATTERNS = [
   /PerplexityBot/i, /Perplexity/i,
   /Googlebot/i, /Google-Extended/i, /GoogleOther/i,
   /Amazonbot/i, /Applebot/i,
-  /meta-externalagent/i, /FacebookBot/i,
+  /meta-externalagent/i, /FacebookBot/i, /facebookexternalhit/i, /Facebot/i,
   /YandexBot/i, /Bingbot/i,
   /Bytespider/i, /SamanthaDoubao/i,
   /CCBot/i, /YouBot/i,
@@ -24,6 +24,11 @@ const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/Amazonbot/i, 'Amazonbot', 'Amazon'],
   [/Applebot/i, 'Applebot', 'Apple'],
   [/meta-externalagent|FacebookBot/i, 'meta-externalagent', 'Meta'],
+  // facebookexternalhit / Facebot = Meta's link-preview scraper (fires on FB/IG/
+  // Messenger link shares). Separate name from meta-externalagent (the AI crawler)
+  // so crawl stats stay clean. Was previously unmatched → recorded as a human
+  // visit, leaving Meta crawl data with a blind spot. Added 2026-07-03.
+  [/facebookexternalhit|Facebot/i, 'facebookexternalhit', 'Meta'],
   [/YandexBot/i, 'YandexBot', 'Yandex'],
   [/Bingbot/i, 'Bingbot', 'Microsoft'],
   [/Bytespider|SamanthaDoubao/i, 'Bytespider', 'ByteDance'],
