@@ -19,8 +19,18 @@ import {
   SITEMAP_HEADERS,
 } from '@/lib/sitemap-region'
 
-export const dynamic = 'force-dynamic' // skip build-time prerender; CDN caches via Cache-Control header
-export const maxDuration = 300 // Vercel max — 44 pages × ~30s worst-case page latency must fit (root cause: 120s budget killed mid-loop under crawl load → incomplete/empty cache)
+// ISR: regenerate at most once every 30min in the background; crawlers get the
+// CDN-cached copy instantly. Was `dynamic = 'force-dynamic'`, which DISABLED the
+// Vercel CDN cache entirely → x-vercel-cache:MISS on every hit → the 44-page
+// Supabase walk ran on EVERY request = ~31s → exceeded crawler HTTP timeouts
+// (Meta collapsed 06-08, Amazon declined 06-17) and starved discovery of the
+// 39,642 insight URLs (this is robots.txt's first sitemap). Verified 2026-07-03.
+// Build-time prerender runs this once (~31s; Supabase env is available on Vercel
+// builds). Bad regenerations still return a non-cacheable 503 (see guards below),
+// so ISR keeps serving the last good 200 rather than caching an empty sitemap.
+// 1800s obeys project CLAUDE.md sitemap revalidate ceiling.
+export const revalidate = 1800
+export const maxDuration = 300 // Vercel max — the 44 sequential Supabase pages (~43.8K rows) must fit under WALL_CLOCK_BUDGET_MS (270s) on a cache-miss regeneration
 
 interface AllInsightRow {
   slug: string | null
