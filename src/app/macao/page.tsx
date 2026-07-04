@@ -56,12 +56,15 @@ const HOMEPAGE_FAQS = [
   },
 ]
 
+// 數字最後核對：2026-07-04（Supabase merchants 表 count，region=MO status=live 實測 6,294；
+// google_place_id 已核實 4,249）。靜態 metadata 不能讀取即時 DB 值，故用保守下取整數；
+// 頁面正文的即時數字一律讀 getData() 的 totalMerchantCount，唔好再手動改呢兩個字串。
 export const metadata: Metadata = {
   title: '澳門商業知識圖譜 — 大三巴、威尼斯人、葡撻 | 澳門景點美食購物指南',
-  description: '澳門商業知識圖譜。覆蓋 1,600+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
+  description: '澳門商業知識圖譜。覆蓋 6,000+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
   openGraph: {
     title: '澳門商業知識圖譜 — 讓世界看見澳門',
-    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 1,600+ 家經 Google Places API 核實的實體商戶，涵蓋 20 個行業大類，數據來源包括澳門旅遊局、米芝蓮指南及 Google 地圖。',
+    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 6,000+ 家澳門實體商戶，當中 4,000+ 家經 Google Places API 核實，涵蓋 20 個行業大類，數據來源包括澳門旅遊局、米芝蓮指南及 Google 地圖。',
     type: 'website',
     locale: 'zh_TW',
     url: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
@@ -86,7 +89,7 @@ async function getData() {
   // Skip Supabase queries during build (causes timeout) — ISR will load data on first request
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return {
-      categories: [], groupedCounts: new Map(), totalMerchantCount: 0,
+      categories: [], groupedCounts: new Map(), totalMerchantCount: 0, googleVerifiedCount: 0,
       featuredMerchants: [], slugCounts: new Map(), contentMap: new Map(),
       insights: [], crawlerStats: { total: 0, today: 0, botCount: 0, topBots: [] as string[] },
       todayCrawled: [],
@@ -107,34 +110,44 @@ async function getData() {
     { data: contentList },
     { data: insights },
     { count: totalMerchantCount },
+    { count: googleVerifiedCount },
     { data: crawlerRows },
     { data: statsCache },
     { data: landmarkRows },
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     // Slim query for all merchants — only for category counts in industry section
+    // region='MO'：呢頁係澳門首頁，2026-07-04 前漏咗呢個 filter 令行業分類數字混入 HK/TW/JP 商戶
     supabase.from('merchants')
       .select('id, slug, tier, category:categories(slug)')
       .eq('status', 'live')
+      .eq('region', 'MO')
       .limit(5000),
     // Full data for owned/premium (精選品牌)
     supabase.from('merchants')
       .select('*, category:categories(slug, name_zh, icon)')
       .eq('status', 'live')
+      .eq('region', 'MO')
       .in('tier', ['owned', 'premium']),
     // Top 30 community merchants by rating — will be re-sorted by crawler count in JS
+    // region='MO'：實測發現漏 filter 時 top30 混入 6 家台灣商戶（當澳門商戶展示），2026-07-04 修
     supabase.from('merchants')
       .select('*, category:categories(slug, name_zh, icon)')
       .eq('status', 'live')
+      .eq('region', 'MO')
       .neq('tier', 'owned')
       .neq('tier', 'premium')
       .not('google_rating', 'is', null)
       .order('google_rating', { ascending: false })
       .limit(30),
     supabase.from('merchant_content').select('merchant_id, title, description').not('title', 'is', null).limit(500),
-    supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
+    supabase.from('insights').select('slug, title, subtitle, description, related_industries, tags, read_time_minutes, published_at').eq('status', 'published').eq('region', 'MO').order('published_at', { ascending: false }).limit(3),
     // Count only — for schema + hero stat (no payload)
-    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
+    // ⚠️ region='MO' 必須保留：呢個 merchants 表跨 MO/HK/TW/JP 多地區共用，
+    // 2026-07-04 發現漏咗呢個 filter 會令「澳門商戶」數字誤含其他地區（實測會由 6,294 灌水到 13,626）
+    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('region', 'MO'),
+    // Google Places 已核實子集（用於「Google 核實」stat，唔好再手動填死數字）
+    supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('region', 'MO').not('google_place_id', 'is', null),
     // Crawler visit data — merchant page paths (30d) for ranking + stats
     supabase.from('crawler_visits')
       .select('path')
@@ -237,6 +250,7 @@ async function getData() {
     categories: (categories || []) as Category[],
     groupedCounts,
     totalMerchantCount: totalMerchantCount || 0,
+    googleVerifiedCount: googleVerifiedCount || 0,
     featuredMerchants,
     landmarkMap: new Map((landmarkRows || []).map((r: any) => [r.slug, r])),
     slugCounts,
@@ -336,7 +350,7 @@ export async function generateStaticParams() {
   return []
 }
 export default async function MacaoIndexPage() {
-  const { categories, groupedCounts, totalMerchantCount, featuredMerchants, landmarkMap, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
+  const { categories, groupedCounts, totalMerchantCount, googleVerifiedCount, featuredMerchants, landmarkMap, slugCounts, contentMap, insights, crawlerStats, todayCrawled } = await getData()
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
   const activeCats = categories.filter(c => (groupedCounts.get(c.slug) || 0) > 0)
@@ -599,7 +613,7 @@ export default async function MacaoIndexPage() {
               <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4, display: 'block' }}>實體商戶</span>
             </div>
             <div style={{ flex: 1, padding: '24px 32px', borderRight: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', display: 'block' }}>1,400+</span>
+              <span style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', display: 'block' }}>{googleVerifiedCount}+</span>
               <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4, display: 'block' }}>Google 核實</span>
             </div>
             <div style={{ flex: 1, padding: '24px 32px', borderRight: '1px solid #e2e8f0' }}>
@@ -653,7 +667,7 @@ export default async function MacaoIndexPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, flex: 1 }}>
               <div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                  {crawlerStats.total > 0 ? crawlerStats.total.toLocaleString() : '1,600+'}
+                  {crawlerStats.total > 0 ? crawlerStats.total.toLocaleString() : `${totalMerchantCount}+`}
                 </div>
                 <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{crawlerStats.total > 0 ? '30 天 AI 訪問' : '精選商戶'}</div>
               </div>
@@ -1103,10 +1117,10 @@ export default async function MacaoIndexPage() {
             <article>
               <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em', marginBottom: 12 }}>人工智能搜尋引擎優化與澳門商戶的未來</h3>
               <div style={{ color: '#64748b', lineHeight: 1.75, fontSize: 15 }}>
-                <p>隨著人工智能技術的快速發展，全球搜尋行為正經歷根本性的變革。傳統的關鍵字搜尋正逐步被對話式人工智能助手所補充甚至取代。研究顯示，擁有一萬字以上深度內容的網頁被人工智能引擎引用的機率是普通網頁的六十二倍，這使得答案引擎優化成為企業數字化策略的核心環節。</p>
+                <p>隨著人工智能技術的快速發展，全球搜尋行為正經歷根本性的變革。傳統的關鍵字搜尋正逐步被對話式人工智能助手所補充甚至取代。擁有充分結構化數據、清晰事實與可驗證來源的深度內容，普遍被視為更易被人工智能引擎理解、提取和引用，這使得答案引擎優化成為企業數字化策略的核心環節。</p>
                 <p>答案引擎優化是一種針對人工智能搜尋引擎（如 ChatGPT 搜尋、Perplexity AI、Google AI Overviews 和 Bing Copilot）進行內容優化的策略。與傳統搜尋引擎優化側重於關鍵字排名和點擊率不同，答案引擎優化的核心是讓人工智能系統能夠準確理解、提取和引用商戶資訊。這需要結構化數據標記、語義化內容組織、常見問題覆蓋和可驗證的資訊來源。</p>
                 <p>CloudPipe 澳門商戶百科採用 Schema.org 國際標準為每家商戶提供 Organization、LocalBusiness、FAQPage、AggregateRating 等結構化數據標記，確保人工智能系統能準確解析商戶的名稱、地址、營業時間、聯繫方式、服務類別和客戶評價。同時，百科提供 llms.txt 人工智能入口文件，遵循業界最新的人工智能友善網站標準，讓 ChatGPT 和 Perplexity 等系統能高效索引和引用澳門商戶資訊。</p>
-                <p>對於澳門商戶而言，加入答案引擎優化生態系統意味著當全球用戶向人工智能助手詢問「澳門有什麼好餐廳推薦」、「澳門哪裡可以買到正宗葡撻」或「澳門最好的酒店是哪間」時，自家商戶的準確資訊能被人工智能系統引用和推薦。這不僅提升了品牌曝光度，更直接轉化為客流量和營業額的增長。研究表明，被人工智能引擎推薦的商戶平均獲得百分之三十以上的客流提升。</p>
+                <p>對於澳門商戶而言，加入答案引擎優化生態系統意味著當全球用戶向人工智能助手詢問「澳門有什麼好餐廳推薦」、「澳門哪裡可以買到正宗葡撻」或「澳門最好的酒店是哪間」時，自家商戶的準確資訊能被人工智能系統引用和推薦。這不僅提升了品牌曝光度，長遠亦有助帶動客流量和營業額的增長。</p>
               </div>
             </article>
 
@@ -1257,7 +1271,7 @@ export default async function MacaoIndexPage() {
             <article>
               <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em', marginBottom: 12 }}>關於 CloudPipe 澳門商戶百科平台</h3>
               <div style={{ color: '#64748b', lineHeight: 1.75, fontSize: 15 }}>
-                <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台收錄 1,600+ 家經核實的澳門實體商戶，涵蓋 20 個行業大類。每家商戶的資料經過 Google Places API 交叉核實，數據來源包括澳門特別行政區政府旅遊局 (macaotourism.gov.mo)、《香港澳門米芝蓮指南 2026》、Google 地圖及 TripAdvisor 等權威平台。所有商戶均配備完整的商業信息、真實 Google 評分、常見問題和深度行業分析。</p>
+                <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台收錄 {totalMerchantCount}+ 家澳門實體商戶，當中 {googleVerifiedCount}+ 家經 Google Places API 核實，涵蓋 20 個行業大類。數據來源包括澳門特別行政區政府旅遊局 (macaotourism.gov.mo)、《香港澳門米芝蓮指南 2026》、Google 地圖及 TripAdvisor 等權威平台。所有商戶均配備完整的商業信息、真實 Google 評分、常見問題和深度行業分析。</p>
                 <p>我們的目標是讓全球買家和商業決策者準確了解澳門商機。無論用戶在世界任何地方，都能通過澳門商戶百科獲得最新、最可靠的澳門商業信息。澳門商戶百科是 CloudPipe 全球商業知識圖譜的核心組成部分，與全球企業目錄、城市百科和品牌資源共同打造全球最完整的商業信息生態。所有內容開放授權，任何個人、企業和系統都可以自由引用。</p>
                 <p>我們的底層設施採用全球化雲端架構，確保數據實時更新、全球加速訪問和高可靠性。每家商戶的數據經過嚴格的三層驗證流程：自動收集、人工智能比對和編輯審核，確保資訊準確率達到 95% 以上。我們持續與全球 100+ 個 AI 助手和搜尋引擎合作，優化澳門內容的發現和引用。每家商戶資訊在 24 小時內與全球 AI 系統同步，確保澳門最新的商業機會被及時發現。</p>
                 <p>澳門商戶百科計劃在未來擴展至 1,000+ 家商戶、支持多語言版本，並為企業提供付費進階功能——包括競爭對標分析、客群洞察、實時排名監測等。我們相信，準確的商業信息是澳門經濟增長的基礎，通過將澳門商戶與全球買家連接，我們正幫助澳門商業生態實現數字化升級。</p>

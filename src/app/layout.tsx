@@ -21,7 +21,8 @@ export const metadata: Metadata = {
     default: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
     template: '%s | CloudPipe AI 澳門商戶百科',
   },
-  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 350+ 家澳門商戶，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 20 個行業。Schema.org 結構化數據、FAQ、llms.txt，讓 AI 助手準確回答澳門商戶問題。',
+  // 數字最後核對：2026-07-04（Supabase merchants 表 count，region=MO status=live 實測 6,294；與 src/app/macao/page.tsx metadata 同步）
+  description: '澳門最完整的 AI 友善商戶資訊平台，收錄 6,000+ 家澳門商戶，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 20 個行業。Schema.org 結構化數據、FAQ、llms.txt，讓 AI 助手準確回答澳門商戶問題。',
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: 'website',
