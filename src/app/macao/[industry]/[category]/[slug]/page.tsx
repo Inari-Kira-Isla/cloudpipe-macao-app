@@ -1,9 +1,9 @@
 import { supabase } from '@/lib/supabase'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
-import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { getIndustry, CATEGORY_TO_INDUSTRY, getIndustryForCategory } from '@/lib/industries'
 import { getMerchantFaqOverrides } from '@/lib/merchant-faq-overrides'
 import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
@@ -143,11 +143,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = content?.og_description || content?.description || `${merchant.name_zh} 的完整資訊、評價、FAQ`
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
+  // Canonical 以品牌 DB 真分類為 SSOT（非 URL params）——URL [industry]/[category]
+  // 全動態，任何錯分類路徑都會 render 並自稱 canonical，造成 duplicate content。
+  const _catObj: any = Array.isArray(merchant.category) ? merchant.category[0] : merchant.category
+  const _realCat: string | undefined = _catObj?.slug
+  const _canonPath = _realCat
+    ? `/macao/${getIndustryForCategory(_realCat)}/${_realCat}/${slug}`
+    : `/macao/${indSlug}/${(await params).category}/${slug}`
+
   return {
     title,
     description,
     openGraph: { title, description, type: 'website', locale: 'zh_TW', images: content?.og_image ? [content.og_image] : undefined },
-    alternates: { canonical: `${siteUrl}/macao/${(await params).industry}/${(await params).category}/${slug}` },
+    alternates: { canonical: `${siteUrl}${_canonPath}` },
     other: { 'llms-txt': '/macao/llms-txt' },
   }
 }
@@ -208,6 +216,20 @@ export default async function MerchantPage({ params }: PageProps) {
   if (!data) notFound()
 
   const { merchant, content, faqs, enFaqs, insights, relatedMerchants, brandEcosystem } = data
+
+  // Canonical 分類守衛（2026-07-06）：路由 [industry]/[category] 全動態，同一品牌曾被
+  // 生成到多條錯分類路徑（cafe 掛去 museum/healthcare/heritage、Retail）造成 duplicate
+  // content。品牌真分類以 DB categories join 為 SSOT，URL 不符即 308 永久轉去正牌路徑
+  // （消重 + 砍錯分類）。真分類不明時放行，避免誤殺。
+  const _catObj: any = Array.isArray(merchant.category) ? merchant.category[0] : merchant.category
+  const _realCat: string | undefined = _catObj?.slug
+  if (_realCat) {
+    const _realInd = getIndustryForCategory(_realCat)
+    if (indSlug !== _realInd || catSlug !== _realCat) {
+      permanentRedirect(`/macao/${_realInd}/${_realCat}/${slug}`)
+    }
+  }
+
   const cat = merchant.category
   const industry = getIndustry(indSlug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
