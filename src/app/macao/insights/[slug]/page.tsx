@@ -25,6 +25,12 @@ export const revalidate = 86400
 export const dynamicParams = true
 // 2026-07-06: ISR regen timeout backstop (取代 createServiceClient 移除的 AbortSignal 8s)
 export const maxDuration = 30
+// 2026-07-06: 空 generateStaticParams + dynamicParams=true = ISR on-demand cache (● SSG)。
+// Next16 預設 fetch 唔 cache，冇 generateStaticParams 嘅動態 route 會被判 ƒ dynamic 每次重渲；
+// 呢個係 merchant/category 頁行 x-vercel-cache HIT 嘅真正機制。
+export async function generateStaticParams() {
+  return [] // ISR on-demand only
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>
