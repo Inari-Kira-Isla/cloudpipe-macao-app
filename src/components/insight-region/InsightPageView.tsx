@@ -13,7 +13,14 @@
  * The macao page is the legacy implementation and remains as the original (with region='MO' filter).
  * For TW/HK/JP/GLOBAL we use this shared view to keep code DRY.
  */
-import { createServiceClient } from '@/lib/supabase'
+// 2026-07-06 ISR fix: use the plain cacheable `supabase` singleton (same pattern as
+// merchant/category pages which serve x-vercel-cache HIT). createServiceClient's
+// per-call AbortSignal(8s) fetch is uncacheable → forced dynamic render (2.7-4.2s/req)
+// → dominated GSC 6s avg → Google crawl-budget throttle.
+// Timeout backstop = each consuming route's `export const maxDuration = 30` (macao zh/en/pt/ja +
+// taiwan/hongkong/japan/global). For cached routes it bounds regen; for the searchParams-driven
+// dynamic routes (tw/hk/jp/global) it bounds every request. All 8 consuming routes set it.
+import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
@@ -157,7 +164,7 @@ function parseLang(raw?: string): Lang {
 }
 
 async function getInsight(slug: string, lang: Lang, region: RegionCode) {
-  const db = createServiceClient()
+  const db = supabase
   const { data } = await db
     .from('insights')
     .select('*')
@@ -170,7 +177,7 @@ async function getInsight(slug: string, lang: Lang, region: RegionCode) {
 }
 
 async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang[]> {
-  const db = createServiceClient()
+  const db = supabase
   const { data } = await db
     .from('insights')
     .select('lang')
@@ -227,7 +234,7 @@ let __crossRegionEdgeWarnLogged = false
 async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
   const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
   if (!validSlugs.length) return []
-  const db = createServiceClient()
+  const db = supabase
   const { data } = await db
     .from('merchants')
     .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
@@ -258,7 +265,7 @@ async function getSpiderWebInsights(
 
   if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
 
-  const db = createServiceClient()
+  const db = supabase
 
   // ─── 1. Same-region scoring (existing behaviour preserved) ───────────────
   const { data: candidates } = await db
