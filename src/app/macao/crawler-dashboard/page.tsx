@@ -53,6 +53,12 @@ interface SpiderWebData {
   flows: SpiderFlow[]
   sites: SpiderSite[]
 }
+interface DailyDetailPoint {
+  date: string
+  total: number
+  by_owner?: Record<string, number>
+  by_site?: Record<string, number>
+}
 
 interface MerchantDiscoveryItem {
   slug: string; name_zh: string; name_en: string; industry: string; district: string; region: string
@@ -134,23 +140,73 @@ const BOT_COLORS: Record<string, string> = {
   'You.com': '#8b5cf6',
 }
 
+// Notion-style token set. Introduced 2026-07-06 to start pulling the ~30 ad-hoc
+// inline colors scattered through this file toward one palette; applied so far to
+// KPI cards, warning callouts, and the new merchant leaderboard/owner-trend panels.
+// Rest of the file (tabs, per-tab tables) intentionally left as-is for this pass —
+// converting those too risked a much larger, harder-to-review diff.
+const NOTION_TOKENS_CSS = `
+  .cp-callout { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:8px; font-size:13px; line-height:1.5; margin-bottom:16px; }
+  .cp-callout.warn { background:#FBF3DB; color:#7a5d1f; }
+  .cp-callout.danger { background:#FDE9E7; color:#8a2a22; }
+  .cp-callout .cp-callout-icon { flex-shrink:0; font-size:15px; line-height:1.4; }
+  .cp-kpi-card { background:#FFFFFF; border:1px solid #E9E9E7; border-radius:10px; transition:box-shadow .15s ease, transform .15s ease; }
+  .cp-kpi-card:hover { transform:translateY(-2px); box-shadow:0 2px 10px rgba(30,30,28,0.08); }
+  .cp-delta { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; font-weight:600; padding:2px 7px; border-radius:100px; white-space:nowrap; }
+  .cp-delta.up { background:#DEF2E7; color:#25845A; }
+  .cp-delta.down { background:#FDE9E7; color:#C0392E; }
+`
+
 function formatTime(ts: string) {
   const d = new Date(ts)
   return d.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
-const DASHBOARD_PASSWORD = 'cloudpipe2026'
-
+// Password check + session cookie now live server-side in
+// /api/macao/crawler-dashboard-auth — the plaintext password no longer ships
+// in the client JS bundle (previously `DASHBOARD_PASSWORD` was readable via view-source).
 function PasswordGate({ children }: { children: React.ReactNode }) {
-  const [authed, setAuthed] = useState(false)
+  const [authed, setAuthed] = useState<boolean | null>(null) // null = checking with server
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)
+  const [checking, setChecking] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('dash_auth') === 'ok') {
-      setAuthed(true)
-    }
+    let cancelled = false
+    fetch('/api/macao/crawler-dashboard-auth')
+      .then(r => r.json())
+      .then(d => { if (!cancelled) setAuthed(!!d.authed) })
+      .catch(() => { if (!cancelled) setAuthed(false) })
+    return () => { cancelled = true }
   }, [])
+
+  const submit = async () => {
+    if (checking) return
+    setChecking(true)
+    setError(false)
+    try {
+      const res = await fetch('/api/macao/crawler-dashboard-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: input }),
+      })
+      const data = await res.json()
+      if (data.ok) setAuthed(true)
+      else setError(true)
+    } catch {
+      setError(true)
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  if (authed === null) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f5f5f5' }}>
+        <p style={{ color: '#999', fontSize: 13 }}>驗證中...</p>
+      </div>
+    )
+  }
 
   if (authed) return <>{children}</>
 
@@ -163,30 +219,15 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
           type="password"
           value={input}
           onChange={e => { setInput(e.target.value); setError(false) }}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              if (input === DASHBOARD_PASSWORD) {
-                sessionStorage.setItem('dash_auth', 'ok')
-                setAuthed(true)
-              } else {
-                setError(true)
-              }
-            }
-          }}
+          onKeyDown={e => { if (e.key === 'Enter') submit() }}
           placeholder="Password"
           style={{ width: '100%', padding: '10px 14px', border: `1px solid ${error ? '#dc2626' : '#ddd'}`, borderRadius: 8, fontSize: 16, marginBottom: 12 }}
         />
         <button
-          onClick={() => {
-            if (input === DASHBOARD_PASSWORD) {
-              sessionStorage.setItem('dash_auth', 'ok')
-              setAuthed(true)
-            } else {
-              setError(true)
-            }
-          }}
-          style={{ width: '100%', padding: '10px', background: '#0f4c81', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, cursor: 'pointer' }}
-        >Enter</button>
+          onClick={submit}
+          disabled={checking}
+          style={{ width: '100%', padding: '10px', background: '#0f4c81', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, cursor: checking ? 'wait' : 'pointer', opacity: checking ? 0.7 : 1 }}
+        >{checking ? '驗證中...' : 'Enter'}</button>
         {error && <p style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>Incorrect password</p>}
       </div>
     </div>
@@ -294,7 +335,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
 }
 
 // ── Fade-in card wrapper (GSAP) ──────────────────────────────────────────────
-function FadeCard({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+function FadeCard({ children, delay = 0, style, className }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!ref.current) return
@@ -305,7 +346,140 @@ function FadeCard({ children, delay = 0, style }: { children: React.ReactNode; d
       clearProps: 'all',
     })
   }, [delay])
-  return <div ref={ref} style={style}>{children}</div>
+  return <div ref={ref} style={style} className={className}>{children}</div>
+}
+
+// ── Merchant AI-crawl leaderboard ────────────────────────────────────────────
+// Turns `daily[].by_site` (fetched but never used before this) into a visible
+// business asset: how often is each merchant actually being discovered by AI
+// crawlers, and is that trending up or down within the selected window.
+const MERCHANT_LEADERBOARD_SLUGS: Record<string, true> = {
+  'inari-global-foods': true,
+  // NOTE: SITE_META/crawl-log key is still the old slug 'sea-urchin-delivery',
+  // while brand_slug_registry.json was renamed to 'sea-urchin-express' on 2026-06-03.
+  // Pre-existing drift, out of scope for this change — surfaced here, not fixed.
+  'sea-urchin-delivery': true,
+  'after-school-coffee': true,
+  'mind-coffee': true, // SITE_META label = "Mind Cafe"
+  'cloudpipe-landing': true, // CloudPipe's own public site
+}
+
+function MerchantLeaderboard({ daily }: { daily: DailyDetailPoint[] }) {
+  const rows = (() => {
+    if (!daily.length) return []
+    const half = Math.max(1, Math.floor(daily.length / 2))
+    const firstHalf = daily.slice(0, half)
+    const secondHalf = daily.slice(half)
+    const sumBySite = (points: DailyDetailPoint[]) => {
+      const out: Record<string, number> = {}
+      for (const d of points) {
+        for (const [site, count] of Object.entries(d.by_site || {})) {
+          out[site] = (out[site] || 0) + count
+        }
+      }
+      return out
+    }
+    const totals = sumBySite(daily)
+    const firstTotals = sumBySite(firstHalf)
+    const secondTotals = sumBySite(secondHalf)
+    return Object.entries(totals)
+      .filter(([slug]) => MERCHANT_LEADERBOARD_SLUGS[slug])
+      .map(([slug, total]) => {
+        const f = firstTotals[slug] || 0
+        const s = secondTotals[slug] || 0
+        const delta = f > 0 ? ((s - f) / f) * 100 : (s > 0 ? 100 : 0)
+        return { slug, meta: SITE_META[slug], total, delta }
+      })
+      .sort((a, b) => b.total - a.total)
+  })()
+
+  if (!rows.length) return null
+  const maxTotal = Math.max(...rows.map(r => r.total), 1)
+
+  return (
+    <div style={{ background: '#FFFFFF', borderRadius: 12, padding: 18, border: '1px solid #E9E9E7', gridColumn: '1 / -1' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 6 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: '#37352F' }}>🏪 商戶 AI 爬取排行</h3>
+        <span style={{ fontSize: 11, color: '#9B9A97' }}>核心競爭力指標 · 期間內總爬取次數，vs 上半段變化</span>
+      </div>
+      <p style={{ fontSize: 11.5, color: '#9B9A97', margin: '4px 0 14px' }}>邊個商戶被 AI 引擎「發現」得最多——呢個係一直未被善用嘅商業核心數據。</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {rows.map(({ slug, meta, total, delta }) => (
+          <div key={slug} className="gsap-row">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, gap: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#37352F' }}>{meta?.icon || '🔹'} {meta?.label || slug}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className={`cp-delta ${delta >= 0 ? 'up' : 'down'}`}>{delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(0)}%</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#0F5850', fontVariantNumeric: 'tabular-nums' }}>{total.toLocaleString()}</span>
+              </span>
+            </div>
+            <AnimBar pct={(total / maxTotal) * 100} color="#1B7A6E" height={6} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── AI engine market-share trend (daily by_owner, stacked) ──────────────────
+function OwnerTrendChart({ daily }: { daily: DailyDetailPoint[] }) {
+  const maxBars = daily.length <= 7 ? 7 : daily.length <= 14 ? 14 : 30
+  const sliced = daily.slice(-maxBars)
+  if (!sliced.length) return null
+
+  const ownerTotals: Record<string, number> = {}
+  for (const d of sliced) {
+    for (const [owner, count] of Object.entries(d.by_owner || {})) {
+      ownerTotals[owner] = (ownerTotals[owner] || 0) + count
+    }
+  }
+  const topOwners = Object.entries(ownerTotals).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([o]) => o)
+  const dayTotals = sliced.map(d => topOwners.reduce((s, o) => s + (d.by_owner?.[o] || 0), 0))
+  const maxDay = Math.max(...dayTotals, 1)
+
+  if (!topOwners.length) return null
+
+  return (
+    <div style={{ background: '#FAFAFA', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #E9E9E7', gridColumn: '1 / -1' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#37352F' }}>AI 引擎市佔趨勢</h3>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {topOwners.map(o => (
+            <span key={o} style={{ fontSize: 10, color: '#787774' }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: BOT_COLORS[o] || '#999', marginRight: 4 }} />{o}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90, overflowX: 'auto' }}>
+        {sliced.map((d, i) => {
+          const [, mm, dd] = d.date.split('-')
+          const dayTotal = dayTotals[i]
+          return (
+            <div key={d.date} title={`${d.date}: ${dayTotal.toLocaleString()}`}
+              style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%' }}>
+              <div style={{
+                flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative',
+              }}>
+                <div style={{
+                  width: '100%', display: 'flex', flexDirection: 'column-reverse',
+                  height: `${(dayTotal / maxDay) * 100}%`, transition: 'height 0.5s cubic-bezier(0.16,1,0.3,1)',
+                }}>
+                  {topOwners.map(o => {
+                    const v = d.by_owner?.[o] || 0
+                    if (!v) return null
+                    const segPct = dayTotal > 0 ? (v / dayTotal) * 100 : 0
+                    return <div key={o} style={{ width: '100%', height: `${segPct}%`, background: BOT_COLORS[o] || '#999' }} />
+                  })}
+                </div>
+              </div>
+              <span style={{ fontSize: 9, color: '#9B9A97' }}>{mm}/{dd}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function CrawlerDashboard() {
@@ -320,6 +494,7 @@ export default function CrawlerDashboard() {
   const [journey, setJourney] = useState<JourneyStep[] | null>(null)
   const [journeySession, setJourneySession] = useState('')
   const [spiderWeb, setSpiderWeb] = useState<SpiderWebData | null>(null)
+  const [dailyDetail, setDailyDetail] = useState<{ daily?: DailyDetailPoint[] } | null>(null)
   const [tab, setTab] = useState<'overview' | 'sites' | 'pages' | 'sessions' | 'spider-web' | 'routing' | 'merchant-discovery' | 'faq-conversion'>('overview')
   const [routing, setRouting] = useState<RoutingBaseline | null>(null)
   const [routingLoading, setRoutingLoading] = useState(false)
@@ -391,7 +566,7 @@ export default function CrawlerDashboard() {
       // 20s timeout accommodates Vercel cold starts (can take 12-15s on first request).
       // ai-referrals is also fetched here so a `days` change runs a single parallel batch
       // (was previously a separate effect, doubling the cold-start cost on day toggles).
-      const [sum, sw, health, refs] = await Promise.all([
+      const [sum, sw, health, refs, dd] = await Promise.all([
         cacheFirst<Summary | null>(
           [1, 7, 30, 90].includes(days) ? `${CACHE_BASE}/crawler-stats-summary-${days}.json` : null,
           `${API}&view=summary&days=${days}`, null, forceFresh),
@@ -403,11 +578,17 @@ export default function CrawlerDashboard() {
           // Static cache is precomputed for the 30-day window only; other windows fall to the API.
           days === 30 ? `${CACHE_BASE}/ai-referrals-30.json` : null,
           `/api/v1/ai-referrals?days=${days}`, null, forceFresh),
+        // Per-day owner/site breakdown — previously fetched nowhere in this dashboard,
+        // now powers the merchant leaderboard + AI-engine trend panels below.
+        cacheFirst<{ daily?: DailyDetailPoint[] } | null>(
+          [7, 30, 90].includes(days) ? `${CACHE_BASE}/crawler-stats-daily-${days}.json` : null,
+          `${API}&view=daily&days=${days}`, null, forceFresh),
       ])
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
       setAiReferrals(refs)
+      setDailyDetail(dd)
       setLastUpdated(new Date())
       if (!sum) setError('數據載入中，Vercel 冷啟動需時約 15 秒，請稍候再按「立即重新整理」。')
     } catch (e) {
@@ -555,6 +736,20 @@ export default function CrawlerDashboard() {
   const faqTodayDisplay    = useCountUp(faqConversions?.today ?? 0)
   const faqMerchDisplay2   = useCountUp(faqConversions?.topMerchants?.length ?? 0)
 
+  // Period-over-period delta for Total Visits — the only KPI card with a genuine
+  // per-day breakdown to compare (bots/sessions/sites counts aren't tracked daily).
+  // Compares first half vs second half of the currently selected window; deliberately
+  // not fabricating deltas for the other 3 cards where the data doesn't exist yet.
+  const totalVisitsDelta = (() => {
+    const d = summary?.daily
+    if (!d || d.length < 4) return null
+    const half = Math.max(1, Math.floor(d.length / 2))
+    const firstSum = d.slice(0, half).reduce((s, x) => s + x.total, 0)
+    const secondSum = d.slice(half).reduce((s, x) => s + x.total, 0)
+    if (firstSum === 0) return null
+    return ((secondSum - firstSum) / firstSum) * 100
+  })()
+
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
   const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
 
@@ -641,6 +836,7 @@ export default function CrawlerDashboard() {
   return (
     <PasswordGate>
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <style>{NOTION_TOKENS_CSS}</style>
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div>
@@ -698,18 +894,22 @@ export default function CrawlerDashboard() {
       {error && <p style={{ textAlign: 'center', color: '#e74c3c', background: '#fef0f0', padding: '12px 16px', borderRadius: 8 }}>{error}</p>}
 
       {cacheHealth && cacheHealth.source_status !== 'ok' && (
-        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #f59e0b', background: '#fffbeb', color: '#92400e', fontSize: 13, lineHeight: 1.5 }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>Cache 狀態：{cacheHealth.source_status}</div>
-          <div>最後數據日期：{cacheHealth.last_cache_date || 'unknown'}{cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}</div>
-          {cacheHealth.errors?.[0] && (
-            <div style={{ color: '#a16207', marginTop: 4 }}>{cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}</div>
-          )}
+        <div className="cp-callout warn">
+          <span className="cp-callout-icon">⚠️</span>
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Cache 狀態：{cacheHealth.source_status}</div>
+            <div>最後數據日期：{cacheHealth.last_cache_date || 'unknown'}{cacheHealth.finished_at ? `；Health 更新：${formatTime(cacheHealth.finished_at)}` : ''}</div>
+            {cacheHealth.errors?.[0] && (
+              <div style={{ marginTop: 4 }}>{cacheHealth.errors[0].source}: {cacheHealth.errors[0].detail}</div>
+            )}
+          </div>
         </div>
       )}
 
       {summary?.is_stale && days === 1 && (
-        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>
-          ⚠️ <strong>快取未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 HKT 00:00 之前）。今日數據可能不準確，請檢查 precompute LaunchAgent 排程。
+        <div className="cp-callout danger">
+          <span className="cp-callout-icon">⚠️</span>
+          <div><strong>快取未更新</strong>：快取停留於 {summary.generated_at ? formatTime(summary.generated_at) : '未知時間'}（上次刷新在今日 HKT 00:00 之前）。今日數據可能不準確，請檢查 precompute LaunchAgent 排程。</div>
         </div>
       )}
 
@@ -731,15 +931,22 @@ export default function CrawlerDashboard() {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
             {[
-              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）', delay: 0 },
-              { label: 'AI Bot 種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: '不同 bot owner 的數量', delay: 80 },
-              { label: 'Bot Crawl Sessions', value: sessionsDisplay, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）', delay: 160 },
-              { label: '追蹤站點', value: sitesDisplay, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數', delay: 240 },
+              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）', delay: 0, delta: totalVisitsDelta },
+              { label: 'AI Bot 種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: '不同 bot owner 的數量', delay: 80, delta: null as number | null },
+              { label: 'Bot Crawl Sessions', value: sessionsDisplay, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）', delay: 160, delta: null as number | null },
+              { label: '追蹤站點', value: sitesDisplay, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數', delay: 240, delta: null as number | null },
             ].map(card => (
-              <FadeCard key={card.label} delay={card.delay}
-                style={{ background: '#fafafa', borderRadius: 10, padding: '16px 14px', border: '1px solid #eee', cursor: 'help' }}>
+              <FadeCard key={card.label} delay={card.delay} className="cp-kpi-card"
+                style={{ padding: '16px 14px', cursor: 'help' }}>
                 <div title={card.tooltip} style={{ height: '100%' }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                    {card.delta != null && (
+                      <span className={`cp-delta ${card.delta >= 0 ? 'up' : 'down'}`}>
+                        {card.delta >= 0 ? '▲' : '▼'} {Math.abs(card.delta).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
                 </div>
               </FadeCard>
@@ -898,6 +1105,12 @@ export default function CrawlerDashboard() {
           <div ref={tabContentRef}>
           {tab === 'overview' && (
             <div ref={overviewRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+              {dailyDetail?.daily && dailyDetail.daily.length > 1 && (
+                <MerchantLeaderboard daily={dailyDetail.daily} />
+              )}
+              {dailyDetail?.daily && dailyDetail.daily.length > 1 && (
+                <OwnerTrendChart daily={dailyDetail.daily} />
+              )}
               {summary.daily && summary.daily.length > 1 && (
                 <DailyTrendChart daily={summary.daily} days={days} />
               )}
