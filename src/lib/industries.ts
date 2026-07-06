@@ -143,7 +143,7 @@ export const INDUSTRIES: Industry[] = [
     icon: '💼',
     description: '法律、會計、顧問、翻譯、設計，支撐澳門企業發展的專業服務生態系。',
     wave: 3,
-    categories: ['professional', 'law-firm', 'accounting-firm', 'translation', 'notary', 'consulting', 'hr', 'it-service', 'design-agency'],
+    categories: ['professional', 'law-firm', 'accounting-firm', 'translation', 'notary', 'consulting', 'hr', 'it-service', 'design-agency', 'tourism'],
   },
 
   // ── Wave 4: 全覆蓋 ──

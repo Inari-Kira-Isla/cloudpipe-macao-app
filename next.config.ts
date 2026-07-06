@@ -154,27 +154,25 @@ const nextConfig: NextConfig = {
       ['gaming', 'ktv', 'nightlife', 'ktv'],
       ['gaming', 'lounge', 'nightlife', 'lounge'],
       ['gaming', 'nightclub', 'nightlife', 'nightclub'],
-      ['gaming', 'non-gaming', 'attractions', 'non-gaming'],
       ['gaming', 'show', 'nightlife', 'show'],
-      ['heritage', 'cultural-site', 'attractions', 'cultural-site'],
-      ['heritage', 'historic-building', 'attractions', 'historic-building'],
+      // 2026-07-06 taxonomy-redirect reconcile: cultural-site/historic-building/world-heritage
+      // stay canonical under `heritage`; fine-dining/jewelry under `luxury`; bar/spa-sauna under
+      // `nightlife` (per industries.ts SSOT). The old move-away redirects 308'd these canonical
+      // paths to non-existent destinations → 404 on category/faqs pages (nightlife/bar was a loop
+      // vs the dining/bar→nightlife/bar rule above). Removed the stale entries; repointed
+      // hotels/cultural-site to heritage (attractions has no cultural-site category).
       ['heritage', 'landmark', 'attractions', 'landmark'],
       ['heritage', 'museum', 'attractions', 'museum'],
-      ['heritage', 'world-heritage', 'attractions', 'world-heritage'],
-      ['hotels', 'cultural-site', 'attractions', 'cultural-site'],
+      ['hotels', 'cultural-site', 'heritage', 'cultural-site'],
       ['hotels', 'landmark', 'attractions', 'landmark'],
       ['hotels', 'theme-park', 'attractions', 'theme-park'],
       ['hotels', 'vip-gaming', 'gaming', 'vip-gaming'],
       ['luxury', 'fashion', 'shopping', 'fashion'],
-      ['luxury', 'fine-dining', 'dining', 'fine-dining'],
       ['luxury', 'japanese', 'dining', 'japanese'],
-      ['luxury', 'jewelry', 'shopping', 'jewelry'],
       ['luxury', 'restaurant', 'dining', 'restaurant'],
       ['luxury', 'spa', 'wellness', 'spa'],
-      ['nightlife', 'bar', 'dining', 'bar'],
       ['nightlife', 'cafe', 'dining', 'cafe'],
       ['nightlife', 'spa', 'wellness', 'spa'],
-      ['nightlife', 'spa-sauna', 'wellness', 'spa-sauna'],
       ['shopping', 'bank', 'finance', 'bank'],
       ['shopping', 'beauty', 'wellness', 'beauty'],
       ['shopping', 'education', 'education', 'education'],
