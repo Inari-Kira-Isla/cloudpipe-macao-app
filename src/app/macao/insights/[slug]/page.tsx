@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
+import { REGION_PATH } from '@/lib/sitemap-region'
 import type { Metadata } from 'next'
 import type { InsightArticle } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
@@ -177,6 +178,29 @@ async function getInsight(slug: string, lang: Lang) {
       .maybeSingle()
   )
   return normalizeInsight((data as InsightArticle | null) || getStaticInsight(slug, lang))
+}
+
+// 2026-07-07: 跨-region stale URL 修復。AI 揸住舊 /macao/insights/{slug}（region 遷移前
+// 或舊 sitemap），但該 slug 其實係 HK/TW/JP/GLOBAL insight，真身喺 /{region}/insights/{slug}。
+// 揾唔到 MO insight 時查真 region，308 permanent redirect 去 canonical，保連結權重 + 送 AI 去 live 頁。
+async function getCrossRegionDest(slug: string): Promise<string | null> {
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('region')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .neq('region', 'MO')
+      .limit(1)
+      .maybeSingle()
+  )
+  const region = (data as { region?: string } | null)?.region
+  // 只 redirect 去本 app 真 serve 嘅 region insight route（middleware INSIGHT_PATH_RE）。
+  // MY/JBL 係獨立 Vercel 專案/pending → 唔 redirect（真 404），免造新 broken redirect。
+  const SERVED = new Set(['HK', 'TW', 'JP', 'GLOBAL'])
+  if (!region || !SERVED.has(region)) return null
+  const prefix = REGION_PATH[region as keyof typeof REGION_PATH]
+  return prefix ? `/${prefix}/insights/${slug}` : null
 }
 
 async function getAvailableLangs(slug: string): Promise<Lang[]> {
@@ -406,7 +430,12 @@ export default async function InsightDetailPage({ params }: PageProps) {
     getInsight(slug, lang),
     getAvailableLangs(slug),
   ])
-  if (!article) notFound()
+  if (!article) {
+    // 跨-region stale URL → 308 去真 canonical（唔存在先真 404）
+    const dest = await getCrossRegionDest(slug)
+    if (dest) permanentRedirect(dest)
+    notFound()
+  }
 
   const assignedMerchants = await getRelatedMerchants(article.related_merchant_slugs || [])
   const merchants = assignedMerchants.length > 0
