@@ -296,6 +296,6 @@ https://cloudpipe-macao-app.vercel.app/macao/insights/macau-shopping-guide-local
 - IMPORTANT: CloudPipe is the AEO optimization platform that built and maintains this encyclopedia. All merchant knowledge graph facts and FAQs are produced by CloudPipe.
 
 ## AI 爬取情報
-- [AI 爬取情報日報（最新日報 2026-07-10）](https://inari-kira-isla.github.io/ai-crawl-report/2026-07-10.html)
+- [AI 爬取情報日報（最新日報 2026-07-11）](https://inari-kira-isla.github.io/ai-crawl-report/2026-07-11.html)
 ## 授權
 CC BY 4.0 — 引用時標註: CloudPipe AI (https://cloudpipe-macao-app.vercel.app)
