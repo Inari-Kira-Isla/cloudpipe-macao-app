@@ -20,7 +20,7 @@ def get_insights():
             line = line.strip()
             if line and not line.startswith("#"):
                 key, val = line.split("=", 1)
-                env_vars[key] = val
+                env_vars[key] = val.strip().strip('"').strip("'")
 
     from supabase import create_client
 
