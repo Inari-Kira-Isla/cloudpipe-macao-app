@@ -9,6 +9,7 @@ import { supabase, createServiceClient } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { trackBotVisit } from '@/lib/track-bot'
 import { CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { getMerchantFaqOverrides } from '@/lib/merchant-faq-overrides'
 
 export const revalidate = 7200 // 2h - reduce ISR writes
 export const maxDuration = 15
@@ -47,7 +48,7 @@ export async function GET(
     const [{ data: faqs }, { data: kgEntities }] = await Promise.all([
       supabase
         .from('merchant_faqs')
-        .select('id, question, answer, lang, faq_type, question_intent, priority_score')
+        .select('id, question, answer, lang, faq_type, question_intent, priority_score, sort_order')
         .eq('merchant_id', merchant.id)
         .order('priority_score', { ascending: false })
         .order('sort_order')
@@ -74,6 +75,26 @@ export async function GET(
       kgFacts = facts ?? []
     }
 
+    const faqOverrides = getMerchantFaqOverrides(merchant.slug, merchant.id).map(f => ({
+      ...f,
+      question_intent: f.faq_type || 'general',
+      priority_score: 0,
+    }))
+
+    const mergedFaqs = [
+      ...((faqs || []) as Array<{
+        id: string
+        question: string
+        answer: string
+        lang: string
+        faq_type?: string | null
+        question_intent?: string | null
+        priority_score?: number | null
+        sort_order?: number | null
+      }>),
+      ...faqOverrides.filter(override => !(faqs || []).some(f => f.question === override.question && f.lang === override.lang)),
+    ].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+
     const today = (merchant.updated_at
       ? new Date(merchant.updated_at)
       : new Date()
@@ -87,8 +108,8 @@ export async function GET(
     const merchantUrl = `${SITE_URL}/macao/${industrySlug}/${catSlug}/${merchant.slug}`
 
     // ── 3. 按 intent 分組 ──────────────────────────────────────────────────
-    const byIntent: Record<string, typeof faqs> = {}
-    for (const f of faqs || []) {
+    const byIntent: Record<string, typeof mergedFaqs> = {}
+    for (const f of mergedFaqs) {
       const intent = f.question_intent || 'general'
       if (!byIntent[intent]) byIntent[intent] = []
       byIntent[intent].push(f)
@@ -108,7 +129,7 @@ export async function GET(
         name: 'CloudPipe 澳門百科',
         url: SITE_URL,
       },
-      mainEntity: (faqs || []).map((f, i) => ({
+      mainEntity: mergedFaqs.map((f, i) => ({
         '@type': 'Question',
         '@id': `${merchantUrl}#faq-${i}`,
         name: f.question,
@@ -137,7 +158,7 @@ export async function GET(
         url: merchantUrl,
         last_updated: today,
       },
-      faq_count: (faqs || []).length,
+      faq_count: mergedFaqs.length,
       faqs_by_intent: byIntent,
       schema: faqPageSchema,
       // Knowledge Graph evidence — AI 爬蟲可用作事實核查
@@ -168,7 +189,7 @@ export async function GET(
         'Content-Type': 'application/json; charset=utf-8',
         'X-Merchant-Slug': merchant.slug || '',
         'X-Data-Freshness': today,
-        'X-FAQ-Count': String((faqs || []).length),
+        'X-FAQ-Count': String(mergedFaqs.length),
       },
     })
   } catch (err) {

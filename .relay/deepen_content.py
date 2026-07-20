@@ -6,6 +6,7 @@
 """
 import os, sys, json, time, requests, re, uuid
 from collections import defaultdict
+from urllib.parse import quote
 
 sys.path.insert(0, os.path.expanduser("~/.openclaw/paperclip/scripts"))
 
@@ -16,13 +17,35 @@ with open(os.path.expanduser("~/.openclaw/.env")) as f:
         if line.startswith("SUPABASE_SECRET_KEY="):
             SB_KEY = line.strip().split("=", 1)[1]
             break
+if not SB_KEY:
+    # 2026-07-19 fail-loud fix: empty key used to silently produce 401s that
+    # upstream code could mistake for empty result pages.
+    sys.exit("FATAL: SUPABASE_SECRET_KEY not found in ~/.openclaw/.env")
 
 SB_HEADERS = {
     "apikey": SB_KEY, "Authorization": f"Bearer {SB_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "return=representation,resolution=merge-duplicates",
+    # 2026-07-19 dedup fix (critic #4): inserts POST to
+    # ?on_conflict=merchant_id,lang,question (UNIQUE INDEX
+    # merchant_faqs_mlq_uniq) with ignore-duplicates — re-runs or a wrongly
+    # empty has_faq set can never create duplicate rows, and existing (possibly
+    # better) answers are never overwritten. return=representation lets us
+    # count what was actually inserted ([] when the row already existed).
+    "Prefer": "return=representation,resolution=ignore-duplicates",
 }
 READ_H = {"apikey": SB_KEY, "Authorization": f"Bearer {SB_KEY}"}
+
+
+def _sb_get(url):
+    """GET with fail-loud status check.
+
+    2026-07-19 (critic #2): a 401/timeout/5xx used to surface as error-JSON or
+    a swallowed exception that pagination loops could mistake for "empty page =
+    scan complete". Non-2xx now raises immediately (script exits non-zero).
+    """
+    r = requests.get(url, headers=READ_H, timeout=30)
+    r.raise_for_status()
+    return r.json()
 
 # ── 行業模板 FAQ（不涉及具體事實，通用安全）─────────────────
 INDUSTRY_FAQ_TEMPLATES = {
@@ -96,38 +119,57 @@ for key in ["水療", "健身中心", "中醫", "美容/健康", "診所", "牙�
 
 def get_merchants_without_faq():
     """Get all live merchants that don't have FAQ entries."""
-    # Get all merchant IDs with FAQs
+    # Get all merchant IDs with FAQs.
+    # 2026-07-19 keyset fix: the old OFFSET loop asked for 5000/page but
+    # PostgREST max-rows caps responses at 1000, so `len(batch) < 5000` broke
+    # after ONE page — the has_faq set silently only ever saw 1,000 of 1.85M
+    # rows.
+    # 2026-07-19 v2 (critic #7): composite keyset cursor (created_at.asc,
+    # id.asc). id is UUIDv4 — uncorrelated with insert time — so an id-only
+    # cursor can permanently miss FAQ rows inserted concurrently with an id
+    # below the cursor (merchant then wrongly treated as FAQ-less). With
+    # created_at as primary sort, concurrent inserts (created_at=now() >
+    # cursor) are still seen. Backed by idx_merchant_faqs_created_at; verified
+    # 2026-07-19: 0 of 1,849,067 rows have NULL created_at (column nullable —
+    # a future NULL would sort last and be missed by the eq/gt cursor; keep the
+    # column default). Even on a miss, inserts below are on_conflict-deduped.
+    # All pages go through _sb_get (fail-loud) — an HTTP error can never be
+    # mistaken for "scan complete" (critic #2).
     has_faq = set()
-    faq_offset = 0
+    last_ts = None
+    last_fid = None
     while True:
-        r = requests.get(
-            f"{SB_URL}/rest/v1/merchant_faqs?select=merchant_id&limit=5000&offset={faq_offset}",
-            headers=READ_H, timeout=15,
-        )
-        batch = r.json()
+        q = (f"{SB_URL}/rest/v1/merchant_faqs?select=id,merchant_id,created_at"
+             f"&order=created_at.asc,id.asc&limit=1000")
+        if last_ts is not None:
+            ts_q = quote(last_ts, safe="")
+            q += (f"&or=(created_at.gt.{ts_q},"
+                  f"and(created_at.eq.{ts_q},id.gt.{last_fid}))")
+        batch = _sb_get(q)
         has_faq.update(f["merchant_id"] for f in batch)
-        if len(batch) < 5000:
+        if len(batch) < 1000:
             break
-        faq_offset += 5000
+        last_ts, last_fid = batch[-1]["created_at"], batch[-1]["id"]
 
-    # Get all live merchants with category info (paginated — no upper bound)
+    # Get all live merchants with category info.
+    # 2026-07-19 keyset fix: OFFSET pagination had no order= — pages could
+    # overlap/skip. Keyset on PK id instead (id=gt.<last>), fail-loud pages.
     merchants = []
-    offset = 0
+    last_mid = None
     while True:
-        r2 = requests.get(
-            f"{SB_URL}/rest/v1/merchants?select=id,slug,name_zh,name_en,category_id,tier,address_zh,district"
-            f"&status=eq.live&limit=1000&offset={offset}",
-            headers=READ_H, timeout=30,
-        )
-        batch = r2.json()
+        q2 = (f"{SB_URL}/rest/v1/merchants?select=id,slug,name_zh,name_en,category_id,tier,address_zh,district"
+              f"&status=eq.live&order=id.asc&limit=1000")
+        if last_mid:
+            q2 += f"&id=gt.{last_mid}"
+        batch = _sb_get(q2)
         merchants.extend(batch)
         if len(batch) < 1000:
             break
-        offset += 1000
+        last_mid = batch[-1]["id"]
 
     # Get categories
-    r3 = requests.get(f"{SB_URL}/rest/v1/categories?select=id,slug,name_zh&limit=200", headers=READ_H, timeout=15)
-    cats = {c["id"]: c for c in r3.json()}
+    cats = {c["id"]: c for c in _sb_get(
+        f"{SB_URL}/rest/v1/categories?select=id,slug,name_zh&limit=200")}
 
     without_faq = []
     for m in merchants:
@@ -154,9 +196,15 @@ def insert_template_faqs(merchant_id, category_name):
             "answer": a + "\n\n*資料僅供參考，建議致電商戶確認最新資訊。*",
             "sort_order": i + 1,
         }
-        r = requests.post(f"{SB_URL}/rest/v1/merchant_faqs", json=data, headers=SB_HEADERS, timeout=15)
-        if r.ok:
-            inserted += 1
+        # 2026-07-19 dedup fix (critic #4): upsert keyed on the
+        # merchant_faqs_mlq_uniq UNIQUE index + ignore-duplicates (see
+        # SB_HEADERS Prefer). Existing rows are left untouched; the response
+        # body is [] for a duplicate, [row] for a genuine insert.
+        r = requests.post(
+            f"{SB_URL}/rest/v1/merchant_faqs?on_conflict=merchant_id,lang,question",
+            json=data, headers=SB_HEADERS, timeout=15)
+        r.raise_for_status()
+        inserted += len(r.json())
         time.sleep(0.1)
     return inserted
 
@@ -208,9 +256,13 @@ def insert_ai_faqs(merchant_id, faqs):
             "answer": a + "\n\n*資料僅供參考，建議致電商戶確認最新資訊。*",
             "sort_order": i + 1,
         }
-        r = requests.post(f"{SB_URL}/rest/v1/merchant_faqs", json=data, headers=SB_HEADERS, timeout=15)
-        if r.ok:
-            inserted += 1
+        # 2026-07-19 dedup fix (critic #4): same on_conflict upsert as
+        # insert_template_faqs — duplicates return [], genuine inserts [row].
+        r = requests.post(
+            f"{SB_URL}/rest/v1/merchant_faqs?on_conflict=merchant_id,lang,question",
+            json=data, headers=SB_HEADERS, timeout=15)
+        r.raise_for_status()
+        inserted += len(r.json())
         time.sleep(0.1)
     return inserted
 
@@ -266,6 +318,7 @@ def main():
 
     # Final count
     r = requests.get(f"{SB_URL}/rest/v1/merchant_faqs?select=id", headers={**READ_H, "Prefer": "count=exact", "Range": "0-0"}, timeout=15)
+    r.raise_for_status()
     total_faq = int(r.headers.get("content-range", "*/0").split("/")[-1])
     print(f"  全站 FAQ 總數: {total_faq}")
 

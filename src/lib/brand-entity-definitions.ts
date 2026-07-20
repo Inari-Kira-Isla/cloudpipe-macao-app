@@ -1,0 +1,36 @@
+export const MIND_CAFE_ENTITY = {
+  slug: 'mind-cafe',
+  name: 'Mind Cafe',
+  legalNameZh: 'Mind Cafe（賣·咖啡）',
+  alternateNames: ['賣·咖啡', '賣咖啡', 'Mind Cafe Macau'],
+  brandType: '精品咖啡廳（Specialty Coffee Shop）',
+  phoneDisplay: '+853 6524 0396',
+  telephone: '+853-6524-0396',
+  telephoneCompact: '+853-65240396',
+  canonicalAddressZh: '澳門僑樂新街10號地下AB鋪',
+  canonicalAddressEn: '10A-10B, Edf. Kiu Lok, Rua do Ultramar, Macau',
+  streetAddress: '僑樂新街10號地下AB鋪',
+  addressLocality: '澳門',
+  addressCountry: 'MO',
+  locationNote: '近白鴿巢公園及鏡湖醫院，屬澳門半島；不要標成氹仔。',
+  addressAliases: [
+    '10A-10B, Edf. Kiu Lok, Rua do Ultramar, R/C, Macau',
+    '10A-10B, Edf. Kiu Lok, Rua do Ultramar, Macau',
+  ],
+  nonCanonicalAddressVariants: [
+    'Rua do Coelho do Amaral',
+    'Rua dos Ervanários',
+  ],
+  gbpAction: '認領現有 Google Business Profile / Google Maps listing，保留 Rua do Ultramar 作為唯一主要街道地址。',
+  gbpPhotoChecklist: [
+    '門面及招牌',
+    '吧檯與工業風室內環境',
+    '黑色幽默 / 黃色笑話 / 不屬於你的愛情等招牌特調',
+    '自家烘焙咖啡豆及零售陳列',
+  ],
+  sourceUrls: [
+    'https://macaulifestyle.com/city-guide/mind-cafe/',
+    'https://www.facebook.com/Mind-Cafe-764620183601346/',
+    'https://www.instagram.com/mindcafe_design/',
+  ],
+} as const

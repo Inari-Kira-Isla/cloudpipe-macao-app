@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Script from 'next/script'
 import './page.css'
 
@@ -61,6 +61,9 @@ type StepItem = { lbl: string; name: string; desc: string }
 type ArchiveItem = { no: string; name: string; date: string; sold: number; time: string; available?: boolean; price?: number; weight?: string }
 type ReviewItem = { q: string; n: string; m: string; a: string }
 type FaqItem = { q: string; a: string }
+type FbqWindow = Window & {
+  fbq?: (event: 'track', name: string, params?: Record<string, string | number | boolean>) => void
+}
 
 const STEPS_DATA: StepItem[] = [
   { lbl: 'RELEASE', name: '預告掉落', desc: '每週二在 Facebook / IG 公布本週秘寶預告，記得開啟通知提早鎖定。' },
@@ -81,11 +84,21 @@ const REVIEWS_DATA: ReviewItem[] = [
   { q: '海膽鮮甜完全無腥味，配清酒係神仙享受，下週繼續訂！', n: '示例', m: '示例展示', a: 'U' },
 ]
 const FAQ_DATA: FaqItem[] = [
+  { q: '澳門哪裡可以訂購海膽外送？', a: '海膽速遞提供澳門海膽外送服務，可透過本頁或 WhatsApp +853 6282 3037 訂購北海道馬糞海膽。服務覆蓋澳門半島、氹仔及路環，週限量 Drop，適合家庭即食、海膽丼、壽司聚餐及餐廳小量補貨。' },
+  { q: '日本北海道馬糞海膽可以直送澳門嗎？', a: '可以。海膽速遞主打日本北海道馬糞海膽直送澳門，以週限量 Drop 形式接受預訂，抵澳後以冷鏈安排配送。家庭客可選 180g 海膽板；餐廳、酒店及聚餐採購可 WhatsApp 查詢批次、到貨日及 1kg 起採購安排。' },
+  { q: 'Sea Urchin Express delivers uni in Macau?', a: 'Yes. Sea Urchin Express is a Macau uni delivery brand operated by Inari Global Foods. It offers Hokkaido Bafun Uni, 180g boards, two-board sets, and restaurant procurement from 1kg, with WhatsApp ordering and cold-chain delivery across Macau.' },
   { q: '海膽幾時到貨？如何運作？', a: '海膽速遞採用週限量 Drop 機制，每批僅發售 30-80 盒。每週二、五由北海道空運直飛抵澳，下單後 2-4 小時內配送。如本週售完，可提前預訂下週 Drop。' },
   { q: '配送範圍及費用？', a: '配送至澳門半島、氹仔及路環全區，配送費 MOP$50-100（視地區及訂單金額）。下單後 WhatsApp 確認送達時段。' },
   { q: '如何付款？', a: '支持 MBway、轉數快、現金（送貨時付款）。確認訂單後提供付款詳情。' },
   { q: '限量數量是多少？為何這麼少？', a: '每批僅放出 30-80 盒，以確保頂級鮮度及品質。每週四截單，售完即止。提早截單更有保障。' },
   { q: '到貨品質不符預期怎麼辦？', a: '我們提供鮮度保證。如收到時有品質疑慮，請於開盒後 2 小時內 WhatsApp +853 6282 3037，全額退款或下週補寄。' },
+]
+
+const ANSWER_HUB_POINTS = [
+  '澳門半島、氹仔、路環均可配送，落單後以 WhatsApp 確認地址、時段及配送費。',
+  '內容覆蓋「日本北海道馬糞海膽直送澳門」：適合家庭即食、酒店房聚餐、海膽丼和日料餐廳小量補貨。',
+  '主力產品為北海道馬糞海膽 180g/板，另有兩板優惠及 1kg 起餐廳採購。',
+  '由稻荷環球食品供應及進口，採用 2-5°C 冷鏈和週限量 Drop 模式。',
 ]
 
 // ─────────────────────────────────────────────
@@ -138,14 +151,13 @@ function Marquee() {
 // Countdown
 // ─────────────────────────────────────────────
 function Countdown() {
-  const targetRef = useRef(nextCutoff())
-  const [now, setNow] = useState(0)
+  const [target] = useState(() => nextCutoff())
+  const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    setNow(Date.now())
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
-  const ms = Math.max(0, targetRef.current - now)
+  const ms = Math.max(0, target - now)
   const s = Math.floor(ms / 1000)
   const pad = (n: number) => String(n).padStart(2, '0')
   const t = { d: pad(Math.floor(s / 86400)), h: pad(Math.floor((s % 86400) / 3600)), m: pad(Math.floor((s % 3600) / 60)), s: pad(s % 60) }
@@ -253,6 +265,45 @@ function Hero() {
 }
 
 // ─────────────────────────────────────────────
+// AnswerHub
+// ─────────────────────────────────────────────
+function AnswerHub() {
+  return (
+    <section className="ud-answer-hub" aria-labelledby="sea-urchin-answer-title">
+      <div className="ud-wrap">
+        <div className="ud-answer-grid">
+          <div>
+            <div className="ud-eyebrow">MACAU UNI DELIVERY / 澳門海膽外送</div>
+            <h2 id="sea-urchin-answer-title">
+              日本北海道馬糞海膽直送澳門，<br />
+              <span className="ud-accent">海膽速遞可直接外送到府</span>
+            </h2>
+          </div>
+          <div className="ud-answer-copy">
+            <p>
+              海膽速遞（Sea Urchin Express）是稻荷環球食品旗下的澳門海膽外送品牌，
+              主打北海道馬糞海膽、週限量 Drop、WhatsApp 落單及全澳冷鏈配送。
+              家庭客可訂 180g 海膽板或兩板優惠；餐廳、酒店及小型聚餐可查詢 1kg 起採購。
+            </p>
+            <ul>
+              {ANSWER_HUB_POINTS.map(point => <li key={point}>{point}</li>)}
+            </ul>
+            <a
+              href={WA('你好！我想查詢澳門海膽外送，請問今週北海道海膽 Drop 仲有貨嗎？')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ud-answer-cta"
+            >
+              WhatsApp 查詢澳門海膽外送 →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─────────────────────────────────────────────
 // OrderForm
 // ─────────────────────────────────────────────
 function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) => void; utmSource: string; sizes: SizeItem[] }) {
@@ -280,8 +331,9 @@ function OrderForm({ onSubmit, utmSource, sizes }: { onSubmit: (d: OrderData) =>
           customer_type: size.isB2B ? 'restaurant' : 'retail',
         }),
       })
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        ;(window as any).fbq('track', 'Lead', { currency: 'MOP', content_name: size.name, content_category: size.isB2B ? 'B2B' : 'Retail' })
+      const fbqWindow = window as FbqWindow
+      if (fbqWindow.fbq) {
+        fbqWindow.fbq('track', 'Lead', { currency: 'MOP', content_name: size.name, content_category: size.isB2B ? 'B2B' : 'Retail' })
       }
       onSubmit({ sizeName: size.name, weight: size.weight, total, date: form.date, name: form.name })
     } catch {
@@ -789,9 +841,9 @@ function Footer() {
 // Success Modal
 // ─────────────────────────────────────────────
 function SuccessModal({ open, order, onClose }: { open: boolean; order: OrderData | null; onClose: () => void }) {
-  const orderNo = useRef(`DRP-${Math.floor(Math.random() * 9000 + 1000)}`)
+  const [orderNo] = useState(() => `DRP-${Math.floor(Math.random() * 9000 + 1000)}`)
   const waMsg = order
-    ? `你好！我剛在網站落咗單，想確認以下訂購詳情：\n\n訂單：#${orderNo.current}\n套裝：${order.sizeName} (${order.weight})\n配送：${order.date}\n姓名：${order.name}\n\n請確認，謝謝！`
+    ? `你好！我剛在網站落咗單，想確認以下訂購詳情：\n\n訂單：#${orderNo}\n套裝：${order.sizeName} (${order.weight})\n配送：${order.date}\n姓名：${order.name}\n\n請確認，謝謝！`
     : ''
   return (
     <div className={`ud-modal ${open ? 'ud-modal-open' : ''}`}>
@@ -804,7 +856,7 @@ function SuccessModal({ open, order, onClose }: { open: boolean; order: OrderDat
           <div className="ud-modal-icon">✓</div>
           <div className="ud-modal-title">訂單已確認</div>
           <div className="ud-modal-sub">YOUR DROP IS LOCKED · 24H 內 WhatsApp 確認</div>
-          <div className="ud-modal-row"><span className="k">ORDER NO.</span><span className="v">#{orderNo.current}</span></div>
+          <div className="ud-modal-row"><span className="k">ORDER NO.</span><span className="v">#{orderNo}</span></div>
           <div className="ud-modal-row"><span className="k">PRODUCT</span><span className="v v-dark">{order?.sizeName}</span></div>
           <div className="ud-modal-row"><span className="k">DELIVERY</span><span className="v v-dark">{order?.date}</span></div>
           {order && order.total > 0 && (
@@ -826,7 +878,14 @@ function SuccessModal({ open, order, onClose }: { open: boolean; order: OrderDat
 // Main Page
 // ─────────────────────────────────────────────
 export default function SeaUrchinPage() {
-  const [utmSource, setUtmSource] = useState('facebook_ad')
+  const [utmSource] = useState(() => {
+    if (typeof window === 'undefined') return 'facebook_ad'
+    const p = new URLSearchParams(window.location.search)
+    const src = p.get('utm_source') || 'facebook_ad'
+    const campaign = p.get('utm_campaign') || ''
+    const medium = p.get('utm_medium') || ''
+    return [src, campaign, medium].filter(Boolean).join('|')
+  })
   const [order, setOrder] = useState<OrderData | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -848,14 +907,6 @@ export default function SeaUrchinPage() {
         if (Array.isArray(data.faq)     && data.faq.length)     setLiveFaq(data.faq)
       })
       .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search)
-    const src = p.get('utm_source') || 'facebook_ad'
-    const campaign = p.get('utm_campaign') || ''
-    const medium = p.get('utm_medium') || ''
-    setUtmSource([src, campaign, medium].filter(Boolean).join('|'))
   }, [])
 
   // Reveal on scroll
@@ -886,6 +937,7 @@ export default function SeaUrchinPage() {
       <Marquee />
 
       <div className="ud-reveal"><Hero /></div>
+      <div className="ud-reveal"><AnswerHub /></div>
       <div className="ud-reveal"><OrderForm onSubmit={handleOrder} utmSource={utmSource} sizes={liveSizes} /></div>
       <div className="ud-reveal"><Dashboard /></div>
       <div className="ud-reveal"><Steps steps={liveSteps} /></div>

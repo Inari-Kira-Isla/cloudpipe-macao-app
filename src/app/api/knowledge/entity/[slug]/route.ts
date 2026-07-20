@@ -24,6 +24,12 @@ const CORS = {
   'Link': `<${SITE_URL}/llms.txt>; rel="llms-txt"`,
 }
 
+type PublicFact = {
+  predicate: string
+  object_value?: string | null
+  object_numeric?: number | null
+}
+
 const REGION_LABELS: Record<string, string> = {
   MO: 'Macau SAR, China',
   HK: 'Hong Kong SAR, China',
@@ -33,11 +39,17 @@ const REGION_LABELS: Record<string, string> = {
 
 const PREDICATE_SCHEMA_MAP: Record<string, string> = {
   name:             'name',
+  name_zh:          'name',
+  name_en:          'name',
   rating_google:    'aggregateRating',
   price_range:      'priceRange',
   phone:            'telephone',
+  contact_phone:    'telephone',
+  contact_email:    'email',
+  contact_fax:      'faxNumber',
   website:          'url',
   address:          'address',
+  location_address_zh: 'address',
   opened_hours:     'openingHours',
   founded_year:     'foundingDate',
   certified_as:     'hasCredential',
@@ -45,6 +57,25 @@ const PREDICATE_SCHEMA_MAP: Record<string, string> = {
   cuisine_type:     'servesCuisine',
   district:         'areaServed',
   wikidata_id:      'sameAs',
+}
+
+const ALLOWED_SCHEMA_TYPES = new Set([
+  'LocalBusiness',
+  'TravelAgency',
+  'FoodEstablishment',
+  'Restaurant',
+  'LodgingBusiness',
+  'Hotel',
+  'Resort',
+  'TouristAttraction',
+  'Store',
+  'Pharmacy',
+  'HealthAndBeautyBusiness',
+  'LegalService',
+])
+
+function firstFact<T extends PublicFact>(facts: T[], predicates: string[]) {
+  return facts.find(f => predicates.includes(f.predicate))
 }
 
 function supabaseService() {
@@ -113,21 +144,31 @@ export async function GET(
   const entityName = displayNames.en || displayNames.zh || displayNames.ja || entity.canonical_name
 
   // 從 facts 提取特定值供 Schema.org 頂層欄位使用
-  const ratingFact  = publicFacts.find(f => f.predicate === 'rating_google')
-  const phoneFact   = publicFacts.find(f => f.predicate === 'phone')
-  const websiteFact = publicFacts.find(f => f.predicate === 'website')
-  const addressFact = publicFacts.find(f => f.predicate === 'address')
-  const hoursFact   = publicFacts.find(f => f.predicate === 'opened_hours')
+  const ratingFact  = firstFact(publicFacts, ['rating_google'])
+  const phoneFact   = firstFact(publicFacts, ['phone', 'contact_phone'])
+  const emailFact   = firstFact(publicFacts, ['email', 'contact_email'])
+  const faxFact     = firstFact(publicFacts, ['fax', 'contact_fax'])
+  const websiteFact = firstFact(publicFacts, ['website'])
+  const addressFact = firstFact(publicFacts, ['address', 'location_address_zh'])
+  const hoursFact   = firstFact(publicFacts, ['opened_hours', 'opening_hours'])
   const certFacts   = publicFacts.filter(f => f.predicate === 'certified_as')
-  const wikiDataFact = publicFacts.find(f => f.predicate === 'wikidata_id')
+  const wikiDataFact = firstFact(publicFacts, ['wikidata_id'])
+  const schemaTypeFact = firstFact(publicFacts, ['schema_type'])
 
   // Schema.org type 推斷
-  const schemaType = entity.industry_code === 'hotels'      ? 'LodgingBusiness'
+  const preferredSchemaType =
+    typeof attributes.schema_type === 'string' && ALLOWED_SCHEMA_TYPES.has(attributes.schema_type)
+      ? attributes.schema_type
+      : typeof schemaTypeFact?.object_value === 'string' && ALLOWED_SCHEMA_TYPES.has(schemaTypeFact.object_value)
+        ? schemaTypeFact.object_value
+        : null
+  const schemaType = preferredSchemaType
+                   ?? (entity.industry_code === 'hotels'      ? 'LodgingBusiness'
                    : entity.industry_code === 'dining'      ? 'FoodEstablishment'
                    : entity.industry_code === 'attractions' ? 'TouristAttraction'
                    : entity.industry_code === 'shopping'    ? 'Store'
                    : entity.industry_code === 'wellness'    ? 'HealthAndBeautyBusiness'
-                   : 'LocalBusiness'
+                   : 'LocalBusiness')
 
   const sameAsLinks = [
     externalIds.google_place_id
@@ -167,6 +208,8 @@ export async function GET(
 
     ...(addressFact && { address: addressFact.object_value }),
     ...(phoneFact   && { telephone: phoneFact.object_value }),
+    ...(emailFact   && { email: emailFact.object_value }),
+    ...(faxFact     && { faxNumber: faxFact.object_value }),
     ...(hoursFact   && { openingHours: hoursFact.object_value }),
     ...(ratingFact?.object_numeric != null && {
       aggregateRating: {

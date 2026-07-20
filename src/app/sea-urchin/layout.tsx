@@ -3,11 +3,21 @@ import type { Metadata } from 'next'
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
 export const metadata: Metadata = {
-  title: '海膽速遞 | 澳門新鮮北海道海膽直送',
-  description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598。每週二、五空運直飛，全程 2-5°C 冷鏈。最低消費 MOP$220。現在預訂！',
+  title: '海膽速遞 | 澳門海膽外送・北海道海膽直送',
+  description: '澳門海膽外送品牌 Sea Urchin Express。北海道馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598，澳門半島、氹仔、路環冷鏈配送。WhatsApp 訂購 +853 6282 3037。',
+  keywords: [
+    '澳門海膽外送',
+    '澳門海膽外賣',
+    '海膽速遞',
+    'Sea Urchin Express',
+    'Macau uni delivery',
+    'Hokkaido uni Macau',
+    '澳門北海道海膽',
+    '澳門馬糞海膽',
+  ],
   openGraph: {
-    title: '海膽速遞 | 澳門專注海膽的外送品牌',
-    description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598，每週二、五空運直飛，全程 2-5°C 冷鏈。',
+    title: '海膽速遞 | 澳門海膽外送・Sea Urchin Express',
+    description: '澳門海膽外送：北海道馬糞海膽 180g MOP$328/板，兩板優惠 MOP$598，澳門半島、氹仔、路環冷鏈配送。',
     url: `${siteUrl}/sea-urchin`,
     siteName: '海膽速遞',
     type: 'website',
@@ -15,8 +25,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '海膽速遞 | 澳門專注海膽的外送品牌',
-    description: '北海道馬糞海膽直送澳門。馬糞海膽 180g MOP$328/板，每週二、五空運直飛。',
+    title: '海膽速遞 | 澳門海膽外送・Sea Urchin Express',
+    description: '北海道馬糞海膽直送澳門。180g MOP$328/板，每週二、五空運直飛。',
   },
 }
 
@@ -123,6 +133,22 @@ const jsonLd = {
       '@type': 'FAQPage',
       '@id': `${siteUrl}/sea-urchin#faq`,
       'mainEntity': [
+        {
+          '@type': 'Question',
+          'name': '澳門哪裡可以訂購海膽外送？',
+          'acceptedAnswer': {
+            '@type': 'Answer',
+            'text': '澳門可透過海膽速遞（Sea Urchin Express）訂購北海道海膽外送。海膽速遞由稻荷環球食品運營，提供北海道馬糞海膽 180g/板、兩板優惠及 1kg 起餐廳採購，配送覆蓋澳門半島、氹仔及路環，可 WhatsApp +853 6282 3037 落單。',
+          },
+        },
+        {
+          '@type': 'Question',
+          'name': 'Does Sea Urchin Express deliver uni in Macau?',
+          'acceptedAnswer': {
+            '@type': 'Answer',
+            'text': 'Yes. Sea Urchin Express is a Macau uni delivery brand operated by Inari Global Foods. It offers Hokkaido Bafun Uni, 180g boards, two-board sets and restaurant procurement from 1kg, with WhatsApp ordering and cold-chain delivery across Macau.',
+          },
+        },
         {
           '@type': 'Question',
           'name': '海膽速遞幾時到貨，如何運作？',

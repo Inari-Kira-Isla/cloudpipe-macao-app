@@ -39,6 +39,7 @@ const CATEGORY_SCHEMA_MAP: Record<string, string> = {
   // wellness
   beauty: 'HealthAndBeautyBusiness', gym: 'HealthClub',
   clinic: 'MedicalClinic', spa: 'DaySpa', yoga: 'HealthClub',
+  pharmacy: 'Pharmacy',
   // professional-services
   professional: 'ProfessionalService', legal: 'LegalService',
   // education
@@ -244,6 +245,40 @@ export default async function MerchantPage({ params }: PageProps) {
     ...(socialLinks ? Object.values(socialLinks) : []),
   ])].filter((v): v is string => Boolean(v))
 
+  const trustScore = (merchant as any).trust_score as number | null | undefined
+  const verificationStatus = (merchant as any).verification_status as string | null | undefined
+  const lastVerifiedAt = (merchant as any).last_verified_at as string | null | undefined
+  const shouldExposeVerification = Boolean(
+    verificationStatus || trustScore != null || (merchant.updated_at && isRecentlyVerified(merchant.updated_at))
+  )
+
+  const verificationProperties = [
+    {
+      '@type': 'PropertyValue',
+      name: 'dataVerificationStatus',
+      value: verificationStatus || (
+        trustScore != null && trustScore < 40
+          ? 'low_confidence'
+          : 'verified'
+      ),
+    },
+    {
+      '@type': 'PropertyValue',
+      name: 'dateVerified',
+      value: lastVerifiedAt || merchant.updated_at,
+    },
+    {
+      '@type': 'PropertyValue',
+      name: 'verificationMethod',
+      value: 'Automated cross-reference: Google Places API, MGTO, CloudPipe Verification Pipeline',
+    },
+    ...(trustScore != null ? [{
+      '@type': 'PropertyValue',
+      name: 'trustScore',
+      value: String(trustScore),
+    }] : []),
+  ]
+
   const schemaOrg = {
     '@context': 'https://schema.org',
     '@type': (merchant.schema_type && merchant.schema_type !== 'Organization') ? merchant.schema_type : (CATEGORY_SCHEMA_MAP[catSlug] || 'LocalBusiness'),
@@ -307,30 +342,7 @@ export default async function MerchantPage({ params }: PageProps) {
         }
       }),
     }),
-    ...((merchant.updated_at && isRecentlyVerified(merchant.updated_at)) || (merchant as any).trust_score >= 40 ? {
-      additionalProperty: [
-        {
-          '@type': 'PropertyValue',
-          name: 'dataVerificationStatus',
-          value: (merchant as any).verification_status || 'verified',
-        },
-        {
-          '@type': 'PropertyValue',
-          name: 'dateVerified',
-          value: (merchant as any).last_verified_at || merchant.updated_at,
-        },
-        {
-          '@type': 'PropertyValue',
-          name: 'verificationMethod',
-          value: 'Automated cross-reference: Google Places API, MGTO, CloudPipe Verification Pipeline',
-        },
-        ...((merchant as any).trust_score != null ? [{
-          '@type': 'PropertyValue',
-          name: 'trustScore',
-          value: String((merchant as any).trust_score),
-        }] : []),
-      ],
-    } : {}),
+    ...(shouldExposeVerification ? { additionalProperty: verificationProperties } : {}),
   }
 
   const faqLastModified = merchant.updated_at

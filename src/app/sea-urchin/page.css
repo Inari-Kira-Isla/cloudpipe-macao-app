@@ -448,6 +448,71 @@
   color: var(--ink-3);
 }
 
+/* ── ANSWER HUB ── */
+.ud-answer-hub {
+  padding: 54px 0;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(255,90,31,0.08), transparent 45%),
+    var(--bg-2);
+}
+.ud-answer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .ud-answer-hub { padding: 72px 0; }
+  .ud-answer-grid { grid-template-columns: 0.85fr 1.15fr; gap: 56px; }
+}
+.ud-answer-grid h2 {
+  font-family: var(--font-cjk-display);
+  font-weight: 900;
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1.02;
+  margin-top: 16px;
+  word-break: keep-all;
+}
+.ud-answer-copy {
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.75;
+}
+.ud-answer-copy p { margin: 0; }
+.ud-answer-copy ul {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ud-answer-copy li {
+  position: relative;
+  padding-left: 22px;
+}
+.ud-answer-copy li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+}
+.ud-answer-cta {
+  display: inline-flex;
+  margin-top: 26px;
+  padding: 13px 18px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.ud-answer-cta:hover { background: var(--accent); color: #fff; }
+
 /* ── ORDER FORM ── */
 .ud-order-bg { background: var(--bg); }
 .ud-order-grid {

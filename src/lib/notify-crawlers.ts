@@ -25,14 +25,19 @@ export async function notifySitemaps() {
     const pings = ['Google', 'Bing', 'Yandex']
     const logs = results.map((r, i) => {
       if (r.status === 'fulfilled') {
-        return `✅ ${pings[i]}: ${r.value.status}`
+        const ok = r.value.ok || (r.value.status >= 300 && r.value.status < 400)
+        return `${ok ? '✅' : '❌'} ${pings[i]}: ${r.value.status}`
       } else {
         return `❌ ${pings[i]}: ${r.reason.message}`
       }
     })
 
+    const success = results.some((r) =>
+      r.status === 'fulfilled' && (r.value.ok || (r.value.status >= 300 && r.value.status < 400))
+    )
+
     console.log('[Sitemap Ping]', logs.join(' | '))
-    return { success: true, logs }
+    return { success, logs }
   } catch (error) {
     console.error('[Sitemap Ping Error]', error)
     return { success: false, error: error instanceof Error ? error.message : String(error) }
