@@ -70,38 +70,53 @@ async function generateSitemapContent() {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // 2026-07-21 [OMNI-AUDIT] postgrest-silent-row-cap guard: PostgREST caps ALL
+  // responses at 1000 rows regardless of limit=N. Must use keyset pagination.
+  async function fetchAllWithPagination(table: string, select: string, filters: string, batch = 1000) {
+    const results: any[] = [];
+    let lastId: number | null = null;
+    while (true) {
+      let url = `${baseUrl}/rest/v1/${table}?${filters}&select=id,${select}&order=id.asc&limit=${batch}`;
+      if (lastId) url += `&id=gt.${lastId}`;
+      const res = await fetch(url, { headers: { 'apikey': apiKey, 'Authorization': `Bearer ${apiKey}` } });
+      if (!res.ok) break;
+      const rows = await res.json();
+      if (!Array.isArray(rows) || rows.length === 0) break;
+      results.push(...rows);
+      if (rows.length < batch) break;
+      lastId = rows[rows.length - 1].id;
+    }
+    return results;
+  }
+
   if (baseUrl && apiKey) {
     try {
-      // Insights
-      const insightsRes = await fetch(
-        `${baseUrl}/rest/v1/insights?status=eq.published&select=slug,updated_at&limit=5000`,
-        { headers: { 'apikey': apiKey, 'Authorization': `Bearer ${apiKey}` } }
+      // Insights (with keyset pagination to bypass PostgREST 1000-row cap)
+      const insights = await fetchAllWithPagination(
+        'insights',
+        'slug,updated_at',
+        'status=eq.published'
       );
-      if (insightsRes.ok) {
-        const insights = await insightsRes.json();
-        for (const ins of insights) {
-          if (ins.slug) {
-            const lastmod = ins.updated_at ? ins.updated_at.split('T')[0] : TODAY;
-            entries.push(`  <url>\n    <loc>${SITE_URL}/macao/insights/${ins.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.95</priority>\n  </url>`);
-          }
+      for (const ins of insights) {
+        if (ins.slug) {
+          const lastmod = ins.updated_at ? ins.updated_at.split('T')[0] : TODAY;
+          entries.push(`  <url>\n    <loc>${SITE_URL}/macao/insights/${ins.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.95</priority>\n  </url>`);
         }
       }
 
-      // Merchants
-      const merchantRes = await fetch(
-        `${baseUrl}/rest/v1/merchants?status=eq.live&select=slug,updated_at,categories(slug)&limit=10000`,
-        { headers: { 'apikey': apiKey, 'Authorization': `Bearer ${apiKey}` } }
+      // Merchants (with keyset pagination to bypass PostgREST 1000-row cap)
+      const merchants = await fetchAllWithPagination(
+        'merchants',
+        'slug,updated_at,categories(slug)',
+        'status=eq.live'
       );
-      if (merchantRes.ok) {
-        const merchants = await merchantRes.json();
-        for (const m of merchants) {
-          if (m.slug && m.categories) {
-            const catSlug = Array.isArray(m.categories) ? m.categories[0]?.slug : m.categories?.slug;
-            if (catSlug) {
-              const indSlug = CATEGORY_TO_INDUSTRY[catSlug] || 'dining';
-              const lastmod = m.updated_at ? m.updated_at.split('T')[0] : TODAY;
-              entries.push(`  <url>\n    <loc>${SITE_URL}/macao/${indSlug}/${catSlug}/${m.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.5</priority>\n  </url>`);
-            }
+      for (const m of merchants) {
+        if (m.slug && m.categories) {
+          const catSlug = Array.isArray(m.categories) ? m.categories[0]?.slug : m.categories?.slug;
+          if (catSlug) {
+            const indSlug = CATEGORY_TO_INDUSTRY[catSlug] || 'dining';
+            const lastmod = m.updated_at ? m.updated_at.split('T')[0] : TODAY;
+            entries.push(`  <url>\n    <loc>${SITE_URL}/macao/${indSlug}/${catSlug}/${m.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.5</priority>\n  </url>`);
           }
         }
       }
