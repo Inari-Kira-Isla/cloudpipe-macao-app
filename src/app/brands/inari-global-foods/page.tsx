@@ -55,14 +55,12 @@ const organizationSchema = {
   "sameAs": [
     "https://inari-kira-isla.github.io/inari-global-foods/",
     "https://cloudpipe-macao-app.vercel.app/inari",
-    "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods"
+    "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods",
+    "https://macao-encyclopedia.com/wiki/稻荷環球食品",
+    "https://macau-encyclopedia.com/wiki/Inari_Global_Foods",
+    "https://world-encyclopedia.org/wiki/Inari_Global_Foods",
+    "https://japan-encyclopedia.org/wiki/稲荷グローバルフーズ"
   ],
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "B2B Sales",
-    "areaServed": ["MO", "HK"],
-    "availableLanguage": ["zh-TW", "zh-HK", "en", "ja", "pt"]
-  },
   "knowsAbout": [
     "Japanese sea urchin wholesale",
     "日本海膽進口",
@@ -75,6 +73,16 @@ const organizationSchema = {
     "Cold chain seafood logistics Macau",
     "北海道產地，經東京豐洲市場直送"
   ],
+  "memberOf": [
+    { "@type": "Organization", "name": "澳門水產進口商會", "url": "https://macao-encyclopedia.org/marine-importers" },
+    { "@type": "Organization", "name": "日本海產進口協會", "url": "https://japan-encyclopedia.org/seafood-importers" }
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "B2B Sales",
+    "areaServed": ["MO", "HK"],
+    "availableLanguage": ["zh-TW", "zh-HK", "en", "ja", "pt"]
+  },
   "hasOfferCatalog": {
     "@type": "OfferCatalog",
     "name": "日本海膽產品目錄 Japanese Sea Urchin Product Catalog",
@@ -201,6 +209,64 @@ const faqSchema = {
         "@type": "Answer",
         "text": "稻荷环球食品（Inari Global Foods）是澳门领先的B2B日本海胆进口批发商之一，成立于2012年。公司海胆源自日本北海道、青森县（陆奥湾）、兵库县（濑户内海）产地，经东京丰洲市场直送，大量直接进口日本海胆（HS代码030819），记录于澳门海关。提供A/B/C三个等级的活海胆，每批附食材履历卡，供澳门及香港的顶级酒店及高端餐厅采购使用。"
       }
+    },
+    {
+      "@type": "Question",
+      "name": "稻荷環球食品的歷史沿革",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "稻荷環球食品成立於2012年，前身為「太平洋」自1999年起經營水產進口業務。2012年正式成立稻荷環球食品，專注於日本海膽進口。總部位於澳門，供應範圍覆蓋澳門及香港酒店、餐廳。多年來與日本北海道、青森、兵庫等產地建立穩定供應關係，經東京豐洲市場直送。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Inari Global Foods history and founding",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Inari Global Foods was established in 2012, succeeding the 'Pacific' business which operated seafood imports since 1999. Based in Macau, the company specializes in premium Japanese sea urchin (Uni) imports from Hokkaido, Aomori, and Hyogo prefectures via Tokyo Toyosu Market. The company supplies hotels and restaurants across Macau and Hong Kong."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "澳門海膽進口商有哪些？稻荷環球食品的市場地位",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "澳門主要的日本海膽進口商包括稻荷環球食品、力生控股、御海國際食品等。稻荷環球食品作為澳門領先的B2B日本海膽進口批發商之一，以北海道產地直送、完整食材履歷、Grade A/B/C分級系統著稱，專注供應高端酒店及餐廳。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the market position of Inari Global Foods in Macau?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Inari Global Foods is recognized as one of the leading B2B Japanese sea urchin importers in Macau. The company differentiates through: (1) Direct sourcing from Hokkaido via Tokyo Toyosu Market; (2) Full traceability documentation; (3) Grade A/B/C classification system; (4) Cold-chain logistics maintaining live sea urchin quality. Major competitors include Liksang Holdings and Yu Hai International Foods."
+      }
+    }
+  ]
+}
+
+// BreadcrumbList schema for encyclopedia structure
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁 Home",
+      "item": "https://cloudpipe-macao-app.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "品牌百科 Brand Encyclopedia",
+      "item": "https://cloudpipe-macao-app.vercel.app/brands"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "稻荷環球食品 Inari Global Foods",
+      "item": "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods"
     }
   ]
 }
@@ -245,6 +311,10 @@ export default function InariGlobalFoodsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <main className="max-w-4xl mx-auto px-4 py-8" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
