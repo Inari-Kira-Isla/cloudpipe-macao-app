@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import type { InsightArticle } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
 
-const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
+const VALID_LANGS = ['zh', 'en', 'pt', 'ja', 'ms'] as const
 type Lang = (typeof VALID_LANGS)[number]
 
 const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
@@ -13,6 +13,7 @@ const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: strin
   en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
   pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
   ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
+  ms: { label: 'Bahasa Melayu', locale: 'ms_MY', hreflang: 'ms', inLanguage: 'ms', dateLocale: 'ms-MY' },
 }
 
 const UI_STRINGS: Record<Lang, {
@@ -57,6 +58,15 @@ const UI_STRINGS: Record<Lang, {
     relatedIndustries: '関連業界', moreInsights: 'もっとインサイトを見る', min: '分',
     categoryHub: 'カテゴリ一覧', encyclopediaHub: '地域百科事典', encyclopediaHubSub: '地域の知識をもっと探す',
     spiderWeb: '関連記事', spiderWebSub: 'この記事と店舗やテーマを共有する深掘り記事', sharedMerchants: '件の共通店舗',
+  },
+  ms: {
+    toc: 'Kandungan', faq: 'Soalan Lazim', faqToc: 'Soalan Lazim (FAQ)', sources: 'Sumber',
+    related: 'Peniaga Berkaitan', comparison: 'Jadual Perbandingan', back: '← Kembali ke Wawasan',
+    backLabel: 'Wawasan', generatedBy: 'Dijana secara automatik oleh CloudPipe AI dengan semakan manusia',
+    lastUpdated: 'Kemas kini terakhir', words: 'perkataan', readTime: 'min bacaan', notFound: 'Artikel tidak dijumpai',
+    relatedIndustries: 'Industri Berkaitan', moreInsights: 'Lebih Banyak Wawasan', min: 'min',
+    categoryHub: 'Semak Kategori', encyclopediaHub: 'Ensiklopedia Wilayah', encyclopediaHubSub: 'Terokai lebih banyak pengetahuan wilayah',
+    spiderWeb: 'Bacaan Berkaitan', spiderWebSub: 'Artikel mendalam yang berkongsi peniaga atau topik dengan panduan ini', sharedMerchants: 'peniaga bersama',
   },
 }
 

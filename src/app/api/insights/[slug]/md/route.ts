@@ -34,7 +34,7 @@ import type { InsightArticle } from '@/lib/types'
 import { getStaticInsight } from '@/data/static-insights'
 
 // ─── Lang helpers ────────────────────────────────────────────────────────────
-const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
+const VALID_LANGS = ['zh', 'en', 'pt', 'ja', 'ms'] as const
 type Lang = (typeof VALID_LANGS)[number]
 
 function parseLang(raw?: string | null): Lang {
@@ -68,6 +68,7 @@ const FAQ_HEADING: Record<Lang, string> = {
   en: '## Frequently Asked Questions',
   pt: '## Perguntas Frequentes',
   ja: '## よくある質問 (FAQ)',
+  ms: '## Soalan Lazim (FAQ)',
 }
 
 // ─── HTML → clean Markdown ───────────────────────────────────────────────────

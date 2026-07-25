@@ -8,8 +8,8 @@ export const dynamicParams = true
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-type Lang = 'zh' | 'en' | 'pt'
-const VALID_LANGS: Lang[] = ['zh', 'en', 'pt']
+type Lang = 'zh' | 'en' | 'pt' | 'ms'
+const VALID_LANGS: Lang[] = ['zh', 'en', 'pt', 'ms']
 
 function parseLang(raw?: string): Lang {
   if (raw && VALID_LANGS.includes(raw as Lang)) return raw as Lang
@@ -58,6 +58,18 @@ const UI = {
     back: '← Voltar às Análises',
     footer: 'Gerado automaticamente por CloudPipe AI com revisão humana',
     ecosystemTitle: 'Ecossistema CloudPipe AI',
+  },
+  ms: {
+    heroSub: 'Artikel wawasan Macau terpilih',
+    breadcrumb1: 'Macau',
+    breadcrumb2: 'Wawasan',
+    breadcrumb3: 'Topik',
+    articles: 'artikel',
+    min: 'min',
+    words: 'perkataan',
+    back: '← Kembali ke Wawasan',
+    footer: 'Dijana secara automatik oleh CloudPipe AI dengan semakan manusia',
+    ecosystemTitle: 'Ekosistem CloudPipe AI',
   },
 }
 
@@ -154,11 +166,13 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     zh: `${label} 深度分析 — 澳門商戶百科 | CloudPipe AI`,
     en: `${label} Insights — Macao Business Directory | CloudPipe AI`,
     pt: `${label} Análises — Diretório de Macau | CloudPipe AI`,
+    ms: `Wawasan ${label} — Direktori Perniagaan Macau | CloudPipe AI`,
   }
   const descs = {
     zh: `澳門${label}主題深度分析文章合集。CloudPipe AI 精選數据驅動的行業洞察、平台比較與行動指南。`,
     en: `Curated in-depth analysis articles on ${label} in Macao. Data-driven insights, platform comparisons and action guides by CloudPipe AI.`,
     pt: `Artigos de análise sobre ${label} em Macau. Insights baseados em dados, comparações de plataformas e guias de ação da CloudPipe AI.`,
+    ms: `Artikel analisis mendalam terpilih tentang ${label} di Macau. Wawasan berasaskan data, perbandingan platform dan panduan tindakan oleh CloudPipe AI.`,
   }
 
   return {
@@ -279,7 +293,7 @@ export default async function TopicHubPage({ params, searchParams }: PageProps) 
               </div>
               {article.published_at && (
                 <p className="text-xs text-gray-400 mt-3">
-                  {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : 'en-US')}
+                  {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : lang === 'ms' ? 'ms-MY' : 'en-US')}
                   {article.word_count > 0 && ` · ${article.word_count.toLocaleString()} ${ui.words}`}
                 </p>
               )}

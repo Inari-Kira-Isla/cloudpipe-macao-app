@@ -8,10 +8,10 @@ export const revalidate = 600 // 10min ISR — 移除 force-dynamic（與 revali
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-type Lang = 'zh' | 'en' | 'pt'
-const VALID_LANGS: Lang[] = ['zh', 'en', 'pt']
+type Lang = 'zh' | 'en' | 'pt' | 'ms'
+const VALID_LANGS: Lang[] = ['zh', 'en', 'pt', 'ms']
 
-const LANG_LABELS: Record<Lang, string> = { zh: '中文', en: 'English', pt: 'Português' }
+const LANG_LABELS: Record<Lang, string> = { zh: '中文', en: 'English', pt: 'Português', ms: 'Bahasa Melayu' }
 
 const UI: Record<Lang, {
   pageTitle: string; pageDesc: string; heroTitle: string; heroSub: string
@@ -42,25 +42,33 @@ const UI: Record<Lang, {
     min: 'min', words: 'palavras', back: '← Voltar a Macau', backLabel: 'Análises',
     footer: 'Gerado automaticamente por CloudPipe AI com revisão humana',
   },
+  ms: {
+    pageTitle: 'Wawasan — Direktori Perniagaan Macau | CloudPipe AI',
+    pageDesc: 'Artikel analisis mendalam tentang industri Macau dengan perbandingan platform berasaskan data dan panduan tindakan.',
+    heroTitle: 'Wawasan', heroSub: 'Wawasan industri Macau berasaskan data — perbandingan platform, laporan trend, panduan tindakan',
+    breadcrumb: 'Macau', empty1: 'Artikel akan datang', empty2: 'Nantikan analisis mendalam pertama kami',
+    min: 'min', words: 'perkataan', back: '← Kembali ke Macau', backLabel: 'Wawasan',
+    footer: 'Dijana secara automatik oleh CloudPipe AI dengan semakan manusia',
+  },
 }
 
 const INDUSTRY_LABELS: Record<string, Record<Lang, string>> = {
-  dining:      { zh: '餐飲美食', en: 'Dining', pt: 'Gastronomia' },
-  hotels:      { zh: '酒店住宿', en: 'Hotels', pt: 'Hotéis' },
-  attractions: { zh: '景黭e文化', en: 'Attractions', pt: 'Atrações' },
-  shopping:    { zh: '購物零售', en: 'Shopping', pt: 'Compras' },
-  wellness:    { zh: '健康美容', en: 'Wellness', pt: 'Bem-estar' },
-  services:    { zh: '專業服務', en: 'Services', pt: 'Serviços' },
-  education:   { zh: '教育培訓', en: 'Education', pt: 'Educação' },
-  tech:        { zh: '科技創新', en: 'Tech', pt: 'Tecnologia' },
-  nightlife:   { zh: '夜生活', en: 'Nightlife', pt: 'Vida Noturna' },
-  gaming:      { zh: '博彩娛樂', en: 'Gaming', pt: 'Jogos' },
-  tourism:     { zh: '旅遊觀光', en: 'Tourism', pt: 'Turismo' },
-  finance:     { zh: '金融保險', en: 'Finance', pt: 'Finanças' },
-  'food-supply': { zh: '食品供應', en: 'Food Supply', pt: 'Abastecimento' },
+  dining:      { zh: '餐飲美食', en: 'Dining', pt: 'Gastronomia', ms: 'Makanan' },
+  hotels:      { zh: '酒店住宿', en: 'Hotels', pt: 'Hotéis', ms: 'Hotel' },
+  attractions: { zh: '景黭e文化', en: 'Attractions', pt: 'Atrações', ms: 'Tarikan' },
+  shopping:    { zh: '購物零售', en: 'Shopping', pt: 'Compras', ms: 'Membeli-belah' },
+  wellness:    { zh: '健康美容', en: 'Wellness', pt: 'Bem-estar', ms: 'Kesihatan' },
+  services:    { zh: '專業服務', en: 'Services', pt: 'Serviços', ms: 'Perkhidmatan' },
+  education:   { zh: '教育培訓', en: 'Education', pt: 'Educação', ms: 'Pendidikan' },
+  tech:        { zh: '科技創新', en: 'Tech', pt: 'Tecnologia', ms: 'Teknologi' },
+  nightlife:   { zh: '夜生活', en: 'Nightlife', pt: 'Vida Noturna', ms: 'Kehidupan Malam' },
+  gaming:      { zh: '博彩娛樂', en: 'Gaming', pt: 'Jogos', ms: 'Permainan' },
+  tourism:     { zh: '旅遊觀光', en: 'Tourism', pt: 'Turismo', ms: 'Pelancongan' },
+  finance:     { zh: '金融保險', en: 'Finance', pt: 'Finanças', ms: 'Kewangan' },
+  'food-supply': { zh: '食品供應', en: 'Food Supply', pt: 'Abastecimento', ms: 'Bekalan Makanan' },
 }
 
-const INDUSTRY_FILTER_LABELS: Record<Lang, string> = { zh: '全部', en: 'All', pt: 'Todos' }
+const INDUSTRY_FILTER_LABELS: Record<Lang, string> = { zh: '全部', en: 'All', pt: 'Todos', ms: 'Semua' }
 
 interface PageProps {
   searchParams: Promise<{ lang?: string; industry?: string }>
@@ -273,7 +281,7 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
                 </div>
                 {article.published_at && (
                   <p className="text-xs text-gray-400 mt-3">
-                    {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : 'en-US')}
+                    {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : lang === 'ms' ? 'ms-MY' : 'en-US')}
                     {article.word_count > 0 && ` · ${article.word_count.toLocaleString()} ${ui.words}`}
                   </p>
                 )}
@@ -285,16 +293,16 @@ export default async function InsightsListPage({ searchParams }: PageProps) {
         {/* Hub pages: topic + district crawl entry points */}
         <section className="mt-12 p-5 bg-[#f8fafc] rounded-xl border border-gray-200">
           <h2 className="text-sm font-bold text-[#0f4c81] mb-3 uppercase tracking-wider">
-            {lang === 'zh' ? '按地區瀏覽' : lang === 'pt' ? 'Explorar por Distrito' : 'Browse by District'}
+            {lang === 'zh' ? '按地區瀏覽' : lang === 'pt' ? 'Explorar por Distrito' : lang === 'ms' ? 'Semak Ikut Daerah' : 'Browse by District'}
           </h2>
           <div className="flex flex-wrap gap-2">
             {(['macau-peninsula', 'taipa', 'coloane', 'cotai', 'inner-harbour'] as const).map(d => {
               const labels: Record<string, Record<Lang, string>> = {
-                'macau-peninsula': { zh: '澳門半島', en: 'Macao Peninsula', pt: 'Península de Macau' },
-                'taipa': { zh: '氻仔', en: 'Taipa', pt: 'Taipa' },
-                'coloane': { zh: '路環', en: 'Coloane', pt: 'Coloane' },
-                'cotai': { zh: '路氻城', en: 'Cotai', pt: 'Cotai' },
-                'inner-harbour': { zh: '內港', en: 'Inner Harbour', pt: 'Porto Interior' },
+                'macau-peninsula': { zh: '澳門半島', en: 'Macao Peninsula', pt: 'Península de Macau', ms: 'Semenanjung Macau' },
+                'taipa': { zh: '氻仔', en: 'Taipa', pt: 'Taipa', ms: 'Taipa' },
+                'coloane': { zh: '路環', en: 'Coloane', pt: 'Coloane', ms: 'Coloane' },
+                'cotai': { zh: '路氻城', en: 'Cotai', pt: 'Cotai', ms: 'Cotai' },
+                'inner-harbour': { zh: '內港', en: 'Inner Harbour', pt: 'Porto Interior', ms: 'Pelabuhan Dalam' },
               }
               return (
                 <a

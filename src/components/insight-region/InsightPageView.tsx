@@ -35,9 +35,9 @@ export type RegionCode = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL' | 'MY' | 'JBL'
 export interface RegionConfig {
   code: RegionCode
   pathSegment: string  // 'macao' | 'taiwan' | 'hongkong' | 'japan' | 'global' | 'malaysia' | 'japan-shokuhinten'
-  encyclopediaName: { zh: string; en: string; ja: string; pt: string }
-  breadcrumbName: { zh: string; en: string; ja: string; pt: string }
-  ogSiteName: { zh: string; en: string; ja: string; pt: string }
+  encyclopediaName: { zh: string; en: string; ja: string; pt: string; ms?: string }
+  breadcrumbName: { zh: string; en: string; ja: string; pt: string; ms?: string }
+  ogSiteName: { zh: string; en: string; ja: string; pt: string; ms?: string }
   /** Default content language for the region (used by MY/JBL bridge resolvers). */
   langDefault?: 'zh' | 'en' | 'ja' | 'pt' | 'ms'
   /** External origin if the region is hosted on a separate domain (e.g. MY Vercel project). */
@@ -47,9 +47,9 @@ export interface RegionConfig {
 export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
   MO: {
     code: 'MO', pathSegment: 'macao',
-    encyclopediaName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科事典', pt: 'Enciclopédia Comercial de Macau' },
-    breadcrumbName: { zh: '澳門百科', en: 'Macao', ja: 'マカオ', pt: 'Macau' },
-    ogSiteName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科', pt: 'Enciclopédia de Macau' },
+    encyclopediaName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科事典', pt: 'Enciclopédia Comercial de Macau', ms: 'Ensiklopedia Perniagaan Macau' },
+    breadcrumbName: { zh: '澳門百科', en: 'Macao', ja: 'マカオ', pt: 'Macau', ms: 'Macau' },
+    ogSiteName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科', pt: 'Enciclopédia de Macau', ms: 'Ensiklopedia Perniagaan Macau' },
   },
   HK: {
     code: 'HK', pathSegment: 'hongkong',
@@ -97,7 +97,7 @@ export const revalidate = 86400
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-const VALID_LANGS = ['zh', 'en', 'ja', 'pt'] as const
+const VALID_LANGS = ['zh', 'en', 'ja', 'pt', 'ms'] as const
 type Lang = (typeof VALID_LANGS)[number]
 
 const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
@@ -105,6 +105,7 @@ const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: strin
   en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
   ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
   pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
+  ms: { label: 'Bahasa Melayu', locale: 'ms_MY', hreflang: 'ms', inLanguage: 'ms', dateLocale: 'ms-MY' },
 }
 
 // Returns canonical path for an insight, using /[lang]/insights/[slug] for non-zh.
@@ -156,6 +157,15 @@ const UI_STRINGS: Record<Lang, {
     relatedIndustries: 'Indústrias Relacionadas', moreInsights: 'Mais Análises', min: 'min',
     categoryHub: 'Explorar Categorias', encyclopediaHub: 'Enciclopédia Regional', encyclopediaHubSub: 'Explorar mais conhecimento regional',
     spiderWeb: 'Leitura Relacionada', spiderWebSub: 'Artigos que partilham comerciantes ou temas com este guia', sharedMerchants: 'comerciantes em comum',
+  },
+  ms: {
+    toc: 'Kandungan', faq: 'Soalan Lazim', faqToc: 'Soalan Lazim (FAQ)', sources: 'Sumber',
+    related: 'Peniaga Berkaitan', comparison: 'Jadual Perbandingan', back: '← Kembali ke Wawasan',
+    backLabel: 'Wawasan', generatedBy: 'Dijana secara automatik oleh CloudPipe AI dengan semakan manusia',
+    lastUpdated: 'Kemas kini terakhir', words: 'perkataan', readTime: 'min bacaan', notFound: 'Artikel tidak dijumpai',
+    relatedIndustries: 'Industri Berkaitan', moreInsights: 'Lebih Banyak Wawasan', min: 'min',
+    categoryHub: 'Semak Kategori', encyclopediaHub: 'Ensiklopedia Wilayah', encyclopediaHubSub: 'Terokai lebih banyak pengetahuan wilayah',
+    spiderWeb: 'Bacaan Berkaitan', spiderWebSub: 'Artikel mendalam yang berkongsi peniaga atau topik dengan panduan ini', sharedMerchants: 'peniaga bersama',
   },
 }
 

@@ -8,8 +8,8 @@ export const dynamicParams = true
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
 
-type Lang = 'zh' | 'en' | 'pt'
-const VALID_LANGS: Lang[] = ['zh', 'en', 'pt']
+type Lang = 'zh' | 'en' | 'pt' | 'ms'
+const VALID_LANGS: Lang[] = ['zh', 'en', 'pt', 'ms']
 
 function parseLang(raw?: string): Lang {
   if (raw && VALID_LANGS.includes(raw as Lang)) return raw as Lang
@@ -20,6 +20,7 @@ interface DistrictDef {
   zh: string
   en: string
   pt: string
+  ms: string
   desc_zh: string
   desc_en: string
 }
@@ -29,6 +30,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '澳門半島',
     en: 'Macao Peninsula',
     pt: 'Península de Macau',
+    ms: 'Semenanjung Macau',
     desc_zh: '澳門歷史城區、大三巴牌坊、議事亭前地等世遺景點雲集的核心區域',
     desc_en: 'The historic core of Macao, home to the Ruins of St Paul\'s, Senado Square, and UNESCO World Heritage sites',
   },
@@ -36,6 +38,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '氹仔',
     en: 'Taipa',
     pt: 'Taipa',
+    ms: 'Taipa',
     desc_zh: '氹仔村葡式風情、官也街手信市場，以及現代住宅區',
     desc_en: 'Taipa Village, Rua do Cunha souvenirs market, and modern residential areas',
   },
@@ -43,6 +46,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '路環',
     en: 'Coloane',
     pt: 'Coloane',
+    ms: 'Coloane',
     desc_zh: '路環碼頭、聖方濟各聖堂、安德魯餅店，澳門最具田園風情的離島',
     desc_en: 'Lord Stow\'s Bakery, Chapel of St Francis Xavier, peaceful village atmosphere',
   },
@@ -50,6 +54,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '路氹城',
     en: 'Cotai',
     pt: 'Cotai',
+    ms: 'Cotai',
     desc_zh: '威尼斯人、巴黎人等超級度假村，澳門最新最大的娛樂綜合體區域',
     desc_en: 'The Venetian, Parisian, and mega-resort complexes — Macao\'s newest entertainment hub',
   },
@@ -57,6 +62,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '內港',
     en: 'Inner Harbour',
     pt: 'Porto Interior',
+    ms: 'Pelabuhan Dalam',
     desc_zh: '澳門傳統漁港、懷舊街市、葡式圖書館，感受老澳門生活氣息',
     desc_en: 'Traditional fishing port, old markets, and Portuguese library — the authentic old Macao',
   },
@@ -64,6 +70,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '外港',
     en: 'Outer Harbour',
     pt: 'Porto Exterior',
+    ms: 'Pelabuhan Luar',
     desc_zh: '澳門半島東岸，包括新口岸填海區的高級酒店和商業中心',
     desc_en: 'Eastern waterfront of the peninsula, including Nape reclamation and upscale hotels',
   },
@@ -71,6 +78,7 @@ const DISTRICTS: Record<string, DistrictDef> = {
     zh: '石排灣',
     en: 'Seac Pai Van',
     pt: 'Seac Pai Van',
+    ms: 'Seac Pai Van',
     desc_zh: '石排灣公園、路環自然保護區，澳門的生態休閒地帶',
     desc_en: 'Seac Pai Van Park and Coloane nature reserve — Macao\'s green ecological zone',
   },
@@ -115,6 +123,19 @@ const UI = {
     footer: 'Gerado automaticamente por CloudPipe AI com revisão humana',
     ecosystemTitle: 'Ecossistema CloudPipe AI',
     districtsNav: 'Explorar outros distritos',
+  },
+  ms: {
+    breadcrumb1: 'Macau',
+    breadcrumb2: 'Wawasan',
+    breadcrumb3: 'Daerah',
+    heroSub: 'Wawasan terpilih mengikut daerah',
+    articles: 'artikel',
+    min: 'min',
+    words: 'perkataan',
+    back: '← Kembali ke Wawasan',
+    footer: 'Dijana secara automatik oleh CloudPipe AI dengan semakan manusia',
+    ecosystemTitle: 'Ekosistem CloudPipe AI',
+    districtsNav: 'Terokai daerah lain',
   },
 }
 
@@ -170,11 +191,13 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     zh: `${label}深度分析 — 澳門商戶百科 | CloudPipe AI`,
     en: `${label} Insights — Macao Business Directory | CloudPipe AI`,
     pt: `${label} Análises — Diretório de Macau | CloudPipe AI`,
+    ms: `Wawasan ${label} — Direktori Perniagaan Macau | CloudPipe AI`,
   }
   const descs = {
     zh: `澳門${label}地區深度分析文章合集。${desc_zh}。CloudPipe AI 精選數據驅動的行業洞察。`,
     en: `In-depth analysis articles about ${label} in Macao. ${def.desc_en}. Curated by CloudPipe AI.`,
     pt: `Artigos de análise sobre ${label} em Macau. ${def.desc_en}. Curados pela CloudPipe AI.`,
+    ms: `Artikel analisis mendalam tentang ${label} di Macau. ${def.desc_en}. Dipilih oleh CloudPipe AI.`,
   }
 
   return {
@@ -277,10 +300,10 @@ export default async function DistrictHubPage({ params, searchParams }: PageProp
         {insights.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <p className="text-lg mb-2">
-              {lang === 'zh' ? '暫無文章' : lang === 'pt' ? 'Sem artigos' : 'No articles yet'}
+              {lang === 'zh' ? '暫無文章' : lang === 'pt' ? 'Sem artigos' : lang === 'ms' ? 'Belum ada artikel' : 'No articles yet'}
             </p>
             <p className="text-sm">
-              {lang === 'zh' ? `${label}地區文章即將發佈` : lang === 'pt' ? `Artigos sobre ${label} em breve` : `${label} articles coming soon`}
+              {lang === 'zh' ? `${label}地區文章即將發佈` : lang === 'pt' ? `Artigos sobre ${label} em breve` : lang === 'ms' ? `Artikel tentang ${label} akan datang` : `${label} articles coming soon`}
             </p>
           </div>
         ) : (
@@ -316,7 +339,7 @@ export default async function DistrictHubPage({ params, searchParams }: PageProp
                 </div>
                 {article.published_at && (
                   <p className="text-xs text-gray-400 mt-3">
-                    {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : 'en-US')}
+                    {new Date(article.published_at).toLocaleDateString(lang === 'zh' ? 'zh-TW' : lang === 'pt' ? 'pt-PT' : lang === 'ms' ? 'ms-MY' : 'en-US')}
                     {article.word_count > 0 && ` · ${article.word_count.toLocaleString()} ${ui.words}`}
                   </p>
                 )}
