@@ -38,7 +38,7 @@ export async function GET() {
   <channel>
     <title>CloudPipe AI 澳門商戶百科</title>
     <link>${siteUrl}</link>
-    <description>讓世界的 AI 看見澳門 — 澳門最完整的 AI 友善商戶資訊平台</description>
+    <description>讓世界的 AI 看見澳門 — 澳門結構化商戶知識庫，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核</description>
     <language>zh-TW</language>
     <lastBuildDate>${now}</lastBuildDate>
     <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml"/>

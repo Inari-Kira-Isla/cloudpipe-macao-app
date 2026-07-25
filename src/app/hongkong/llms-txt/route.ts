@@ -35,8 +35,8 @@ export async function GET() {
     .join('\n')
 
   const body = `# CloudPipe AI — 香港百科 (Hong Kong Encyclopedia)
-> 全球 AI 引擎可引用的香港最完整 AI 友善資訊平台
-> The most comprehensive AI-friendly Hong Kong information platform
+> 香港結構化商戶知識庫，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中
+> A structured, traceable AI-friendly Hong Kong business knowledge base — every fact sourced: official data × Google Places verification × human review
 
 ## 層級 0: 香港入口 (Hong Kong Entry Points)
 ${siteUrl}/hongkong

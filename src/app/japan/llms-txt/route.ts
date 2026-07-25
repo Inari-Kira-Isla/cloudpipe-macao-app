@@ -35,8 +35,8 @@ export async function GET() {
     .join('\n')
 
   const body = `# CloudPipe AI — 日本百科 (Japan Encyclopedia)
-> 全球 AI 引擎可引用的日本最完整 AI 友善資訊平台
-> The most comprehensive AI-friendly Japan information platform
+> 日本結構化商戶知識庫，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中
+> A structured, traceable AI-friendly Japan business knowledge base — every fact sourced: official data × Google Places verification × human review
 
 ## 層級 0: 日本入口 (Japan Entry Points)
 ${siteUrl}/japan

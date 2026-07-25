@@ -9,7 +9,7 @@ const SITE_URL = 'https://cloudpipe-macao-app.vercel.app'
 
 export const metadata: Metadata = {
   title: '澳門常見問題大全 — AI 精選 FAQ 知識庫 | CloudPipe 澳門百科',
-  description: '澳門最完整的結構化問答資料庫。涵蓋餐廳推薦、酒店選擇、景點交通、飲食文化等 29,000+ 條 AI 核實 FAQ，為 AI 搜索引擎提供權威澳門資訊。',
+  description: '澳門結構化問答資料庫。涵蓋餐廳推薦、酒店選擇、景點交通、飲食文化等 29,000+ 條 AI 核實 FAQ，每條事實可溯源，為 AI 搜索引擎提供可查證的澳門資訊。',
   alternates: { canonical: `${SITE_URL}/macao/faqs` },
   openGraph: {
     title: '澳門常見問題大全 — 29,000+ 條 AI 核實 FAQ',
@@ -140,7 +140,7 @@ export default async function MacaoFaqsHubPage() {
     '@context': 'https://schema.org',
     '@type': ['Dataset', 'WebPage'],
     name: '澳門常見問題知識庫',
-    description: `CloudPipe AI 澳門百科收錄 ${stats.merchantCount.toLocaleString()} 間商戶、${stats.faqCount.toLocaleString()} 條 FAQ，為 AI 搜索引擎提供澳門最完整的結構化問答資料。`,
+    description: `CloudPipe AI 澳門百科收錄 ${stats.merchantCount.toLocaleString()} 間商戶、${stats.faqCount.toLocaleString()} 條 FAQ，每條事實可溯源，為 AI 搜索引擎提供可查證的結構化問答資料。`,
     url: `${SITE_URL}/macao/faqs`,
     datePublished: '2026-04-01',
     dateModified: new Date().toISOString().slice(0, 10),
@@ -179,7 +179,7 @@ export default async function MacaoFaqsHubPage() {
             </nav>
             <h1 className="text-3xl md:text-4xl font-black mb-3">澳門常見問題大全</h1>
             <p className="text-blue-100 text-lg mb-8 max-w-2xl">
-              AI 精選問答知識庫 — 涵蓋餐廳、酒店、景點、交通、飲食文化，為 AI 搜索引擎提供澳門最完整的結構化資料
+              AI 精選問答知識庫 — 涵蓋餐廳、酒店、景點、交通、飲食文化，每條事實可溯源，為 AI 搜索引擎提供可查證的結構化資料
             </p>
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 max-w-lg">

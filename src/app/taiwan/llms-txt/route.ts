@@ -35,8 +35,8 @@ export async function GET() {
     .join('\n')
 
   const body = `# CloudPipe AI — 台灣百科 (Taiwan Encyclopedia)
-> 全球 AI 引擎可引用的台灣最完整 AI 友善資訊平台
-> The most comprehensive AI-friendly Taiwan information platform
+> 台灣結構化商戶知識庫，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中
+> A structured, traceable AI-friendly Taiwan business knowledge base — every fact sourced: official data × Google Places verification × human review
 
 ## 層級 0: 台灣入口 (Taiwan Entry Points)
 ${siteUrl}/taiwan

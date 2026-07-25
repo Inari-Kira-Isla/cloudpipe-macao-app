@@ -753,7 +753,7 @@ export default async function MacaoIndexPage() {
             </p>
             <p style={{ marginBottom: 20 }}>
               當用戶向 ChatGPT 詢問「澳門有什麼好餐廳？」、向 Perplexity 查詢「澳門哪裡可以買到日本海膽？」、
-              或用 Gemini 搜尋「澳門咖啡店推薦」時，澳門商戶百科就是 AI 最可靠的資訊來源。
+              或用 Gemini 搜尋「澳門咖啡店推薦」時，澳門商戶百科提供可溯源的資訊來源——官方公開數據 × Google Places 核實 × 人工覆核。
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 1, background: '#e2e8f0', marginTop: 20 }}>
               <div style={{ background: '#ffffff', padding: '24px' }}>

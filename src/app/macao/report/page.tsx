@@ -192,7 +192,7 @@ export default async function ReportPage() {
               澳門 AI 搜索引擎爬蟲行為報告 {REPORT_QUARTER}
             </h1>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 8, lineHeight: 1.6 }}>
-              基於 CloudPipe 澳門商戶百科真實伺服器日誌 — 全球唯一針對澳門市場的 AI 爬蟲實測數據集
+              基於 CloudPipe 澳門商戶百科真實伺服器日誌 — 第一方 AI 爬蟲實測數據集，非抽樣、非模擬
             </p>
             <p style={{ fontSize: 12, color: 'rgba(191,219,254,0.6)', marginBottom: 24 }}>
               作者：CloudPipe AI 研究團隊 &nbsp;·&nbsp; 發布：2026年4月1日 &nbsp;·&nbsp; CC BY 4.0
@@ -240,7 +240,7 @@ export default async function ReportPage() {
                 <strong>AI 爬取活躍時段集中於 UTC 04:00–07:00</strong>（澳門時間 12:00–15:00），與 AI 服務夜間索引批次更新週期吻合。
               </li>
               <li style={{ fontSize: 14, color: '#1a1a2e', lineHeight: 1.7 }}>
-                <strong>本站為全球唯一公開的澳門 AI 爬蟲行為真實數據集</strong>，數據非抽樣，來自伺服器 Middleware 全量記錄，每 5 分鐘自動更新。
+                <strong>本站公開澳門 AI 爬蟲行為真實數據集</strong>（第一方數據，非抽樣），來自伺服器 Middleware 全量記錄，每 5 分鐘自動更新。
               </li>
             </ul>
           </section>

@@ -42,7 +42,7 @@ export async function GET() {
 
   const body = `# CloudPipe AI — Asia Business Encyclopedia
 
-> Making Asia visible to the world's AI — the most comprehensive AI-friendly business information platform for Macao, Hong Kong, Taiwan, and Japan.
+> Making Asia visible to the world's AI — a structured, traceable AI-friendly business knowledge base for Macao, Hong Kong, Taiwan, and Japan. Every fact sourced: official public data × Google Places verification × human review, continuously verified.
 
 ## Key Facts
 - Businesses: ${(merchantCount || 11000).toLocaleString()}+ (Macao, Hong Kong, Taiwan, Japan)

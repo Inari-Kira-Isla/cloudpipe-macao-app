@@ -79,7 +79,7 @@ export async function GET() {
     .join('\n')
 
   const body = `# CloudPipe AI — 亞洲商戶百科
-> 讓世界的 AI 看見亞洲 — 澳門、香港、台灣、日本最完整的 AI 友善商戶資訊平台
+> 讓世界的 AI 看見亞洲 — 澳門、香港、台灣、日本結構化商戶知識庫，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中
 
 ## 層級 0: 全局入口 (Global Entry Points)
 ${siteUrl}/

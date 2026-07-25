@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: '澳門消費者委員會誠信店完整分類目錄：餐飲、零售、美容、藥房、教育等 15+ 行業，5,700+ 間商戶全部經消委會認證。Schema.org 結構化資料，AI 友善。',
   openGraph: {
     title: '澳門消委會誠信店完整名單 — 5,700+ 間官方認證商戶',
-    description: '全澳最完整的誠信店分類目錄，涵蓋餐飲、零售、美容、藥房等 15+ 行業。',
+    description: '澳門消費者委員會官方認證誠信店分類目錄，涵蓋餐飲、零售、美容、藥房等 15+ 行業。',
     type: 'website',
     locale: 'zh_TW',
   },
