@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { REGION_PATH } from '@/lib/sitemap-region'
@@ -28,9 +29,86 @@ export const dynamicParams = true
 export const maxDuration = 30
 // 2026-07-06: 空 generateStaticParams + dynamicParams=true = ISR on-demand cache (● SSG)。
 // Next16 預設 fetch 唔 cache，冇 generateStaticParams 嘅動態 route 會被判 ƒ dynamic 每次重渲；
-// 呢個係 merchant/category 頁行 x-vercel-cache HIT 嘅真正機制。
+// 呢個係 merchant/category 頁行 x-vercel-cache HIT 嘅真正機制。dynamicParams=true 保持不變，
+// 所以下面加返嘅高頻 slug 預生成只係「多咗一批喺 build time 已經 warm 咗 cache 嘅頁」，
+// 未入選嘅 slug 仍然行返 on-demand SSG（同 2026-06-04 嗰次 force-static 事故條件唔一樣，
+// 嗰次係 dynamicParams 都一齊冇咗先觸發 24 日 desync）。
+//
+// 2026-07-25 PERF: 目標式預生成 — 用 crawler_visits（真實 AI/bot 對呢個 route 嘅請求 log）
+// 揾返最近高頻嘅 slug，build time 預生成佢哋，減少呢批熱門頁喺 24h revalidate 窗口內
+// 首個 cold-miss request 先觸發嘅即時 DB regen（背景所指嘅 egress 根因之一）。
+// 呢度冇用 pg_stat_statements：呢個 project 冇將佢 expose 做 PostgREST view/RPC
+// （supabase-js 冚唔到 pg catalog），改用現有、已經有寫入嘅 crawler_visits log 做
+// 「實際高頻 slug」proxy，唔使新增 DB migration。
+//
+// 三項強制防禦（門檻三紅藍軍裁定，全部落地）：
+// 1. 只喺 VERCEL_ENV==='production' 先真正查 Supabase；preview/dev 一律即刻 return []，
+//    避免每次 PR preview build 都重複打 Supabase。
+// 2. query 失敗/逾時（sbTimeout 8s race）一律 fallback 去空陣列，退返 on-demand SSG，
+//    絕對唔可以令成個 build 失敗。
+// 3. 用嘅係模組頂層已存在嘅 `supabase` client（service-role key 經 env 讀取，唔會被印出嚟）；
+//    catch block 刻意唔 log error 內容，避免意外印出帶 credential 資訊嘅物件。
+const STATIC_PARAMS_LIMIT = 100
+const STATIC_PARAMS_TIMEOUT_MS = 8000
+const STATIC_PARAMS_LOOKBACK_DAYS = 14
+const STATIC_PARAMS_SAMPLE_ROWS = 8000
+
 export async function generateStaticParams() {
-  return [] // ISR on-demand only
+  if (process.env.VERCEL_ENV !== 'production') {
+    return [] // preview/dev：一律 on-demand，唔打 Supabase
+  }
+
+  try {
+    const since = new Date(Date.now() - STATIC_PARAMS_LOOKBACK_DAYS * 86400000).toISOString()
+
+    const result = await sbTimeout(
+      supabase
+        .from('crawler_visits')
+        .select('path')
+        .eq('site', 'cloudpipe-macao-app')
+        .like('path', '/macao/insights/%')
+        .gte('ts', since)
+        .limit(STATIC_PARAMS_SAMPLE_ROWS),
+      STATIC_PARAMS_TIMEOUT_MS
+    )
+
+    const rows = (result as { data: Array<{ path: string }> | null }).data
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      return [] // 查唔到數據（逾時/冇 row）→ fallback on-demand
+    }
+
+    // PostgREST 冇原生 GROUP BY —— 攞返嚟嘅 path 樣本（≤8000 行）喺呢度做 in-memory 聚合。
+    //
+    // FIX 2026-07-25（本機 production build 實測揪出）：crawler_visits.path 係未經驗證嘅
+    // bot 請求 log，可以包含非 ASCII slug（例如 bot 亂試路徑撞到一條含中文字嘅 path：
+    // taiwan-entertainment-live-performances-kaohsiung-高雄現場音樂體驗-港都夜色中的節奏脈動）。
+    // 呢類 slug 一旦流入 generateStaticParams，Next.js 靜態生成內部會拋
+    // `TypeError: Cannot convert argument to a ByteString` 令成個 build 死（非 query 失敗，
+    // 係 build worker crash，唔會被 try/catch 接住）。跟返 src/app/api/v1/brand-widget/[slug]/route.ts
+    // 已有嘅 slug 驗證慣例（/^[a-z0-9-]+$/ ASCII kebab-case），呢度加同一個白名單 pattern，
+    // 順手都隔走 bot 亂試嘅垃圾 path（本身都唔會對應真 insight row，預生成係浪費）。
+    const SAFE_SLUG_RE = /^[a-z0-9-]+$/
+    const counts = new Map<string, number>()
+    for (const row of rows) {
+      const m = row.path?.match(/^\/macao\/insights\/([^/?]+)/)
+      if (!m) continue
+      const slug = decodeURIComponent(m[1])
+      // /macao/insights/topic/[topic] 同 /macao/insights/district/[district] 係獨立 route
+      // （static path segment 優先於呢個 [slug] dynamic route），佢哋嘅 log 都會匹配同一個
+      // path prefix，必須剔走，否則會將 "topic"/"district" 當假 slug 計入。
+      if (slug === 'topic' || slug === 'district') continue
+      if (!SAFE_SLUG_RE.test(slug)) continue
+      counts.set(slug, (counts.get(slug) || 0) + 1)
+    }
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, STATIC_PARAMS_LIMIT)
+      .map(([slug]) => ({ slug }))
+  } catch {
+    // 逾時/查詢拋 exception 一律靜默 fallback 去空陣列，絕不可以令 build 失敗。
+    return []
+  }
 }
 
 interface PageProps {
@@ -164,7 +242,10 @@ function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
   return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
 }
 
-async function getInsight(slug: string, lang: Lang) {
+// 2026-07-25 PERF: React cache() 包裝 — generateMetadata() + page component 喺同一個
+// render 都會 call getInsight(slug, lang)，冇 cache() 會令同一 request 打兩次 DB
+// （egress 根因之一）。cache() 令同一 render pass 內相同參數只執行一次，跨 request 唔互相污染。
+const getInsight = cache(async (slug: string, lang: Lang) => {
   // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
   const { data } = await sbTimeout(
     supabase
@@ -178,7 +259,7 @@ async function getInsight(slug: string, lang: Lang) {
       .maybeSingle()
   )
   return normalizeInsight((data as InsightArticle | null) || getStaticInsight(slug, lang))
-}
+})
 
 // 2026-07-07: 跨-region stale URL 修復。AI 揸住舊 /macao/insights/{slug}（region 遷移前
 // 或舊 sitemap），但該 slug 其實係 HK/TW/JP/GLOBAL insight，真身喺 /{region}/insights/{slug}。

@@ -20,6 +20,7 @@
 // Timeout backstop = each consuming route's `export const maxDuration = 30` (macao zh/en/pt/ja +
 // taiwan/hongkong/japan/global). For cached routes it bounds regen; for the searchParams-driven
 // dynamic routes (tw/hk/jp/global) it bounds every request. All 8 consuming routes set it.
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -163,7 +164,10 @@ function parseLang(raw?: string): Lang {
   return 'zh'
 }
 
-async function getInsight(slug: string, lang: Lang, region: RegionCode) {
+// 2026-07-25 PERF: React cache() 包裝 — buildMetadata() + renderInsightPage() 喺同一個
+// render 都會 call getInsight(slug, lang, region)，冇 cache() 會令同一 request 打兩次 DB
+// （egress 根因之一，跟 macao/insights/[slug]/page.tsx 同一修法）。
+const getInsight = cache(async (slug: string, lang: Lang, region: RegionCode) => {
   const db = supabase
   const { data } = await db
     .from('insights')
@@ -174,7 +178,7 @@ async function getInsight(slug: string, lang: Lang, region: RegionCode) {
     .eq('region', region)
     .maybeSingle()
   return data as InsightArticle | null
-}
+})
 
 async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang[]> {
   const db = supabase
