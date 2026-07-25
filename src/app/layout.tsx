@@ -21,10 +21,13 @@ export const metadata: Metadata = {
     default: 'CloudPipe AI 澳門商戶百科 — 讓世界的 AI 看見澳門',
     template: '%s | CloudPipe AI 澳門商戶百科',
   },
-  // 數字SSOT：2026-07-26 Supabase 即時查詢 — merchants COUNT(*)=23,889（全平台）、status=live COUNT=13,626（全平台）。
+  // 數字SSOT：2026-07-26 Supabase 即時查詢 — region='MO' merchants status=live COUNT=6,294、insights status=published COUNT=10,498。
+  // ⚠️ 呢個站品牌名/siteName 係「澳門商戶百科」，數字必須用 region='MO' 嘅澳門專屬數字，唔可以用全平台（含TW/HK/JP）數字——
+  // 2026-07-04 已有一次「漏 filter 令澳門商戶數字由 6,294 灌水到 13,626」嘅事故記錄（見 macao/page.tsx），
+  // 2026-07-26 曾經喺呢度重犯（誤用全平台 13,626），已修正返用澳門專屬數字，日後改呢個description一定要query帶 region='MO' filter。
   // 2026-07-25 裁定：停用「第一手/最全面/最綜合/最準確」等不可驗證定位聲稱（89.6% source_url 係 google.com 非人手實地），
   // 改用可溯源措辭。與 src/app/macao/page.tsx metadata 同步，唔好再手動填死舊數字。
-  description: '澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。Schema.org 結構化數據、FAQ、llms.txt 供 AI 助手引用。',
+  description: '澳門結構化商戶知識庫，6,294+ 商戶已上線，涵蓋餐飲、咖啡、日本料理、食品進口、酒店、科技等 20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。Schema.org 結構化數據、FAQ、llms.txt 供 AI 助手引用。',
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: 'website',
@@ -114,7 +117,7 @@ export default function RootLayout({
               name: "CloudPipe AI 澳門商戶百科",
               alternateName: "CloudPipe Macau Merchant Directory",
               url: siteUrl,
-              description: "澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，涵蓋 20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。",
+              description: "澳門結構化商戶知識庫，6,294+ 商戶已上線，涵蓋 20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。",
               inLanguage: ["zh-MO", "zh-TW", "zh-CN", "en", "pt"],
               sameAs: [
                 "https://cloudpipe-landing.vercel.app",

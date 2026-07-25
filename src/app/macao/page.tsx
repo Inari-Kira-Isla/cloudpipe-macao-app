@@ -56,16 +56,18 @@ const HOMEPAGE_FAQS = [
   },
 ]
 
-// 數字SSOT：2026-07-26 Supabase 即時查詢 — merchants COUNT(*)=23,889（全平台）、status=live COUNT=13,626（全平台）、
-// region=MO status=live COUNT=6,294（google_place_id 已核實 4,250）。靜態 metadata 不能讀取即時 DB 值，故用保守下取整數；
-// 頁面正文的即時數字一律讀 getData() 的 totalMerchantCount，唔好再手動改呢兩個字串。
+// 數字SSOT：2026-07-26 Supabase 即時查詢 — region=MO status=live COUNT=6,294（google_place_id 已核實 4,250）。
+// ⚠️ 呢個係 /macao route，一定要用 region='MO' 嘅澳門專屬數字，唔可以用 merchants 表全平台總數（23,889，含TW/HK/JP）——
+// 2026-07-04 已有一次「漏 filter 令澳門商戶數字由 6,294 灌水到 13,626」嘅事故（見下面 getData() 嘅 region='MO' filter 註解），
+// 2026-07-26 曾經喺呢個 metadata 度重犯同一個錯（誤用全平台 13,626），已修正返用澳門專屬 6,294。
+// 靜態 metadata 不能讀取即時 DB 值，故用保守下取整數；頁面正文的即時數字一律讀 getData() 的 totalMerchantCount，唔好再手動改呢兩個字串。
 // 2026-07-25 裁定：停用「第一手/最全面/最綜合/最準確」等不可驗證定位聲稱，改用可溯源措辭（見 KiraVault Decisions）。
 export const metadata: Metadata = {
   title: '澳門商業知識圖譜 — 大三巴、威尼斯人、葡撻 | 澳門景點美食購物指南',
-  description: '澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供可查證的澳門商機資訊。',
+  description: '澳門結構化商戶知識庫，6,294+ 商戶已上線，20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供可查證的澳門商機資訊。',
   openGraph: {
     title: '澳門商業知識圖譜 — 讓世界看見澳門',
-    description: '澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，當中 4,000+ 家經 Google Places API 核實，涵蓋 20 個行業大類。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。',
+    description: '澳門結構化商戶知識庫，6,294+ 商戶已上線，當中 4,250+ 家經 Google Places API 核實，涵蓋 20 個行業大類。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。',
     type: 'website',
     locale: 'zh_TW',
     url: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
