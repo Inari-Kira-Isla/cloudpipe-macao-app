@@ -7,6 +7,7 @@ import { getIndustry, CATEGORY_TO_INDUSTRY, getIndustryForCategory } from '@/lib
 import { getMerchantFaqOverrides } from '@/lib/merchant-faq-overrides'
 import { CertificationBadge } from '@/components/CertificationBadge'
 import { VerificationBadge } from '@/components/VerificationBadge'
+import { TrustLevelBadge } from '@/components/TrustLevelBadge'
 import { ClickTracker } from '@/components/ClickTracker'
 
 // ✅ ISR: 每 24 小時重新生成（商戶資料變動不頻繁，節省 CPU）
@@ -427,6 +428,7 @@ export default async function MerchantPage({ params }: PageProps) {
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <TierBadge tier={merchant.tier} isOwned={merchant.is_owned} />
+                <TrustLevelBadge status={(merchant as any).verification_status} />
                 <CertificationBadge googleRating={merchant.google_rating} website={merchant.website} />
                 <BlackPearlBadge certs={getBlackPearlCerts((merchant as any).certification_sources || [])} variant="hero" />
               </div>

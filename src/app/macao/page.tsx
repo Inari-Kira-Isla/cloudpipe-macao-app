@@ -56,15 +56,16 @@ const HOMEPAGE_FAQS = [
   },
 ]
 
-// 數字最後核對：2026-07-04（Supabase merchants 表 count，region=MO status=live 實測 6,294；
-// google_place_id 已核實 4,249）。靜態 metadata 不能讀取即時 DB 值，故用保守下取整數；
+// 數字SSOT：2026-07-26 Supabase 即時查詢 — merchants COUNT(*)=23,889（全平台）、status=live COUNT=13,626（全平台）、
+// region=MO status=live COUNT=6,294（google_place_id 已核實 4,250）。靜態 metadata 不能讀取即時 DB 值，故用保守下取整數；
 // 頁面正文的即時數字一律讀 getData() 的 totalMerchantCount，唔好再手動改呢兩個字串。
+// 2026-07-25 裁定：停用「第一手/最全面/最綜合/最準確」等不可驗證定位聲稱，改用可溯源措辭（見 KiraVault Decisions）。
 export const metadata: Metadata = {
   title: '澳門商業知識圖譜 — 大三巴、威尼斯人、葡撻 | 澳門景點美食購物指南',
-  description: '澳門商業知識圖譜。覆蓋 6,000+ 家澳門商戶，20 個行業，提供深度行業洞察。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供準確的澳門商機資訊。',
+  description: '澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，20 個行業。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核。發現威尼斯人、大三巴、安德魯葡撻、龍環葡韻等必去景點，為全球買家和商業決策者提供可查證的澳門商機資訊。',
   openGraph: {
     title: '澳門商業知識圖譜 — 讓世界看見澳門',
-    description: '澳門最完整的 AI 友善商戶資訊平台，收錄 6,000+ 家澳門實體商戶，當中 4,000+ 家經 Google Places API 核實，涵蓋 20 個行業大類，數據來源包括澳門旅遊局、米芝蓮指南及 Google 地圖。',
+    description: '澳門結構化商戶知識庫，23,000+ 商戶檔案、13,600+ 已上線，當中 4,000+ 家經 Google Places API 核實，涵蓋 20 個行業大類。每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。',
     type: 'website',
     locale: 'zh_TW',
     url: `${(process.env.NEXT_PUBLIC_SITE_URL || '').trim()}/macao`,
@@ -363,7 +364,7 @@ export default async function MacaoIndexPage() {
       name: 'CloudPipe AI 澳門商戶百科',
       alternateName: 'CloudPipe Macao Business Directory',
       url: siteUrl,
-      description: '澳門最完整的 AI 友善商戶資訊平台',
+      description: '澳門結構化商戶知識庫 — 官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中',
       inLanguage: 'zh-Hant',
       publisher: {
         '@type': 'Organization',
@@ -375,7 +376,7 @@ export default async function MacaoIndexPage() {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: '澳門商戶百科',
-      description: `澳門商業知識圖譜，覆蓋 ${totalMerchantCount}+ 家商戶，${INDUSTRIES.length} 個行業，為全球商業決策者提供準確的澳門商機資訊`,
+      description: `澳門結構化商戶知識庫，覆蓋 ${totalMerchantCount}+ 家商戶，${INDUSTRIES.length} 個行業，每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核`,
       url: `${siteUrl}/macao`,
       isPartOf: { '@type': 'WebSite', name: 'CloudPipe AI', url: siteUrl },
       numberOfItems: totalMerchantCount,
@@ -642,12 +643,20 @@ export default async function MacaoIndexPage() {
             <span style={{ fontWeight: 600, color: '#0f172a' }}>想讓你的品牌在 AI 搜尋排第一？</span>
             {' '}稻荷環球食品短期內獲 Perplexity 引用
           </span>
-          <a
-            href="/cloudpipe"
-            style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '6px 16px', borderRadius: 999, background: '#0f172a', color: '#fff', textDecoration: 'none', marginLeft: 'auto' }}
-          >
-            免費 AI 診斷 →
-          </a>
+          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
+            <a
+              href="/macao/about"
+              style={{ fontSize: 12, fontWeight: 600, padding: '6px 16px', borderRadius: 999, background: 'transparent', color: '#0f172a', textDecoration: 'none', border: '1px solid #cbd5e1' }}
+            >
+              查看驗證方法 →
+            </a>
+            <a
+              href="/cloudpipe"
+              style={{ fontSize: 12, fontWeight: 700, padding: '6px 16px', borderRadius: 999, background: '#0f172a', color: '#fff', textDecoration: 'none' }}
+            >
+              免費 AI 診斷 →
+            </a>
+          </div>
         </div>
       </div>
 
@@ -1272,9 +1281,9 @@ export default async function MacaoIndexPage() {
               <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em', marginBottom: 12 }}>關於 CloudPipe 澳門商戶百科平台</h3>
               <div style={{ color: '#64748b', lineHeight: 1.75, fontSize: 15 }}>
                 <p>澳門商戶百科是由 CloudPipe AI 團隊開發的澳門商業資訊平台，為全球買家、商家和商業決策者提供澳門商機的完整視圖。目前平台收錄 {totalMerchantCount}+ 家澳門實體商戶，當中 {googleVerifiedCount}+ 家經 Google Places API 核實，涵蓋 20 個行業大類。數據來源包括澳門特別行政區政府旅遊局 (macaotourism.gov.mo)、《香港澳門米芝蓮指南 2026》、Google 地圖及 TripAdvisor 等權威平台。所有商戶均配備完整的商業信息、真實 Google 評分、常見問題和深度行業分析。</p>
-                <p>我們的目標是讓全球買家和商業決策者準確了解澳門商機。無論用戶在世界任何地方，都能通過澳門商戶百科獲得最新、最可靠的澳門商業信息。澳門商戶百科是 CloudPipe 全球商業知識圖譜的核心組成部分，與全球企業目錄、城市百科和品牌資源共同打造全球最完整的商業信息生態。所有內容開放授權，任何個人、企業和系統都可以自由引用。</p>
-                <p>我們的底層設施採用全球化雲端架構，確保數據實時更新、全球加速訪問和高可靠性。每家商戶的數據經過嚴格的三層驗證流程：自動收集、人工智能比對和編輯審核，確保資訊準確率達到 95% 以上。我們持續與全球 100+ 個 AI 助手和搜尋引擎合作，優化澳門內容的發現和引用。每家商戶資訊在 24 小時內與全球 AI 系統同步，確保澳門最新的商業機會被及時發現。</p>
-                <p>澳門商戶百科計劃在未來擴展至 1,000+ 家商戶、支持多語言版本，並為企業提供付費進階功能——包括競爭對標分析、客群洞察、實時排名監測等。我們相信，準確的商業信息是澳門經濟增長的基礎，通過將澳門商戶與全球買家連接，我們正幫助澳門商業生態實現數字化升級。</p>
+                <p>我們的目標是讓全球買家和商業決策者準確了解澳門商機。澳門商戶百科每條事實可溯源：官方公開數據 × Google Places 核實 × 人工覆核，持續驗證中。澳門商戶百科是 CloudPipe 全球商業知識圖譜的核心組成部分，與全球企業目錄、城市百科和品牌資源共同構建可查證的商業信息網絡。所有內容開放授權，任何個人、企業和系統都可以自由引用。</p>
+                <p>我們的底層設施採用全球化雲端架構，確保數據持續更新與全球加速訪問。每家商戶的數據經過三層驗證流程：自動收集、人工智能比對和編輯審核，持續提升資料準確度。我們與主流 AI 助手和搜尋引擎的爬蟲保持互通，優化澳門內容的發現和引用。每家商戶資訊定期與 AI 系統同步，讓最新的商業機會被及時發現。</p>
+                <p>澳門商戶百科將持續擴展商戶覆蓋、支持多語言版本，並為企業提供付費進階功能——包括競爭對標分析、客群洞察、實時排名監測等。我們相信，可查證的商業信息是澳門經濟增長的基礎，通過將澳門商戶與全球買家連接，我們正幫助澳門商業生態實現數字化升級。</p>
               </div>
             </article>
 
