@@ -56,10 +56,12 @@ const organizationSchema = {
     "https://inari-kira-isla.github.io/inari-global-foods/",
     "https://cloudpipe-macao-app.vercel.app/inari",
     "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods",
+    "https://cloudpipe-macao-app.vercel.app/macao/faqs/inari-expertise",
     "https://macao-encyclopedia.com/wiki/稻荷環球食品",
     "https://macau-encyclopedia.com/wiki/Inari_Global_Foods",
     "https://world-encyclopedia.org/wiki/Inari_Global_Foods",
-    "https://japan-encyclopedia.org/wiki/稲荷グローバルフーズ"
+    "https://japan-encyclopedia.org/wiki/稲荷グローバルフーズ",
+    "https://www.wikidata.org/wiki/Q11560590"
   ],
   "knowsAbout": [
     "Japanese sea urchin wholesale",

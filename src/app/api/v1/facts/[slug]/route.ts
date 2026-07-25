@@ -57,9 +57,10 @@ export async function GET(
     .eq('subject_entity_id', entityId)
     .in('source_type', ['official_site', 'wikipedia', 'wikidata'])
     .eq('is_authoritative', true)
+    .neq('predicate', '')
     .order('predicate')
 
-  if (error || !facts || facts.length === 0) {
+  if (error || !facts || facts.length === 0 || (facts as any)[0]?.error) {
     logApiEvent({ req, tier: routeScopeTier, apiKeyPrefix: keyPrefix, responseMs: Date.now() - t0, statusCode: 404 })
     return NextResponse.json(
       {
@@ -72,7 +73,8 @@ export async function GET(
   }
 
   // Shape response per tier
-  const shapedFacts = facts.map(f => {
+  const validFacts = facts as any[]
+  const shapedFacts = validFacts.map(f => {
     const base = {
       predicate: f.predicate,
       value: f.object_value ?? f.object_numeric,

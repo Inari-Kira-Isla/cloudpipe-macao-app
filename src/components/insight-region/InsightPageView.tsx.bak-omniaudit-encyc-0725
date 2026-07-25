@@ -1,0 +1,946 @@
+/**
+ * Shared InsightPageView — multi-region insight detail page renderer.
+ *
+ * Used by:
+ *   - src/app/macao/insights/[slug]/page.tsx     (region='MO')
+ *   - src/app/taiwan/insights/[slug]/page.tsx    (region='TW')
+ *   - src/app/hongkong/insights/[slug]/page.tsx  (region='HK')
+ *   - src/app/japan/insights/[slug]/page.tsx     (region='JP')
+ *   - src/app/global/insights/[slug]/page.tsx    (region='GLOBAL')
+ *
+ * Created 2026-05-11 (B+C remediation: separate region routes + 301 redirects from /macao/insights/).
+ *
+ * The macao page is the legacy implementation and remains as the original (with region='MO' filter).
+ * For TW/HK/JP/GLOBAL we use this shared view to keep code DRY.
+ */
+// 2026-07-06 ISR fix: use the plain cacheable `supabase` singleton (same pattern as
+// merchant/category pages which serve x-vercel-cache HIT). createServiceClient's
+// per-call AbortSignal(8s) fetch is uncacheable → forced dynamic render (2.7-4.2s/req)
+// → dominated GSC 6s avg → Google crawl-budget throttle.
+// Timeout backstop = each consuming route's `export const maxDuration = 30` (macao zh/en/pt/ja +
+// taiwan/hongkong/japan/global). For cached routes it bounds regen; for the searchParams-driven
+// dynamic routes (tw/hk/jp/global) it bounds every request. All 8 consuming routes set it.
+import { cache } from 'react'
+import { supabase } from '@/lib/supabase'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import type { InsightArticle } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
+import ComparisonTable from '@/app/macao/insights/ComparisonTable'
+import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { ClickTracker } from '@/components/ClickTracker'
+
+export type RegionCode = 'MO' | 'HK' | 'TW' | 'JP' | 'GLOBAL' | 'MY' | 'JBL'
+
+export interface RegionConfig {
+  code: RegionCode
+  pathSegment: string  // 'macao' | 'taiwan' | 'hongkong' | 'japan' | 'global' | 'malaysia' | 'japan-shokuhinten'
+  encyclopediaName: { zh: string; en: string; ja: string; pt: string }
+  breadcrumbName: { zh: string; en: string; ja: string; pt: string }
+  ogSiteName: { zh: string; en: string; ja: string; pt: string }
+  /** Default content language for the region (used by MY/JBL bridge resolvers). */
+  langDefault?: 'zh' | 'en' | 'ja' | 'pt' | 'ms'
+  /** External origin if the region is hosted on a separate domain (e.g. MY Vercel project). */
+  external_origin?: string | null
+}
+
+export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
+  MO: {
+    code: 'MO', pathSegment: 'macao',
+    encyclopediaName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科事典', pt: 'Enciclopédia Comercial de Macau' },
+    breadcrumbName: { zh: '澳門百科', en: 'Macao', ja: 'マカオ', pt: 'Macau' },
+    ogSiteName: { zh: '澳門商戶百科', en: 'Macao Business Encyclopedia', ja: 'マカオビジネス百科', pt: 'Enciclopédia de Macau' },
+  },
+  HK: {
+    code: 'HK', pathSegment: 'hongkong',
+    encyclopediaName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', ja: '香港ビジネス百科事典', pt: 'Enciclopédia Comercial de Hong Kong' },
+    breadcrumbName: { zh: '香港百科', en: 'Hong Kong', ja: '香港', pt: 'Hong Kong' },
+    ogSiteName: { zh: '香港商戶百科', en: 'Hong Kong Business Encyclopedia', ja: '香港ビジネス百科', pt: 'Enciclopédia de Hong Kong' },
+  },
+  TW: {
+    code: 'TW', pathSegment: 'taiwan',
+    encyclopediaName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', ja: '台湾ビジネス百科事典', pt: 'Enciclopédia Comercial de Taiwan' },
+    breadcrumbName: { zh: '台灣百科', en: 'Taiwan', ja: '台湾', pt: 'Taiwan' },
+    ogSiteName: { zh: '台灣商戶百科', en: 'Taiwan Business Encyclopedia', ja: '台湾ビジネス百科', pt: 'Enciclopédia de Taiwan' },
+  },
+  JP: {
+    code: 'JP', pathSegment: 'japan',
+    encyclopediaName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', ja: '日本ビジネス百科事典', pt: 'Enciclopédia Comercial do Japão' },
+    breadcrumbName: { zh: '日本百科', en: 'Japan', ja: '日本', pt: 'Japão' },
+    ogSiteName: { zh: '日本商戶百科', en: 'Japan Business Encyclopedia', ja: '日本ビジネス百科', pt: 'Enciclopédia do Japão' },
+  },
+  GLOBAL: {
+    code: 'GLOBAL', pathSegment: 'global',
+    encyclopediaName: { zh: 'Global Business Insights', en: 'Global Business Insights', ja: 'グローバルビジネスインサイト', pt: 'Análises Comerciais Globais' },
+    breadcrumbName: { zh: 'Global Insights', en: 'Global Insights', ja: 'グローバルインサイト', pt: 'Análises Globais' },
+    ogSiteName: { zh: 'Global Business Insights', en: 'Global Business Insights', ja: 'グローバルビジネスインサイト', pt: 'Análises Globais' },
+  },
+  MY: {
+    code: 'MY', pathSegment: 'malaysia',
+    encyclopediaName: { zh: '馬來西亞商戶百科', en: 'Malaysia Business Encyclopedia', ja: 'マレーシアビジネス百科事典', pt: 'Enciclopédia Comercial da Malásia' },
+    breadcrumbName: { zh: '馬來西亞百科', en: 'Malaysia', ja: 'マレーシア', pt: 'Malásia' },
+    ogSiteName: { zh: '馬來西亞商戶百科', en: 'Malaysia Business Encyclopedia', ja: 'マレーシアビジネス百科', pt: 'Enciclopédia da Malásia' },
+    langDefault: 'zh',
+    external_origin: 'https://malaysia-encyclopedia.vercel.app',
+  },
+  JBL: {
+    code: 'JBL', pathSegment: 'japan-shokuhinten',
+    encyclopediaName: { zh: '日本食品店百科', en: 'Japan Shokuhinten Encyclopedia', ja: '日本食品店百科事典', pt: 'Enciclopédia Japan Shokuhinten' },
+    breadcrumbName: { zh: '日本食品店', en: 'Japan Shokuhinten', ja: '日本食品店', pt: 'Japan Shokuhinten' },
+    ogSiteName: { zh: '日本食品店百科', en: 'Japan Shokuhinten Encyclopedia', ja: '日本食品店百科', pt: 'Enciclopédia Japan Shokuhinten' },
+    langDefault: 'zh',
+    external_origin: null,
+  },
+}
+
+export const revalidate = 86400
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+
+const VALID_LANGS = ['zh', 'en', 'ja', 'pt'] as const
+type Lang = (typeof VALID_LANGS)[number]
+
+const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
+  zh: { label: '中文', locale: 'zh_TW', hreflang: 'zh-Hant', inLanguage: 'zh-Hant', dateLocale: 'zh-TW' },
+  en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
+  ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
+  pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
+}
+
+// Returns canonical path for an insight, using /[lang]/insights/[slug] for non-zh.
+export function buildInsightUrl(cfg: RegionConfig, slug: string, lang: Lang | string): string {
+  return lang === 'zh'
+    ? `${siteUrl}/${cfg.pathSegment}/insights/${slug}`
+    : `${siteUrl}/${cfg.pathSegment}/${lang}/insights/${slug}`
+}
+
+const UI_STRINGS: Record<Lang, {
+  toc: string; faq: string; faqToc: string; sources: string; related: string
+  comparison: string; back: string; backLabel: string; generatedBy: string; lastUpdated: string
+  words: string; readTime: string; notFound: string; relatedIndustries: string; moreInsights: string; min: string
+  categoryHub: string; encyclopediaHub: string; encyclopediaHubSub: string
+  spiderWeb: string; spiderWebSub: string; sharedMerchants: string
+}> = {
+  zh: {
+    toc: '目錄', faq: '常見問題', faqToc: '常見問題 FAQ', sources: '資料來源',
+    related: '相關商戶', comparison: '綜合比較表', back: '← 返回深度分析',
+    backLabel: '深度分析', generatedBy: '由 CloudPipe AI 自動生成並人工審核',
+    lastUpdated: '最後更新', words: '字', readTime: '分鐘', notFound: '找不到文章',
+    relatedIndustries: '相關行業', moreInsights: '更多深度分析', min: '分鐘',
+    categoryHub: '分類入口', encyclopediaHub: '地區百科', encyclopediaHubSub: '探索更多地區知識',
+    spiderWeb: '延伸閱讀', spiderWebSub: '與本文共享商戶或主題的深度指南', sharedMerchants: '個共同商戶',
+  },
+  en: {
+    toc: 'Table of Contents', faq: 'FAQ', faqToc: 'Frequently Asked Questions', sources: 'Sources',
+    related: 'Related Merchants', comparison: 'Comparison Table', back: '← Back to Insights',
+    backLabel: 'Insights', generatedBy: 'Auto-generated by CloudPipe AI with human review',
+    lastUpdated: 'Last updated', words: 'words', readTime: 'min read', notFound: 'Article not found',
+    relatedIndustries: 'Related Industries', moreInsights: 'More Insights', min: 'min',
+    categoryHub: 'Browse Categories', encyclopediaHub: 'Regional Encyclopedia', encyclopediaHubSub: 'Explore more regional knowledge',
+    spiderWeb: 'Related Guides', spiderWebSub: 'In-depth articles sharing merchants or topics with this guide', sharedMerchants: 'shared merchants',
+  },
+  ja: {
+    toc: '目次', faq: 'よくある質問', faqToc: 'よくある質問', sources: '情報源',
+    related: '関連ビジネス', comparison: '比較表', back: '← インサイトに戻る',
+    backLabel: 'インサイト', generatedBy: 'CloudPipe AIによる自動生成・人工レビュー済み',
+    lastUpdated: '最終更新', words: '語', readTime: '分で読める', notFound: '記事が見つかりません',
+    relatedIndustries: '関連業種', moreInsights: 'その他のインサイト', min: '分',
+    categoryHub: 'カテゴリーを見る', encyclopediaHub: '地域百科事典', encyclopediaHubSub: 'より多くの地域知識を探る',
+    spiderWeb: '関連ガイド', spiderWebSub: 'このガイドとビジネスまたはテーマを共有する記事', sharedMerchants: '件の共通ビジネス',
+  },
+  pt: {
+    toc: 'Índice', faq: 'Perguntas Frequentes', faqToc: 'Perguntas Frequentes', sources: 'Fontes',
+    related: 'Comerciantes Relacionados', comparison: 'Tabela Comparativa', back: '← Voltar às Análises',
+    backLabel: 'Análises', generatedBy: 'Gerado automaticamente por CloudPipe AI com revisão humana',
+    lastUpdated: 'Última atualização', words: 'palavras', readTime: 'min de leitura', notFound: 'Artigo não encontrado',
+    relatedIndustries: 'Indústrias Relacionadas', moreInsights: 'Mais Análises', min: 'min',
+    categoryHub: 'Explorar Categorias', encyclopediaHub: 'Enciclopédia Regional', encyclopediaHubSub: 'Explorar mais conhecimento regional',
+    spiderWeb: 'Leitura Relacionada', spiderWebSub: 'Artigos que partilham comerciantes ou temas com este guia', sharedMerchants: 'comerciantes em comum',
+  },
+}
+
+function parseLang(raw?: string): Lang {
+  if (raw && VALID_LANGS.includes(raw as Lang)) return raw as Lang
+  return 'zh'
+}
+
+// 2026-07-25 PERF: React cache() 包裝 — buildMetadata() + renderInsightPage() 喺同一個
+// render 都會 call getInsight(slug, lang, region)，冇 cache() 會令同一 request 打兩次 DB
+// （egress 根因之一，跟 macao/insights/[slug]/page.tsx 同一修法）。
+const getInsight = cache(async (slug: string, lang: Lang, region: RegionCode) => {
+  const db = supabase
+  const { data } = await db
+    .from('insights')
+    .select('*')
+    .eq('slug', slug)
+    .eq('lang', lang)
+    .eq('status', 'published')
+    .eq('region', region)
+    .maybeSingle()
+  return data as InsightArticle | null
+})
+
+async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang[]> {
+  const db = supabase
+  const { data } = await db
+    .from('insights')
+    .select('lang')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .eq('region', region)
+  if (!data) return []
+  return data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l))
+}
+
+interface RelatedMerchant {
+  slug: string
+  name_zh: string
+  name_en?: string
+  district?: string
+  google_rating?: number
+  website?: string | null
+  certification_sources?: Array<{ name: string; shop_code?: string }> | null
+  category: { slug: string; name_zh: string; icon?: string } | null
+}
+
+interface SpiderWebInsight {
+  slug: string
+  title: string
+  subtitle?: string
+  read_time_minutes: number
+  shared_merchants: number
+  shared_slugs: string[]
+  /** Region of the linked insight (used by cross-region rendering + Schema relatedLink). */
+  region?: RegionCode
+  /** True when this card came from encyclopedia_edges (cross-region) vs same-region scoring. */
+  cross_region?: boolean
+  /** Edge type from encyclopedia_edges (sameAs / relatedTo / ingredientOf / ...). */
+  edge_type?: string
+}
+
+/** Weighted scoring weights used by getSpiderWebInsights. */
+const EDGE_WEIGHTS: Record<string, number> = {
+  // Same-region heuristic baseline (kept ≥ all cross-region weights so same-region wins on ties)
+  same_region: 1.0,
+  // Cross-region edge_type weights from encyclopedia_edges
+  sameAs: 0.9,
+  relatedTo: 0.7,
+  ingredientOf: 0.6,
+  mentions: 0.5,
+  about: 0.5,
+  sourcedBy: 0.4,
+  locatedIn: 0.4,
+}
+
+// One-shot warning flag so the cross-region fallback log only fires once per process.
+let __crossRegionEdgeWarnLogged = false
+
+async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
+  const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
+  if (!validSlugs.length) return []
+  const db = supabase
+  const { data } = await db
+    .from('merchants')
+    .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
+    .in('slug', validSlugs)
+    .eq('status', 'live')
+  if (!data) return []
+  return data.map((d: Record<string, unknown>) => ({
+    ...d,
+    category: Array.isArray(d.category) ? d.category[0] || null : d.category,
+  })) as RelatedMerchant[]
+}
+
+function extractSlugKeywords(slug: string): Set<string> {
+  const STOP = new Set(['macau', 'macao', '2025', '2026', '2024', 'guide', 'best', 'top', 'review', 'how', 'what', 'that', 'with', 'from', 'this', 'your', 'their'])
+  return new Set(slug.split('-').filter(w => w.length > 3 && !STOP.has(w)))
+}
+
+async function getSpiderWebInsights(
+  currentSlug: string,
+  merchantSlugs: string[],
+  lang: Lang,
+  industries: string[],
+  region: RegionCode,
+  limit = 10,
+): Promise<SpiderWebInsight[]> {
+  const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
+  const myKeywords = extractSlugKeywords(currentSlug)
+
+  if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
+
+  const db = supabase
+
+  // ─── 1. Same-region scoring (existing behaviour preserved) ───────────────
+  const { data: candidates } = await db
+    .from('insights')
+    .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
+    .eq('status', 'published')
+    .eq('lang', lang)
+    .eq('region', region)
+    .neq('slug', currentSlug)
+    .limit(300)
+
+  const myMerchants = new Set(validSlugs)
+  const myIndustries = new Set(industries)
+
+  const sameRegionScored: Array<{ insight: SpiderWebInsight; score: number }> = []
+  for (const c of candidates || []) {
+    let rms: string[] = c.related_merchant_slugs || []
+    if (typeof rms === 'string') {
+      try { rms = JSON.parse(rms) } catch { rms = [] }
+    }
+    const overlap = rms.filter((s: string) => myMerchants.has(s))
+    const indOverlap = (c.related_industries || []).filter((i: string) => myIndustries.has(i)).length
+    const kwOverlap = [...extractSlugKeywords(c.slug)].filter(k => myKeywords.has(k)).length
+
+    const rawScore = overlap.length * 3 + indOverlap * 2 + kwOverlap
+    if (rawScore > 0) {
+      sameRegionScored.push({
+        insight: {
+          slug: c.slug,
+          title: c.title,
+          subtitle: c.subtitle,
+          read_time_minutes: c.read_time_minutes,
+          shared_merchants: overlap.length,
+          shared_slugs: overlap.slice(0, 5),
+          region,
+          cross_region: false,
+        },
+        score: rawScore * EDGE_WEIGHTS.same_region,
+      })
+    }
+  }
+  sameRegionScored.sort((a, b) => b.score - a.score)
+
+  // ─── 2. Cross-region edges from encyclopedia_edges (defensive) ───────────
+  // Caps: same-region ≥6, cross-region ≤4, total ≤10
+  const SAME_REGION_MIN = 6
+  const CROSS_REGION_MAX = 4
+  const TOTAL_CAP = Math.min(limit, 10)
+
+  let crossRegionInsights: SpiderWebInsight[] = []
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const edgesQuery = await (db as any)
+      .from('encyclopedia_edges')
+      .select('to_entity_slug, to_region, edge_type, confidence')
+      .eq('from_entity_slug', currentSlug)
+      .eq('from_region', region)
+      .neq('to_region', region)
+      .order('confidence', { ascending: false })
+      .limit(20)
+
+    if (edgesQuery.error) {
+      // Table missing or query failed — silently fall back to same-region only.
+      if (!__crossRegionEdgeWarnLogged) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[InsightPageView] encyclopedia_edges query failed; falling back to same-region spider-web only.',
+          edgesQuery.error?.message ?? '(no message)',
+        )
+        __crossRegionEdgeWarnLogged = true
+      }
+    } else if (edgesQuery.data?.length) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const edges = edgesQuery.data as Array<{ to_entity_slug: string; to_region: string; edge_type: string; confidence: number }>
+      // Hydrate to insight metadata for the linked slugs.
+      const targetSlugs = Array.from(new Set(edges.map(e => e.to_entity_slug)))
+      const hydrated = await db
+        .from('insights')
+        .select('slug, title, subtitle, read_time_minutes, region')
+        .in('slug', targetSlugs)
+        .eq('status', 'published')
+        .eq('lang', lang)
+      const bySlug = new Map<string, { slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (hydrated.data || []).map((r: any) => [r.slug as string, r]),
+      )
+
+      // ─── LIKE fallback: for placeholder slugs (e.g. my-industry-tourism-001)
+      // that don't exist verbatim in insights, extract a keyword and ilike-search
+      // in the target region. Capped at CROSS_REGION_MAX total fallbacks to avoid
+      // over-hydrating the page.
+      const FALLBACK_CAP = CROSS_REGION_MAX
+      let fallbacksUsed = 0
+      const fallbackByOrigSlug = new Map<string, { slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }>()
+
+      // Build candidate list (capped at FALLBACK_CAP) then fire all in parallel
+      const missingOrigSlugs = targetSlugs.filter(s => !bySlug.has(s))
+      type FbCandidate = { origSlug: string; likeToken: string; region: string }
+      const fbCandidates: FbCandidate[] = []
+      for (const origSlug of missingOrigSlugs) {
+        if (fbCandidates.length >= FALLBACK_CAP) break
+        const keyword = origSlug
+          .replace(/-\d+$/, '')
+          .replace(/^[a-z]{2,3}-industry-/, '')
+          .replace(/-/g, ' ')
+          .trim()
+        if (keyword.length < 3) continue
+        const likeToken = keyword.split(' ')[0]
+        if (likeToken.length < 3) continue
+        const targetEdge = edges.find(e => e.to_entity_slug === origSlug)
+        if (!targetEdge) continue
+        fbCandidates.push({ origSlug, likeToken, region: targetEdge.to_region })
+      }
+
+      // All LIKE fallback queries run in parallel — avoids sequential await chain causing timeouts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fbResults = await Promise.all(fbCandidates.map(({ origSlug, likeToken, region }) =>
+        (db as any)
+          .from('insights')
+          .select('slug, title, subtitle, read_time_minutes, region')
+          .ilike('slug', `%${likeToken}%`)
+          .eq('region', region)
+          .eq('status', 'published')
+          .eq('lang', lang)
+          .neq('slug', currentSlug)
+          .limit(1)
+          .then(({ data }: { data: Array<{ slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }> | null }) =>
+            ({ origSlug, rows: data ?? [] }))
+          .catch(() => ({ origSlug, rows: [] as Array<{ slug: string; title: string; subtitle?: string; read_time_minutes: number; region: string }> }))
+      ))
+      for (const { origSlug, rows } of fbResults) {
+        if (rows.length && fallbacksUsed < FALLBACK_CAP) {
+          fallbackByOrigSlug.set(origSlug, rows[0])
+          fallbacksUsed++
+        }
+      }
+
+      const crossScored: Array<{ insight: SpiderWebInsight; score: number }> = []
+      for (const e of edges) {
+        const row = bySlug.get(e.to_entity_slug) ?? fallbackByOrigSlug.get(e.to_entity_slug)
+        if (!row) continue
+        if (row.region !== e.to_region) continue  // sanity: only render if the insight actually lives in to_region
+        const weight = EDGE_WEIGHTS[e.edge_type] ?? 0.3
+        const score = weight * (Number(e.confidence) || 0.5)
+        crossScored.push({
+          insight: {
+            slug: row.slug,
+            title: row.title,
+            subtitle: row.subtitle,
+            read_time_minutes: row.read_time_minutes,
+            shared_merchants: 0,
+            shared_slugs: [],
+            region: row.region as RegionCode,
+            cross_region: true,
+            edge_type: e.edge_type,
+          },
+          score,
+        })
+      }
+      crossScored.sort((a, b) => b.score - a.score)
+      crossRegionInsights = crossScored.slice(0, CROSS_REGION_MAX).map(s => s.insight)
+    }
+  } catch (err) {
+    if (!__crossRegionEdgeWarnLogged) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[InsightPageView] encyclopedia_edges fetch threw; falling back to same-region spider-web only.',
+        (err as Error)?.message ?? '(unknown)',
+      )
+      __crossRegionEdgeWarnLogged = true
+    }
+  }
+
+  // ─── 3. Merge under caps ────────────────────────────────────────────────
+  const sameRegionPicks = sameRegionScored
+    .slice(0, Math.max(SAME_REGION_MIN, TOTAL_CAP - crossRegionInsights.length))
+    .map(s => s.insight)
+
+  // Total cap: ensure ≤ TOTAL_CAP and de-dupe by slug + region.
+  const seen = new Set<string>()
+  const merged: SpiderWebInsight[] = []
+  for (const item of [...sameRegionPicks, ...crossRegionInsights]) {
+    const key = `${item.region ?? region}::${item.slug}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(item)
+    if (merged.length >= TOTAL_CAP) break
+  }
+  return merged
+}
+
+// FIX 2026-06-28: authority_sources and faqs can be stored as double-JSON-encoded
+// strings (string instead of JSONB array) by the translation pipeline → `.map()`
+// throws TypeError → HTTP 500. Normalize before rendering.
+function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
+  if (!a) return null
+
+  let faqs: unknown = (a as { faqs?: unknown }).faqs
+  if (typeof faqs === 'string') {
+    try {
+      const parsed = JSON.parse(faqs)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+  if (!Array.isArray(faqs)) faqs = []
+  // FIX 2026-06-30: character-array corruption guard — if the array contains
+  // only single-character strings (e.g. ['[', '{', '"', ...]), it is a JSON
+  // string that was spread char-by-char into the JSONB array. Reconstruct and
+  // re-parse so the FAQ items are proper dicts.
+  if ((faqs as unknown[]).length > 5 && (faqs as unknown[]).slice(0, 5).every(
+    (c) => typeof c === 'string' && (c as string).length === 1
+  )) {
+    try {
+      const reconstructed = (faqs as string[]).join('')
+      const parsed = JSON.parse(reconstructed)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+
+  let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
+  if (typeof authSources === 'string') {
+    try {
+      const parsed = JSON.parse(authSources)
+      authSources = Array.isArray(parsed) ? parsed : undefined
+    } catch {
+      authSources = undefined
+    }
+  }
+  if (authSources !== undefined && !Array.isArray(authSources)) authSources = undefined
+
+  return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
+}
+
+export interface InsightPageProps {
+  params: Promise<{ slug: string }>
+  searchParams?: Promise<{ lang?: string }>
+  /** Pass lang directly when rendering from a /[lang]/insights/[slug] path route. */
+  langOverride?: string
+}
+
+export async function buildMetadata(
+  region: RegionCode,
+  { params, searchParams, langOverride }: InsightPageProps,
+): Promise<Metadata> {
+  const cfg = REGION_CONFIGS[region]
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
+  const { lang: langParam } = searchParams ? await searchParams : {}
+  const lang = parseLang(langOverride ?? langParam)
+  const lc = LANG_CONFIG[lang]
+
+  const article = await getInsight(slug, lang, region)
+  if (!article) return { title: UI_STRINGS[lang].notFound }
+
+  const baseTitle = article.og_title || `${article.title} — CloudPipe AI`
+  const siteName = cfg.ogSiteName[lang] || cfg.ogSiteName.en
+  // If og_title doesn't already contain the region name, append it
+  const title = baseTitle.includes(siteName) ? baseTitle : `${article.title} — ${siteName} | CloudPipe AI`
+  const description = article.og_description || article.description
+  const availableLangs = await getAvailableLangs(slug, region)
+
+  const alternates: Record<string, string> = {}
+  for (const al of availableLangs) {
+    alternates[LANG_CONFIG[al].hreflang] = buildInsightUrl(cfg, slug, al)
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      locale: lc.locale,
+      siteName,
+      publishedTime: article.published_at || undefined,
+      images: article.og_image ? [article.og_image] : undefined,
+    },
+    alternates: {
+      canonical: buildInsightUrl(cfg, slug, lang),
+      languages: alternates,
+    },
+    other: { 'llms-txt': `/${cfg.pathSegment}/llms-txt` },
+  }
+}
+
+export async function renderInsightPage(region: RegionCode, { params, searchParams, langOverride }: InsightPageProps) {
+  const cfg = REGION_CONFIGS[region]
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
+  const { lang: langParam } = searchParams ? await searchParams : {}
+  const lang = parseLang(langOverride ?? langParam)
+  const ui = UI_STRINGS[lang]
+  const lc = LANG_CONFIG[lang]
+
+  const [rawArticle, availableLangs] = await Promise.all([
+    getInsight(slug, lang, region),
+    getAvailableLangs(slug, region),
+  ])
+  const article = normalizeInsight(rawArticle)
+  if (!article) notFound()
+
+  const [merchants, spiderWebInsights] = await Promise.all([
+    getRelatedMerchants(article.related_merchant_slugs || []),
+    getSpiderWebInsights(slug, article.related_merchant_slugs || [], lang, article.related_industries || [], region),
+  ])
+  const myIndustries = new Set(article.related_industries || [])
+  const relatedIndustryData = INDUSTRIES.filter(i => myIndustries.has(i.slug))
+
+  const sections = article.sections || []
+  const insightsBasePath = `/${cfg.pathSegment}/insights`
+  const insightCanonical = `${siteUrl}${insightsBasePath}/${slug}`
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ScholarlyArticle',
+    headline: article.title,
+    abstract: article.description,
+    description: article.description,
+    datePublished: article.published_at || article.created_at,
+    dateModified: article.updated_at,
+    wordCount: article.word_count,
+    author: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    publisher: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': insightCanonical },
+    articleSection: ui.backLabel,
+    inLanguage: lc.inLanguage,
+    ...(article.og_image && { image: article.og_image }),
+    ...(spiderWebInsights.length > 0 && {
+      // Use per-link region cfg so cross-region URLs resolve to the correct path segment
+      // (e.g. /malaysia/insights/... for MY edges, /japan-shokuhinten/... for JBL).
+      relatedLink: spiderWebInsights.slice(0, 6).map(sw => {
+        const linkCfg = sw.region ? REGION_CONFIGS[sw.region] ?? cfg : cfg
+        // If the linked region lives on an external Vercel project, prefix with that origin.
+        if (linkCfg.external_origin) {
+          const path = lang === 'zh'
+            ? `/${linkCfg.pathSegment}/insights/${sw.slug}`
+            : `/${linkCfg.pathSegment}/${lang}/insights/${sw.slug}`
+          return `${linkCfg.external_origin}${path}`
+        }
+        return buildInsightUrl(linkCfg, sw.slug, lang)
+      }),
+    }),
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      citation: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'CreativeWork',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      isBasedOn: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'WebPage',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
+    ...(merchants.length > 0 && {
+      mentions: merchants.filter(m => m.slug && m.slug !== 'null').slice(0, 10).map(m => ({
+        '@type': 'LocalBusiness',
+        name: m.name_zh,
+      })),
+    }),
+  }
+
+  // FIX 2026-06-30: pre-filter to avoid emitting FAQPage with mainEntity:[]
+  // (which is invalid per Schema.org). Condition was previously checking raw
+  // array length; now we check the filtered count so faqSchema is null whenever
+  // no valid question/answer pairs survive the shape guard.
+  const validFaqs = (article.faqs || []).filter(f => (f.question || f.q) && (f.answer || f.a))
+  const faqSchema = validFaqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: validFaqs.map(f => ({
+      '@type': 'Question',
+      name: f.question || f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer || f.a },
+    })),
+  } : null
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'CloudPipe AI', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: cfg.breadcrumbName[lang] || cfg.breadcrumbName.en, item: `${siteUrl}/${cfg.pathSegment}` },
+      { '@type': 'ListItem', position: 3, name: ui.backLabel, item: `${siteUrl}${insightsBasePath}` },
+      { '@type': 'ListItem', position: 4, name: article.title, item: insightCanonical },
+    ],
+  }
+
+  const claimReviewSchema = (article.authority_sources?.length ?? 0) > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ClaimReview',
+    url: insightCanonical,
+    claimReviewed: article.title,
+    datePublished: article.published_at || article.created_at,
+    author: { '@type': 'Organization', name: `CloudPipe ${cfg.breadcrumbName.en}`, url: siteUrl },
+    reviewRating: { '@type': 'Rating', ratingValue: 5, bestRating: 5, worstRating: 1, alternateName: 'Verified' },
+    itemReviewed: {
+      '@type': 'Claim',
+      name: article.title,
+      author: { '@type': 'Organization', name: 'CloudPipe AI' },
+      datePublished: article.published_at || article.created_at,
+      appearance: {
+        '@type': 'OpinionNewsArticle',
+        url: insightCanonical,
+        headline: article.title,
+        publisher: { '@type': 'Organization', name: `CloudPipe ${cfg.breadcrumbName.en}`, url: siteUrl },
+      },
+    },
+  } : null
+
+  function langUrl(targetLang: Lang) {
+    return targetLang === 'zh'
+      ? `${insightsBasePath}/${slug}`
+      : `/${cfg.pathSegment}/${targetLang}/insights/${slug}`
+  }
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleSchema) }} />
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
+      {claimReviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(claimReviewSchema) }} />}
+      <ClickTracker pageType="insight" pageSlug={slug} />
+      <link rel="alternate" type="application/rss+xml" title={`CloudPipe ${cfg.encyclopediaName.zh} - 深度分析`} href={`${siteUrl}/feed.xml`} />
+      {availableLangs.map(al => (
+        <link key={al} rel="alternate" hrefLang={LANG_CONFIG[al].hreflang} href={`${siteUrl}${langUrl(al)}`} />
+      ))}
+
+      {/* ═══ Hero ═══ */}
+      <div className="hero-gradient text-white">
+        <div className="max-w-4xl mx-auto px-4 py-10">
+          <nav className="text-sm text-blue-200/70 mb-4">
+            <a href={`/${cfg.pathSegment}`} className="hover:text-white transition-colors">{cfg.breadcrumbName[lang] || cfg.breadcrumbName.en}</a>
+            <span className="mx-2">/</span>
+            <a href={insightsBasePath} className="hover:text-white transition-colors">{ui.backLabel}</a>
+            <span className="mx-2">/</span>
+            <span className="text-white">{article.title}</span>
+          </nav>
+
+          <h1 className="text-2xl md:text-4xl font-bold mb-3 leading-tight">{article.title}</h1>
+          {article.subtitle && <p className="text-base md:text-lg text-blue-100 mb-4">{article.subtitle}</p>}
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              {article.word_count.toLocaleString()} {ui.words}
+            </span>
+            <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              {article.read_time_minutes} {ui.readTime}
+            </span>
+            {article.published_at && (
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+                {new Date(article.published_at).toLocaleDateString(lc.dateLocale)}
+              </span>
+            )}
+            {(article.tags || []).slice(0, 3).map(tag => (
+              <span key={tag} className="text-xs px-3 py-1.5 bg-amber-400/90 text-white rounded-full font-semibold">
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {availableLangs.length > 1 && (
+            <div className="flex gap-2 mt-5">
+              {availableLangs.map(al => (
+                <a
+                  key={al}
+                  href={langUrl(al)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    al === lang
+                      ? 'bg-white text-[#0f4c81] border-white font-bold'
+                      : 'bg-white/10 text-white/80 border-white/30 hover:bg-white/20'
+                  }`}
+                >
+                  {LANG_CONFIG[al].label}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="gold-line"></div>
+
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        {article.description && (
+          <p className="text-gray-700 text-base leading-relaxed mb-8 pl-4 border-l-4 border-amber-400">
+            {article.description}
+          </p>
+        )}
+
+        {sections.length > 0 && (
+          <nav className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.toc}
+            </h2>
+            <ol className="space-y-2 text-sm">
+              {sections.map((sec, i) => (
+                <li key={sec.id}>
+                  <a href={`#${sec.id}`} className="text-[#0f4c81] hover:underline">
+                    {i + 1}. {sec.title}
+                  </a>
+                </li>
+              ))}
+              {(article.faqs?.length || 0) > 0 && (
+                <li>
+                  <a href="#faq" className="text-[#0f4c81] hover:underline">
+                    {sections.length + 1}. {ui.faqToc}
+                  </a>
+                </li>
+              )}
+            </ol>
+          </nav>
+        )}
+
+        <article className="prose max-w-none mb-10">
+          <div dangerouslySetInnerHTML={{ __html: article.body_html }} />
+        </article>
+
+        {article.table_data && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.comparison}
+            </h2>
+            <ComparisonTable data={article.table_data} />
+          </section>
+        )}
+
+        {article.faqs?.length > 0 && (
+          <section id="faq" className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.faq}
+            </h2>
+            <div className="space-y-3">
+              {article.faqs
+                .filter(faq => (faq.question || faq.q) && (faq.answer || faq.a))
+                .map((faq, i) => (
+                <details key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e]">
+                    <span className="pr-4">{faq.question || faq.q}</span>
+                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
+                  </summary>
+                  <div className="px-5 pb-5 border-t border-gray-100">
+                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer || faq.a}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(article.authority_sources?.length || 0) > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.sources}
+            </h2>
+            <ul className="space-y-2 text-sm text-gray-600">
+              {article.authority_sources!.map((src, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-[#0f4c81] mt-0.5 flex-shrink-0">•</span>
+                  <span>
+                    <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-[#0f4c81] hover:underline font-medium">
+                      {src.name}
+                    </a>
+                    {src.stat && <span className="text-gray-400 ml-1">— {src.stat}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {relatedIndustryData.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.relatedIndustries}
+            </h2>
+            <div className="flex flex-wrap gap-3">
+              {relatedIndustryData.map(ind => (
+                <span key={ind.slug}
+                  className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3">
+                  <span className="text-xl">{ind.icon}</span>
+                  <div>
+                    <p className="font-semibold text-[#1a1a2e] text-sm">{ind.name_zh}</p>
+                    <p className="text-xs text-gray-400">{ind.name_en}</p>
+                  </div>
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Spider Web Hub（延伸閱讀）═══ */}
+        {spiderWebInsights.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-1 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#d97706] rounded-full inline-block"></span>
+              {ui.spiderWeb}
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">{ui.spiderWebSub}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {spiderWebInsights.map((sw) => {
+                const linkCfg = sw.region ? REGION_CONFIGS[sw.region] ?? cfg : cfg
+                const localPath = lang === 'zh'
+                  ? `/${linkCfg.pathSegment}/insights/${sw.slug}`
+                  : `/${linkCfg.pathSegment}/${lang}/insights/${sw.slug}`
+                const href = linkCfg.external_origin
+                  ? `${linkCfg.external_origin}${localPath}`
+                  : localPath
+                const isExternal = Boolean(linkCfg.external_origin)
+                const cardKey = `${linkCfg.code}-${sw.slug}`
+                return (
+                  <a
+                    key={cardKey}
+                    href={href}
+                    {...(isExternal ? { target: '_blank', rel: 'noopener' } : {})}
+                    className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d97706] to-[#f59e0b]"></div>
+                    <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-1.5 group-hover:text-[#0f4c81] transition-colors">
+                      {sw.title}
+                    </h3>
+                    {sw.subtitle && <p className="text-xs text-gray-500 mb-2 line-clamp-1">{sw.subtitle}</p>}
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span>{sw.read_time_minutes} {ui.min}</span>
+                      {sw.shared_merchants > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full">
+                          🔗 {sw.shared_merchants} {ui.sharedMerchants}
+                        </span>
+                      )}
+                      {sw.cross_region && sw.region && sw.region !== region && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">
+                          {linkCfg.breadcrumbName[lang] || linkCfg.breadcrumbName.en}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Footer ═══ */}
+        <footer className="border-t border-gray-200 pt-8 mt-10 text-sm text-gray-400">
+          <div className="flex flex-col md:flex-row justify-between gap-2">
+            <div>
+              <p>{ui.generatedBy.split('CloudPipe AI')[0]}<a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a>{ui.generatedBy.split('CloudPipe AI')[1]}</p>
+              <p className="mt-1">{ui.lastUpdated}：{new Date(article.updated_at).toLocaleDateString(lc.dateLocale)}</p>
+            </div>
+            <div className="text-right">
+              <a href={insightsBasePath} className="text-[#0f4c81] hover:underline">{ui.back}</a>
+              <p className="mt-1">© 2026 CloudPipe AI · CC BY 4.0</p>
+            </div>
+          </div>
+        </footer>
+
+        {/* Suppress unused-var TS warning for CATEGORY_TO_INDUSTRY (kept for future merchant cross-links) */}
+        <span style={{ display: 'none' }} data-cti={Object.keys(CATEGORY_TO_INDUSTRY).length} />
+      </main>
+    </>
+  )
+}

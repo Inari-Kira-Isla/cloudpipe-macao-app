@@ -27,7 +27,7 @@ export async function validateApiKey(key: string | null): Promise<ApiKeyResult> 
 
   const { data, error } = await db
     .from('api_keys')
-    .select('id, tier, active, calls_today, rate_limit_per_day, last_reset_date')
+    .select('id, tier, active, calls_today, calls_total, rate_limit_per_day, last_reset_date')
     .eq('key_hash', hash)
     .single()
 

@@ -1,0 +1,1140 @@
+import { cache } from 'react'
+import { supabase } from '@/lib/supabase'
+import { notFound, permanentRedirect } from 'next/navigation'
+import { REGION_PATH } from '@/lib/sitemap-region'
+import type { Metadata } from 'next'
+import type { InsightArticle } from '@/lib/types'
+import { safeJsonLd } from '@/lib/types'
+import ComparisonTable from '../ComparisonTable'
+import { INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { ClickTracker } from '@/components/ClickTracker'
+import { Suspense } from 'react'
+import LangAwareContent from './LangAwareContent'
+import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
+
+// 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
+// NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
+// Lang switching is handled client-side via LangAwareContent + useSearchParams().
+// FIX 2026-06-04: 移除 `dynamic = 'force-static'` — 與 revalidate 共存會強制只 build 已知 slug，
+// 導致 24 日 SSG/DB desync（4 旗艦 + 過去新 insight 全部 0 URL 200 OK）。
+// 改用 dynamicParams=true（Next.js 預設）+ revalidate 86400 → on-demand SSG + 24h ISR cache。
+export const revalidate = 86400
+// FIX 2026-07-06: 移除 `fetchCache='force-no-store'`。
+// 歷史：'default-cache' 令新文 fetch cache 住舊空 response → 永遠 404；改 'force-no-store'
+// 解 404 但令每次動態渲染 4.2s TTFB → 主導 GSC 6s avg → Google crawl-budget 節流(06-17斷鏈)。
+// 新解法：ISR (revalidate=86400) 正常 edge cache + 發布時 on-demand revalidatePath()（/api/revalidate）
+// 保新文即現，兩全其美。唔再用 force-no-store。
+export const dynamicParams = true
+// 2026-07-06: ISR regen timeout backstop (取代 createServiceClient 移除的 AbortSignal 8s)
+export const maxDuration = 30
+// 2026-07-06: 空 generateStaticParams + dynamicParams=true = ISR on-demand cache (● SSG)。
+// Next16 預設 fetch 唔 cache，冇 generateStaticParams 嘅動態 route 會被判 ƒ dynamic 每次重渲；
+// 呢個係 merchant/category 頁行 x-vercel-cache HIT 嘅真正機制。dynamicParams=true 保持不變，
+// 所以下面加返嘅高頻 slug 預生成只係「多咗一批喺 build time 已經 warm 咗 cache 嘅頁」，
+// 未入選嘅 slug 仍然行返 on-demand SSG（同 2026-06-04 嗰次 force-static 事故條件唔一樣，
+// 嗰次係 dynamicParams 都一齊冇咗先觸發 24 日 desync）。
+//
+// 2026-07-25 PERF: 目標式預生成 — 用 crawler_visits（真實 AI/bot 對呢個 route 嘅請求 log）
+// 揾返最近高頻嘅 slug，build time 預生成佢哋，減少呢批熱門頁喺 24h revalidate 窗口內
+// 首個 cold-miss request 先觸發嘅即時 DB regen（背景所指嘅 egress 根因之一）。
+// 呢度冇用 pg_stat_statements：呢個 project 冇將佢 expose 做 PostgREST view/RPC
+// （supabase-js 冚唔到 pg catalog），改用現有、已經有寫入嘅 crawler_visits log 做
+// 「實際高頻 slug」proxy，唔使新增 DB migration。
+//
+// 三項強制防禦（門檻三紅藍軍裁定，全部落地）：
+// 1. 只喺 VERCEL_ENV==='production' 先真正查 Supabase；preview/dev 一律即刻 return []，
+//    避免每次 PR preview build 都重複打 Supabase。
+// 2. query 失敗/逾時（sbTimeout 8s race）一律 fallback 去空陣列，退返 on-demand SSG，
+//    絕對唔可以令成個 build 失敗。
+// 3. 用嘅係模組頂層已存在嘅 `supabase` client（service-role key 經 env 讀取，唔會被印出嚟）；
+//    catch block 刻意唔 log error 內容，避免意外印出帶 credential 資訊嘅物件。
+const STATIC_PARAMS_LIMIT = 100
+const STATIC_PARAMS_TIMEOUT_MS = 8000
+const STATIC_PARAMS_LOOKBACK_DAYS = 14
+const STATIC_PARAMS_SAMPLE_ROWS = 8000
+
+export async function generateStaticParams() {
+  if (process.env.VERCEL_ENV !== 'production') {
+    return [] // preview/dev：一律 on-demand，唔打 Supabase
+  }
+
+  try {
+    const since = new Date(Date.now() - STATIC_PARAMS_LOOKBACK_DAYS * 86400000).toISOString()
+
+    const result = await sbTimeout(
+      supabase
+        .from('crawler_visits')
+        .select('path')
+        .eq('site', 'cloudpipe-macao-app')
+        .like('path', '/macao/insights/%')
+        .gte('ts', since)
+        .limit(STATIC_PARAMS_SAMPLE_ROWS),
+      STATIC_PARAMS_TIMEOUT_MS
+    )
+
+    const rows = (result as { data: Array<{ path: string }> | null }).data
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      return [] // 查唔到數據（逾時/冇 row）→ fallback on-demand
+    }
+
+    // PostgREST 冇原生 GROUP BY —— 攞返嚟嘅 path 樣本（≤8000 行）喺呢度做 in-memory 聚合。
+    //
+    // FIX 2026-07-25（本機 production build 實測揪出）：crawler_visits.path 係未經驗證嘅
+    // bot 請求 log，可以包含非 ASCII slug（例如 bot 亂試路徑撞到一條含中文字嘅 path：
+    // taiwan-entertainment-live-performances-kaohsiung-高雄現場音樂體驗-港都夜色中的節奏脈動）。
+    // 呢類 slug 一旦流入 generateStaticParams，Next.js 靜態生成內部會拋
+    // `TypeError: Cannot convert argument to a ByteString` 令成個 build 死（非 query 失敗，
+    // 係 build worker crash，唔會被 try/catch 接住）。跟返 src/app/api/v1/brand-widget/[slug]/route.ts
+    // 已有嘅 slug 驗證慣例（/^[a-z0-9-]+$/ ASCII kebab-case），呢度加同一個白名單 pattern，
+    // 順手都隔走 bot 亂試嘅垃圾 path（本身都唔會對應真 insight row，預生成係浪費）。
+    const SAFE_SLUG_RE = /^[a-z0-9-]+$/
+    const counts = new Map<string, number>()
+    for (const row of rows) {
+      const m = row.path?.match(/^\/macao\/insights\/([^/?]+)/)
+      if (!m) continue
+      const slug = decodeURIComponent(m[1])
+      // /macao/insights/topic/[topic] 同 /macao/insights/district/[district] 係獨立 route
+      // （static path segment 優先於呢個 [slug] dynamic route），佢哋嘅 log 都會匹配同一個
+      // path prefix，必須剔走，否則會將 "topic"/"district" 當假 slug 計入。
+      if (slug === 'topic' || slug === 'district') continue
+      if (!SAFE_SLUG_RE.test(slug)) continue
+      counts.set(slug, (counts.get(slug) || 0) + 1)
+    }
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, STATIC_PARAMS_LIMIT)
+      .map(([slug]) => ({ slug }))
+  } catch {
+    // 逾時/查詢拋 exception 一律靜默 fallback 去空陣列，絕不可以令 build 失敗。
+    return []
+  }
+}
+
+interface PageProps {
+  params: Promise<{ slug: string }>
+  // searchParams intentionally omitted — reading it forces dynamic rendering
+}
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+
+const VALID_LANGS = ['zh', 'en', 'pt', 'ja'] as const
+type Lang = (typeof VALID_LANGS)[number]
+
+const LANG_CONFIG: Record<Lang, { label: string; locale: string; hreflang: string; inLanguage: string; dateLocale: string }> = {
+  zh: { label: '中文', locale: 'zh_TW', hreflang: 'zh-Hant', inLanguage: 'zh-Hant', dateLocale: 'zh-TW' },
+  en: { label: 'English', locale: 'en_US', hreflang: 'en', inLanguage: 'en', dateLocale: 'en-US' },
+  pt: { label: 'Português', locale: 'pt_PT', hreflang: 'pt', inLanguage: 'pt', dateLocale: 'pt-PT' },
+  ja: { label: '日本語', locale: 'ja_JP', hreflang: 'ja', inLanguage: 'ja', dateLocale: 'ja-JP' },
+}
+
+const UI_STRINGS: Record<Lang, {
+  toc: string; faq: string; faqToc: string; sources: string; related: string
+  comparison: string; back: string; backLabel: string; generatedBy: string; lastUpdated: string
+  words: string; readTime: string; notFound: string; relatedIndustries: string; moreInsights: string; min: string
+  categoryHub: string; encyclopediaHub: string; encyclopediaHubSub: string
+  spiderWeb: string; spiderWebSub: string; sharedMerchants: string
+}> = {
+  zh: {
+    toc: '目錄', faq: '常見問題', faqToc: '常見問題 FAQ', sources: '資料來源',
+    related: '相關商戶', comparison: '綜合比較表', back: '← 返回深度分析',
+    backLabel: '深度分析', generatedBy: '由 CloudPipe AI 自動生成並人工審核',
+    lastUpdated: '最後更新', words: '字', readTime: '分鐘', notFound: '找不到文章',
+    relatedIndustries: '相關行業', moreInsights: '更多深度分析', min: '分鐘',
+    categoryHub: '分類入口', encyclopediaHub: '地區百科', encyclopediaHubSub: '探索更多地區知識',
+    spiderWeb: '延伸閱讀', spiderWebSub: '與本文共享商戶或主題的深度文章', sharedMerchants: '個共同商戶',
+  },
+  en: {
+    toc: 'Table of Contents', faq: 'FAQ', faqToc: 'Frequently Asked Questions', sources: 'Sources',
+    related: 'Related Merchants', comparison: 'Comparison Table', back: '← Back to Insights',
+    backLabel: 'Insights', generatedBy: 'Auto-generated by CloudPipe AI with human review',
+    lastUpdated: 'Last updated', words: 'words', readTime: 'min read', notFound: 'Article not found',
+    relatedIndustries: 'Related Industries', moreInsights: 'More Insights', min: 'min',
+    categoryHub: 'Browse Categories', encyclopediaHub: 'Regional Encyclopedia', encyclopediaHubSub: 'Explore more regional knowledge',
+    spiderWeb: 'Related Guides', spiderWebSub: 'In-depth articles sharing merchants or topics with this guide', sharedMerchants: 'shared merchants',
+  },
+  pt: {
+    toc: 'Índice', faq: 'Perguntas Frequentes', faqToc: 'Perguntas Frequentes', sources: 'Fontes',
+    related: 'Comerciantes Relacionados', comparison: 'Tabela Comparativa', back: '← Voltar às Análises',
+    backLabel: 'Análises', generatedBy: 'Gerado automaticamente por CloudPipe AI com revisão humana',
+    lastUpdated: 'Última atualização', words: 'palavras', readTime: 'min de leitura', notFound: 'Artigo não encontrado',
+    relatedIndustries: 'Indústrias Relacionadas', moreInsights: 'Mais Análises', min: 'min',
+    categoryHub: 'Explorar Categorias', encyclopediaHub: 'Enciclopédia Regional', encyclopediaHubSub: 'Explorar mais conhecimento regional',
+    spiderWeb: 'Leitura Relacionada', spiderWebSub: 'Artigos que partilham comerciantes ou temas com este guia', sharedMerchants: 'comerciantes em comum',
+  },
+  ja: {
+    toc: '目次', faq: 'よくある質問', faqToc: 'よくある質問 FAQ', sources: '情報源',
+    related: '関連店舗', comparison: '比較表', back: '← インサイトに戻る',
+    backLabel: 'インサイト', generatedBy: 'CloudPipe AI による自動生成・人工レビュー済み',
+    lastUpdated: '最終更新', words: '文字', readTime: '分で読める', notFound: '記事が見つかりません',
+    relatedIndustries: '関連業界', moreInsights: 'もっとインサイトを見る', min: '分',
+    categoryHub: 'カテゴリ一覧', encyclopediaHub: '地域百科事典', encyclopediaHubSub: '地域の知識をもっと探す',
+    spiderWeb: '関連記事', spiderWebSub: 'この記事と店舗やテーマを共有する深掘り記事', sharedMerchants: '件の共通店舗',
+  },
+}
+
+function parseLang(raw?: string): Lang {
+  if (raw && VALID_LANGS.includes(raw as Lang)) return raw as Lang
+  return 'zh'
+}
+
+// Route mounted at /macao/insights/[slug] — must hard-filter by region='MO' to prevent
+// cross-region leakage (HK/TW/JP/GLOBAL slugs were previously reachable via this route).
+// GLOBAL articles (e.g., faq-schema-ai-citation-2026) live under a future /global hub.
+const ROUTE_REGION = 'MO' as const
+
+// FIX 2026-06-06: Supabase 過載時（實測 9-25s/查詢）無 timeout 的 SSR 查詢會疊加 hang
+// → 整頁 HTTP 000 打唔開（連被 AI 引用的頁面都 serve 唔到）。包 sbTimeout 令慢查詢
+// 6s fail-fast 返回 {data:null} → 觸發既有 static fallback / 空陣列降級，頁面照 render。
+const sbTimeout = <T,>(p: PromiseLike<T>, ms = 6000): Promise<T | { data: null }> =>
+  Promise.race([
+    Promise.resolve(p),
+    new Promise<{ data: null }>(resolve => setTimeout(() => resolve({ data: null }), ms)),
+  ])
+
+// Defensive: some rows have `faqs` stored double-JSON-encoded (a JSON string
+// inside the jsonb column) instead of a real array. `.length` on a string is
+// truthy → downstream `.faqs.map()` throws TypeError → HTTP 500 (digest
+// 3742347000, 2026-06-11). Normalize any non-array faqs to an array so the
+// render path is robust to this legal-but-wrong data shape.
+// FIX 2026-06-28: authority_sources also suffers the same double-JSON-encoding
+// bug (string instead of JSONB array → `.map()` throws TypeError → 5,804 pages
+// 500). Added authority_sources normalization here to guard against it.
+function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
+  if (!a) return a
+  let faqs: unknown = (a as { faqs?: unknown }).faqs
+  if (typeof faqs === 'string') {
+    try {
+      const parsed = JSON.parse(faqs)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+  if (!Array.isArray(faqs)) faqs = []
+  // FIX 2026-06-30: character-array corruption guard — if the array contains
+  // only single-character strings (e.g. ['[', '{', '"', ...]), it is a JSON
+  // string that was spread char-by-char into the JSONB array. Reconstruct and
+  // re-parse so the FAQ items are proper dicts.
+  if ((faqs as unknown[]).length > 5 && (faqs as unknown[]).slice(0, 5).every(
+    (c) => typeof c === 'string' && (c as string).length === 1
+  )) {
+    try {
+      const reconstructed = (faqs as string[]).join('')
+      const parsed = JSON.parse(reconstructed)
+      faqs = Array.isArray(parsed) ? parsed : []
+    } catch {
+      faqs = []
+    }
+  }
+
+  let authSources: unknown = (a as { authority_sources?: unknown }).authority_sources
+  if (typeof authSources === 'string') {
+    try {
+      const parsed = JSON.parse(authSources)
+      authSources = Array.isArray(parsed) ? parsed : undefined
+    } catch {
+      authSources = undefined
+    }
+  }
+  if (authSources !== undefined && !Array.isArray(authSources)) authSources = undefined
+
+  return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
+}
+
+// 2026-07-25 PERF: React cache() 包裝 — generateMetadata() + page component 喺同一個
+// render 都會 call getInsight(slug, lang)，冇 cache() 會令同一 request 打兩次 DB
+// （egress 根因之一）。cache() 令同一 render pass 內相同參數只執行一次，跨 request 唔互相污染。
+const getInsight = cache(async (slug: string, lang: Lang) => {
+  // region filter: macao/insights serves only MO articles (post B+C migration 2026-05-11)
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('*')
+      .eq('slug', slug)
+      .eq('lang', lang)
+      .eq('region', ROUTE_REGION)
+      .eq('status', 'published')
+      .eq('region', 'MO')
+      .maybeSingle()
+  )
+  return normalizeInsight((data as InsightArticle | null) || getStaticInsight(slug, lang))
+})
+
+// 2026-07-07: 跨-region stale URL 修復。AI 揸住舊 /macao/insights/{slug}（region 遷移前
+// 或舊 sitemap），但該 slug 其實係 HK/TW/JP/GLOBAL insight，真身喺 /{region}/insights/{slug}。
+// 揾唔到 MO insight 時查真 region，308 permanent redirect 去 canonical，保連結權重 + 送 AI 去 live 頁。
+async function getCrossRegionDest(slug: string): Promise<string | null> {
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('region')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .neq('region', 'MO')
+      .limit(1)
+      .maybeSingle()
+  )
+  const region = (data as { region?: string } | null)?.region
+  // 只 redirect 去本 app 真 serve 嘅 region insight route（middleware INSIGHT_PATH_RE）。
+  // MY/JBL 係獨立 Vercel 專案/pending → 唔 redirect（真 404），免造新 broken redirect。
+  const SERVED = new Set(['HK', 'TW', 'JP', 'GLOBAL'])
+  if (!region || !SERVED.has(region)) return null
+  const prefix = REGION_PATH[region as keyof typeof REGION_PATH]
+  return prefix ? `/${prefix}/insights/${slug}` : null
+}
+
+async function getAvailableLangs(slug: string): Promise<Lang[]> {
+  const { data } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('lang')
+      .eq('slug', slug)
+      .eq('region', ROUTE_REGION)
+      .eq('status', 'published')
+      .eq('region', 'MO')
+  )
+  if (!data) return []
+  const langs = new Set<Lang>([
+    ...data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l)),
+    ...getStaticInsightLangs(slug).filter((l): l is Lang => VALID_LANGS.includes(l as Lang)),
+  ])
+  return Array.from(langs)
+}
+
+interface RelatedMerchant {
+  slug: string
+  name_zh: string
+  name_en?: string
+  district?: string
+  google_rating?: number
+  website?: string | null
+  certification_sources?: Array<{ name: string; shop_code?: string }> | null
+  category: { slug: string; name_zh: string; icon?: string } | null
+}
+
+async function getRelatedMerchants(slugs: string[]): Promise<RelatedMerchant[]> {
+  const validSlugs = (slugs || []).filter(s => s && typeof s === 'string' && s !== 'null')
+  if (!validSlugs.length) return []
+  const { data } = await sbTimeout(
+    supabase
+      .from('merchants')
+      .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website, certification_sources')
+      .in('slug', validSlugs)
+      .eq('status', 'live')
+  )
+  if (!data) return []
+  return data.map((d: Record<string, unknown>) => ({
+    ...d,
+    category: Array.isArray(d.category) ? d.category[0] || null : d.category,
+  })) as RelatedMerchant[]
+}
+
+// industry slug → matching category slugs (used for fallback merchant lookup)
+const INDUSTRY_TO_CATEGORIES: Record<string, string[]> = {
+  dining: ['restaurant', 'japanese', 'portuguese', 'chinese', 'western', 'cafe', 'bakery', 'hotpot', 'michelin', 'street-food', 'fast-food', 'dessert', 'tea-restaurant'],
+  hotels: ['hotel', 'resort', 'hostel'],
+  attractions: ['tourism', 'museum', 'theme-park', 'heritage'],
+  shopping: ['retail', 'shopping-mall', 'supermarket', 'pharmacy'],
+  wellness: ['beauty', 'gym', 'spa', 'medical'],
+  nightlife: ['bar', 'club', 'lounge'],
+  gaming: ['entertainment', 'casino'],
+  'food-supply': ['food-import', 'food-delivery', 'wholesale'],
+  education: ['school', 'tutoring', 'university'],
+  finance: ['bank', 'insurance', 'fintech'],
+  'professional-services': ['legal', 'accounting', 'consulting'],
+  events: ['event-venue', 'catering'],
+  'real-estate': ['property', 'real-estate'],
+}
+
+// Spider web: find insights sharing merchants with a given insight
+interface SpiderWebInsight {
+  slug: string
+  title: string
+  subtitle?: string
+  read_time_minutes: number
+  shared_merchants: number  // how many merchants in common
+  shared_slugs: string[]    // which merchant slugs overlap
+}
+
+// Extract meaningful keywords from a slug for cross-article matching
+function extractSlugKeywords(slug: string): Set<string> {
+  const STOP = new Set(['macau', 'macao', '2025', '2026', '2024', 'guide', 'best', 'top', 'review', 'how', 'what', 'that', 'with', 'from', 'this', 'your', 'their'])
+  return new Set(slug.split('-').filter(w => w.length > 3 && !STOP.has(w)))
+}
+
+async function getSpiderWebInsights(
+  currentSlug: string,
+  merchantSlugs: string[],
+  lang: Lang,
+  industries: string[],
+  limit = 8
+): Promise<SpiderWebInsight[]> {
+  const validSlugs = (merchantSlugs || []).filter(s => s && s !== 'null')
+  const myKeywords = extractSlugKeywords(currentSlug)
+
+  // Need at least one signal to find related articles
+  if (!validSlugs.length && !industries.length && myKeywords.size < 2) return []
+
+  // Fetch candidates: same region, published, not self.
+  // Removed null filter — insights without merchant slugs can still match via industry/keywords.
+  const { data: candidates } = await sbTimeout(
+    supabase
+      .from('insights')
+      .select('slug, title, subtitle, read_time_minutes, related_merchant_slugs, related_industries')
+      .eq('status', 'published')
+      .eq('lang', lang)
+      .eq('region', ROUTE_REGION)
+      .neq('slug', currentSlug)
+      .limit(300)
+  )
+
+  if (!candidates?.length) return []
+
+  const myMerchants = new Set(validSlugs)
+  const myIndustries = new Set(industries)
+
+  const scored: Array<{ insight: SpiderWebInsight; score: number }> = []
+  for (const c of candidates) {
+    let rms: string[] = c.related_merchant_slugs || []
+    if (typeof rms === 'string') {
+      try { rms = JSON.parse(rms) } catch { rms = [] }
+    }
+    const overlap = rms.filter((s: string) => myMerchants.has(s))
+    const indOverlap = (c.related_industries || []).filter((i: string) => myIndustries.has(i)).length
+    const kwOverlap = [...extractSlugKeywords(c.slug)].filter(k => myKeywords.has(k)).length
+
+    // Composite score: merchant match strongest, then industry, then keyword
+    const score = overlap.length * 3 + indOverlap * 2 + kwOverlap
+    if (score > 0) {
+      scored.push({
+        insight: {
+          slug: c.slug,
+          title: c.title,
+          subtitle: c.subtitle,
+          read_time_minutes: c.read_time_minutes,
+          shared_merchants: overlap.length,
+          shared_slugs: overlap.slice(0, 5),
+        },
+        score,
+      })
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit).map(s => s.insight)
+}
+
+// Fallback: fetch top-rated merchants from related industries when no slugs assigned
+async function getFallbackMerchants(industries: string[]): Promise<RelatedMerchant[]> {
+  if (!industries?.length) return []
+  const categorySlugs = industries.flatMap(ind => INDUSTRY_TO_CATEGORIES[ind] || [])
+  if (!categorySlugs.length) return []
+  const { data: cats } = await sbTimeout(
+    supabase
+      .from('categories')
+      .select('id')
+      .in('slug', categorySlugs)
+  )
+  const catIds = (cats || []).map((c: { id: string }) => c.id)
+  if (!catIds.length) return []
+  const { data } = await sbTimeout(
+    supabase
+      .from('merchants')
+      .select('slug, name_zh, name_en, category:categories(slug, name_zh, icon), district, google_rating, website')
+      .eq('status', 'live')
+      .in('category_id', catIds)
+      .not('google_rating', 'is', null)
+      .order('google_rating', { ascending: false })
+      .limit(6)
+  )
+  if (!data) return []
+  return data.map((d: Record<string, unknown>) => ({
+    ...d,
+    category: Array.isArray(d.category) ? d.category[0] || null : d.category,
+  })) as RelatedMerchant[]
+}
+
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
+  // Always generate metadata for zh (canonical version).
+  // Non-zh variants are handled client-side; their og/title will match zh server HTML.
+  const lang: Lang = 'zh'
+  const lc = LANG_CONFIG[lang]
+
+  const article = await getInsight(slug, lang)
+  if (!article) return { title: UI_STRINGS[lang].notFound }
+
+  const title = article.og_title || `${article.title} — CloudPipe AI`
+  const description = article.og_description || article.description
+  const availableLangs = await getAvailableLangs(slug)
+
+  const alternates: Record<string, string> = {}
+  for (const al of availableLangs) {
+    const url = al === 'zh'
+      ? `${siteUrl}/macao/insights/${slug}`
+      : `${siteUrl}/macao/${al}/insights/${slug}`
+    alternates[LANG_CONFIG[al].hreflang] = url
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      locale: lc.locale,
+      publishedTime: article.published_at || undefined,
+      images: article.og_image ? [article.og_image] : undefined,
+    },
+    alternates: {
+      canonical: lang === 'zh' ? `${siteUrl}/macao/insights/${slug}` : `${siteUrl}/macao/insights/${slug}?lang=${lang}`,
+      languages: alternates,
+    },
+    other: { 'llms-txt': '/macao/llms-txt' },
+  }
+}
+
+
+export default async function InsightDetailPage({ params }: PageProps) {
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
+  // Server always renders zh (canonical). Lang switching is client-side via LangAwareContent.
+  const lang: Lang = 'zh'
+  const ui = UI_STRINGS[lang]
+  const lc = LANG_CONFIG[lang]
+
+  const [article, availableLangs] = await Promise.all([
+    getInsight(slug, lang),
+    getAvailableLangs(slug),
+  ])
+  if (!article) {
+    // 跨-region stale URL → 308 去真 canonical（唔存在先真 404）
+    const dest = await getCrossRegionDest(slug)
+    if (dest) permanentRedirect(dest)
+    notFound()
+  }
+
+  const assignedMerchants = await getRelatedMerchants(article.related_merchant_slugs || [])
+  const merchants = assignedMerchants.length > 0
+    ? assignedMerchants
+    : await getFallbackMerchants(article.related_industries || [])
+
+  // Spider web: merchant-based cross-linking (deep) + industry fallback
+  const spiderWebInsights = await getSpiderWebInsights(
+    slug,
+    article.related_merchant_slugs || [],
+    lang,
+    article.related_industries || [],
+    8
+  )
+
+  const [{ data: crossInsightsRaw }] = await Promise.all([
+    supabase.from('insights')
+      .select('slug, title, subtitle, read_time_minutes, tags, related_industries')
+      .eq('status', 'published').eq('lang', lang)
+      .eq('region', ROUTE_REGION)
+      .neq('slug', slug)
+      .order('published_at', { ascending: false }).limit(4),
+  ])
+  // Filter cross-insights to those sharing at least 1 related_industry
+  const myIndustries = new Set(article.related_industries || [])
+  const crossInsights = (crossInsightsRaw || []).filter(a =>
+    (a.related_industries || []).some((ind: string) => myIndustries.has(ind))
+  ).slice(0, 4)
+  // Resolve related industries to full industry objects
+  const relatedIndustryData = INDUSTRIES.filter(i => myIndustries.has(i.slug))
+
+  // ── Derive category hub links from related_industries (T2) ──
+  // Shows up to 8 category-level links across all related industries
+  const CATEGORY_DISPLAY: Record<string, string> = {
+    restaurant: '餐廳', japanese: '日本料理', portuguese: '葡國菜', cafe: '咖啡館',
+    bakery: '麵包甜點', chinese: '中式料理', western: '西式料理', hotpot: '火鍋',
+    michelin: '米芝蓮', 'street-food': '街頭小食', hotel: '酒店', resort: '度假村',
+    tourism: '旅遊景點', museum: '博物館', temple: '廟宇', landmark: '地標建築',
+    retail: '零售', 'shopping-mall': '購物中心', 'duty-free': '免稅店', souvenir: '手信特產',
+    'food-import': '食材進口', 'food-delivery': '食品配送', 'seafood-import': '海鮮進口',
+    'cold-chain': '冷鏈物流', bar: '酒吧', casino: '娛樂場', entertainment: '娛樂',
+    beauty: '美容', spa: '水療', gym: '健身', hospital: '醫院',
+    bank: '銀行', professional: '專業服務', tech: '科技',
+    'hk-attraction': '香港景點', 'hk-dining': '香港美食', 'hk-hotel': '香港酒店',
+    'hk-museum': '香港博物館', 'hk-heritage': '香港文化遺產',
+    'tw-attraction': '台灣景點', 'tw-dining': '台灣美食', 'tw-hotel': '台灣酒店',
+    'tw-museum': '台灣博物館', 'tw-creative': '台灣文創',
+    'jp-attraction': '日本景點', 'jp-dining': '日本美食', 'jp-hotel': '日本酒店',
+    'jp-castle': '日本城堡', 'jp-museum': '日本博物館', 'jp-craft': '日本工藝',
+  }
+  const categoryHubLinks = relatedIndustryData.flatMap(ind =>
+    ind.categories.slice(0, 3).map(cat => ({
+      industrySlug: ind.slug,
+      industryIcon: ind.icon,
+      catSlug: cat,
+      catLabel: CATEGORY_DISPLAY[cat] || cat.replace(/-/g, ' '),
+    }))
+  ).slice(0, 8)
+
+  // ── Derive encyclopedia region hub links (T3) ──
+  const REGION_CONFIG: Record<string, {
+    zh: string; en: string; pt: string; icon: string
+    openclawUrl: string; insightsFilter?: string
+  }> = {
+    macau: {
+      zh: '澳門百科', en: 'Macao Encyclopedia', pt: 'Enciclopédia de Macau',
+      icon: '🏛️',
+      openclawUrl: 'https://inari-kira-isla.github.io/Openclaw/insights/macau/',
+      insightsFilter: '/macao/insights',
+    },
+    hongkong: {
+      zh: '香港百科', en: 'Hong Kong Encyclopedia', pt: 'Enciclopédia de Hong Kong',
+      icon: '🌆',
+      openclawUrl: 'https://inari-kira-isla.github.io/Openclaw/insights/hongkong/',
+    },
+    taiwan: {
+      zh: '台灣百科', en: 'Taiwan Encyclopedia', pt: 'Enciclopédia de Taiwan',
+      icon: '🌿',
+      openclawUrl: 'https://inari-kira-isla.github.io/Openclaw/insights/taiwan/',
+    },
+    japan: {
+      zh: '日本百科', en: 'Japan Encyclopedia', pt: 'Enciclopédia do Japão',
+      icon: '⛩️',
+      openclawUrl: 'https://inari-kira-isla.github.io/Openclaw/insights/japan/',
+    },
+  }
+  function detectRegion(s: string): string {
+    if (s.startsWith('hk-') || s.startsWith('hongkong-')) return 'hongkong'
+    if (s.startsWith('tw-') || s.startsWith('taiwan-')) return 'taiwan'
+    if (s.startsWith('jp-') || s.startsWith('japan-')) return 'japan'
+    return 'macau'
+  }
+  const primaryRegion = detectRegion(slug)
+  // Cross-region: industries whose categories include hk/tw/jp slugs imply other regions
+  const crossRegions = new Set<string>()
+  for (const ind of relatedIndustryData) {
+    for (const cat of ind.categories) {
+      if (cat.startsWith('hk-')) crossRegions.add('hongkong')
+      else if (cat.startsWith('tw-')) crossRegions.add('taiwan')
+      else if (cat.startsWith('jp-')) crossRegions.add('japan')
+    }
+  }
+  crossRegions.delete(primaryRegion)
+  const encyclopediaEntries = [primaryRegion, ...crossRegions].slice(0, 3)
+    .map(r => REGION_CONFIG[r])
+    .filter(Boolean)
+
+  /* ── Schema.org ── */
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ScholarlyArticle',
+    headline: article.title,
+    abstract: article.description,
+    description: article.description,
+    datePublished: article.published_at || article.created_at,
+    dateModified: article.updated_at,
+    wordCount: article.word_count,
+    author: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    publisher: { '@type': 'Organization', name: 'CloudPipe AI', url: 'https://cloudpipe-landing.vercel.app' },
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/macao/insights/${slug}` },
+    articleSection: ui.backLabel,
+    inLanguage: lc.inLanguage,
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      citation: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'CreativeWork',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
+    ...(article.og_image && { image: article.og_image }),
+    ...((encyclopediaEntries.length > 0 || spiderWebInsights.length > 0) && {
+      relatedLink: [
+        ...spiderWebInsights.slice(0, 6).map(sw => `${siteUrl}/macao/insights/${sw.slug}`),
+        ...encyclopediaEntries.map(e => e.openclawUrl),
+      ],
+    }),
+    ...(relatedIndustryData.length > 0 && {
+      about: relatedIndustryData.map(ind => ({
+        '@type': 'Thing',
+        name: ind.name_zh,
+        url: `${siteUrl}/macao/${ind.slug}`,
+      })),
+    }),
+    ...((article.authority_sources?.length ?? 0) > 0 && {
+      isBasedOn: article.authority_sources!.map((src: { name: string; url: string }) => ({
+        '@type': 'WebPage',
+        name: src.name,
+        url: src.url,
+      })),
+    }),
+    ...(merchants.length > 0 && {
+      mentions: merchants.filter(m => m.slug && m.slug !== 'null').slice(0, 10).map(m => ({
+        '@type': 'LocalBusiness',
+        name: m.name_zh,
+        url: `${siteUrl}/macao/${(article.related_industries?.[0]) || 'dining'}/${m.category?.slug || 'general'}/${m.slug}`,
+      })),
+    }),
+  }
+
+  // FIX 2026-06-30: pre-filter to avoid emitting FAQPage with mainEntity:[]
+  // (which is invalid per Schema.org). Condition was previously checking raw
+  // array length; now we check the filtered count so faqSchema is null whenever
+  // no valid question/answer pairs survive the shape guard.
+  const validFaqs = (article.faqs || []).filter(f => (f.question || f.q) && (f.answer || f.a))
+  const faqSchema = validFaqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: validFaqs.map(f => ({
+      '@type': 'Question',
+      name: f.question || f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer || f.a },
+    })),
+  } : null
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'CloudPipe AI', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: lang === 'zh' ? '澳門商戶百科' : 'Macao Directory', item: `${siteUrl}/macao` },
+      { '@type': 'ListItem', position: 3, name: ui.backLabel, item: `${siteUrl}/macao/insights` },
+      { '@type': 'ListItem', position: 4, name: article.title, item: `${siteUrl}/macao/insights/${slug}` },
+    ],
+  }
+
+  // ClaimReview — 讓 AI 搜索引擎判斷本文為可信來源
+  // 只有包含 authority_sources 的文章才加（代表有外部佐證）
+  const claimReviewSchema = (article.authority_sources?.length ?? 0) > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ClaimReview',
+    url: `${siteUrl}/macao/insights/${slug}`,
+    claimReviewed: article.title,
+    datePublished: article.published_at || article.created_at,
+    author: {
+      '@type': 'Organization',
+      name: 'CloudPipe 澳門百科',
+      url: siteUrl,
+    },
+    reviewRating: {
+      '@type': 'Rating',
+      ratingValue: 5,
+      bestRating: 5,
+      worstRating: 1,
+      alternateName: 'Verified',
+    },
+    itemReviewed: {
+      '@type': 'Claim',
+      name: article.title,
+      author: { '@type': 'Organization', name: 'CloudPipe AI' },
+      datePublished: article.published_at || article.created_at,
+      appearance: {
+        '@type': 'OpinionNewsArticle',
+        url: `${siteUrl}/macao/insights/${slug}`,
+        headline: article.title,
+        publisher: { '@type': 'Organization', name: 'CloudPipe 澳門百科', url: siteUrl },
+      },
+    },
+  } : null
+
+  const sections = article.sections || []
+
+  function langUrl(targetLang: Lang) {
+    return targetLang === 'zh'
+      ? `/macao/insights/${slug}`
+      : `/macao/${targetLang}/insights/${slug}`
+  }
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleSchema) }} />
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
+      {claimReviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(claimReviewSchema) }} />}
+      <ClickTracker pageType="insight" pageSlug={slug} />
+      {/* LangAwareContent: client-side lang switching without breaking ISR/Edge Cache */}
+      <Suspense fallback={null}>
+        <LangAwareContent slug={slug} availableLangs={availableLangs} />
+      </Suspense>
+      {/* RSS Feed Discovery */}
+      <link rel="alternate" type="application/rss+xml" title="CloudPipe 澳門商戶百科 - 深度分析" href={`${siteUrl}/feed.xml`} />
+      {/* hreflang */}
+      {availableLangs.map(al => (
+        <link key={al} rel="alternate" hrefLang={LANG_CONFIG[al].hreflang} href={`${siteUrl}${langUrl(al)}`} />
+      ))}
+
+      {/* ═══ Hero ═══ */}
+      <div className="hero-gradient text-white">
+        <div className="max-w-4xl mx-auto px-4 py-10">
+          <nav className="text-sm text-blue-200/70 mb-4">
+            <a href="/macao" className="hover:text-white transition-colors">{lang === 'zh' ? '澳門百科' : 'Macao'}</a>
+            <span className="mx-2">/</span>
+            <a href="/macao/insights" className="hover:text-white transition-colors">{ui.backLabel}</a>
+            <span className="mx-2">/</span>
+            <span className="text-white">{article.title}</span>
+          </nav>
+
+          <h1 className="text-2xl md:text-4xl font-bold mb-3 leading-tight">{article.title}</h1>
+          {article.subtitle && <p className="text-base md:text-lg text-blue-100 mb-4">{article.subtitle}</p>}
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              {article.word_count.toLocaleString()} {ui.words}
+            </span>
+            <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20">
+              {article.read_time_minutes} {ui.readTime}
+            </span>
+            {article.published_at && (
+              <span className="text-xs px-3 py-1.5 bg-white/15 backdrop-blur rounded-full border border-white/20" data-date-field="published_at">
+                {new Date(article.published_at).toLocaleDateString(lc.dateLocale)}
+              </span>
+            )}
+            {(article.tags || []).slice(0, 3).map(tag => (
+              <span key={tag} className="text-xs px-3 py-1.5 bg-amber-400/90 text-white rounded-full font-semibold">
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* ═══ Language Switcher ═══ */}
+          {availableLangs.length > 1 && (
+            <div className="flex gap-2 mt-5">
+              {availableLangs.map(al => (
+                <a
+                  key={al}
+                  href={langUrl(al)}
+                  data-lang-pill={al}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    al === lang
+                      ? 'bg-white text-[#0f4c81] border-white font-bold'
+                      : 'bg-white/10 text-white/80 border-white/30 hover:bg-white/20'
+                  }`}
+                >
+                  {LANG_CONFIG[al].label}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="gold-line"></div>
+
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        {/* ═══ Lead Summary (AI-first: renders before TOC for crawler priority) ═══ */}
+        {article.description && (
+          <p className="text-gray-700 text-base leading-relaxed mb-8 pl-4 border-l-4 border-amber-400">
+            {article.description}
+          </p>
+        )}
+
+        {/* ═══ Table of Contents ═══ */}
+        {sections.length > 0 && (
+          <nav className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.toc}
+            </h2>
+            <ol className="space-y-2 text-sm">
+              {sections.map((sec, i) => (
+                <li key={sec.id}>
+                  <a href={`#${sec.id}`} className="text-[#0f4c81] hover:underline">
+                    {i + 1}. {sec.title}
+                  </a>
+                </li>
+              ))}
+              {(article.faqs?.length || 0) > 0 && (
+                <li>
+                  <a href="#faq" className="text-[#0f4c81] hover:underline">
+                    {sections.length + 1}. {ui.faqToc}
+                  </a>
+                </li>
+              )}
+            </ol>
+          </nav>
+        )}
+
+        {/* ═══ Article Body ═══ */}
+        <article className="prose max-w-none mb-10">
+          <div dangerouslySetInnerHTML={{ __html: article.body_html }} />
+        </article>
+
+        {/* ═══ Comparison Table ═══ */}
+        {article.table_data && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.comparison}
+            </h2>
+            <ComparisonTable data={article.table_data} />
+          </section>
+        )}
+
+        {/* ═══ FAQ ═══ */}
+        {article.faqs?.length > 0 && (
+          <section id="faq" className="mb-10">
+            <h2 className="text-xl font-bold text-[#0f4c81] mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.faq}
+            </h2>
+            <div className="space-y-3">
+              {article.faqs
+                .filter(faq => (faq.question || faq.q) && (faq.answer || faq.a))
+                .map((faq, i) => (
+                <details key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+                  <summary className="font-semibold cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition-colors text-[#1a1a2e]">
+                    <span className="pr-4">{faq.question || faq.q}</span>
+                    <span className="text-[#0f4c81] text-sm group-open:rotate-180 transition-transform flex-shrink-0">▼</span>
+                  </summary>
+                  <div className="px-5 pb-5 border-t border-gray-100">
+                    <p className="mt-4 text-gray-600 leading-relaxed">{faq.answer || faq.a}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Authority Sources ═══ */}
+        {(article.authority_sources?.length || 0) > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.sources}
+            </h2>
+            <ul className="space-y-2 text-sm text-gray-600">
+              {article.authority_sources!.map((src, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-[#0f4c81] mt-0.5 flex-shrink-0">•</span>
+                  <span>
+                    <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-[#0f4c81] hover:underline font-medium">
+                      {src.name}
+                    </a>
+                    {src.stat && <span className="text-gray-400 ml-1">— {src.stat}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ═══ Related Merchants ═══ */}
+        {merchants.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {assignedMerchants.length > 0 ? ui.related : (lang === 'zh' ? '相關商戶推薦' : lang === 'en' ? 'Merchants in This Category' : 'Comerciantes Relacionados')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {merchants.filter(m => m.slug && m.slug !== 'null').map(m => {
+                const indSlug = CATEGORY_TO_INDUSTRY[m.category?.slug || ''] || 'dining'
+                return (
+                  <div key={m.slug} className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-2">
+                    <a
+                      href={`/macao/${indSlug}/${m.category?.slug || 'other'}/${m.slug}`}
+                      className="card-hover block"
+                      data-track="merchant-click"
+                      data-target={m.slug}
+                      data-source={slug}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-[#1a1a2e] mb-1">{m.name_zh}</h3>
+                        {m.certification_sources && m.certification_sources.length > 0 && (
+                          <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 bg-[#ecfdf5] text-[#059669] rounded font-medium whitespace-nowrap">
+                            ✓ {m.certification_sources[0].name === '澳門特色老店' ? '特色老店' : '誠信店'}
+                          </span>
+                        )}
+                      </div>
+                      {m.name_en && <p className="text-xs text-gray-400 mb-2">{m.name_en}</p>}
+                      <div className="flex flex-wrap gap-1.5 text-xs">
+                        {m.category?.name_zh && (
+                          <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#0f4c81] rounded font-medium">
+                            {m.category.icon || '📋'} {m.category.name_zh}
+                          </span>
+                        )}
+                        {m.google_rating && (
+                          <span className="px-2 py-0.5 rating-badge rounded">★ {m.google_rating}</span>
+                        )}
+                        {m.district && (
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{m.district}</span>
+                        )}
+                      </div>
+                    </a>
+                    {m.website && (
+                      <a
+                        href={m.website}
+                        target="_blank"
+                        rel="noopener"
+                        className="text-xs text-[#0f4c81] hover:underline truncate"
+                      >
+                        🔗 {m.website.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Related Industries ═══ */}
+        {relatedIndustryData.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.relatedIndustries}
+            </h2>
+            <div className="flex flex-wrap gap-3">
+              {relatedIndustryData.map(ind => (
+                <a key={ind.slug} href={`/macao/${ind.slug}`}
+                  className="card-hover flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3">
+                  <span className="text-xl">{ind.icon}</span>
+                  <div>
+                    <p className="font-semibold text-[#1a1a2e] text-sm">{ind.name_zh}</p>
+                    <p className="text-xs text-gray-400">{ind.name_en}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Category Hub（分類入口）═══ */}
+        {categoryHubLinks.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.categoryHub}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {categoryHubLinks.map(({ industrySlug, industryIcon, catSlug, catLabel }) => (
+                <a
+                  key={`${industrySlug}-${catSlug}`}
+                  href={`/macao/${industrySlug}/${catSlug}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-[#1a1a2e] hover:border-[#0f4c81] hover:text-[#0f4c81] transition-colors"
+                >
+                  <span className="text-base">{industryIcon}</span>
+                  <span>{catLabel}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Spider Web Hub（延伸閱讀 — 商戶共享蛛網）═══ */}
+        {spiderWebInsights.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-1 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#d97706] rounded-full inline-block"></span>
+              {ui.spiderWeb}
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">{ui.spiderWebSub}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {spiderWebInsights.map((sw) => (
+                <a
+                  key={sw.slug}
+                  href={lang === 'zh' ? `/macao/insights/${sw.slug}` : `/macao/insights/${sw.slug}?lang=${lang}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group"
+                >
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d97706] to-[#f59e0b]"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-1.5 group-hover:text-[#0f4c81] transition-colors">
+                    {sw.title}
+                  </h3>
+                  {sw.subtitle && <p className="text-xs text-gray-500 mb-2 line-clamp-1">{sw.subtitle}</p>}
+                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <span>{sw.read_time_minutes} {ui.min}</span>
+                    {sw.shared_merchants > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full">
+                        🔗 {sw.shared_merchants} {ui.sharedMerchants}
+                      </span>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Encyclopedia Hub（地區百科）═══ */}
+        {encyclopediaEntries.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-1 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.encyclopediaHub}
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">{ui.encyclopediaHubSub}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {encyclopediaEntries.map(entry => (
+                <a
+                  key={entry.openclawUrl}
+                  href={entry.openclawUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="card-hover flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <span className="text-2xl">{entry.icon}</span>
+                  <div>
+                    <p className="font-semibold text-[#1a1a2e] text-sm">
+                      {lang === 'zh' ? entry.zh : lang === 'en' ? entry.en : entry.pt}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">AI 學習寶庫</p>
+                  </div>
+                  <span className="ml-auto text-gray-300 text-xs">→</span>
+                </a>
+              ))}
+              {primaryRegion === 'macau' && relatedIndustryData.length > 0 && (
+                <a
+                  href={`/macao/insights?industry=${relatedIndustryData[0].slug}`}
+                  className="card-hover flex items-center gap-3 bg-[#e8f0fe] border border-[#c7d9fb] rounded-xl p-4"
+                >
+                  <span className="text-2xl">{relatedIndustryData[0].icon}</span>
+                  <div>
+                    <p className="font-semibold text-[#0f4c81] text-sm">
+                      {lang === 'zh' ? `更多${relatedIndustryData[0].name_zh}分析` : `More ${relatedIndustryData[0].name_en} Insights`}
+                    </p>
+                    <p className="text-xs text-[#4a7fd6] mt-0.5">CloudPipe 深度分析</p>
+                  </div>
+                  <span className="ml-auto text-[#4a7fd6] text-xs">→</span>
+                </a>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ More Insights (Cross-linking) ═══ */}
+        {crossInsights.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-[#0f4c81] mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#0f4c81] rounded-full inline-block"></span>
+              {ui.moreInsights}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {crossInsights.map((a: { slug: string; title: string; subtitle?: string; read_time_minutes: number; tags?: string[] }) => (
+                <a key={a.slug} href={lang === 'zh' ? `/macao/insights/${a.slug}` : `/macao/insights/${a.slug}?lang=${lang}`}
+                  className="card-hover block bg-white border border-gray-200 rounded-xl p-5 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 gold-line"></div>
+                  <h3 className="font-semibold text-[#1a1a2e] text-sm leading-tight mb-2">{a.title}</h3>
+                  {a.subtitle && <p className="text-xs text-gray-500 mb-2">{a.subtitle}</p>}
+                  <span className="text-xs text-gray-400">{a.read_time_minutes} {ui.min}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ Footer ═══ */}
+        <footer className="border-t border-gray-200 pt-8 mt-10 text-sm text-gray-400">
+          <div className="flex flex-col md:flex-row justify-between gap-2">
+            <div>
+              <p>{ui.generatedBy.split('CloudPipe AI')[0]}<a href="https://cloudpipe-landing.vercel.app" className="text-[#0f4c81] hover:underline">CloudPipe AI</a>{ui.generatedBy.split('CloudPipe AI')[1]}</p>
+              <p className="mt-1">{ui.lastUpdated}：<span data-date-field="updated_at">{new Date(article.updated_at).toLocaleDateString(lc.dateLocale)}</span></p>
+            </div>
+            <div className="text-right">
+              <a href="/macao/insights" className="text-[#0f4c81] hover:underline">{ui.back}</a>
+              <p className="mt-1">© 2026 CloudPipe AI · CC BY 4.0</p>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </>
+  )
+}

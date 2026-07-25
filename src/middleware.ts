@@ -14,6 +14,14 @@ const AI_BOT_PATTERNS = [
   /Bytespider/i, /SamanthaDoubao/i,
   /CCBot/i, /YouBot/i,
   /cohere-ai/i, /PetalBot/i, /AI2Bot/i,
+  // 2026-07-25: 數據中心 AI bot 盲點修復
+  /CloudflareBot/i, /Cloudflare-Workers/i,
+  /DuckAssistBot/i, /HeyGPT/i,
+  /kref-ai/i, /tiktoken/i,
+  /DataForSeoBot/i, /SerpApi/i,
+  // Headless/脚本常见 UA
+  /curl/i, /wget/i, /Python-urllib/i, /Go-http-client/i,
+  /HttpClient/i, /node-fetch/i, /axios/i,
 ]
 
 const BOT_NAME_MAP: [RegExp, string, string][] = [
@@ -37,6 +45,16 @@ const BOT_NAME_MAP: [RegExp, string, string][] = [
   [/cohere-ai/i, 'cohere-ai', 'Cohere'],
   [/PetalBot/i, 'PetalBot', 'Aspiegel'],
   [/AI2Bot/i, 'AI2Bot', 'AI2'],
+  // 2026-07-25: 數據中心 AI bot 盲點修復
+  [/CloudflareBot|Cloudflare-Workers/i, 'CloudflareBot', 'Cloudflare'],
+  [/DuckAssistBot/i, 'DuckAssistBot', 'DuckDuckGo'],
+  [/HeyGPT/i, 'HeyGPT', 'Hey'],
+  [/DataForSeoBot|SerpApi/i, 'DataForSeoBot', 'DataForSeo'],
+  // 脚本/headless UA
+  [/curl|wget/i, 'ScriptBot', 'Script'],
+  [/Python-urllib/i, 'PythonBot', 'Python'],
+  [/Go-http-client/i, 'GoBot', 'Go'],
+  [/HttpClient|node-fetch|axios/i, 'LibraryBot', 'Library'],
 ]
 
 // Headless Chrome / server-side fetchers use round version numbers: Chrome/X.0.0.0

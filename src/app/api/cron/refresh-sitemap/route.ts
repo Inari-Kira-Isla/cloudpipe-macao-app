@@ -78,7 +78,7 @@ async function generateSitemapContent() {
     while (true) {
       let url = `${baseUrl}/rest/v1/${table}?${filters}&select=id,${select}&order=id.asc&limit=${batch}`;
       if (lastId) url += `&id=gt.${lastId}`;
-      const res = await fetch(url, { headers: { 'apikey': apiKey, 'Authorization': `Bearer ${apiKey}` } });
+      const res = await fetch(url, { headers: { 'apikey': apiKey ?? '', 'Authorization': `Bearer ${apiKey}` } as any });
       if (!res.ok) break;
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) break;
