@@ -57,7 +57,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'ChatGLM-Spider', ...allowAll },
       { userAgent: '360Spider', ...allowAll },
       { userAgent: 'Sogou', ...allowAll },
-      { userAgent: 'PetalBot', ...allowAll },
+      // PetalBot (Aspiegel) does periodic massive crawls - rate limit to reduce load
+      { userAgent: 'PetalBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
       { userAgent: 'DeepSeekBot', ...allowAll },
       { userAgent: 'YisouSpider', ...allowAll },
       { userAgent: 'HunyuanBot', ...allowAll },

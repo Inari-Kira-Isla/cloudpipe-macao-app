@@ -209,7 +209,7 @@ const VALID_INDUSTRIES = new Set([
   'merchants', 'lifestyle',
 ])
 
-const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt', 'ms'])
+const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt'])
 
 // Region+lang-aware insight path regex — captures region and slug for industry lookup.
 // Catches BOTH:

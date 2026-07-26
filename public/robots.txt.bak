@@ -1,0 +1,13 @@
+# robots.txt for cloudpipe-macao-app
+# Rate limiting for search engine crawlers
+
+User-agent: Googlebot
+Crawl-delay: 2
+Disallow: /api/
+Disallow: /_next/
+Disallow: /*.json$
+
+User-agent: *
+Crawl-delay: 5
+Disallow: /api/
+Disallow: /_next/
