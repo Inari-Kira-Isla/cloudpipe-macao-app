@@ -48,8 +48,9 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'DuckDuckBot', ...allowAll },
       { userAgent: 'Slurp', ...allowAll },              // Yahoo/Oath
       { userAgent: 'Diffbot', ...allowAll },
-      { userAgent: 'Yandex', ...allowAll },
-      { userAgent: 'YandexBot', ...allowAll },
+      // Yandex: periodic massive crawls after site changes - rate limit to reduce load
+      { userAgent: 'Yandex', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
+      { userAgent: 'YandexBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
       // === Chinese AI crawlers ===
       { userAgent: 'Bytespider', ...allowAll },
       { userAgent: 'TikTokSpider', ...allowAll },
