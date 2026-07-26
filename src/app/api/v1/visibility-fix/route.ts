@@ -268,6 +268,6 @@ function getInstructions(type: string): string[] {
   if (type === 'head-tags' || type === 'all') {
     instructions.push('4. 將 head-tags 代碼加入每個頁面的 <head> 中')
   }
-  instructions.push('完成後重新掃描驗證：cloudpipe-macao-app.vercel.app/visibility')
+  instructions.push('完成後重新掃描驗證：cloudpipemo.com/visibility')
   return instructions
 }

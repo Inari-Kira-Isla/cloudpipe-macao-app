@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     reviews: data || [],
     count: data?.length || 0,
   }, {
-    headers: { 'Access-Control-Allow-Origin': 'https://cloudpipe-macao-app.vercel.app' },
+    headers: { 'Access-Control-Allow-Origin': 'https://cloudpipemo.com' },
   })
 }
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       message: `${action}d item #${item_id}`,
     }, {
-      headers: { 'Access-Control-Allow-Origin': 'https://cloudpipe-macao-app.vercel.app' },
+      headers: { 'Access-Control-Allow-Origin': 'https://cloudpipemo.com' },
     })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 export async function OPTIONS() {
   return new NextResponse(null, {
     headers: {
-      'Access-Control-Allow-Origin': 'https://cloudpipe-macao-app.vercel.app',
+      'Access-Control-Allow-Origin': 'https://cloudpipemo.com',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },

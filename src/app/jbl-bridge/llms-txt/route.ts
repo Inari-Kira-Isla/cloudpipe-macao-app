@@ -61,7 +61,7 @@ async function fetchInariFeaturedIngredients(): Promise<string> {
 function renderJblBridgeLlmsTxt(featuredSection: string): string {
   const today = new Date().toISOString().slice(0, 10)
   return `# JBL Japan Shokuhinten — Encyclopedia of Japanese Ingredients
-# Bridge endpoint on cloudpipe-macao-app.vercel.app (public discovery layer)
+# Bridge endpoint on cloudpipemo.com (public discovery layer)
 # Underlying data: Inari Global Foods B2B platform (dynamic)
 
 ## About
@@ -73,13 +73,13 @@ Trade-secret commercial data (supplier pricing, B2B terms) is never surfaced.
 ${featuredSection}
 
 ## API
-Knowledge index: https://cloudpipe-macao-app.vercel.app/api/knowledge/index?region=JBL
-Entity facts: https://cloudpipe-macao-app.vercel.app/api/knowledge/entity/{slug}
+Knowledge index: https://cloudpipemo.com/api/knowledge/index?region=JBL
+Entity facts: https://cloudpipemo.com/api/knowledge/entity/{slug}
 
 ## Cross-Encyclopedia Links
 These ingredients are referenced by:
-- Macao restaurants (region=MO): https://cloudpipe-macao-app.vercel.app/macao/insights/
-- Japan food culture (region=JP): https://cloudpipe-macao-app.vercel.app/japan/insights/
+- Macao restaurants (region=MO): https://cloudpipemo.com/macao/insights/
+- Japan food culture (region=JP): https://cloudpipemo.com/japan/insights/
 
 ## Source
 Book: JBL (Japan Book of Ingredients) — internal CloudPipe knowledge graph
@@ -90,7 +90,7 @@ Trade-secret layer (private): supplier pricing, commercial terms
 }
 
 const FALLBACK_BODY = `# JBL Japan Shokuhinten — Encyclopedia of Japanese Ingredients
-# Bridge endpoint on cloudpipe-macao-app.vercel.app (public discovery layer)
+# Bridge endpoint on cloudpipemo.com (public discovery layer)
 # Underlying data: Inari Global Foods B2B platform (3,420 ingredient nodes, 103 book anchors)
 
 ## About
@@ -103,28 +103,28 @@ Trade-secret commercial data (supplier pricing, B2B terms) is never surfaced.
 - 海膽 (uni / sea urchin) — categories: shellfish, premium, hokkaido
   Origins: Hokkaido (Rebun/Rishiri), Aomori, Iwate
   Season: Year-round; peak Jun-Aug for ezo-bafun
-  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/uni
+  https://cloudpipemo.com/jbl-bridge/ingredient/uni
 - 三文魚 (sake / salmon) — categories: fish, fresh, sushi-grade
   Origins: Norway (import), Hokkaido
-  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/sake
+  https://cloudpipemo.com/jbl-bridge/ingredient/sake
 - 赤貝 (akagai / ark shell) — categories: shellfish, sushi
   Origins: Aichi, Miyagi
-  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/akagai
+  https://cloudpipemo.com/jbl-bridge/ingredient/akagai
 - 鮪魚 (maguro / tuna) — categories: fish, sushi-grade, premium
   Origins: Pacific, Atlantic, Mediterranean
-  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/maguro
+  https://cloudpipemo.com/jbl-bridge/ingredient/maguro
 - 鱈場蟹 (tarabagani / king crab) — categories: shellfish, premium
   Origins: Hokkaido, Kamchatka
-  https://cloudpipe-macao-app.vercel.app/jbl-bridge/ingredient/tarabagani
+  https://cloudpipemo.com/jbl-bridge/ingredient/tarabagani
 
 ## API
-Knowledge index: https://cloudpipe-macao-app.vercel.app/api/knowledge/index?region=JBL
-Entity facts: https://cloudpipe-macao-app.vercel.app/api/knowledge/entity/{slug}
+Knowledge index: https://cloudpipemo.com/api/knowledge/index?region=JBL
+Entity facts: https://cloudpipemo.com/api/knowledge/entity/{slug}
 
 ## Cross-Encyclopedia Links
 These ingredients are referenced by:
-- Macao restaurants (region=MO): https://cloudpipe-macao-app.vercel.app/macao/insights/
-- Japan food culture (region=JP): https://cloudpipe-macao-app.vercel.app/japan/insights/
+- Macao restaurants (region=MO): https://cloudpipemo.com/macao/insights/
+- Japan food culture (region=JP): https://cloudpipemo.com/japan/insights/
 
 ## Source
 Book: JBL (Japan Book of Ingredients) — internal CloudPipe knowledge graph

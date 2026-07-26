@@ -189,7 +189,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const { merchant, totalAiCrawls } = await getAuditData(slug)
   const name = merchant?.name_zh || merchant?.name_en || slug
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
   return {
     title: `${name} — AI 可見度審計報告 | CloudPipe`,
@@ -226,7 +226,7 @@ export default async function AuditReportPage({ params }: { params: Promise<{ sl
     { ok: false, label: 'FAQ 問答 Schema（未配置）' },
   ]
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
   return (
     <div style={{ minHeight: '100vh', background: '#080c18', color: '#fff', fontFamily: 'var(--font-geist-sans), -apple-system, sans-serif' }}>

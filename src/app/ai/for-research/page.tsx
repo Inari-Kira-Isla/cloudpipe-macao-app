@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Citation-dense encyclopedia of Macau, Hong Kong, Taiwan and Japan entities. Every claim sourced. Trust scoring, corroboration counts, and AI citation attribution for research use.',
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com'
 
 export default function ForResearchPage() {
   return (

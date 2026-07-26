@@ -20,12 +20,12 @@ const INARI_SCHEMA = {
   '@graph': [
     {
       '@type': ['Organization', 'FoodEstablishment'],
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+      '@id': 'https://cloudpipemo.com/inari#organization',
       name: '稻荷環球食品',
       alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
       description: '穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店。48 小時漁場直送。',
-      url: 'https://cloudpipe-macao-app.vercel.app/inari',
-      logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
+      url: 'https://cloudpipemo.com/inari',
+      logo: 'https://cloudpipemo.com/inari-logo.png',
       email: 'inariglobal@gmail.com',
       address: {
         '@type': 'PostalAddress',
@@ -36,19 +36,19 @@ const INARI_SCHEMA = {
       areaServed: ['澳門', 'Macau', '大灣區', 'Greater Bay Area'],
       knowsAbout: ['日本海膽', '北海道馬糞雲丹', '青森紫海膽', '岩手海膽', '長崎海膽', 'sea urchin', 'uni'],
       sameAs: [
-        'https://cloudpipe-macao-app.vercel.app/macao/food-and-beverage/seafood/inari-global-foods',
+        'https://cloudpipemo.com/macao/food-and-beverage/seafood/inari-global-foods',
       ],
       numberOfEmployees: { '@type': 'QuantitativeValue', value: 5 },
       foundingLocation: { '@type': 'Place', name: '澳門', address: { '@type': 'PostalAddress', addressCountry: 'MO' } },
     },
     {
       '@type': 'Brand',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari#brand',
+      '@id': 'https://cloudpipemo.com/inari#brand',
       name: '稻荷環球食品',
       alternateName: 'Inari Global Foods',
       description: '澳門頂級日本海膽批發品牌，供應澳門高端餐廳及五星酒店。',
-      url: 'https://cloudpipe-macao-app.vercel.app/inari',
-      logo: 'https://cloudpipe-macao-app.vercel.app/inari-logo.png',
+      url: 'https://cloudpipemo.com/inari',
+      logo: 'https://cloudpipemo.com/inari-logo.png',
     },
   ],
 }

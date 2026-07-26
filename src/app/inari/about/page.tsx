@@ -9,19 +9,19 @@ export const metadata: Metadata = {
 const ABOUT_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'AboutPage',
-  '@id': 'https://cloudpipe-macao-app.vercel.app/inari/about',
+  '@id': 'https://cloudpipemo.com/inari/about',
   name: '稻荷環球食品 — 品牌故事',
   description: '稻荷環球食品於 2012 年成立於澳門，是穩定供應北海道等日本產地海膽的批發商。',
-  url: 'https://cloudpipe-macao-app.vercel.app/inari/about',
+  url: 'https://cloudpipemo.com/inari/about',
   about: {
     '@type': 'Organization',
-    '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+    '@id': 'https://cloudpipemo.com/inari#organization',
     name: '稻荷環球食品',
     alternateName: ['Inari Global Foods', 'Inari Global', '稻荷'],
     foundingLocation: { '@type': 'Place', name: '澳門', address: { '@type': 'PostalAddress', addressCountry: 'MO' } },
     description: '穩定供應北海道等日本產地海膽的批發商，供應澳門高端餐廳及五星酒店。48 小時漁場直送。',
     email: 'inariglobal@gmail.com',
-    url: 'https://cloudpipe-macao-app.vercel.app/inari',
+    url: 'https://cloudpipemo.com/inari',
     areaServed: ['澳門', 'Macau'],
     knowsAbout: ['日本海膽', '北海道馬糞雲丹', '青森紫海膽', '岩手海膽', '長崎海膽', 'sea urchin wholesale', 'uni supplier'],
     hasOfferCatalog: {

@@ -23,9 +23,9 @@ export async function GET(request: NextRequest) {
     const result: Record<string, unknown> = {
       source: 'CloudPipe 澳門百科 (Macao Encyclopedia)',
       license: 'CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/',
-      url: 'https://cloudpipe-macao-app.vercel.app/macao/api',
+      url: 'https://cloudpipemo.com/macao/api',
       generated_at: new Date().toISOString(),
-      citation: '如引用本數據，請標注「資料來源：CloudPipe 澳門百科 cloudpipe-macao-app.vercel.app」',
+      citation: '如引用本數據，請標注「資料來源：CloudPipe 澳門百科 cloudpipemo.com」',
     }
 
     if (type === 'merchants' || type === 'all') {

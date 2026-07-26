@@ -13,13 +13,13 @@
  *       greeting:     '你好！我是稻荷的 AI 策略顧問。'
  *     };
  *   </script>
- *   <script src="https://cloudpipe-macao-app.vercel.app/widget/brand-chat.js" async></script>
+ *   <script src="https://cloudpipemo.com/widget/brand-chat.js" async></script>
  */
 ;(function () {
   'use strict'
 
   // ─── Constants ─────────────────────────────────────────────────────────────
-  var API_BASE       = 'https://cloudpipe-macao-app.vercel.app'
+  var API_BASE       = 'https://cloudpipemo.com'
   var WIDGET_VERSION = '1.0.0'
 
   // ─── Config ─────────────────────────────────────────────────────────────────

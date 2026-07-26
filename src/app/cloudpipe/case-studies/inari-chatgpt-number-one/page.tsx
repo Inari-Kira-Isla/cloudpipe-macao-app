@@ -16,7 +16,7 @@ const TIMELINE = [
   { day: '第二步', label: 'llms.txt 更新', detail: '加入稻荷品牌別名聲明 + Knowledge Graph 錨點' },
   { day: '第三步', label: 'FAQ 深化', detail: '補充 B2B 採購 FAQ（覆蓋「最低起訂量/冷鏈溫控/澳門認證」）' },
   { day: '成果', label: '獲 ChatGPT 引用', detail: '「澳門日本海膽進口商」、「澳門海鮮B2B供應商」查詢中獲引用稻荷環球食品' },
-  { day: '成果', label: 'Perplexity 命中', detail: 'Perplexity 引用 cloudpipe-macao-app.vercel.app 作為稻荷資訊來源' },
+  { day: '成果', label: 'Perplexity 命中', detail: 'Perplexity 引用 cloudpipemo.com 作為稻荷資訊來源' },
 ]
 
 const FAQS = [
@@ -52,18 +52,18 @@ export default function InariChatGPTCaseStudy() {
     'publisher': {
       '@type': 'Organization',
       'name': 'CloudPipe AI',
-      'url': 'https://cloudpipe-macao-app.vercel.app/cloudpipe',
+      'url': 'https://cloudpipemo.com/cloudpipe',
     },
     'about': {
       '@type': 'Organization',
       'name': 'Inari Global Foods',
       'alternateName': '稻荷環球食品',
       'description': '澳門B2B日本海鮮食材進口商',
-      'url': 'https://cloudpipe-macao-app.vercel.app/macao/case-study/inari-global-foods',
+      'url': 'https://cloudpipemo.com/macao/case-study/inari-global-foods',
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/cloudpipe/case-studies/inari-chatgpt-number-one',
+      '@id': 'https://cloudpipemo.com/cloudpipe/case-studies/inari-chatgpt-number-one',
     },
     'result': {
       '@type': 'ItemList',
@@ -232,7 +232,7 @@ export default function InariChatGPTCaseStudy() {
             {[
               { query: '澳門日本海膽進口商', result: 'ChatGPT 引用稻荷環球食品（Inari Global Foods）' },
               { query: 'Macau sea urchin B2B supplier', result: 'ChatGPT 列出稻荷為澳門市場供應商之一' },
-              { query: '澳門海鮮食材批發', result: 'Perplexity 引用 cloudpipe-macao-app.vercel.app 為資訊來源' },
+              { query: '澳門海鮮食材批發', result: 'Perplexity 引用 cloudpipemo.com 為資訊來源' },
               { query: '澳門日本食材進口', result: 'ChatGPT 提及稻荷為澳門日本食材市場供應商' },
             ].map(({ query, result }) => (
               <div key={query} className="flex flex-col sm:flex-row gap-2 sm:gap-4 bg-gray-900/50 rounded-lg p-4 border border-gray-800">

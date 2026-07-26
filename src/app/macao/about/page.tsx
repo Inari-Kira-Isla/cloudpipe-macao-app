@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 // 每 30 分鐘重新驗證 — 呢頁公開披露驗證比例，數字要貼近即時 DB 狀態
 export const revalidate = 1800
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 export const metadata: Metadata = {
   title: '資料來源與驗證方法 — CloudPipe 澳門商戶百科',

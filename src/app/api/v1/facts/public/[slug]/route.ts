@@ -53,7 +53,7 @@ export async function GET(
     })),
     _links: {
       standard: `/api/v1/facts/${slug}`,
-      docs: 'https://cloudpipe-macao-app.vercel.app/api-docs'
+      docs: 'https://cloudpipemo.com/api-docs'
     }
   }, {
     headers: { 'Cache-Control': 'public, max-age=3600' }

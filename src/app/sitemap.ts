@@ -22,7 +22,7 @@ export const revalidate = 1800 // 30min ISR — CLAUDE.md sitemap rule ≤1800s
 export const maxDuration = 30  // reduced from 120 — no more bulk DB queries
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
   const now = new Date()
 
   // Categories: structural /macao/{industry}/{category} pages — small, fast query

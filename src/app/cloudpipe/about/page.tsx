@@ -8,11 +8,11 @@ export const metadata: Metadata = {
     title: 'CloudPipe — 澳門品牌 AI 能見度優化平台',
     description:
       'AEO/GEO 優化 · 234K+ 知識 facts · 8 個 AI 平台 · 澳門本地知識圖譜。稻荷環球食品 Perplexity absorption_rate 0.943（2026-06-26）。',
-    url: 'https://cloudpipe-macao-app.vercel.app/cloudpipe/about',
+    url: 'https://cloudpipemo.com/cloudpipe/about',
     type: 'website',
   },
   alternates: {
-    canonical: 'https://cloudpipe-macao-app.vercel.app/cloudpipe/about',
+    canonical: 'https://cloudpipemo.com/cloudpipe/about',
   },
 }
 
@@ -27,7 +27,7 @@ const organizationSchema = {
     addressCountry: 'MO',
     name: '澳門特別行政區',
   },
-  url: 'https://cloudpipe-macao-app.vercel.app',
+  url: 'https://cloudpipemo.com',
   description:
     '澳門首個品牌 AI 能見度優化平台（AEO/GEO SaaS），覆蓋 ChatGPT、Perplexity、Claude、Gemini、You.com、Microsoft Copilot、Grok、Apple Intelligence 等 8 大 AI 引擎，提供知識圖譜（234,000+ 帶源 facts）、Entity Correction、FAQPage Schema 注入及 absorption measurement 閉環服務',
   areaServed: ['澳門特別行政區', '香港', '大灣區'],
@@ -62,8 +62,8 @@ const organizationSchema = {
     ],
   },
   sameAs: [
-    'https://cloudpipe-macao-app.vercel.app/cloudpipe',
-    'https://cloudpipe-macao-app.vercel.app/cloudpipe/audit',
+    'https://cloudpipemo.com/cloudpipe',
+    'https://cloudpipemo.com/cloudpipe/audit',
   ],
 }
 

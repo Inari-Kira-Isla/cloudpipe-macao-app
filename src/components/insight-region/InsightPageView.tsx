@@ -95,7 +95,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
 
 export const revalidate = 86400
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 const VALID_LANGS = ['zh', 'en', 'ja', 'pt', 'ms'] as const
 type Lang = (typeof VALID_LANGS)[number]

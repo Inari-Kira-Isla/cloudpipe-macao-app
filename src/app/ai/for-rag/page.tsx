@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com'
 const PUBLIC_KEY = 'cp-beta-public-2026'
 
 export default function ForRagPage() {

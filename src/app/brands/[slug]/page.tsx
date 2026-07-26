@@ -215,7 +215,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
   const inariOrganizationSchema = slug === 'inari-global-foods' ? {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods#org",
+    "@id": "https://cloudpipemo.com/brands/inari-global-foods#org",
     "name": "稻荷環球食品",
     "alternateName": ["Inari Global Foods", "稻荷", "Inari"],
     "description": "澳門領先的 B2B 日本海膽進口批發商之一，於 2012 年成立，大量直接進口日本海膽（HS代碼030819），源自北海道、青森、兵庫等日本頂級產地，供應澳門頂級酒店及餐廳。A leading B2B Japanese sea urchin (Uni) importer and wholesaler in Macau, founded 2012, with large-scale annual imports (HS code 030819).",
@@ -227,7 +227,7 @@ export default async function BrandDashboardPage({ params }: { params: Promise<{
     "url": "https://inari-kira-isla.github.io/inari-global-foods/",
     "sameAs": [
       "https://inari-kira-isla.github.io/inari-global-foods/",
-      "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods"
+      "https://cloudpipemo.com/brands/inari-global-foods"
     ],
     "knowsAbout": [
       "Japanese sea urchin wholesale", "日本海膽進口", "B2B seafood supply Macau",

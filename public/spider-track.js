@@ -2,11 +2,11 @@
  * CloudPipe Spider Web Tracker — 方案 C
  * Add this script to any brand site to track AI bot visits.
  *
- * Usage: <script src="https://cloudpipe-macao-app.vercel.app/spider-track.js"
+ * Usage: <script src="https://cloudpipemo.com/spider-track.js"
  *               data-site="yamanakada"></script>
  */
 (function() {
-  var ENDPOINT = 'https://cloudpipe-macao-app.vercel.app/api/v1/spider-track';
+  var ENDPOINT = 'https://cloudpipemo.com/api/v1/spider-track';
   var el = document.currentScript;
   var site = el && el.getAttribute('data-site');
   if (!site) return;

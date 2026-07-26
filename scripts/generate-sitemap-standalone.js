@@ -8,7 +8,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yitmabzsxfgbchhhjjef.supabase.co'
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_secret_eNR3yu3mLT89N_kTJiDvYw_4yE3eHuK'
 const OUT_PATH = path.join(__dirname, '..', 'public', 'sitemap.xml')

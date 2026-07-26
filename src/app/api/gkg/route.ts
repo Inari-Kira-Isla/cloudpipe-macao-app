@@ -25,7 +25,7 @@ export const revalidate = 1800
 export const maxDuration = 20
 
 const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com'
 ).trim()
 
 const HEADERS = {

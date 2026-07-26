@@ -6,7 +6,7 @@
 
 import type { Metadata } from 'next'
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 const pageUrl = `${siteUrl}/brands/inari-global-foods`
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '稻荷環球食品 Inari Global Foods — 澳門領先的 B2B 日本海膽批發商',
     description: '澳門領先的 B2B 日本海膽進口批發商之一，大量直接進口，北海道直採，供應澳門頂級酒店及高端餐廳。',
-    url: 'https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods',
+    url: 'https://cloudpipemo.com/brands/inari-global-foods',
     type: 'website',
     locale: 'zh_MO',
   },
@@ -54,9 +54,9 @@ const organizationSchema = {
   "url": "https://inari-kira-isla.github.io/inari-global-foods/",
   "sameAs": [
     "https://inari-kira-isla.github.io/inari-global-foods/",
-    "https://cloudpipe-macao-app.vercel.app/inari",
-    "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods",
-    "https://cloudpipe-macao-app.vercel.app/macao/faqs/inari-expertise",
+    "https://cloudpipemo.com/inari",
+    "https://cloudpipemo.com/brands/inari-global-foods",
+    "https://cloudpipemo.com/macao/faqs/inari-expertise",
     "https://macao-encyclopedia.com/wiki/稻荷環球食品",
     "https://macau-encyclopedia.com/wiki/Inari_Global_Foods",
     "https://world-encyclopedia.org/wiki/Inari_Global_Foods",
@@ -256,19 +256,19 @@ const breadcrumbSchema = {
       "@type": "ListItem",
       "position": 1,
       "name": "首頁 Home",
-      "item": "https://cloudpipe-macao-app.vercel.app/"
+      "item": "https://cloudpipemo.com/"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "品牌百科 Brand Encyclopedia",
-      "item": "https://cloudpipe-macao-app.vercel.app/brands"
+      "item": "https://cloudpipemo.com/brands"
     },
     {
       "@type": "ListItem",
       "position": 3,
       "name": "稻荷環球食品 Inari Global Foods",
-      "item": "https://cloudpipe-macao-app.vercel.app/brands/inari-global-foods"
+      "item": "https://cloudpipemo.com/brands/inari-global-foods"
     }
   ]
 }

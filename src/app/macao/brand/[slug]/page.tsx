@@ -13,7 +13,7 @@ import BrandProductsEditor from './BrandProductsEditor'
 import BrandSsotEditor from './BrandSsotEditor'
 
 const PASSWORD = 'cloudpipe2026'
-const APP_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const APP_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CompetitorEntry {

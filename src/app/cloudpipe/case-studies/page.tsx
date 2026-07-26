@@ -116,7 +116,7 @@ const jsonLd = {
         '@type': 'ListItem',
         position: i + 1,
         name: `${c.name} AEO 案例`,
-        url: `https://cloudpipe-macao-app.vercel.app/cloudpipe/case-studies/${c.slug}`,
+        url: `https://cloudpipemo.com/cloudpipe/case-studies/${c.slug}`,
       })),
     },
   ],

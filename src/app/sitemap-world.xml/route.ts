@@ -11,6 +11,6 @@ export const maxDuration = 120 // headroom for the graceful 503 under a 30s-per-
 
 // Maps to insights.region = 'GLOBAL' → /global/insights/{slug}
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
   return buildRegionSitemapResponse(siteUrl, 'GLOBAL')
 }

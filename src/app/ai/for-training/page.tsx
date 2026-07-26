@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Structured, verified entity knowledge graph for AI training. 235,000+ facts across Macau, Hong Kong, Taiwan, Japan. Official-source provenance. Licensing available.',
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com'
 
 export default function ForTrainingPage() {
   return (

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 const PUBLIC_KEY = 'cp-beta-public-2026'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com'
 
 export default function ApiKeyPage() {
   return (

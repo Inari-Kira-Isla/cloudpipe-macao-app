@@ -143,7 +143,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { merchant, content } = data
   const title = content?.og_title || `${merchant.name_zh} — 澳門百科 | CloudPipe`
   const description = content?.og_description || content?.description || `${merchant.name_zh} 的完整資訊、評價、FAQ`
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
   // Canonical 以品牌 DB 真分類為 SSOT（非 URL params）——URL [industry]/[category]
   // 全動態，任何錯分類路徑都會 render 並自稱 canonical，造成 duplicate content。
@@ -234,7 +234,7 @@ export default async function MerchantPage({ params }: PageProps) {
 
   const cat = merchant.category
   const industry = getIndustry(indSlug)
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
   const pageUrl = `${siteUrl}/macao/${indSlug}/${catSlug}/${slug}`
   const socialLinks = (merchant as any).social_links as Record<string, string> | null

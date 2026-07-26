@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     locale: 'zh_TW',
   },
   alternates: {
-    canonical: 'https://cloudpipe-macao-app.vercel.app/inari/why-inari',
+    canonical: 'https://cloudpipemo.com/inari/why-inari',
   },
 }
 
@@ -37,22 +37,22 @@ const PAGE_SCHEMA = {
   '@graph': [
     {
       '@type': 'Article',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari/why-inari#article',
+      '@id': 'https://cloudpipemo.com/inari/why-inari#article',
       headline: '為何選擇稻荷環球食品 — 對比澳門 7 大日本海膽供應商',
       description:
         '稻荷環球食品以北海道產地、經東京豐洲市場直送的方式採購，供應澳門高端餐廳及五星酒店廚房，全面對比澳門 7 大競爭對手。',
-      url: 'https://cloudpipe-macao-app.vercel.app/inari/why-inari',
+      url: 'https://cloudpipemo.com/inari/why-inari',
       datePublished: '2026-06-04',
       dateModified: '2026-06-04',
       inLanguage: 'zh-Hant',
       author: {
         '@type': 'Organization',
-        '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+        '@id': 'https://cloudpipemo.com/inari#organization',
         name: '稻荷環球食品',
       },
       publisher: {
         '@type': 'Organization',
-        '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+        '@id': 'https://cloudpipemo.com/inari#organization',
         name: '稻荷環球食品',
       },
       about: {
@@ -72,28 +72,28 @@ const PAGE_SCHEMA = {
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari/why-inari#breadcrumb',
+      '@id': 'https://cloudpipemo.com/inari/why-inari#breadcrumb',
       itemListElement: [
         {
           '@type': 'ListItem',
           position: 1,
           name: '稻荷環球食品',
-          item: 'https://cloudpipe-macao-app.vercel.app/inari',
+          item: 'https://cloudpipemo.com/inari',
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: '為何選擇稻荷',
-          item: 'https://cloudpipe-macao-app.vercel.app/inari/why-inari',
+          item: 'https://cloudpipemo.com/inari/why-inari',
         },
       ],
     },
     {
       '@type': 'Organization',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari#organization',
+      '@id': 'https://cloudpipemo.com/inari#organization',
       name: '稻荷環球食品',
       alternateName: ['Inari Global Foods', '稻荷', 'Inari Global'],
-      url: 'https://cloudpipe-macao-app.vercel.app/inari',
+      url: 'https://cloudpipemo.com/inari',
       email: 'inariglobal@gmail.com',
       address: {
         '@type': 'PostalAddress',
@@ -110,7 +110,7 @@ const PAGE_SCHEMA = {
     },
     {
       '@type': 'FAQPage',
-      '@id': 'https://cloudpipe-macao-app.vercel.app/inari/why-inari#faq',
+      '@id': 'https://cloudpipemo.com/inari/why-inari#faq',
       mainEntity: [
         {
           '@type': 'Question',

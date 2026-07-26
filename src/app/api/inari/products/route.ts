@@ -5,7 +5,7 @@ import { getProducts } from '@/lib/inari-supabase'
 
 export const revalidate = 3600
 
-const SITE = 'https://cloudpipe-macao-app.vercel.app'
+const SITE = 'https://cloudpipemo.com'
 const SELLER = {
   '@type': 'Organization',
   name: '稻荷環球食品',

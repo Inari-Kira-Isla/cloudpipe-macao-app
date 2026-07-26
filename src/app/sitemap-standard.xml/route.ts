@@ -76,7 +76,7 @@ async function fetchStandardInsights(): Promise<FetchResult> {
 }
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
   const now = new Date().toISOString().split('T')[0]
 
   const { rows, complete } = await fetchStandardInsights()

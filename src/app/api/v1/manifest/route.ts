@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase'
 export const revalidate = 3600 // 1 hour ISR
 
 export async function GET() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
   const db = createServiceClient()
 
   // Get live stats for the manifest

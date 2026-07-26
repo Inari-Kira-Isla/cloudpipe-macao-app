@@ -132,13 +132,13 @@ export async function createInsightDraft(brandSlug: string, topic: string): Prom
 export async function pingIndexNow(brandSlug: string): Promise<{ urls: number }> {
   const key = process.env.INDEXNOW_KEY ?? 'ba56701768004b66b7e64c28a1e90f9e'
   const urls = [
-    `https://cloudpipe-macao-app.vercel.app/brands/${brandSlug}`,
-    `https://cloudpipe-macao-app.vercel.app/merchants/${brandSlug}`,
+    `https://cloudpipemo.com/brands/${brandSlug}`,
+    `https://cloudpipemo.com/merchants/${brandSlug}`,
   ]
   await fetch('https://api.indexnow.org/indexnow', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host: 'cloudpipe-macao-app.vercel.app', key, urlList: urls }),
+    body: JSON.stringify({ host: 'cloudpipemo.com', key, urlList: urls }),
   }).catch(() => {})
   return { urls: urls.length }
 }

@@ -15,7 +15,7 @@ import { trackBotVisit } from '@/lib/track-bot'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 15  // 11 sequential DB queries need headroom
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 export async function GET(request: Request) {
   // Fire-and-forget bot tracking (non-blocking)

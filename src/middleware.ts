@@ -105,6 +105,8 @@ function detectBot(ua: string, headers: Headers): { name: string; owner: string 
 const OUR_BRAND_DOMAINS = [
   'inari-kira-isla.github.io',
   'cloudpipe-macao-app.vercel.app',
+  'cloudpipemo.com',
+  'www.cloudpipemo.com',
 ]
 
 // Asset/system paths that browsers fetch automatically — exclude from referral tracking

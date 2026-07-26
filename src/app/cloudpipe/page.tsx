@@ -622,7 +622,7 @@ export default function CloudPipeLandingPage() {
             name: 'CloudPipe',
             alternateName: 'CloudPipe AEO Platform',
             description: '澳門首個 AI 知識認證網絡——連接政府官方數據、米芝蓮、黑珍珠等權威來源，助品牌被 ChatGPT、Perplexity、Claude 認識和引用',
-            url: 'https://cloudpipe-macao-app.vercel.app',
+            url: 'https://cloudpipemo.com',
             foundingLocation: {
               '@type': 'Place',
               name: '澳門',

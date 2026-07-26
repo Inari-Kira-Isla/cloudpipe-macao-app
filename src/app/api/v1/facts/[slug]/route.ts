@@ -23,7 +23,7 @@ export async function GET(
       {
         error: authResult.error,
         public_endpoint: `/api/v1/facts/public/${slug}`,
-        docs: 'https://cloudpipe-macao-app.vercel.app/api-docs'
+        docs: 'https://cloudpipemo.com/api-docs'
       },
       { status: authResult.status ?? 401 }
     )

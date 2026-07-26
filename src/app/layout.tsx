@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipe-macao-app.vercel.app').trim()
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 export const metadata: Metadata = {
   title: {
@@ -159,7 +159,7 @@ export default function RootLayout({
               name: "CloudPipe AEO Network",
               url: "https://cloudpipe-landing.vercel.app",
               sameAs: [
-                "https://cloudpipe-macao-app.vercel.app",
+                "https://cloudpipemo.com",
                 "https://inari-kira-isla.github.io",
                 "https://japan-encyclopedia.vercel.app",
                 "https://hongkong-encyclopedia.vercel.app",
@@ -200,7 +200,7 @@ export default function RootLayout({
           }}
         />
         {children}
-        <EcosystemFooter currentUrl="https://cloudpipe-macao-app.vercel.app" />
+        <EcosystemFooter currentUrl="https://cloudpipemo.com" />
         {/* Baidu Auto-Push — submit URL on every page visit */}
         <script
           dangerouslySetInnerHTML={{
