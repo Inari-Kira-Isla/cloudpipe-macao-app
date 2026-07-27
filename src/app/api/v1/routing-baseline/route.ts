@@ -16,14 +16,14 @@ const supabase = createClient(
 )
 
 const SCHEMA_IMPORTANCE: Record<string, number> = {
-  TouristAttraction: 50, LandmarksOrHistoricalBuildings: 50,
-  Museum: 45, Hotel: 40, Resort: 40,
-  Restaurant: 35, CafeOrCoffeeShop: 30, Bakery: 25,
-  ShoppingCenter: 30, Casino: 30, EntertainmentBusiness: 25,
-  Park: 25, AmusementPark: 25, PlaceOfWorship: 20,
-  Store: 20, HealthClub: 20, DaySpa: 20,
-  FoodEstablishment: 20, BarOrPub: 15,
-  LocalBusiness: 10, Corporation: 10,
+  TouristAttraction: 500, LandmarksOrHistoricalBuildings: 500,
+  Museum: 450, Hotel: 400, Resort: 400,
+  Restaurant: 350, CafeOrCoffeeShop: 300, Bakery: 250,
+  ShoppingCenter: 300, Casino: 300, EntertainmentBusiness: 250,
+  Park: 250, AmusementPark: 250, PlaceOfWorship: 200,
+  Store: 200, HealthClub: 200, DaySpa: 200,
+  FoodEstablishment: 200, BarOrPub: 150,
+  LocalBusiness: 100, Corporation: 100,
 }
 
 const INDUSTRY_WEIGHT: Record<string, number> = {
@@ -85,7 +85,15 @@ const computeRoutingBaseline = unstable_cache(
       const slug = m.slug as string
       if (!slug || slug === 'null') continue
       const catSlug = catMap[m.category_id] || ''
-      const industry = CATEGORY_TO_INDUSTRY[catSlug] || SCHEMA_TO_INDUSTRY[m.schema_type] || 'other'
+      // Priority: schema_type (more authoritative) > category > default
+      // FIX (2026-07-27): schema_type determines industry for weight calculation,
+      // category only determines page_path. This ensures TouristAttraction gets
+      // w=0.41 regardless of whether category is dining/street-food.
+      const schemaIndustry = SCHEMA_TO_INDUSTRY[m.schema_type || '']
+      const catIndustry = CATEGORY_TO_INDUSTRY[catSlug] || ''
+      // Use schema_type for industry (authoritative) - this controls the weight
+      const industry = schemaIndustry || catIndustry || 'other'
+      // Page path can still use category if available
       const page_path = catSlug && industry !== 'other'
         ? `/macao/${industry}/${catSlug}/${slug}`
         : `/macao/merchants/${slug}`
@@ -94,7 +102,8 @@ const computeRoutingBaseline = unstable_cache(
       const baseScore = reviews > 0 ? (reviews * rating / 5) : 0
       const schemaScore = SCHEMA_IMPORTANCE[m.schema_type] || 10
       const w = INDUSTRY_WEIGHT[industry] || 0.01
-      const score = (baseScore + schemaScore) * w
+      // schemaScore is NOT multiplied by industry weight (baseScore*w gives weighted review score)
+      const score = baseScore * w + schemaScore
 
       merchantScores[slug] = {
         name_zh: m.name_zh || '', name_en: m.name_en || '',
@@ -106,7 +115,13 @@ const computeRoutingBaseline = unstable_cache(
     }
 
     const topMerchants = Object.entries(merchantScores)
-      .sort((a, b) => b[1].score - a[1].score)
+      // FIX: Use larger tolerance (1.0) for stable tie-breaking
+      // This ensures top-20 stays consistent across recalculations
+      .sort((a, b) => {
+        const scoreDiff = b[1].score - a[1].score
+        if (Math.abs(scoreDiff) >= 1.0) return scoreDiff
+        return a[0].localeCompare(b[0]) // tie-breaker: alphabetical by slug
+      })
       .slice(0, 20)
       .map(([slug, info]) => ({
         slug, ...info,
