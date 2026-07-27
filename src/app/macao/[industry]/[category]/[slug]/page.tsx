@@ -64,6 +64,49 @@ interface InsightLink { slug: string; title: string; read_time_minutes: number; 
 
 const NON_MACAO_PREFIXES = ['hk-', 'tw-', 'jp-', 'cn-']
 
+/**
+ * 2026-07-27: merchant_faqs 96.7% 為 faq_type='insight_derived' 廣播式污染
+ * （同一答案平均掛 96.6 間商戶、自我提及率淨 0.29%，非商戶專屬）。
+ * Kira 2026-07-27 拍板拎走 unfiltered fallback：CEO 已逐個查實真實影響範圍
+ * 只有 34 個 MO live 商戶（商戶詳情頁路由只服務 MO），0 個 owned 品牌受影響，
+ * ai_citations 全表 6,073 行從未引用過任何商戶詳情頁——fallback 顯示嘅係明顯
+ * 錯誤內容（例：餐廳顯示「澳門大學學費幾多錢」），冇任何已量度嘅下游依賴。
+ * 呢個 helper 只揀 curated FAQ（faq_type != insight_derived）。商戶冇
+ * curated FAQ 就返回空結果——**唔再 fallback 落 insight_derived**。
+ * 詳見告示板 / project_merchant_faqs_insight_derived_pollution_2026-07-27。
+ */
+async function getCuratedFaqs(merchantId: string, lang: 'zh' | 'en', limit: number) {
+  const curated = await supabase
+    .from('merchant_faqs')
+    .select('*')
+    .eq('merchant_id', merchantId)
+    .eq('lang', lang)
+    .neq('faq_type', 'insight_derived')
+    .order('faq_type', { ascending: false })
+    .order('sort_order')
+    .limit(limit)
+
+  // Fail-closed（2026-07-27 critic 揪出 CRITICAL，拎走 fallback 後依然保留）：
+  // 查詢出錯（timeout / RLS 拒絕 / 暫時性 500 / 連線中斷）同「商戶真係冇 curated
+  // FAQ」係兩件事，唔可以混為一談。查詢失敗一律 fail loud + 返回空結果。
+  if (curated.error) {
+    console.error(
+      `[getCuratedFaqs] curated query failed — failing closed (empty result, no fallback). merchant_id=${merchantId} lang=${lang} error=${curated.error.message}`
+    )
+    return { ...curated, data: [] }
+  }
+
+  // 查詢成功但真係 0 條 curated FAQ：量度信號，記低幾多商戶行緊「零 FAQ」呢條
+  // 路（冇 fallback，詳情頁會直接顯示 0 條 FAQ，唔再顯示 insight_derived 污染）。
+  if (!curated.data || curated.data.length === 0) {
+    console.warn(
+      `[getCuratedFaqs] merchant has ZERO curated FAQ — returning empty, no fallback. merchant_id=${merchantId} lang=${lang}`
+    )
+  }
+
+  return curated
+}
+
 async function getMerchant(slug: string, industrySlug: string) {
   // Block non-macao merchants from appearing under /macao/ paths
   if (NON_MACAO_PREFIXES.some(p => slug.startsWith(p))) return null
@@ -79,8 +122,8 @@ async function getMerchant(slug: string, industrySlug: string) {
 
   const [{ data: content }, { data: faqs }, { data: enFaqs }, { data: directInsights }, { data: industryInsights }, { data: relatedMerchants }, { data: brandEcosystem }] = await Promise.all([
     supabase.from('merchant_content').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').single(),
-    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'zh').order('faq_type', { ascending: false }).order('sort_order').limit(12),
-    supabase.from('merchant_faqs').select('*').eq('merchant_id', merchant.id).eq('lang', 'en').order('faq_type', { ascending: false }).order('sort_order').limit(6),
+    getCuratedFaqs(merchant.id, 'zh', 12),
+    getCuratedFaqs(merchant.id, 'en', 6),
     supabase.from('insights').select('slug, title, read_time_minutes, tags')
       .eq('status', 'published').eq('lang', 'zh')
       .contains('related_merchant_slugs', [slug])

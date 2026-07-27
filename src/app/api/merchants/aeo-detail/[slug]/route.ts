@@ -92,10 +92,14 @@ export async function GET(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const anyDb = db as any
   const [faqRes, kgEntityRes, insightRes] = await Promise.all([
+    // 2026-07-27: 排除 insight_derived（96.7% 廣播式污染）— 呢個係 AEO
+    // 自我診斷工具，應該誠實顯示真正 curated FAQ 覆蓋率（含 0），
+    // 而唔係俾廣播 FAQ 遮蔽「呢間商戶其實冇 FAQ」嘅事實。
     db.from('merchant_faqs')
       .select('id, question, answer, faq_type')
       .eq('merchant_id', merchant.id)
       .eq('lang', 'zh')
+      .neq('faq_type', 'insight_derived')
       .order('sort_order')
       .limit(10),
     anyDb.from('knowledge_entities')

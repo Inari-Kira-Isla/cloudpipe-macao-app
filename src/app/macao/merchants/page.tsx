@@ -24,7 +24,8 @@ async function getStats() {
     const [totalRes, verifiedRes, faqRes] = await Promise.all([
       db.from('merchants').select('id', { count: 'exact', head: true }).eq('status', 'live'),
       db.from('merchants').select('id', { count: 'exact', head: true }).eq('status', 'live').eq('verification_status', 'verified'),
-      db.from('merchant_faqs').select('id', { count: 'exact', head: true }),
+      // 2026-07-27: 排除 insight_derived（96.7% 廣播式污染）避免 faqTotal 灌水
+      db.from('merchant_faqs').select('id', { count: 'exact', head: true }).neq('faq_type', 'insight_derived'),
     ])
     return {
       total: totalRes.count ?? 0,

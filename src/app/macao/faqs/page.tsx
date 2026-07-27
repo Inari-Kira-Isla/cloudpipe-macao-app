@@ -118,7 +118,9 @@ const SUB_PAGES = [
 async function getStats() {
   const [{ count: merchantCount }, { count: faqCount }] = await Promise.all([
     supabase.from('merchants').select('*', { count: 'exact', head: true }).eq('status', 'live'),
-    supabase.from('merchant_faqs').select('*', { count: 'exact', head: true }),
+    // 2026-07-27: 排除 insight_derived（96.7% 廣播式污染）避免 faqCount 灌水
+    // ——呢個數字出現喺 Dataset schema description，直接餵 AI 引擎。
+    supabase.from('merchant_faqs').select('*', { count: 'exact', head: true }).neq('faq_type', 'insight_derived'),
   ])
   return { merchantCount: merchantCount || 0, faqCount: faqCount || 0 }
 }

@@ -61,11 +61,14 @@ async function getData(industrySlug: string, categorySlug: string) {
 
   const merchantIds = (merchants as MerchantRow[]).map(m => m.id)
 
+  // 2026-07-27: merchant_faqs 96.7% 為 faq_type='insight_derived' 廣播式污染
+  // （同一答案平均掛 96.6 間商戶，非商戶專屬）。呢頁係實測洩漏源，直接排除。
   const { data: faqs } = await supabase
     .from('merchant_faqs')
     .select('id, merchant_id, lang, question, answer, sort_order, faq_type, related_insight_slug, template_id')
     .in('merchant_id', merchantIds)
     .eq('lang', 'zh')
+    .neq('faq_type', 'insight_derived')
     .order('sort_order')
 
   // Group FAQs by merchant_id

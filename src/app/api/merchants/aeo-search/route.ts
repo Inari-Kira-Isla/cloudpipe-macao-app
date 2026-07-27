@@ -66,10 +66,14 @@ async function computeResults(db: ReturnType<typeof createServiceClient>, mercha
   return Promise.all(
     merchants.map(async (m) => {
       const [faqRes, kgRes] = await Promise.all([
+        // 2026-07-27: 排除 insight_derived（96.7% 廣播式污染）— 呢個 count
+        // 直接餵 sFaq/aeoScore 公式，唔過濾會令幾乎所有商戶因為掛咗廣播 FAQ
+        // 而被誤判高分，反而遮蔽真正冇 FAQ 嘅商戶。
         db.from('merchant_faqs')
           .select('id', { count: 'exact', head: true })
           .eq('merchant_id', m.id)
-          .eq('lang', 'zh'),
+          .eq('lang', 'zh')
+          .neq('faq_type', 'insight_derived'),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (db as any).from('knowledge_entities')
           .select('entity_id')

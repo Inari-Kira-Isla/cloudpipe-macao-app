@@ -46,10 +46,14 @@ export async function GET(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = createServiceClient() as any
     const [{ data: faqs }, { data: kgEntities }] = await Promise.all([
+      // 2026-07-27: 排除 faq_type='insight_derived'（96.7% 為廣播式污染，
+      // 自我提及率淨 0.29%）。呢個 endpoint 直接餵 AI 爬蟲 FAQPage schema，
+      // 寧願部分商戶 faq_count=0 都唔可以將無關商戶嘅答案標成呢間商戶嘅事實。
       supabase
         .from('merchant_faqs')
         .select('id, question, answer, lang, faq_type, question_intent, priority_score, sort_order')
         .eq('merchant_id', merchant.id)
+        .neq('faq_type', 'insight_derived')
         .order('priority_score', { ascending: false })
         .order('sort_order')
         .limit(50),

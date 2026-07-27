@@ -69,10 +69,13 @@ export async function GET(req: NextRequest) {
 
     if (!merchant) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+    // 2026-07-27: 排除 insight_derived（96.7% 廣播式污染）— 呢個 admin
+    // preview 俾人揀 FAQ 之前查現有資料，唔應該顯示同商戶無關嘅廣播答案。
     const { data: faqs } = await supabase
       .from('merchant_faqs')
       .select('id, question, answer, faq_type, lang')
       .eq('merchant_id', merchant.id)
+      .neq('faq_type', 'insight_derived')
       .order('faq_type')
       .limit(100)
 

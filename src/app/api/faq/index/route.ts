@@ -27,12 +27,17 @@ export async function GET(request: Request) {
       'check_hours', 'check_price', 'check_stock', 'compare',
       'find_location', 'book', 'delivery', 'seasonal', 'contact', 'general',
     ]
+    // 2026-07-27: 全部排除 faq_type='insight_derived'（96.7% 為廣播式污染，
+    // 同一答案平均掛 96.6 間商戶，自我提及率淨 0.29%）。呢個 endpoint 係
+    // AI 爬蟲發現索引，total_faqs / intent_distribution 呢啲數字之前包含
+    // 污染會嚴重灌水。
     const intentCount: Record<string, number> = {}
     for (const intent of ALL_INTENTS) {
       const { count } = await supabase
         .from('merchant_faqs')
         .select('*', { count: 'exact' })
         .eq('question_intent', intent)
+        .neq('faq_type', 'insight_derived')
         .limit(0)
       if (count && count > 0) intentCount[intent] = count
     }
@@ -41,6 +46,7 @@ export async function GET(request: Request) {
     const { count: totalFaqs } = await supabase
       .from('merchant_faqs')
       .select('*', { count: 'exact' })
+      .neq('faq_type', 'insight_derived')
       .limit(0)
 
     // ── 2. 取各行業 Top FAQ（priority_score 最高的前 3 條）────────────────
@@ -49,6 +55,7 @@ export async function GET(request: Request) {
       .select('question, answer, question_intent, lang')
       .not('question_intent', 'is', null)
       .eq('lang', 'zh')
+      .neq('faq_type', 'insight_derived')
       .order('priority_score', { ascending: false })
       .limit(20)
 

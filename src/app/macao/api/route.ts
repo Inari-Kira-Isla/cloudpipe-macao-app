@@ -63,9 +63,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (type === 'faqs' || type === 'all') {
+      // 2026-07-27: 排除 faq_type='insight_derived'（96.7% 為廣播式污染，
+      // 同一答案平均掛 96.6 間商戶）。呢個 endpoint order by created_at DESC
+      // 冇過濾之前幾乎純 insight_derived，直接餵 AI agent。
       const { data } = await supabase
         .from('merchant_faqs')
         .select('question, answer, lang, merchant:merchants(name_zh, slug)')
+        .neq('faq_type', 'insight_derived')
         .order('created_at', { ascending: false })
         .limit(Math.min(limit, 50))
 
