@@ -2,6 +2,24 @@
 
 ## Rules
 
+### Git Push 安全閘（2026-07-29 實證後更新）
+
+> 背景：自動化排程 script 執行 `git push` 時，若本地存在其他未經審批的 commit，會被一併推送到遠端。
+> 實證：cs-github-sync 每 4 小時自動 push，任何人 commit 但唔 push 最多 4 小時後照樣出街。
+
+**已修復的排程腳本**：
+- `cs_github_sync.py` - 檢查 commit author 後才 push
+- `daily_content_pipeline.py` - 檢查 commit author 後才 push
+- `daily_refresh.sh` - 檢查 commit author 後才 push
+- `weekly_radar.sh` - 檢查 commit author 後才 push
+
+**安全機制**：
+- 每次 push 前檢查 `origin/main..HEAD` 範圍內的 commit author
+- 若發現非本 job 作者的 commit，block push 並 exit 1
+- 這樣「commit 但唔 push」在此類 repo 重新成為有效的審批閘
+
+**重要**：若需要暫存未經審批的 commit，請 commit 到獨立 branch 或使用 `git stash`
+
 ### Next.js Route Rules
 
 1. **改 Next.js route 必須同步確認 sitemap route 存在**
