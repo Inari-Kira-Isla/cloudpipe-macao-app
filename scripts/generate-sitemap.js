@@ -17,7 +17,11 @@ const { createClient } = require('@supabase/supabase-js')
 // ── 設定 ─────────────────────────────────────────────────────────────────────
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yitmabzsxfgbchhhjjef.supabase.co'
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_secret_eNR3yu3mLT89N_kTJiDvYw_4yE3eHuK'
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+if (!SUPABASE_KEY) {
+  console.error('Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY env var')
+  process.exit(1)
+}
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 const OUT_PATH = path.join(__dirname, '..', 'public', 'sitemap.xml')
 const TODAY = new Date().toISOString().split('T')[0]

@@ -53,3 +53,19 @@ credentials.json
 scripts/*.env
 .env*.local
 supabase/.temp/
+
+# omni-audit P0 2026-08-02: these debug/one-off scripts hardcoded a leaked
+# service_role key (sb_secret_eNR3yu...). Removed from tracking; if you need
+# them locally again, read the key from process.env.SUPABASE_SERVICE_ROLE_KEY.
+/check_slug_variants.js
+/verify_sitemap.js
+/find_truncation.js
+/test_exact_urls.js
+/check_slug_issue.js
+/verify_maybeSingle.js
+/test_real_query.js
+/check_schema.js
+/check_exact_slugs.js
+/scripts/execute-sql-migrations.py
+/scripts/generate-sitemap.js
+/scripts/generate-sitemap-standalone.js
