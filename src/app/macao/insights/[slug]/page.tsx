@@ -713,39 +713,23 @@ export default async function InsightDetailPage({ params }: PageProps) {
     ],
   }
 
-  // ClaimReview — 讓 AI 搜索引擎判斷本文為可信來源
-  // 只有包含 authority_sources 的文章才加（代表有外部佐證）
-  const claimReviewSchema = (article.authority_sources?.length ?? 0) > 0 ? {
-    '@context': 'https://schema.org',
-    '@type': 'ClaimReview',
-    url: `${siteUrl}/macao/insights/${slug}`,
-    claimReviewed: article.title,
-    datePublished: article.published_at || article.created_at,
-    author: {
-      '@type': 'Organization',
-      name: 'CloudPipe 澳門百科',
-      url: siteUrl,
-    },
-    reviewRating: {
-      '@type': 'Rating',
-      ratingValue: 5,
-      bestRating: 5,
-      worstRating: 1,
-      alternateName: 'Verified',
-    },
-    itemReviewed: {
-      '@type': 'Claim',
-      name: article.title,
-      author: { '@type': 'Organization', name: 'CloudPipe AI' },
-      datePublished: article.published_at || article.created_at,
-      appearance: {
-        '@type': 'OpinionNewsArticle',
-        url: `${siteUrl}/macao/insights/${slug}`,
-        headline: article.title,
-        publisher: { '@type': 'Organization', name: 'CloudPipe 澳門百科', url: siteUrl },
-      },
-    },
-  } : null
+  // ── ClaimReview: REMOVED 2026-08-07 ────────────────────────────────────────
+  // 舊實作：`authority_sources` 非空 → 輸出 ClaimReview + reviewRating 5/5
+  //         alternateName: 'Verified'。
+  // 移除原因（兩層，缺一都足夠移除）：
+  //   1. 閘門係假的 —— 條件淨係「陣列非空」，唔理入面係咩。實測 6,107 篇
+  //      insight 嘅 authority_sources 係由 verification_source_injector.py
+  //      硬編碼 `verified: True` 塞入去（零 HTTP fetch、零內容比對），其中
+  //      3,650 篇已 published，即係喺度向 Google / AI 引擎輸出機器可讀嘅
+  //      「已事實查核，評分 5/5」聲明，而底下完全冇核實過。
+  //   2. 就算來源係真嘅都唔應該出 —— ClaimReview 係 Google 專為註冊事實
+  //      查核機構設計嘅 schema。自己出文、自己畀自己打 5/5「Verified」
+  //      本身就係 schema 濫用，同來源真假無關。
+  // 重新啟用嘅前提：有真正嘅第三方核實機制（語義層比對，唔係 HTTP 200），
+  // 而且 ratingValue 由真核實結果推導，唔可以係硬編碼 5。
+  // 憑據：audit_reports/verification-source-injector-scope-2026-08-07.md
+  // 註：Article 嘅 `citation` / `isBasedOn`（上面 L653 / L674）**保留** ——
+  //     嗰兩個只係聲稱「本文引用咗呢啲連結」，唔係聲稱「已核實」。
 
   const sections = article.sections || []
 
@@ -760,7 +744,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
-      {claimReviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(claimReviewSchema) }} />}
+      {/* ClaimReview script tag removed 2026-08-07 — see comment above */}
       <ClickTracker pageType="insight" pageSlug={slug} />
       {/* LangAwareContent: client-side lang switching without breaking ISR/Edge Cache */}
       <Suspense fallback={null}>

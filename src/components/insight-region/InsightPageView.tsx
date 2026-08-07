@@ -676,27 +676,15 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
     ],
   }
 
-  const claimReviewSchema = (article.authority_sources?.length ?? 0) > 0 ? {
-    '@context': 'https://schema.org',
-    '@type': 'ClaimReview',
-    url: insightCanonical,
-    claimReviewed: article.title,
-    datePublished: article.published_at || article.created_at,
-    author: { '@type': 'Organization', name: `CloudPipe ${cfg.breadcrumbName.en}`, url: siteUrl },
-    reviewRating: { '@type': 'Rating', ratingValue: 5, bestRating: 5, worstRating: 1, alternateName: 'Verified' },
-    itemReviewed: {
-      '@type': 'Claim',
-      name: article.title,
-      author: { '@type': 'Organization', name: 'CloudPipe AI' },
-      datePublished: article.published_at || article.created_at,
-      appearance: {
-        '@type': 'OpinionNewsArticle',
-        url: insightCanonical,
-        headline: article.title,
-        publisher: { '@type': 'Organization', name: `CloudPipe ${cfg.breadcrumbName.en}`, url: siteUrl },
-      },
-    },
-  } : null
+  // ── ClaimReview: REMOVED 2026-08-07 ────────────────────────────────────────
+  // 同 macao/insights/[slug]/page.tsx 一致移除。呢個 component 覆蓋 HK / JP /
+  // TW / MO 全部語言變體，係假「5/5 Verified」聲明最大宗嘅對外出口。
+  // 舊閘門淨係「authority_sources 非空」，而該欄位大量條目係
+  // verification_source_injector.py 硬編碼 `verified: True` 塞入去（零核實）。
+  // 加上 ClaimReview 本身係 Google 畀註冊事實查核機構用嘅 schema，自評 5/5
+  // 屬濫用。重啟前提：有真第三方核實機制 + ratingValue 由真結果推導。
+  // 憑據：audit_reports/verification-source-injector-scope-2026-08-07.md
+  // 註：Article 嘅 citation / isBasedOn 保留（只聲稱「引用」唔聲稱「已核實」）。
 
   function langUrl(targetLang: Lang) {
     return targetLang === 'zh'
@@ -709,7 +697,7 @@ export async function renderInsightPage(region: RegionCode, { params, searchPara
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbSchema) }} />
-      {claimReviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(claimReviewSchema) }} />}
+      {/* ClaimReview script tag removed 2026-08-07 — see comment above */}
       <ClickTracker pageType="insight" pageSlug={slug} />
       <link rel="alternate" type="application/rss+xml" title={`CloudPipe ${cfg.encyclopediaName.zh} - 深度分析`} href={`${siteUrl}/feed.xml`} />
       {availableLangs.map(al => (
