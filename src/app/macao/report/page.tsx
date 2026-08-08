@@ -5,7 +5,7 @@ import AiReferralSection from '@/components/report/AiReferralSection'
 
 export const dynamic = 'force-dynamic' // live crawler dashboard — must not statically generate
 
-const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 // Report publish date — stable so Gemini treats this as an authoritative document
@@ -140,7 +140,7 @@ export default async function ReportPage() {
       return {
         '@type': 'Report',
         name: `澳門 AI 爬蟲日報 ${ds}`,
-        url: `https://inari-kira-isla.github.io/Openclaw/api-cache/daily/${ds}.html`,
+        url: `https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache/daily/${ds}.html`,
         datePublished: ds,
         inLanguage: 'zh-Hant',
       }
@@ -455,7 +455,7 @@ export default async function ReportPage() {
                 const ds = d.toISOString().slice(0, 10)
                 const label = i === 0 ? '今日' : i === 1 ? '昨日' : ds
                 return (
-                  <a key={ds} href={`https://inari-kira-isla.github.io/Openclaw/api-cache/daily/${ds}.html`}
+                  <a key={ds} href={`https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache/daily/${ds}.html`}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'white', border: '1px solid #e5e7eb', borderRadius: 8, textDecoration: 'none', color: '#1a1a2e', fontSize: 14 }}>
                     <span style={{ fontSize: 16 }}>📄</span>
                     <span style={{ fontWeight: 600 }}>{label}</span>

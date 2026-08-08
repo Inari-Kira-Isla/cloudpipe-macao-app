@@ -10,7 +10,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 
 // ── Helpers (mirrors precompute Python logic) ──────────────────────────────
 

@@ -202,7 +202,7 @@ const computeRoutingBaseline = unstable_cache(
   { revalidate: 600, tags: ['routing-baseline'] }
 )
 
-const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 
 export async function GET() {
   // Primary: precomputed GitHub Pages cache (zero Supabase)

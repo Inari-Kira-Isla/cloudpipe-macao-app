@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase'
 export const revalidate = 120
 export const maxDuration = 30
 
-const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 
 const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },

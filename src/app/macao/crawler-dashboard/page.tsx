@@ -102,7 +102,7 @@ const ROUTING_API = '/api/v1/routing-baseline'
 // GitHub Pages static cache (precomputed locally by crawler_stats_precompute.py every 30 min).
 // Reading these directly = CDN-served, sub-second, zero Vercel cold-start. The /api/v1/crawler-stats
 // route returns these exact files as-is (view=summary|spider-web), so the shapes are identical.
-const CACHE_BASE = 'https://inari-kira-isla.github.io/Openclaw/api-cache'
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 const CACHE_HEALTH_URL = `${CACHE_BASE}/crawler-cache-health.json`
 
 const SITE_META: Record<string, { label: string; icon: string; group: 'encyclopedia' | 'brand' | 'platform' | 'demo' }> = {
