@@ -10,9 +10,11 @@ const AGENT = 'demo'
 
 function isAuthorized(req: NextRequest): boolean {
   const referer = req.headers.get('referer') || ''
+  const host = req.headers.get('host') || ''
   const token = req.nextUrl.searchParams.get('token') ?? req.headers.get('x-api-key') ?? ''
   const expected = process.env.CRAWLER_STATS_TOKEN
   return referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipemo.com') ||
+    host.includes('cloudpipemo.com') || host.includes('cloudpipe-macao-app') || host.includes('localhost') ||
     (!!expected && token === expected)
 }
 

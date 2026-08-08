@@ -87,9 +87,11 @@ function summarizeDaily(cached: DailyCache, days: number) {
 
 export async function GET(request: NextRequest) {
   const referer = request.headers.get('referer') || ''
+  const host = request.headers.get('host') || ''
   const token = request.nextUrl.searchParams.get('token')
   const expectedToken = process.env.CRAWLER_STATS_TOKEN
   const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing.vercel.app') || referer.includes('cloudpipemo.com')
+    || host.includes('cloudpipemo.com') || host.includes('cloudpipe-macao-app') || host.includes('localhost')
   const isAuthorized = isInternal || (expectedToken && token === expectedToken)
 
   if (!isAuthorized) {

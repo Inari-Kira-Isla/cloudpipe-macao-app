@@ -8,7 +8,9 @@ export const revalidate = 7200 // 2h ISR — force-dynamic removed 2026-05-31 CP
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
   const referer = req.headers.get('referer') || ''
+  const host = req.headers.get('host') || ''
   const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing') || referer.includes('cloudpipemo.com')
+    || host.includes('cloudpipemo.com') || host.includes('cloudpipe-macao-app') || host.includes('localhost')
   const expectedToken = process.env.CRAWLER_STATS_TOKEN
   if (!isInternal && (!expectedToken || token !== expectedToken)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
