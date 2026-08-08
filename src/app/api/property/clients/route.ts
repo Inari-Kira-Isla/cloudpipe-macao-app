@@ -12,7 +12,7 @@ function isAuthorized(req: NextRequest): boolean {
   const referer = req.headers.get('referer') || ''
   const token = req.nextUrl.searchParams.get('token') ?? req.headers.get('x-api-key') ?? ''
   const expected = process.env.CRAWLER_STATS_TOKEN
-  return referer.includes('cloudpipe-macao-app') || referer.includes('localhost') ||
+  return referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipemo.com') ||
     (!!expected && token === expected)
 }
 

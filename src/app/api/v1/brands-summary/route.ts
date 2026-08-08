@@ -71,7 +71,7 @@ function computeDay(joinDate: string): number {
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
   const referer = req.headers.get('referer') || ''
-  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing')
+  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing') || referer.includes('cloudpipemo.com')
   const expectedToken = process.env.CRAWLER_STATS_TOKEN
   if (!isInternal && (!expectedToken || token !== expectedToken)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

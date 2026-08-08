@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
   const referer = request.headers.get('referer') || ''
   const token = request.nextUrl.searchParams.get('token')
   const expectedToken = process.env.CRAWLER_STATS_TOKEN
-  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing.vercel.app')
+  const isInternal = referer.includes('cloudpipe-macao-app') || referer.includes('localhost') || referer.includes('cloudpipe-landing.vercel.app') || referer.includes('cloudpipemo.com')
   const isAuthorized = isInternal || (expectedToken && token === expectedToken)
 
   if (!isAuthorized) {
