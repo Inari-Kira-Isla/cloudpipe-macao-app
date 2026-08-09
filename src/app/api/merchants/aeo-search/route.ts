@@ -7,10 +7,33 @@
 import { createServiceClient } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
+// NOTE (2026-08-09): deliberately NO `export const revalidate` here.
+// CLAUDE.md §3「force-dynamic + revalidate 不得共存」— force-dynamic 覆蓋
+// revalidate，兩者同時存在等同每次重渲，2026-05 已因此造成 Vercel CPU 過載。
+// 而且 ?q= 係自由文字搜尋，cache key 無上限，用 ISR (`revalidate`) 會為每條
+// 唯一 query string 寫一個 ISR cache entry → 磁碟/cache 無限膨脹。
+// 正解：保留 force-dynamic（避免 build 時 SSG 預渲染），改用**明確 CDN
+// Cache-Control header** 做快取 —— CDN 只係按 URL 存，cache key 爆炸只會令
+// hit rate 低，唔會爆存儲；而重複被打嘅熱門 query（AI 爬蟲/前端 ranking widget
+// 反覆打同一批 category）就真係命中 edge cache，唔會再打 N+1。
 export const dynamic = 'force-dynamic'
 export const maxDuration = 20
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
+
+// ranking 模式：?category= 詞彙有限（INDUSTRY_SCHEMA 映射 + 有限行業名），
+// 重複率高、每次 miss 要打最多 60×2 = 120 條 query，值得長 TTL。
+// 對齊同 repo 其他 AEO endpoint（aeo-detail / knowledge/index / aeo/entities = 3600）。
+const CACHE_RANKING = 'public, s-maxage=3600, stale-while-revalidate=7200'
+// search 模式：?q= 自由文字，cache key 長尾；短 TTL 只為食「同一 query 短時間
+// 被連打」呢種情況，唔會令商戶資料長時間過期。
+const CACHE_SEARCH = 'public, s-maxage=300, stale-while-revalidate=600'
+// 空 query：固定 empty payload，可以放心較長。
+const CACHE_EMPTY = 'public, s-maxage=1800'
+
+function headersWith(cacheControl: string) {
+  return { ...CORS, 'Cache-Control': cacheControl }
+}
 
 /** 行業關鍵字 → schema_type 映射（優先 schema_type，比 category name 更可靠） */
 const INDUSTRY_SCHEMA: Record<string, string[]> = {
@@ -120,7 +143,9 @@ export async function GET(req: Request) {
   const mode = searchParams.get('mode') ?? 'search'
   const isRanking = mode === 'ranking' || !!category
 
-  if (!q && !category) return NextResponse.json({ results: [], mode: 'search' }, { headers: CORS })
+  if (!q && !category) {
+    return NextResponse.json({ results: [], mode: 'search' }, { headers: headersWith(CACHE_EMPTY) })
+  }
 
   const db = createServiceClient()
   const base = db
@@ -152,7 +177,15 @@ export async function GET(req: Request) {
 
   const { data: merchants, error } = await query
   if (error || !merchants?.length) {
-    return NextResponse.json({ results: [], mode: isRanking ? 'ranking' : 'search', category }, { headers: CORS })
+    // 唔可以快取一個 DB error —— 否則一次 transient 失敗會被 CDN 釘住一個鐘。
+    // 只有「真係搵唔到」嘅空結果先照正常 TTL 快取。
+    const cache = error
+      ? 'no-store'
+      : isRanking ? CACHE_RANKING : CACHE_SEARCH
+    return NextResponse.json(
+      { results: [], mode: isRanking ? 'ranking' : 'search', category },
+      { headers: headersWith(cache) }
+    )
   }
 
   const results = await computeResults(db, merchants as Record<string, unknown>[])
@@ -164,8 +197,8 @@ export async function GET(req: Request) {
       mode: 'ranking',
       category,
       poolSize: merchants.length,
-    }, { headers: CORS })
+    }, { headers: headersWith(CACHE_RANKING) })
   }
 
-  return NextResponse.json({ results, mode: 'search' }, { headers: CORS })
+  return NextResponse.json({ results, mode: 'search' }, { headers: headersWith(CACHE_SEARCH) })
 }
