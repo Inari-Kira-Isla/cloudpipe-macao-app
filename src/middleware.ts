@@ -85,6 +85,20 @@ function hasHeadlessSignal(ua: string, headers: Headers): boolean {
   return false
 }
 
+// --- 自我探測排除（2026-08-09）------------------------------------------------
+// crawler_integrity_gate.py 嘅 cache 探針用假爬蟲 UA 打生產站，middleware 之前
+// 照單全收當真 Googlebot 記落 crawler_visits。實測污染：2026-08-01→08-08 每日
+// 37-49 條假 Googlebot（ua_raw 完全等於 'Mozilla/5.0 (compatible; Googlebot/2.1)'），
+// 而 08-04 全日真 Googlebot 只得 104 條 —— 即係 ~42% 係我哋自己打出嚟。
+// 呢啲行直接餵返去 check_owner_drop() / google_recovery_report()，等同用自己
+// 嘅探針去證明自己個爬取量健康。探測量一擴大就會直接主導個指標。
+//
+// 治法：探針喺 UA 尾帶一個明確自我標記 token，middleware 見到就完全唔記錄。
+// 已知取捨：呢個 token 係可以偽造嘅 —— 有心人設呢個 UA 就可以喺我哋嘅爬蟲
+// 統計入面隱形。影響面只限「唔被統計」（唔繞任何 auth / rate limit / 內容
+// 存取控制），而換返嚟嘅係量度指標唔被自己污染，判斷係值得。
+const SELF_PROBE_UA = /CloudPipeCacheProbe/i
+
 function detectBot(ua: string, headers: Headers): { name: string; owner: string } | null {
   for (const [pattern, name, owner] of BOT_NAME_MAP) {
     if (pattern.test(ua)) return { name, owner }
@@ -153,6 +167,20 @@ function getOrCreateSessionId(request: NextRequest, response: NextResponse): str
     path: '/',
   })
   return newSid
+}
+
+// --- 耗時量度 ---------------------------------------------------------------
+// Edge runtime 有 performance.now()（單調時鐘，唔受系統時間跳動影響），但唔想
+// 靠假設，攞唔到就退返 Date.now()。兩者都係毫秒單位，做差值一樣用得。
+function nowMs(): number {
+  try {
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+      return performance.now()
+    }
+  } catch {
+    /* fall through */
+  }
+  return Date.now()
 }
 
 // 隱私保護：SHA-256(salt + ip) 截 16 字元；不可逆推；非 raw IP 儲存
@@ -470,7 +498,29 @@ async function writeToInariBuffer(bufferPayload: {
   }
 }
 
-async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string, ipRaw?: string | null) {
+/**
+ * trackVisit
+ *
+ * `middlewareMs` — ⚠ 老實講清楚呢個數字係咩，因為好易被當成 TTFB 用：
+ *   量到嘅係 **middleware 自己嗰一段**：由 middleware() 入口，到 bot 判定完
+ *   派發呢個 tracking call 嗰一刻。呢段入面最重之嘅係
+ *   `supabaseAuthClient.auth.getUser()` 嗰個真網絡 round-trip。
+ *
+ *   佢**唔係**端到端 TTFB。middleware 行完之後仲有：route handler 執行、
+ *   ISR / edge cache 查詢、RSC render、response 串流、網絡傳輸 —— 全部唔喺
+ *   呢個數字入面。Next.js middleware 喺 response 產生**之前**行完就 return，
+ *   架構上冇任何途徑喺 middleware 入面等到 first byte 出街先計時，所以喺呢一
+ *   層量真 TTFB 係做唔到嘅，唔係「未做」。
+ *
+ *   即係話 response_time_ms 喺 scope='middleware' 之下應該當 **server TTFB 嘅
+ *   下限**嚟解讀：呢個數大 = 一定慢；呢個數細 ≠ 用戶/爬蟲收得快。
+ *
+ *   要真 TTFB 有兩條路（兩條都唔喺呢次改動範圍）：
+ *     a) 由外部探針量（crawler_integrity_gate.py 已經係咁做，量緊真端到端）；
+ *     b) middleware 出 `Server-Timing` header + Vercel log drain 回填，
+ *        寫入時用新 scope 值（例如 'ttfb'），唔好覆蓋 'middleware' 語義。
+ */
+async function trackVisit(path: string, bot: { name: string; owner: string }, ua: string, supabaseUrl: string, supabaseKey: string, referer?: string, ipRaw?: string | null, middlewareMs?: number | null) {
   const today = new Date().toISOString().slice(0, 10)
   const sessionId = `mw-${bot.name}-${today}`
   const { industry: fallbackIndustry, category } = getIndustryCategory(path)
@@ -499,21 +549,41 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
       referer: referer ? referer.slice(0, 500) : null,
       ip_hash,
       ts: new Date().toISOString(),
+      // 2026-08-09 新增儀錶。量唔到就 NULL，唔填假值。
+      response_time_ms: typeof middlewareMs === 'number' && Number.isFinite(middlewareMs)
+        ? Math.max(0, Math.round(middlewareMs))
+        : null,
+      response_time_scope: typeof middlewareMs === 'number' && Number.isFinite(middlewareMs)
+        ? 'middleware'
+        : null,
     }
+    const postRow = async (body: Record<string, unknown>) => fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(5000), // 5s hard timeout — prevent edge isolate hang
+    })
     let mainOk = false
     try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/crawler_visits`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify(row),
-        signal: AbortSignal.timeout(5000), // 5s hard timeout — prevent edge isolate hang
-      })
+      const res = await postRow(row)
       mainOk = res.ok
+      // Deploy-ordering 安全網：如果 20260809000000 條 migration 未 apply 到
+      // production，PostgREST 會對未知欄位回 400 / PGRST204，令**成張表**嘅
+      // 寫入全數失敗 —— 加一個儀錶反而整死咗爬蟲追蹤 SSOT，係最差結果。
+      // 撞 400 就即刻退返做原本嘅 row（去走兩條新欄位）重試一次。
+      // 正確次序仍然係「先 apply migration 再 deploy」，呢度只係唔想次序搞錯
+      // 就靜默斷線。
+      if (!mainOk && res.status === 400) {
+        const { response_time_ms: _ms, response_time_scope: _scope, ...legacyRow } = row
+        void _ms; void _scope
+        const retry = await postRow(legacyRow)
+        mainOk = retry.ok
+      }
     } catch {
       /* main DB unreachable */
     }
@@ -533,8 +603,14 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
 }
 
 export async function middleware(request: NextRequest) {
+  // ⚠ 呢個 t0 必須係 middleware 入口第一句 —— 之後任何一句都會令量到嘅
+  // 「middleware 分段耗時」少計。留意佢仍然只係 server TTFB 嘅下限，
+  // 詳見 trackVisit() 上面嘅註解。
+  const mwStart = nowMs()
   const ua = request.headers.get('user-agent') || ''
   const path = request.nextUrl.pathname
+  // 自家 cache 探針：唔記錄爬蟲訪問，亦唔記錄做真人訪客（見 SELF_PROBE_UA）
+  const isSelfProbe = SELF_PROBE_UA.test(ua)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -603,10 +679,11 @@ export async function middleware(request: NextRequest) {
   // 唔存 raw IP — 只 hash 後寫入 crawler_visits.ip_hash 供 bot IP abuse detection
   const ipRaw = extractClientIp(request)
 
-  const bot = detectBot(ua, request.headers)
+  const bot = isSelfProbe ? null : detectBot(ua, request.headers)
   if (bot && supabaseUrl && supabaseKey && !SKIP_BOT_TRACK_PATHS.test(path)) {
-    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer, ipRaw)
-  } else if (!bot && supabaseUrl && supabaseKey) {
+    // middleware 分段耗時：喺呢一刻先計，令 auth.getUser() round-trip 計入去。
+    trackVisit(path, bot, ua, supabaseUrl, supabaseKey, referer, ipRaw, nowMs() - mwStart)
+  } else if (!bot && !isSelfProbe && supabaseUrl && supabaseKey) {
     // 真人訪客：取/建 cp_sid cookie（30d）— 用於 attribution funnel cross-event join
     const sessionId = getOrCreateSessionId(request, supabaseResponse)
 
