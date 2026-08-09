@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase'
+import { cache } from 'react'
+import { supabase, createServiceClient } from '@/lib/supabase'
 import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Merchant, MerchantContent, MerchantFAQ, Category } from '@/lib/types'
@@ -107,7 +108,13 @@ async function getCuratedFaqs(merchantId: string, lang: 'zh' | 'en', limit: numb
   return curated
 }
 
-async function getMerchant(slug: string, industrySlug: string) {
+// 2026-08-09 PERF: React cache() 包裝 — generateMetadata() 同 MerchantPage() 喺同一個
+// render pass 都會 call getMerchant(slug, industrySlug)，冇 cache() 會令同一 request
+// 打 16 條 Supabase 查詢（8 × 2）而唔係 8 條。cache() 令同一 render pass 內相同參數
+// 只執行一次，跨 request 唔互相污染（同 macao/insights/[slug] 嘅 getInsight 一致）。
+// ⚠️ 兩個 call site（generateMetadata / MerchantPage）必須都用呢個 cached 版本，
+// 漏咗其中一個去繞返底層 query 就等於冇 dedupe。
+const getMerchant = cache(async (slug: string, industrySlug: string) => {
   // Block non-macao merchants from appearing under /macao/ paths
   if (NON_MACAO_PREFIXES.some(p => slug.startsWith(p))) return null
 
@@ -172,10 +179,158 @@ async function getMerchant(slug: string, industrySlug: string) {
       category: Array.isArray(b.category) ? b.category[0] : b.category,
     })) as { slug: string; name_zh: string; name_en?: string; district?: string; tier?: string; is_owned?: boolean; category: { slug: string; name_zh: string; icon?: string } | null }[],
   }
-}
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2026-08-09 PERF: 商戶詳情頁目標式預生成
+//
+// 背景：商戶頁係全站 AI 爬蟲最高優先目標（Perplexity 86.5% 只睇商戶頁）。原本
+// `generateStaticParams()` 一律 return []，即每一頁第一次被爬蟲擊中都要行冷 SSR
+// （8 條 Supabase 查詢），TTFB 高 + 每次 24h revalidate 窗口過期都重複一次。
+//
+// 做法同 macao/insights/[slug] 已驗證嘅 pattern 一致：用 crawler_visits（真實 AI/bot
+// 對呢個 route 嘅請求 log）揀出最近 14 日高頻嘅商戶 slug，build time 預生成佢哋。
+// merchants 表 23,889 行，全量預生成會拖死 build，所以只取 top-N。
+//
+// 商戶頁同 insight 頁唔同嘅兩點：
+// 1. route 有三個 param（industry/category/slug）。crawler_visits 記錄嘅 industry/
+//    category 可以係錯分類路徑（MerchantPage 會 308 permanentRedirect 去正牌路徑），
+//    預生成錯路徑等於白做。所以呢度只由 log 攞 slug，再查 DB 用商戶真分類
+//    （categories join，同 page component 一樣以 DB 為 SSOT）砌返 canonical 三元組。
+// 2. `/macao/[industry]/[category]/faqs` 係獨立 static route，佢嘅 log 會匹配同一個
+//    3-segment pattern，必須剔走（同 insights 剔 topic/district 一樣）。
+//
+// 防禦（照抄 insights 三項）：
+// 1. 只喺 VERCEL_ENV==='production' 先真正查 Supabase；preview/dev 即刻 return []。
+// 2. 任何 query 失敗/逾時一律降級（該批跳過或返空陣列），絕不可以令 build 失敗；
+//    未入選嘅 slug 仍然行返 on-demand SSG（dynamicParams=true 不變）。
+// 3. slug 白名單 /^[a-z0-9-]+$/ — crawler_visits.path 係未驗證 bot log，含非 ASCII
+//    slug 會令 Next 靜態生成拋 `Cannot convert argument to a ByteString` 直接炸 build
+//    （2026-07-25 喺 insights route 實測過，try/catch 接唔住）。
+//
+// N 值：300。用真實爬蟲熱度排序，top-300 已覆蓋壓倒性多數 bot 請求；每頁預生成
+// 成本係 8 條查詢（已被上面 cache() 去重），300 頁 ≈ 2,400 條，build time 可接受。
+// 想加大覆蓋直接調 MERCHANT_STATIC_PARAMS_LIMIT（同時留意 build 時間）。
+const MERCHANT_STATIC_PARAMS_LIMIT = 300
+const MERCHANT_STATIC_PARAMS_CANDIDATES = 900 // 先攞多啲候選，因為部分 slug 已下架/非 live
+const MERCHANT_STATIC_PARAMS_TIMEOUT_MS = 8000
+const MERCHANT_STATIC_PARAMS_LOOKBACK_DAYS = 14
+const MERCHANT_STATIC_PARAMS_SAMPLE_ROWS = 10000
+const MERCHANT_STATIC_PARAMS_SLUG_BATCH = 100 // 每批 .in() 唔好太大，避免 PostgREST URL 過長
+const MERCHANT_SAFE_SLUG_RE = /^[a-z0-9-]+$/
+// [category] 層下面嘅 static segment route，唔係商戶 slug
+const MERCHANT_RESERVED_SLUGS = new Set(['faqs'])
+
+const staticParamsTimeout = <T,>(p: PromiseLike<T>, ms: number): Promise<T | { data: null }> =>
+  Promise.race([
+    Promise.resolve(p),
+    new Promise<{ data: null }>(resolve => setTimeout(() => resolve({ data: null }), ms)),
+  ])
 
 export async function generateStaticParams() {
-  return [] // ISR on-demand only
+  if (process.env.VERCEL_ENV !== 'production') {
+    return [] // preview/dev：一律 on-demand，唔打 Supabase
+  }
+
+  try {
+    // createServiceClient()：CLAUDE.md 規定 public-facing 讀取一律 service client
+    // （anon 會被 RLS 擋 → 0 行 → 靜默零預生成），佢本身帶 8s AbortSignal。
+    const sb = createServiceClient()
+    const since = new Date(Date.now() - MERCHANT_STATIC_PARAMS_LOOKBACK_DAYS * 86400000).toISOString()
+
+    const visits = await staticParamsTimeout(
+      sb
+        .from('crawler_visits')
+        .select('path')
+        .eq('site', 'cloudpipe-macao-app')
+        .like('path', '/macao/%')
+        .not('path', 'like', '/macao/insights/%')
+        .gte('ts', since)
+        // order by ts desc = 明確攞「最近 N 次爬蟲請求」而唔係 heap 物理順序嘅任意樣本
+        // （crawler_visits 有 90 日 retention + DELETE 空間重用，唔排序個樣本會偏向舊流量）。
+        // 依賴 idx_crawler_visits_site_ts (site, ts DESC)；索引未 apply 就會慢 → 8s timeout
+        // → 下面 fallback []（退返今日行為）+ console.warn 留低可見信號，唔會靜默無聲。
+        .order('ts', { ascending: false })
+        .limit(MERCHANT_STATIC_PARAMS_SAMPLE_ROWS),
+      MERCHANT_STATIC_PARAMS_TIMEOUT_MS
+    )
+
+    const rows = (visits as { data: Array<{ path: string }> | null }).data
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      // 查唔到數據（逾時/冇 row）→ fallback on-demand。留低 build log 信號：
+      // 「預生成靜默變返零」係呢個優化最容易無聲失效嘅方式，必須睇得到。
+      console.warn('[merchant generateStaticParams] crawler_visits sample empty or timed out — falling back to 0 prerendered merchant pages')
+      return []
+    }
+
+    // PostgREST 冇原生 GROUP BY —— 樣本喺呢度做 in-memory 聚合。
+    const counts = new Map<string, number>()
+    for (const row of rows) {
+      const m = row.path?.match(/^\/macao\/[^/?#]+\/[^/?#]+\/([^/?#]+)\/?$/)
+      if (!m) continue
+      let slug: string
+      try {
+        slug = decodeURIComponent(m[1])
+      } catch {
+        continue // malformed %-encoding（bot 亂試）→ 跳過，唔可以拖冧成個 list
+      }
+      if (MERCHANT_RESERVED_SLUGS.has(slug)) continue
+      if (!MERCHANT_SAFE_SLUG_RE.test(slug)) continue
+      if (NON_MACAO_PREFIXES.some(p => slug.startsWith(p))) continue
+      counts.set(slug, (counts.get(slug) || 0) + 1)
+    }
+    if (counts.size === 0) {
+      console.warn(`[merchant generateStaticParams] no merchant-shaped path in ${rows.length} sampled visits — 0 prerendered`)
+      return []
+    }
+
+    const candidates = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MERCHANT_STATIC_PARAMS_CANDIDATES)
+      .map(([slug]) => slug)
+
+    // 用商戶真分類砌 canonical 路徑（同 MerchantPage 嘅 308 守衛同一個 SSOT），
+    // 確保預生成嘅係真正會被 serve 嗰條 URL，唔係一條即刻 redirect 走嘅路徑。
+    const resolved = new Map<string, { industry: string; category: string; slug: string }>()
+    for (let i = 0; i < candidates.length; i += MERCHANT_STATIC_PARAMS_SLUG_BATCH) {
+      const batch = candidates.slice(i, i + MERCHANT_STATIC_PARAMS_SLUG_BATCH)
+      const res = await staticParamsTimeout(
+        sb
+          .from('merchants')
+          .select('slug, category:categories(slug)')
+          .eq('status', 'live')
+          .in('slug', batch),
+        MERCHANT_STATIC_PARAMS_TIMEOUT_MS
+      )
+      const merchants = (res as { data: Array<{ slug: string; category: unknown }> | null }).data
+      if (!merchants || !Array.isArray(merchants)) continue // 呢批逾時/失敗 → 跳過，其餘照做
+
+      for (const m of merchants) {
+        const catObj = Array.isArray(m.category) ? m.category[0] : m.category
+        const catSlug = (catObj as { slug?: string } | null)?.slug
+        if (!catSlug || !MERCHANT_SAFE_SLUG_RE.test(catSlug)) continue
+        resolved.set(m.slug, {
+          industry: getIndustryForCategory(catSlug),
+          category: catSlug,
+          slug: m.slug,
+        })
+      }
+    }
+
+    // 保持爬蟲熱度排序，再截 top-N
+    const params = candidates
+      .map(slug => resolved.get(slug))
+      .filter((p): p is { industry: string; category: string; slug: string } => Boolean(p))
+      .slice(0, MERCHANT_STATIC_PARAMS_LIMIT)
+
+    console.log(`[merchant generateStaticParams] prerendering ${params.length} merchant pages (from ${counts.size} distinct slugs in ${rows.length} sampled visits, ${candidates.length} candidates resolved to ${resolved.size} live merchants)`)
+    return params
+  } catch {
+    // 逾時/查詢拋 exception 一律 fallback 去空陣列，絕不可以令 build 失敗。
+    // 刻意唔 log error 物件，避免意外印出帶 credential 嘅內容。
+    console.warn('[merchant generateStaticParams] threw — falling back to 0 prerendered merchant pages')
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -19,7 +20,9 @@ interface InsightSummary {
   slug: string; title: string; subtitle?: string; read_time_minutes: number; tags: string[]
 }
 
-async function getData(industrySlug: string) {
+// 2026-08-09 PERF: React cache() 包裝 — 保證同一 render pass 內（page component，
+// 將來若 generateMetadata 都要 DB 數據時亦然）相同參數只查一次 Supabase。
+const getData = cache(async (industrySlug: string) => {
   // Reserved paths that shouldn't be treated as industry slugs
   const reserved = ['faqs', 'search', 'brand', 'crawler-dashboard', 'citation-stats', 'report']
   if (reserved.includes(industrySlug)) return null
@@ -50,10 +53,17 @@ async function getData(industrySlug: string) {
     merchants: (merchants || []) as (Merchant & { category: Pick<Category, 'slug' | 'name_zh' | 'icon'> })[],
     insights: (insights || []) as InsightSummary[],
   }
-}
+})
 
+// 2026-08-09 PERF: 行業頁全量預生成（20 條）。
+// 有效 industry slug 完全由 src/lib/industries.ts 嘅 INDUSTRIES 靜態 config 決定
+// （getData 用 getIndustry() 做守衛，唔喺 config 就 notFound），所以 build time
+// 零 Supabase 依賴：唔會逾時、唔會靜默零預生成、唔會炸 build。
+// reserved 清單（faqs/search/brand/...）本身唔係 INDUSTRIES slug，冇衝突；
+// 佢哋亦各自有 static route，static segment 永遠優先於呢個 dynamic route。
+// dynamicParams=true 保持不變。
 export async function generateStaticParams() {
-  return [] // ISR on-demand only
+  return INDUSTRIES.map(ind => ({ industry: ind.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

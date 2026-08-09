@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import { cache } from 'react'
+import { supabase, createServiceClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { Category, Merchant } from '@/lib/types'
 import { safeJsonLd } from '@/lib/types'
-import { getIndustry, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
+import { getIndustry, INDUSTRIES, CATEGORY_TO_INDUSTRY } from '@/lib/industries'
 import { INDUSTRY_CONTENT } from '@/lib/industry-content'
 
 // ✅ ISR: 按需生成，緩存 30 分鐘
@@ -14,7 +15,9 @@ interface PageProps {
   params: Promise<{ industry: string; category: string }>
 }
 
-async function getData(industrySlug: string, categorySlug: string) {
+// 2026-08-09 PERF: React cache() 包裝 — generateMetadata() 同 CategoryPage() 喺同一個
+// render pass 都會 call getData(industry, category)，冇 cache() 就打兩次 DB。
+const getData = cache(async (industrySlug: string, categorySlug: string) => {
   const industry = getIndustry(industrySlug)
   if (!industry || !industry.categories.includes(categorySlug)) return null
 
@@ -53,10 +56,64 @@ async function getData(industrySlug: string, categorySlug: string) {
     insights: insights || [],
     siblingCategories: (siblingCategories || []) as { slug: string; name_zh: string; icon?: string }[],
   }
-}
+})
+
+// 2026-08-09 PERF: 分類頁預生成（全量，但**只限 DB 真係有 row 嗰啲**）。
+//
+// 有效嘅 (industry, category) 組合完全由 src/lib/industries.ts 嘅 INDUSTRIES 靜態
+// config 決定（getData 本身用 `industry.categories.includes(categorySlug)` 做守衛），
+// 20 個行業合共 133 對——數量細到可以全做，唔使似商戶頁（23,889 行）咁靠 crawler_visits
+// 揀 top-N。
+//
+// ⚠️ 點解仲要查一次 DB 而唔係直接由 config 砌 133 對：getData 喺 `categories` 表搵唔到
+// 對應 row 時會 return null → CategoryPage 行 notFound()。喺 **build time** 行 notFound()
+// 嘅預生成路徑，Next.js 會將 404 status 燒死喺 output，即使之後 revalidate 重生內容，
+// HTTP status 仍然維持 404 直到下次 redeploy（vercel/next.js#25470、#21453 同類行為）。
+// 即係話「config 有但 DB 未有」嘅 category（wave 3/4 好多都係），一旦之後補返 DB row
+// 都會繼續 404 —— 呢個係比而家 on-demand（每 30 分鐘自己 heal）差嘅回歸。
+// 所以呢度先查實 categories 表，只預生成查得到 row 嗰啲；查唔到嘅維持 on-demand 行為。
+//
+// 防禦（同 macao/insights/[slug] 一致）：
+// 1. 只喺 VERCEL_ENV==='production' 先查 Supabase；preview/dev 即刻 return []。
+// 2. query 失敗/逾時一律 return [] 退返今日嘅 on-demand 行為，絕不可以炸 build。
+// 3. createServiceClient()（CLAUDE.md：public-facing 讀取一律 service client，
+//    anon 會被 RLS 擋 → 0 行 → 靜默零預生成）。
+// dynamicParams=true 保持不變。
+const CATEGORY_STATIC_PARAMS_TIMEOUT_MS = 8000
 
 export async function generateStaticParams() {
-  return [] // ISR on-demand only
+  if (process.env.VERCEL_ENV !== 'production') {
+    return [] // preview/dev：一律 on-demand，唔打 Supabase
+  }
+
+  try {
+    const pairs = INDUSTRIES.flatMap(ind =>
+      ind.categories.map(category => ({ industry: ind.slug, category }))
+    )
+    const configSlugs = Array.from(new Set(pairs.map(p => p.category)))
+
+    const res = await Promise.race([
+      createServiceClient().from('categories').select('slug').in('slug', configSlugs),
+      new Promise<{ data: null }>(resolve =>
+        setTimeout(() => resolve({ data: null }), CATEGORY_STATIC_PARAMS_TIMEOUT_MS)
+      ),
+    ])
+
+    const rows = (res as { data: Array<{ slug: string }> | null }).data
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      console.warn('[category generateStaticParams] categories lookup empty or timed out — falling back to 0 prerendered category pages')
+      return []
+    }
+
+    const live = new Set(rows.map(r => r.slug))
+    const params = pairs.filter(p => live.has(p.category))
+    console.log(`[category generateStaticParams] prerendering ${params.length}/${pairs.length} category pages (${live.size}/${configSlugs.length} config categories exist in DB)`)
+    return params
+  } catch {
+    // 逾時/exception 一律 fallback，唔 log error 物件（避免印出帶 credential 內容）。
+    console.warn('[category generateStaticParams] threw — falling back to 0 prerendered category pages')
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
