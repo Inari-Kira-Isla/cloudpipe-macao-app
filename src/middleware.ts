@@ -546,40 +546,55 @@ export async function middleware(request: NextRequest) {
   // --- Supabase session refresh (required for @supabase/ssr) ---
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabaseAuthClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  // PERF (2026-08-09): auth.getUser() is a BLOCKING network round-trip to
+  // Supabase Auth. It used to run on every matched request — i.e. effectively
+  // the whole site (all insight/merchant/category/industry pages, sitemap*.xml,
+  // llms.txt, robots.txt) plus every AI-crawler hit — even though the resulting
+  // `user` is read in exactly one place: the /inari/portal/* guard below.
+  // Cookie session refresh only matters where auth is actually read server-side,
+  // which is likewise only under /inari/portal (portal/dashboard page.tsx calls
+  // supabase.auth.getUser()). /api/* is not matched by this middleware at all
+  // (see config.matcher), so API auth is unaffected.
+  // Prefix chosen as a strict superset of the guarded paths below, and it also
+  // keeps session refresh on the /inari/portal login page itself.
+  const needsAuth = path.startsWith('/inari/portal')
 
-  // Refresh session — must call getUser() to trigger cookie refresh
-  const { data: { user } } = await supabaseAuthClient.auth.getUser()
+  if (needsAuth) {
+    const supabaseAuthClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            )
+            supabaseResponse = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
 
-  // Protect /inari/portal/dashboard and sub-routes
-  if (
-    path.startsWith('/inari/portal/dashboard') ||
-    path.startsWith('/inari/portal/products') ||
-    path.startsWith('/inari/portal/order')
-  ) {
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/inari/portal'
-      return NextResponse.redirect(url)
+    // Refresh session — must call getUser() to trigger cookie refresh
+    const { data: { user } } = await supabaseAuthClient.auth.getUser()
+
+    // Protect /inari/portal/dashboard and sub-routes
+    if (
+      path.startsWith('/inari/portal/dashboard') ||
+      path.startsWith('/inari/portal/products') ||
+      path.startsWith('/inari/portal/order')
+    ) {
+      if (!user) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/inari/portal'
+        return NextResponse.redirect(url)
+      }
     }
   }
   // --- End Supabase session refresh ---
