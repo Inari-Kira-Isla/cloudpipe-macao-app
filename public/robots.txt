@@ -43,6 +43,12 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
+User-agent: PerplexityBot
+Crawl-delay: 10
+Disallow: /api/
+Disallow: /_next/
+Disallow: /*.json$
+
 User-agent: *
 Crawl-delay: 5
 Disallow: /api/
