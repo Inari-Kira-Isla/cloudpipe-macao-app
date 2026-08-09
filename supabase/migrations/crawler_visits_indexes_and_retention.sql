@@ -42,6 +42,14 @@ END;
 $$;
 
 -- 5. Schedule daily cleanup (requires pg_cron extension — enable in Supabase dashboard)
+--    ⚠️ 2026-08-09: this line stayed commented out from 2026-04 to 2026-08, so
+--    cleanup_old_crawler_visits() was defined but NEVER called → crawler_visits
+--    grew to 1.6M+ rows unbounded.
+--    The schedule now lives in its own migration so this file (which contains a
+--    non-transactional VACUUM at step 3) does not have to be re-run to activate it:
+--      supabase/migrations/20260809001100_enable_crawler_visits_retention_cron.sql
+--    Keep this line commented — activating it here as well would double-register
+--    the same job name.
 -- SELECT cron.schedule('cleanup-crawler-visits', '0 3 * * *', 'SELECT cleanup_old_crawler_visits()');
 
 -- 6. Efficient aggregation function for live-summary API
