@@ -235,6 +235,27 @@ const nextConfig: NextConfig = {
       }
     }
 
+    // ── ?lang=ms → /{region}/ms/insights/{slug} (2026-08-09) ──
+    // 為咗令 HK/TW/JP/GLOBAL 4 條 base route 可以移除 vestigial searchParams（讀住佢
+    // 會令 route 永久 dynamic → cache-control:private,no-store），必須先補返 ?lang=ms
+    // 嘅 redirect，否則舊 ?lang=ms URL 會由「顯示馬拉語版」靜默變成「顯示 zh 版」。
+    // DB 實查（2026-08-09，status='published'）：HK=2、JP=5、TW=0、GLOBAL=0。
+    //
+    // ⚠️ 刻意排除 'macao'：macao 有 151 篇 lang='ms' 已發布文章，但**冇** /macao/ms/
+    //    route（src/app/macao/ 只有 en/ja/pt 三個語言目錄）。macao 嘅 base route 亦
+    //    刻意唔讀 searchParams，改用 client component LangAwareContent 做語言切換，
+    //    所以佢唔受呢次改動影響。若將 macao 加入呢個 loop，/macao/insights/:slug?lang=ms
+    //    會被 308 導去一條唔存在嘅 path 而 404 —— 直接打爆 151 篇文章。
+    //    要支援 macao ms 就要先起 src/app/macao/ms/insights/[slug]/page.tsx（另案）。
+    for (const region of ['hongkong', 'taiwan', 'japan', 'global']) {
+      redirects.push({
+        source: `/${region}/insights/:slug`,
+        has: [{ type: 'query' as const, key: 'lang', value: 'ms' }],
+        destination: `/${region}/ms/insights/:slug`,
+        permanent: true,
+      })
+    }
+
     return redirects
   },
   typescript: {

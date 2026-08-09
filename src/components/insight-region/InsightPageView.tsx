@@ -17,9 +17,10 @@
 // merchant/category pages which serve x-vercel-cache HIT). createServiceClient's
 // per-call AbortSignal(8s) fetch is uncacheable → forced dynamic render (2.7-4.2s/req)
 // → dominated GSC 6s avg → Google crawl-budget throttle.
-// Timeout backstop = each consuming route's `export const maxDuration = 30` (macao zh/en/pt/ja +
-// taiwan/hongkong/japan/global). For cached routes it bounds regen; for the searchParams-driven
-// dynamic routes (tw/hk/jp/global) it bounds every request. All 8 consuming routes set it.
+// Timeout backstop = each consuming route's `export const maxDuration = 30` (macao en/pt/ja +
+// taiwan/hongkong/japan/global 嘅 base 同 [lang] route). 2026-08-09 起全部 consuming route
+// 都係 ISR-cached（冇任何一條再讀 searchParams），所以 maxDuration 淨係界定 ISR regen 上限，
+// 唔再係逐請求上限。
 import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
@@ -190,7 +191,11 @@ const getInsight = cache(async (slug: string, lang: Lang, region: RegionCode) =>
   return data as InsightArticle | null
 })
 
-async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang[]> {
+// 2026-08-09 PERF: 同 getInsight 一樣用 React cache() 包裝 —— buildMetadata() 同
+// renderInsightPage() 喺同一個 render 各自 call 一次 getAvailableLangs(slug, region)，
+// 冇 cache() 就等於同一 request 打多一次 DB（egress 根因之一）。兩個 call site 唔使改，
+// cache() 自動去重。
+const getAvailableLangs = cache(async (slug: string, region: RegionCode): Promise<Lang[]> => {
   const db = supabase
   const { data } = await db
     .from('insights')
@@ -200,7 +205,7 @@ async function getAvailableLangs(slug: string, region: RegionCode): Promise<Lang
     .eq('region', region)
   if (!data) return []
   return data.map(d => d.lang as Lang).filter(l => VALID_LANGS.includes(l))
-}
+})
 
 interface RelatedMerchant {
   slug: string
@@ -517,22 +522,25 @@ function normalizeInsight(a: InsightArticle | null): InsightArticle | null {
   return { ...a, faqs, authority_sources: authSources as InsightArticle['authority_sources'] } as InsightArticle
 }
 
+// 2026-08-09: 移除 `searchParams?: Promise<{ lang?: string }>`。所有 caller（macao
+// en/ja/pt + hongkong/taiwan/japan/global 嘅 base 同 [lang] route）而家一律行 langOverride
+// 或者直接用 zh 預設；?lang= 由 next.config.ts 嘅 308 redirect 處理。留住呢個欄位等於
+// 畀第日有人手多再引入 dynamic rendering（讀 searchParams = route 永久 dynamic，
+// cache-control:private,no-store）—— 呢個正正係今次要修嘅 bug。
 export interface InsightPageProps {
   params: Promise<{ slug: string }>
-  searchParams?: Promise<{ lang?: string }>
   /** Pass lang directly when rendering from a /[lang]/insights/[slug] path route. */
   langOverride?: string
 }
 
 export async function buildMetadata(
   region: RegionCode,
-  { params, searchParams, langOverride }: InsightPageProps,
+  { params, langOverride }: InsightPageProps,
 ): Promise<Metadata> {
   const cfg = REGION_CONFIGS[region]
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = searchParams ? await searchParams : {}
-  const lang = parseLang(langOverride ?? langParam)
+  const lang = parseLang(langOverride)
   const lc = LANG_CONFIG[lang]
 
   const article = await getInsight(slug, lang, region)
@@ -570,12 +578,11 @@ export async function buildMetadata(
   }
 }
 
-export async function renderInsightPage(region: RegionCode, { params, searchParams, langOverride }: InsightPageProps) {
+export async function renderInsightPage(region: RegionCode, { params, langOverride }: InsightPageProps) {
   const cfg = REGION_CONFIGS[region]
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const { lang: langParam } = searchParams ? await searchParams : {}
-  const lang = parseLang(langOverride ?? langParam)
+  const lang = parseLang(langOverride)
   const ui = UI_STRINGS[lang]
   const lc = LANG_CONFIG[lang]
 
