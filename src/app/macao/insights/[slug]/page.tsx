@@ -294,7 +294,10 @@ async function getCrossRegionDest(slug: string): Promise<string | null> {
   return prefix ? `/${prefix}/insights/${slug}` : null
 }
 
-async function getAvailableLangs(slug: string): Promise<Lang[]> {
+// 2026-08-09 PERF: 同 getInsight 一樣用 React cache() 包裝 —— generateMetadata() 同 page
+// component 喺同一個 render 各自 call 一次 getAvailableLangs(slug)，冇 cache() 就等於同一
+// request 打多一次 DB。兩個 call site 唔使改，cache() 自動去重。
+const getAvailableLangs = cache(async (slug: string): Promise<Lang[]> => {
   const { data } = await sbTimeout(
     supabase
       .from('insights')
@@ -310,7 +313,7 @@ async function getAvailableLangs(slug: string): Promise<Lang[]> {
     ...getStaticInsightLangs(slug).filter((l): l is Lang => VALID_LANGS.includes(l as Lang)),
   ])
   return Array.from(langs)
-}
+})
 
 interface RelatedMerchant {
   slug: string
