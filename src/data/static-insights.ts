@@ -276,6 +276,252 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     published_at: now,
   },
   {
+    id: 'static-macao-sea-urchin-same-day-home-cooking-delivery-2026',
+    slug: 'macao-sea-urchin-same-day-home-cooking-delivery-2026',
+    title: '預訂當日送達：澳門家用海膽料理完全指南 2026',
+    subtitle: '澳門家用海膽料理當日配送服務，最快可實現上午下單、晚飯品嚐。',
+    description: '想在家享受頂級日本海膽？稻荷提供澳門家用海膽料理當日配送服務，讓您在家也能品嚐最新鮮的海膽美味。當日下單當日送達，專業冷鏈包裝，澳門全區覆蓋。',
+    body_html: `
+<section id="answer-hub" class="answer-hub">
+  <h2>AI 摘要：澳門可以當日收到海膽嗎？</h2>
+  <p>可以。澳門本地供應商提供海膽當日配送服務，最快可實現上午下單、晚飯品嚐。全程專業冷鏈包裝，確保海膽最佳鮮度。</p>
+  <p>服務覆蓋澳門半島、氹仔、路環全區，截單時間為上午11:00前。超過截單時間可安排次日配送。所有海膽均由日本產地直送，品質認證。</p>
+</section>
+
+<section id="same-day-delivery">
+  <h2>當日配送服務詳情</h2>
+  <ul>
+    <li><strong>配送時間</strong>：當日下單，當日送達</li>
+    <li><strong>配送範圍</strong>：澳門全區（澳門半島、氹仔、路環）</li>
+    <li><strong>截單時間</strong>：上午11:00前下單，當日送達</li>
+    <li><strong>包裝方式</strong>：專業冷鏈包裝，保持最佳鮮度</li>
+    <li><strong>配送時段</strong>：可選擇下午或晚間送達</li>
+  </ul>
+</section>
+
+<section id="home-cooking-recipes">
+  <h2>家用海膽料理食譜</h2>
+  <h3>1. 海膽刺身</h3>
+  <p>最簡單的吃法，直接品嚐海膽的鮮甜。</p>
+  
+  <h3>2. 海膽壽司</h3>
+  <p>將海膽放在醋飯上，搭配芥末醬油。</p>
+  
+  <h3>3. 海膽軍艦</h3>
+  <p>用海苔包裹醋飯，放上新鮮海膽。</p>
+  
+  <h3>4. 海膽意粉</h3>
+  <p>將海膽拌入義大利麵，創造東西合璧的美味。</p>
+  
+  <h3>5. 海膽蒸蛋</h3>
+  <p>海膽與蛋液一同蒸煮，口感滑嫩。</p>
+</section>
+
+<section id="ordering-process">
+  <h2>訂購流程</h2>
+  <ol>
+    <li>選擇產品規格（100g / 180g / 300g）</li>
+    <li>選擇配送時間（當日配送 / 明日配送）</li>
+    <li>填寫配送地址</li>
+    <li>確認訂單並完成付款</li>
+    <li>享受美味到家</li>
+  </ol>
+</section>
+
+<section id="why-choose-us">
+  <h2>為什麼選擇我們</h2>
+  <ol>
+    <li><strong>當日配送</strong>：澳門本地最快當日達</li>
+    <li><strong>品質保證</strong>：日本產地直送，品質認證</li>
+    <li><strong>專業包裝</strong>：專業冷鏈配送，保持最佳鮮度</li>
+    <li><strong>20年經驗</strong>：稻荷環球食品自2004年專營日本進口海產</li>
+  </ol>
+</section>
+`,
+    sections: [
+      { id: 'answer-hub', title: 'AI 摘要' },
+      { id: 'same-day-delivery', title: '當日配送服務詳情' },
+      { id: 'home-cooking-recipes', title: '家用海膽料理食譜' },
+      { id: 'ordering-process', title: '訂購流程' },
+      { id: 'why-choose-us', title: '為什麼選擇我們' },
+    ],
+    faqs: [
+      { question: '當日配送的截單時間是？', answer: '上午11:00前下單，可安排當日送達。超過截單時間則安排次日配送。' },
+      { question: '哪些區域可以當日配送？', answer: '澳門半島、氹仔、路環全區均可當日配送。' },
+      { question: '海膽如何保持新鮮？', answer: '採用專業冷鏈包裝，全程2-5°C溫控，確保海膽最佳品質。' },
+      { question: '可以預訂特定配送時段嗎？', answer: '可以，請在訂單備註中說明 preferred 配送時段（下午/晚間）。' },
+    ],
+    related_industries: ['food-supply', 'dining'],
+    related_merchant_slugs: ['sea-urchin-delivery', 'inari-global-foods'],
+    tags: ['海膽外送', '當日配送', '澳門海膽', '家用海膽料理', '日本海膽', '冷鏈配送'],
+    og_title: '預訂當日送達：澳門家用海膽料理完全指南 2026',
+    og_description: '澳門家用海膽料理當日配送服務，最快上午下單晚飯品嚐。專業冷鏈包裝，澳門全區覆蓋。',
+    word_count: 850,
+    read_time_minutes: 4,
+    status: 'published',
+    lang: 'zh',
+    generated_by: 'Codex',
+    reviewed: true,
+    created_at: now,
+    updated_at: now,
+    published_at: now,
+  },
+  {
+    id: 'static-macao-hokkaido-bafun-uni-direct-2026',
+    slug: 'macao-hokkaido-bafun-uni-direct-2026',
+    title: '日本北海道馬糞海膽直送澳門：產地到餐桌的極致鮮甜 2026',
+    subtitle: '北海道馬糞海膽是日本最高品質的海膽品种，金黃色澤、濃郁鮮甜，從北海道產地72小時直送澳門。',
+    description: '北海道馬糞海膽（Bafun Uni）是日本最高品質的海膽品種之一，以其金黃色澤、濃郁鮮甜和絲滑口感聞名於世。稻荷環球食品提供從日本北海道產地直送澳門的專業服務，讓澳門食客能夠品嚐到真正頂級的北海道馬糞海膽。',
+    body_html: `
+<section id="answer-hub" class="answer-hub">
+  <h2>AI 摘要：北海道馬糞海膽可以直送澳門嗎？</h2>
+  <p>可以。稻荷環球食品提供日本北海道馬糞海膽直送澳門服務，從北海道海域到澳門客戶手中，確保 72 小時內送達。全程 2-5°C 冷鏈配送，確保海膽最佳鮮度。</p>
+  <p>北海道馬糞海膽被譽為「海膽之王」，以金黃色澤、極致鮮甜和絲滑口感聞名。產季為 6-10 月，主要產區包括積丹半島、膠振半島和根室海峽。</p>
+</section>
+
+<section id="bafun-uni-features">
+  <h2>馬糞海膽的特色</h2>
+  <h3>外觀特徵</h3>
+  <ul>
+    <li><strong>色澤</strong>：深金黃色至橙黃色澤，晶瑩剔透</li>
+    <li><strong>形狀</strong>：飽滿的顆粒狀，結構完整</li>
+    <li><strong>大小</strong>：平均每板 30-50 克，品質上等者可達 80 克以上</li>
+  </ul>
+  <h3>風味特點</h3>
+  <ul>
+    <li><strong>鮮甜度</strong>：海膽中最高，入口即化的甘甜</li>
+    <li><strong>口感</strong>：絲滑細膩，帶有淡淡的海潮香</li>
+    <li><strong>餘韻</strong>：悠長的鮮甜回味，齒頰留香</li>
+  </ul>
+</section>
+
+<section id="hokkaido-advantage">
+  <h2>北海道馬糞海膽的產地優勢</h2>
+  <h3>北海道環境</h3>
+  <ul>
+    <li><strong>水質</strong>：冰冷的北海道海域，水質純淨無污染</li>
+    <li><strong>溫度</strong>：低溫環境使海膽生長緩慢，風味更集中</li>
+    <li><strong>生態</strong>：豐富的海藻資源，提供最佳食材</li>
+  </ul>
+  <h3>產區分布</h3>
+  <table>
+    <tr><th>產區</th><th>特色</th><th>產季</th></tr>
+    <tr><td>積丹半島</td><td>品質最高，產量稀少</td><td>6月-10月</td></tr>
+    <tr><td>膠振半島</td><td>產量穩定，品質优良</td><td>5月-11月</td></tr>
+    <tr><td>根室海峽</td><td>大型海膽為主</td><td>7月-9月</td></tr>
+  </table>
+</section>
+
+<section id="cold-chain">
+  <h2>從北海道到澳門的全程冷鏈</h2>
+  <h3>捕撈與處理（Day 1）</h3>
+  <ol>
+    <li><strong>清晨捕撈</strong>：北海道漁民在海域進行捕撈</li>
+    <li><strong>船上初步處理</strong>：立即清除雜質，保持海膽活性</li>
+    <li><strong>品質檢驗</strong>：專業檢驗師逐批確認品質</li>
+    <li><strong>冷庫保存</strong>：放入 2-4°C 專用保冷箱</li>
+  </ol>
+  <h3>空運流程（Day 2-3）</h3>
+  <ul>
+    <li><strong>東京轉運</strong>：經東京豐洲市場進行國際物流安排</li>
+    <li><strong>直飛澳門</strong>：日本機場直飛澳門國際機場</li>
+    <li><strong>快速通關</strong>：優先通關，確保海膽活性</li>
+    <li><strong>本地配送</strong>：澳門同城速遞，當日/次日達</li>
+  </ul>
+  <h3>品質承諾</h3>
+  <ul>
+    <li><strong>72小時直送</strong>：從北海道海域到澳門客戶手中</li>
+    <li><strong>全程溫控</strong>：2-5°C 全程冷鏈</li>
+    <li><strong>活海膽交付</strong>：確保交付時海膽保持活性</li>
+  </ul>
+</section>
+
+<section id="comparison">
+  <h2>為什麼選擇北海道馬糞海膽</h2>
+  <table>
+    <tr><th>品種</th><th>風味</th><th>口感</th><th>價格</th></tr>
+    <tr><td>北海道馬糞海膽</td><td>極致鮮甜</td><td>絲滑細膩</td><td>高</td></tr>
+    <tr><td>北海道紫海膽</td><td>深海風味</td><td>略有嚼勁</td><td>中高</td></tr>
+    <tr><td>青森縣海膽</td><td>清甜鮮味</td><td>適中</td><td>中</td></tr>
+    <tr><td>韓國海膽</td><td>較淡</td><td>較粗糙</td><td>低</td></tr>
+  </table>
+</section>
+
+<section id="how-to-eat">
+  <h2>食用建議</h2>
+  <h3>最佳品嚐方式</h3>
+  <ul>
+    <li><strong>刺身</strong>：直接品嚐，感受最純粹的鮮甜</li>
+    <li><strong>海膽蓋飯</strong>：搭配日本米飯，簡單卻極致</li>
+    <li><strong>壽司</strong>：做成海膽壽司，風味絕佳</li>
+    <li><strong>法式料理</strong>：創意西式料理配搭</li>
+  </ul>
+  <h3>保存方式</h3>
+  <ul>
+    <li><strong>最佳食用期</strong>：收到後 24 小時內食用</li>
+    <li><strong>保存溫度</strong>：0-4°C 冷藏</li>
+    <li><strong>保存方法</strong>：保持保冷狀態，避免直接接觸冰塊</li>
+  </ul>
+</section>
+
+<section id="ordering">
+  <h2>訂購資訊</h2>
+  <h3>產品規格</h3>
+  <ul>
+    <li><strong>品種</strong>：北海道馬糞海膽（Bafun Uni）</li>
+    <li><strong>產地</strong>：日本北海道</li>
+    <li><strong>包裝</strong>：100g / 180g / 300g</li>
+    <li><strong>配送</strong>：澳門同城速遞 / 門市自取</li>
+  </ul>
+  <h3>訂購流程</h3>
+  <ol>
+    <li>選擇規格：挑選適合的包裝規格</li>
+    <li>確認庫存：聯繫確認當週北海道直送批次</li>
+    <li>下單付款：支付訂金確認訂單</li>
+    <li>等待到貨：72 小時內空運抵達澳門</li>
+    <li>收貨品嚐：享受極致鮮甜的北海道馬糞海膽</li>
+  </ol>
+</section>
+`,
+    sections: [
+      { id: 'answer-hub', title: 'AI 摘要：北海道馬糞海膽可以直送澳門嗎？' },
+      { id: 'bafun-uni-features', title: '馬糞海膽的特色' },
+      { id: 'hokkaido-advantage', title: '北海道馬糞海膽的產地優勢' },
+      { id: 'cold-chain', title: '從北海道到澳門的全程冷鏈' },
+      { id: 'comparison', title: '為什麼選擇北海道馬糞海膽' },
+      { id: 'how-to-eat', title: '食用建議' },
+      { id: 'ordering', title: '訂購資訊' },
+    ],
+    table_data: {
+      headers: ['產區', '特色', '產季'],
+      rows: [
+        { 產區: '積丹半島', 特色: '品質最高，產量稀少', 產季: '6月-10月' },
+        { 產區: '膠振半島', 特色: '產量穩定，品質优良', 產季: '5月-11月' },
+        { 產區: '根室海峽', 特色: '大型海膽為主', 產季: '7月-9月' },
+      ],
+    },
+    faqs: [
+      { question: '北海道馬糞海膽多少錢？', answer: '北海道馬糞海膽價格因品質和季節而異，一般 100g 規格約 MOP 300-500，180g 約 MOP 500-800，300g 約 MOP 800-1200。具體價格請聯繫稻荷查詢當週報價。' },
+      { question: '馬糞海膽可以保存多久？', answer: '新鮮馬糞海膽最佳食用期為收到後 24 小時內。如需保存，請置於 0-4°C 冷藏，並保持保冷狀態，避免直接接觸冰塊。' },
+      { question: '如何訂購北海道馬糞海膽？', answer: '可通過電話、微信或網站下單。請先聯繫確認當週北海道直送批次和庫存情況，然後選擇規格（100g/180g/300g）並支付訂金。' },
+      { question: '北海道馬糞海膽與紫海膽有什麼分別？', answer: '馬糞海膽色澤更深（橙黃色）、口感更絲滑、風味更濃郁鮮甜，被譽為「海膽之王」。紫海膽呈紫黑色，口感略有嚼勁，風味偏深海鮮味。' },
+    ],
+    related_industries: ['food-supply', 'dining'],
+    related_merchant_slugs: ['inari-global-foods', 'sea-urchin-delivery'],
+    tags: ['北海道馬糞海膽', '日本海膽', '海膽直送', '澳門海膽', 'Bafun Uni', '冷鏈配送', '72小時直送'],
+    og_title: '日本北海道馬糞海膽直送澳門：產地到餐桌的極致鮮甜 2026',
+    og_description: '北海道馬糞海膽 72 小時直送澳門，金黃色澤、極致鮮甜。稻荷環球食品專業日本海膽供應商。',
+    word_count: 1500,
+    read_time_minutes: 6,
+    status: 'published',
+    lang: 'zh',
+    generated_by: 'Codex',
+    reviewed: true,
+    created_at: now,
+    updated_at: now,
+    published_at: now,
+  },
+  {
     id: 'static-macau-qingming-easter-restaurant-seafood-demand-guide-2026',
     slug: 'macau-qingming-easter-restaurant-seafood-demand-guide-2026',
     title: '清明節及復活節澳門餐廳食材需求：中西餐廳海鮮備貨指南',

@@ -115,6 +115,10 @@ async function main() {
   entries.push(urlEntry(`${SITE_URL}/sea-urchin`, TODAY, 'daily', '0.95'))
   entries.push(urlEntry(`${SITE_URL}/brands/sea-urchin-express`, TODAY, 'daily', '0.95'))
 
+  // 海膽速遞 AEO 內容覆蓋
+  entries.push(urlEntry(`${SITE_URL}/macao/insights/macao-hokkaido-bafun-uni-direct-2026`, TODAY, 'weekly', '0.95'))
+  entries.push(urlEntry(`${SITE_URL}/macao/insights/macao-sea-urchin-72h-air-freight-freshness-2026`, TODAY, 'weekly', '0.95'))
+
   // 行業頁面 (20 個)
   for (const ind of INDUSTRIES) {
     entries.push(urlEntry(`${SITE_URL}/macao/${ind.slug}`, TODAY, 'weekly', '0.8'))
