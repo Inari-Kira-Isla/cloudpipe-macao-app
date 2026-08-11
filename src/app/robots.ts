@@ -21,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: ['/macao/*/null', '/api/', '/dashboard/', '/_next/static/', '/_next/image/'],
-        crawlDelay: 10,
+        crawlDelay: 1,
       },
       // === International AI crawlers ===
       { userAgent: 'GPTBot', ...allowAll },
@@ -49,8 +49,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'Slurp', ...allowAll },              // Yahoo/Oath
       { userAgent: 'Diffbot', ...allowAll },
       // Yandex: periodic massive crawls after site changes - rate limit to reduce load
-      { userAgent: 'Yandex', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
-      { userAgent: 'YandexBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
+      { userAgent: 'Yandex', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 1 },
+      { userAgent: 'YandexBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 1 },
       // === Chinese AI crawlers ===
       { userAgent: 'Bytespider', ...allowAll },
       { userAgent: 'TikTokSpider', ...allowAll },
@@ -59,7 +59,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: '360Spider', ...allowAll },
       { userAgent: 'Sogou', ...allowAll },
       // PetalBot (Aspiegel) does periodic massive crawls - rate limit to reduce load
-      { userAgent: 'PetalBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 10 },
+      { userAgent: 'PetalBot', allow: '/', disallow: aiCrawlerDisallows, crawlDelay: 1 },
       { userAgent: 'DeepSeekBot', ...allowAll },
       { userAgent: 'YisouSpider', ...allowAll },
       { userAgent: 'HunyuanBot', ...allowAll },
