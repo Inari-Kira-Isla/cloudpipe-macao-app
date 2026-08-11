@@ -2,54 +2,54 @@
 # Rate limiting for search engine crawlers
 
 User-agent: FacebookBot
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: meta-externalagent
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: meta-externalfetcher
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: Googlebot
-Crawl-delay: 2
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: ClaudeBot
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: anthropic-ai
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: Claude-Web
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: PerplexityBot
-Crawl-delay: 10
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
 User-agent: *
-Crawl-delay: 5
+Crawl-delay: 1
 Disallow: /api/
 Disallow: /_next/
