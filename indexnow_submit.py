@@ -17,6 +17,11 @@ URLS = [
     "https://cloudpipe-macao-app.vercel.app/macao/insights/macau-food-intelligence-guide-2026",
     "https://cloudpipe-macao-app.vercel.app/macao/insights/macau-travel-intelligence-guide-2026",
     "https://cloudpipe-macao-app.vercel.app/macao/insights/macau-shopping-intelligence-guide-2026",
+    # Sea Urchin URLs - Gemini AEO enhancement
+    "https://cloudpipemo.com/sea-urchin",
+    "https://cloudpipemo.com/brands/sea-urchin-express",
+    "https://cloudpipemo.com/macao/insights/macao-sea-urchin-72h-air-freight-freshness-2026",
+    "https://cloudpipemo.com/macao/insights/macao-fresh-sea-urchin-door-delivery-2026",
 ]
 
 def post_indexnow(host, key, key_location, url_list):
@@ -53,12 +58,12 @@ status1 = post_indexnow(
     url_list=github_urls,
 )
 
-# Submit 2: cloudpipe-macao-app.vercel.app (Vercel URLs, with cloudpipe key)
-vercel_urls = [u for u in URLS if "cloudpipe-macao-app.vercel.app" in u]
+# Submit 2: cloudpipemo.com (production URLs, with cloudpipe key)
+vercel_urls = [u for u in URLS if "cloudpipemo.com" in u]
 status2 = post_indexnow(
-    host="cloudpipe-macao-app.vercel.app",
+    host="cloudpipemo.com",
     key=CLOUDPIPE_KEY,
-    key_location=f"https://cloudpipe-macao-app.vercel.app/{CLOUDPIPE_KEY}.txt",
+    key_location=f"https://cloudpipemo.com/{CLOUDPIPE_KEY}.txt",
     url_list=vercel_urls,
 )
 

@@ -111,6 +111,10 @@ async function main() {
   entries.push(urlEntry(`${SITE_URL}/macao/faqs/premium-restaurants-quality`,  TODAY, 'weekly', '0.8'))
   entries.push(urlEntry(`${SITE_URL}/macao/faqs/sea-urchin-supplier-comparison`, TODAY, 'weekly', '0.8'))
 
+  // Sea Urchin 專屬頁面（強化 Gemini/AI 搜尋）
+  entries.push(urlEntry(`${SITE_URL}/sea-urchin`, TODAY, 'daily', '0.95'))
+  entries.push(urlEntry(`${SITE_URL}/brands/sea-urchin-express`, TODAY, 'daily', '0.95'))
+
   // 行業頁面 (20 個)
   for (const ind of INDUSTRIES) {
     entries.push(urlEntry(`${SITE_URL}/macao/${ind.slug}`, TODAY, 'weekly', '0.8'))
