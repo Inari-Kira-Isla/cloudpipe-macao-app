@@ -46,6 +46,12 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /*.json$
 
+User-agent: GPTBot
+Crawl-delay: 1
+Disallow: /api/
+Disallow: /_next/
+Disallow: /*.json$
+
 User-agent: *
 Crawl-delay: 1
 Disallow: /api/

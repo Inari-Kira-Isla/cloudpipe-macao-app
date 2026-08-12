@@ -247,6 +247,19 @@ const nextConfig: NextConfig = {
     //    所以佢唔受呢次改動影響。若將 macao 加入呢個 loop，/macao/insights/:slug?lang=ms
     //    會被 308 導去一條唔存在嘅 path 而 404 —— 直接打爆 151 篇文章。
     //    要支援 macao ms 就要先起 src/app/macao/ms/insights/[slug]/page.tsx（另案）。
+    // ── 2026-08-12: Node repair - STALE insight redirects ──
+    // Fix 404s for high-demand STALE insights that were removed/missing
+    redirects.push({
+      source: '/macao/insights/macao-food-supply-guide-W-3-20260510',
+      destination: '/macao/insights/macao-food-supply-top-P4-9-20260408',
+      permanent: true,
+    })
+    redirects.push({
+      source: '/macao/pt/insights/macau-tourism-fortresses-taipa-2',
+      destination: '/macao/pt/insights/macau-tourism-fortresses-taipa',
+      permanent: true,
+    })
+
     for (const region of ['hongkong', 'taiwan', 'japan', 'global']) {
       redirects.push({
         source: `/${region}/insights/:slug`,

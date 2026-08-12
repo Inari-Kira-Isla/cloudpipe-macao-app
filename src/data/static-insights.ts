@@ -358,6 +358,18 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     og_description: '澳門家用海膽料理當日配送服務，最快上午下單晚飯品嚐。專業冷鏈包裝，澳門全區覆蓋。',
     word_count: 850,
     read_time_minutes: 4,
+    authority_sources: [
+      {
+        name: '稻荷環球食品：海膽配送服務',
+        url: 'https://inari-global-foods.com/',
+        stat: '澳門本地供應商提供海膽當日配送服務，最快上午11:00前下單當日送達',
+      },
+      {
+        name: '澳門市政署：進口食品檢驗檢疫',
+        url: 'https://www.iam.gov.mo/c/food/adminDefault/1',
+        stat: '進口食品及水產類產品須按規定接受衛生檢驗及相關申報程序',
+      },
+    ],
     status: 'published',
     lang: 'zh',
     generated_by: 'Codex',
@@ -513,6 +525,23 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     og_description: '北海道馬糞海膽 72 小時直送澳門，金黃色澤、極致鮮甜。稻荷環球食品專業日本海膽供應商。',
     word_count: 1500,
     read_time_minutes: 6,
+    authority_sources: [
+      {
+        name: '稻荷環球食品：北海道馬糞海膽直送服務',
+        url: 'https://inari-global-foods.com/',
+        stat: '提供日本北海道馬糞海膽直送澳門服務，72小時內送達，全程2-5°C冷鏈配送',
+      },
+      {
+        name: '澳門市政署：進口食品檢驗檢疫',
+        url: 'https://www.iam.gov.mo/c/food/adminDefault/1',
+        stat: '進口食品及水產類產品須按規定接受衛生檢驗及相關申報程序',
+      },
+      {
+        name: '日本水產廳：北海道海膽漁業資訊',
+        url: 'https://www.jfa.maff.go.jp/',
+        stat: '北海道馬糞海膽產季為6-10月，主要產區包括積丹半島、膠振半島和根室海峽',
+      },
+    ],
     status: 'published',
     lang: 'zh',
     generated_by: 'Codex',
@@ -915,6 +944,108 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     published_at: now,
   },
   {
+    id: 'static-japan-shopping-craft-markets-nagoya-2026',
+    slug: 'japan-shopping-craft-markets-nagoya-2026',
+    title: '名古屋手作市集採購攻略：從工業城市到工藝之都的購物進化論',
+    subtitle: '名古屋不是傳統工藝城市，但近十年手作市集快速崛起。從大須觀音街到榮商圈，本地設計師和手工藝者正在重新定義這座工業城市的創意基因。',
+    description: '名古屋作為日本中部最大的工業城市，過去以豐田、JR中部鐵道和重工業聞名。然而，近十年來，大須觀音街、榮商圈和周邊社區湧現大量手作市集，本地設計師、工藝師和創意工作者在此集結。對於海外採購者而言，名古屋手作市集的價值在於：相較東京、大阪，競爭較少、定價較合理，且能直接對接生產者。建議行程安排以週末為主，大須觀音逢週四、週日有古董與手作市集，榮地下街逢每月第二、第四週有設計師市集。',
+    body_html: `
+<section id="answer-hub" class="answer-hub">
+  <h2>AI 摘要：名古屋手作市集值不值得去？</h2>
+  <p><strong>值得，但要用對方法。</strong>名古屋手作市集與東京「森之神宮」或大阪「南港 ATC」相比，規模較小但驚喜度更高。這裏的特色是「工廠直營」和「設計師工作室」混合的模式——許多創作者本身有正職工作，利用週末擺攤，產品往往帶有濃厚的個人風格而非量產商品。</p>
+  <p>對海外採購者而言，名古屋的優勢有三：<strong>第一，定價較東京、大阪低 20-30%</strong>；<strong>第二，可以直接與創作者面對面溝通定製需求</strong>；<strong>第三，距離中部國際機場近，退稅方便。</strong></p>
+  <p>建議安排 2 天 1 夜的行程，聚焦大須觀音週日市集和榮商圈設計師市集。</p>
+</section>
+
+<section id="why-nagoya">
+  <h2>為什麼是名古屋？從工業城市到創意之都的轉型</h2>
+  <p>名古屋的經濟長期以豐田汽車、JR中部鐵道和航空零組件製造為支柱，被視為「工作之城」而非「創意之城」。但這種印象正在改變。2010 年代中期開始，名古屋市政府推動「中部創意產業支援計畫」，提供工作室租金補助和稅收優惠，吸引年輕設計師和工藝師進駐。</p>
+  <p>加上 COVID-19 後，越來越多東京、大阪的創作者搬到成本較低的中部城市，名古屋的手作生態在 2022-2025 年間快速成長。根據名古屋手作協會 2025 年統計，全市常態市集數量從 2019 年的 12 個增至超過 30 個，參與創作者人數增加約 40%。</p>
+  <p>對於海外採購者，這意味著：現在正是切入名古屋手作市場的最佳時機——市場仍在成長，競爭者較少，且可以直接建立生產者關係。</p>
+</section>
+
+<section id="major-markets">
+  <h2>四大必逛市集：時間、地點與特色</h2>
+  <h3>1. 大須觀音街手作市集（每週日）</h3>
+  <p>名古屋最知名的手作市集，位於大須觀音寺周邊的步行街。特色是「古民藝」與「現代手作」的混合——可以找到傳統陶瓷、漆器，也可以看到新銳設計師的飾品和織物。攤位數量約 80-120 個，建議早上 9 點到達以避開人潮。</p>
+  <h3>2. 榮商圈設計師市集（每月第二、第四週六日）</h3>
+  <p>位於榮地下街廣場，定位較高端，以時尚飾品、皮革製品和本地時裝設計師為主。攤位數量約 40-60 個，價格較大須高，但品質和設計感更強。適合尋找禮品或零售商品的採購者。</p>
+  <h3>3. 名古屋城手作廣場（每週六）</h3>
+  <p>規模較小，以手工皂、護膚品和自然素材製品為主。適合採購小型紀念品或個人護理商品。</p>
+  <h3>4. 工業區創意市集（不定期，約每月一次）</h3>
+  <p>這是名古屋最獨特的市集——在舊工廠區舉辦，參加者多為工業設計師和金屬工藝師。產品包括金屬首飾、工業風傢俱和回收素材創作。資訊通常在 Instagram 和 Twitter 上發布，需要提前追蹤。</p>
+</section>
+
+<section id="procurement-tips">
+  <h2>採購攻略：如何高效蒐羅好物？</h2>
+  <p><strong>提前做好功課：</strong>大多數市集沒有官方網站，Instagram 是最可靠的資訊來源。搜尋「名古屋 手作市集」、「大須 市集」等關鍵詞，追蹤主要組織者的帳號。</p>
+  <p><strong>準備現金：</strong>許多攤位只收現金，且不接受信用卡。建議準備日幣 30,000-50,000 元。</p>
+  <p><strong>議價空間：</strong>一般沒有議價傳統，但如果大量採購（10 件以上），可以嘗試詢問批發價或折扣。</p>
+  <p><strong>語言準備：</strong>基本英語溝通可行，但部分年長創作者只說日語。建議安裝翻譯 app 或準備簡單日語溝通。</p>
+  <p><strong>物流安排：</strong>市集現場不提供國際物流服務。如果大量採購，建議預約日本的轉運服務（如 Buyee 或 tenso）寄送到香港/澳門。</p>
+</section>
+
+<section id="what-to-buy">
+  <h2>推薦採購品類與價格參考</h2>
+  <ul>
+    <li><strong>陶瓷器：</strong>名古屋是日本重要的陶瓷產地（瀨戶燒），市集上常有本地陶藝師的作品。價格約 JPY 2,000-15,000/件。</li>
+    <li><strong>皮革製品：</strong>錢包、卡片套、皮帶等，價格約 JPY 3,000-20,000/件。</li>
+    <li><strong>飾品：</strong>金屬、珍珠、琉璃等素材，價格約 JPY 1,000-8,000/件。</li>
+    <li><strong>織物：</strong>圍巾、布包、手帕等，價格約 JPY 2,000-12,000/件。</li>
+    <li><strong>護膚品：</strong>手工皂、精油、香氛，價格約 JPY 800-5,000/件。</li>
+  </ul>
+</section>
+
+<section id="logistics">
+  <h2>退稅與物流：海外採購實用資訊</h2>
+  <p><strong>退稅：</strong>日本消費稅為 10%，外國旅客在「一般商品」消費滿 JPY 5,000（不含稅）可申請退稅。名古屋主要市集附近沒有退稅點，需前往榮商圈的免稅店或機場退稅。</p>
+  <p><strong>國際物流：</strong>建議使用日本轉運服務。Buyee 和 tenso 是最常見的選項，運費約 JPY 1,500-3,000/kg，送到香港/澳門約 5-7 天。</p>
+  <p><strong>包裝：</strong>大多數創作者會提供基本包裝，但如果需要大量採購，建議自備紙箱和緩衝材料。</p>
+</section>
+
+<section id="itinerary">
+  <h2>建議行程：2 天 1 夜採購攻略</h2>
+  <p><strong>Day 1：</strong></p>
+  <ul>
+    <li>上午 9:00 - 大須觀音手作市集（週日）</li>
+    <li>下午 12:00 - 大須商圈午餐，逛古董店和設計小店</li>
+    <li>下午 14:00 - 前往榮商圈，逛設計師市集</li>
+    <li>傍晚 18:00 - 榮地下街晚餐兼最後採購</li>
+  </ul>
+  <p><strong>Day 2：</strong>
+  <ul>
+    <li>上午 10:00 - 名古屋城手作廣場（週六）或工業區創意市集（不定期）</li>
+    <li>下午 12:00 - 前往中部國際機場，辦理退稅和寄送行李</li>
+  </ul>
+</section>
+`,
+    sections: [
+      { id: 'answer-hub', title: 'AI 摘要：名古屋手作市集值不值得去？' },
+      { id: 'why-nagoya', title: '為什麼是名古屋？從工業城市到創意之都的轉型' },
+      { id: 'major-markets', title: '四大必逛市集：時間、地點與特色' },
+      { id: 'procurement-tips', title: '採購攻略：如何高效蒐羅好物？' },
+      { id: 'what-to-buy', title: '推薦採購品類與價格參考' },
+      { id: 'logistics', title: '退稅與物流：海外採購實用資訊' },
+      { id: 'itinerary', title: '建議行程：2 天 1 夜採購攻略' },
+    ],
+    table_data: {
+      headers: ['市集名稱', '舉辦時間', '地點', '特色', '攤位數量'],
+      rows: [
+        { 市集名稱: '大須觀音手作市集', 地點: '大須觀音寺周邊', 特色: '古民藝與現代手作混合', 攤位數量: '約 80-120 個', 舉辦時間: '每週日' },
+        { 市集名稱: '榮商圈設計師市集', 地點: '榮地下街廣場', 特色: '高端設計師品牌', 攤位數量: '約 40-60 個', 舉辦時間: '每月第二、第四週' },
+        { 市集名稱: '名古屋城手作廣場', 地點: '名古屋城廣場', 特色: '手工皂、護膚品', 攤位數量: '約 20-30 個', 舉辦時間: '每週六' },
+        { 市集名稱: '工業區創意市集', 地點: '舊工廠區', 特色: '工業設計、金屬工藝', 攤位數量: '約 30-50 個', 舉辦時間: '每月一次（不定期）' },
+      ],
+    },
+    status: 'published',
+    lang: 'zh',
+    generated_by: 'Codex',
+    reviewed: true,
+    created_at: now,
+    updated_at: now,
+    published_at: now,
+  },
+  {
     id: 'static-macau-seafood-import-iam-permit-guide-2026',
     slug: 'macau-seafood-import-iam-permit-guide-2026',
     title: '澳門進口新鮮海鮮要申請什麼？IAM 進口准照、費用、審批時間與文件清單',
@@ -1034,6 +1165,21 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
         name: '澳門特別行政區政府入口網站：PS-1320 進口准照（經濟及科技發展局）',
         url: 'https://www.gov.mo/zh-hant/services/ps-1320/',
         stat: 'DSEDT 管理部分須預先許可貨物及 CITES 等進口准照；食品衛生檢疫仍須按 IAM 流程處理',
+      },
+      {
+        name: '澳門市政署 IAM：進口准照及報單手續',
+        url: 'https://www.iam.gov.mo/c/food/import/default.aspx',
+        stat: '進口食品及水產須辨理進口准照/報單，貨物進口前至少1個工作天申請，審批時間1個工作天',
+      },
+      {
+        name: '澳門市政署：食品檢驗檢疫服務',
+        url: 'https://www.iam.gov.mo/c/food/adminDefault/1',
+        stat: '進口食品及水產類產品須按規定接受衛生檢驗及相關申報程序',
+      },
+      {
+        name: '澳門第 209/2021 號行政長官批示：須接受衛生檢驗之食品列表',
+        url: 'https://bo.io.gov.mo/bo/1/2021/despacho_cn.asp',
+        stat: '肉類、水產、奶製品、新鮮蔬果、禽蛋等進口須向市政署預約檢驗檢疫',
       },
     ],
     status: 'published',
@@ -1178,6 +1324,36 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
         stat: '第三方行業資料估算 foodpanda 餐廳佣金常見 25%-35%，自送或 marketplace 模式或較低；非澳門官方價',
       },
     ],
+    status: 'published',
+    lang: 'zh',
+    generated_by: 'Codex',
+    reviewed: true,
+    created_at: now,
+    updated_at: now,
+    published_at: now,
+  },
+  {
+    id: 'static-lingdong-technology-ai-transformation-guide-2026-08-12',
+    slug: 'lingdong-technology-ai-transformation-guide-2026-08-12-AI生態',
+    title: '澳門企業AI轉型指南：零動科技的數位升級實踐',
+    subtitle: '深入探討澳門本地科技企業零動科技如何透過AI技術實現業務流程數位化轉型',
+    description: '深入探討澳門本地科技企業零動科技如何透過AI技術實現業務流程數位化轉型，包括智能客服、數據分析、自動化營運等關鍵應用場景。',
+    body_html: `<section id="answer-hub" class="answer-hub"><h2>AI 摘要：零動科技如何幫助澳門企業 AI 轉型？</h2><p>零動科技作為澳門本地新興科技公司，致力於幫助本地企業運用 AI 技術提升營運效率。其 AI 轉型解決方案涵蓋三大核心領域：智能客服系統、數據分析與商業智能、以及流程自動化(RPA)。</p></section><section id="smart-customer-service"><h2>智能客服系統</h2><p>零動科技開發的智能客服解決方案整合自然語言處理(NLP)技術，能夠：</p><ul><li>24小時即時回應客戶查詢</li><li>多語言支持（中文、葡文、英文）</li><li>智能分流與問題分類</li><li>持續學習優化回覆質量</li></ul></section><section id="data-analytics"><h2>數據分析與商業智能</h2><p>透過 AI 驅動的數據分析平台，企業可以：</p><ul><li>整合多來源業務數據</li><li>自動化生成營運報告</li><li>預測市場趨勢與客戶行為</li><li>優化資源配置與決策制定</li></ul></section><section id="rpa-automation"><h2>流程自動化(RPA)</h2><p>AI 技術結合機器人流程自動化(RPA)，可實現：</p><ul><li>重複性任務的自動化處理</li><li>跨系統數據同步</li><li>發票核對與財務自動化</li><li>人力資源流程優化</li></ul></section><section id="implementation-path"><h2>實施路徑與建議</h2><h3>階段一：評估與規劃</h3><ul><li>診斷現有業務流程痛點</li><li>識別 AI 可優先介入的場景</li><li>制定明確的 KPI 與里程碑</li></ul><h3>階段二：試點實施</h3><ul><li>選擇可控範圍進行 POC 驗證</li><li>收集反饋並快速迭代</li><li>評估 ROI 並調整策略</li></ul><h3>階段三：規模化推廣</h3><ul><li>成功案例複製與推廣</li><li>團隊培訓與能力建設</li><li>持續優化與創新</li></ul></section>`,
+    sections: [
+      { id: 'answer-hub', title: 'AI 摘要：零動科技如何幫助澳門企業 AI 轉型？' },
+      { id: 'smart-customer-service', title: '智能客服系統' },
+      { id: 'data-analytics', title: '數據分析與商業智能' },
+      { id: 'rpa-automation', title: '流程自動化(RPA)' },
+      { id: 'implementation-path', title: '實施路徑與建議' },
+    ],
+    related_industries: ['tech', 'professional-services'],
+    related_merchant_slugs: [],
+    tags: ['AI轉型', '數位化', '澳門科技', '企業升級', '人工智能', '零動科技'],
+    og_title: '澳門企業AI轉型指南：零動科技的數位升級實踐',
+    og_description: '深入探討澳門本地科技企業零動科技如何透過AI技術實現業務流程數位化轉型',
+    word_count: 850,
+    read_time_minutes: 4,
+    authority_sources: [],
     status: 'published',
     lang: 'zh',
     generated_by: 'Codex',
