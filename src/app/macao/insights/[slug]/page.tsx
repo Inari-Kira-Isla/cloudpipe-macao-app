@@ -11,6 +11,7 @@ import { ClickTracker } from '@/components/ClickTracker'
 import { Suspense } from 'react'
 import LangAwareContent from './LangAwareContent'
 import { getStaticInsight, getStaticInsightLangs } from '@/data/static-insights'
+import { stripEmbeddedFaqPageSchema } from '@/components/insight-region/InsightPageView'
 
 // 24h ISR — insight 內容每日更新一次已足夠，避免 6905 篇每小時重生
 // NOTE: searchParams is intentionally NOT used here to allow Vercel Edge Cache (ISR).
@@ -705,6 +706,15 @@ export default async function InsightDetailPage({ params }: PageProps) {
     })),
   } : null
 
+  // FIX 2026-08-14 (P0-NEW-1 + P0-NEW-2): same root cause as
+  // InsightPageView.tsx — `body_html` may carry a legacy-injected FAQPage
+  // <script> block (supabase_faq_page_injector.py) that duplicates or, in at
+  // least one confirmed live case, is itself malformed (missing
+  // acceptedAnswer / truncated answer text — invalid JSON). `faqSchema`
+  // above is the single source of truth; strip any embedded copy so it can
+  // never duplicate or ship broken JSON-LD.
+  const sanitizedBodyHtml = stripEmbeddedFaqPageSchema(article.body_html)
+
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -852,7 +862,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
 
         {/* ═══ Article Body ═══ */}
         <article className="prose max-w-none mb-10">
-          <div dangerouslySetInnerHTML={{ __html: article.body_html }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizedBodyHtml }} />
         </article>
 
         {/* ═══ Comparison Table ═══ */}

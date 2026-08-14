@@ -476,6 +476,21 @@ async function getSpiderWebInsights(
   return merged
 }
 
+// FIX 2026-08-14 (P0-NEW-1): strip any `<script type="application/ld+json">`
+// block containing a FAQPage payload that may already be baked into stored
+// `body_html` (legacy supabase_faq_page_injector.py output). This component
+// renders its own FAQPage from the structured `faqs` field (see `faqSchema`
+// below) — body_html must never carry a second copy. Matches loosely on
+// whitespace around the JSON `"@type"` key since injector output isn't
+// guaranteed to be minified identically across historical runs.
+const FAQPAGE_SCRIPT_TAG_RE = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+export function stripEmbeddedFaqPageSchema(html: string | null | undefined): string {
+  if (!html) return ''
+  return html.replace(FAQPAGE_SCRIPT_TAG_RE, (fullMatch, jsonBody) => {
+    return /"@type"\s*:\s*"FAQPage"/.test(jsonBody) ? '' : fullMatch
+  })
+}
+
 // FIX 2026-06-28: authority_sources and faqs can be stored as double-JSON-encoded
 // strings (string instead of JSONB array) by the translation pipeline → `.map()`
 // throws TypeError → HTTP 500. Normalize before rendering.
@@ -672,6 +687,19 @@ export async function renderInsightPage(region: RegionCode, { params, langOverri
     })),
   } : null
 
+  // FIX 2026-08-14 (P0-NEW-1): `body_html` is legacy content storage that an
+  // older pipeline (supabase_faq_page_injector.py) used to bake a FAQPage
+  // <script type="application/ld+json"> block directly into, before this
+  // component started rendering `faqSchema` from the structured `faqs` field
+  // above. The two paths now coexist on the same `insights` rows, producing
+  // 2-3 duplicate/divergent FAQPage blocks per page (confirmed live on JP/HK
+  // insight routes, 2026-08-14 golden-fixture capture). `faqSchema` above is
+  // the single source of truth going forward — strip any FAQPage script tag
+  // that may already be embedded in stored `body_html` so it can never
+  // duplicate/conflict with it, regardless of how many times the old
+  // injector ran against a given row.
+  const sanitizedBodyHtml = stripEmbeddedFaqPageSchema(article.body_html)
+
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -798,7 +826,7 @@ export async function renderInsightPage(region: RegionCode, { params, langOverri
         )}
 
         <article className="prose max-w-none mb-10">
-          <div dangerouslySetInnerHTML={{ __html: article.body_html }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizedBodyHtml }} />
         </article>
 
         {article.table_data && (
