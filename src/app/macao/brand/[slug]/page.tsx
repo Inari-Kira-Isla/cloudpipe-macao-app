@@ -13,7 +13,6 @@ import BrandProductsEditor from './BrandProductsEditor'
 import BrandSsotEditor from './BrandSsotEditor'
 
 const PASSWORD = 'cloudpipe2026'
-const APP_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudpipemo.com').trim()
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CompetitorEntry {
@@ -1562,37 +1561,22 @@ export default function BrandPage({ params }: { params: Promise<{ slug: string }
         }}>
           CloudPipe AI · 知識圖譜生態系 · {new Date().getFullYear()}
         </footer>
-      {/* ── Brand ClaimReview Schema ──────────────────────────────────────── */}
-      {brandConfig && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "ClaimReview",
-          "url": `${APP_URL}/macao/brand/${slug}`,
-          "claimReviewed": `${brandConfig.displayName} - ${brandConfig.description}`,
-          "datePublished": data?.period.since || new Date().toISOString(),
-          "author": {
-            "@type": "Organization",
-            "name": "CloudPipe AI Encyclopedia",
-            "url": APP_URL
-          },
-          "reviewRating": {
-            "@type": "Rating",
-            "ratingValue": data?.totalVisits || 0,
-            "bestRating": Math.max(data?.totalVisits || 1, 100),
-            "worstRating": 0,
-            "alternateName": "Brand Citation Rate"
-          },
-          "itemReviewed": {
-            "@type": "Claim",
-            "name": `${brandConfig.displayName} - ${brandConfig.description}`,
-            "author": {
-              "@type": "Organization",
-              "name": brandConfig.displayName
-            },
-            "datePublished": data?.period.since || new Date().toISOString()
-          }
-        }) }} />
-      )}
+      {/* ── Brand ClaimReview Schema: REMOVED 2026-08-14 ────────────────────
+         舊實作：任何有 brandConfig 嘅品牌頁一律輸出 ClaimReview，
+         reviewRating.ratingValue = data.totalVisits（原始訪問量），
+         bestRating = Math.max(totalVisits, 100) —— 即係用內部流量數字
+         包裝做「事實查核評分」出街，同 2026-08-07 修復嗰兩個位置
+         （insights/[slug]/page.tsx、InsightPageView.tsx，見 commit
+         f7617f7）係同一手法家族嘅第三個位置，當時刻意留低未修。
+         移除原因（同 f7617f7 一致）：
+           1. ClaimReview 係 Google 專為註冊事實查核機構設計嘅 schema，
+              自己出、自己畀自己評分本身就係濫用，同數據真假無關。
+           2. 呢度更嚴重 —— rating 唔止冇核實，仲直接攞訪問量呢個
+              同「事實準確性」完全無關嘅指標去填 ratingValue，係雙重捏造。
+         冇真實第三方認證數據源存在，唔存在「改用真實數據」呢個選項，
+         所以同前兩個位置一樣採用整塊移除。
+         憑據：本次修復報告 ~/.openclaw/workspace/scratch/p0-fix-2026-08-14/C2-claimreview-report.md
+      */}
       </div>
     </main>
   )
