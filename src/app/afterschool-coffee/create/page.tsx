@@ -1,11 +1,19 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 type Mode = 'overlay' | 'ai_gen'
 type StylePref = 'warm' | 'fun' | 'minimal'
 type Step = 1 | 2
+
+interface Template {
+  id: string
+  caption_zh?: string
+  hashtags?: string
+  source_customer_name?: string
+  source_created_at?: string
+}
 
 export default function CreatePage() {
   const router = useRouter()
@@ -19,6 +27,27 @@ export default function CreatePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Template state
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+  const [templatesLoading, setTemplatesLoading] = useState(false)
+
+  // Fetch templates
+  useEffect(() => {
+    async function fetchTemplates() {
+      setTemplatesLoading(true)
+      try {
+        const res = await fetch('/api/afterschool/templates')
+        const data = await res.json() as { templates?: Template[] }
+        if (data.templates) setTemplates(data.templates)
+      } catch (e) {
+        console.error('Failed to load templates', e)
+      }
+      setTemplatesLoading(false)
+    }
+    fetchTemplates()
+  }, [])
 
   function handleFile(f: File) {
     if (f.size > 10 * 1024 * 1024) { setError('圖片不可超過10MB'); return }
@@ -41,6 +70,7 @@ export default function CreatePage() {
       fd.append('customer_message', customerMessage)
       fd.append('style_pref', stylePref)
       if (file) fd.append('file', file)
+      if (selectedTemplate) fd.append('template_id', selectedTemplate)
 
       const res = await fetch('/api/afterschool/upload', { method: 'POST', body: fd })
       const data = await res.json() as { success?: boolean; job_id?: string; error?: string }
@@ -161,6 +191,43 @@ export default function CreatePage() {
               />
               <div className="text-right text-amber-100/30 text-xs mt-1">{customerMessage.length}/200</div>
             </div>
+
+            {/* Template Selection */}
+            {templates.length > 0 && (
+              <div>
+                <p className="text-amber-200 font-medium text-sm mb-2">
+                  參考範本 <span className="text-amber-100/40 font-normal">（可選）</span>
+                </p>
+                <select
+                  value={selectedTemplate}
+                  onChange={e => setSelectedTemplate(e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-amber-100 text-sm outline-none focus:border-amber-400/60 appearance-none cursor-pointer"
+                  style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fbbf24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+                >
+                  <option value="" className="bg-slate-800">不使用範本</option>
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id} className="bg-slate-800">
+                      {t.name || t.caption_zh?.slice(0, 30) || t.id.slice(0, 8)}
+                      {t.source_customer_name ? ` · ${t.source_customer_name}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {selectedTemplate && (
+                  <div className="mt-2 p-3 bg-amber-400/10 border border-amber-400/20 rounded-lg">
+                    {templates.find(t => t.id === selectedTemplate)?.caption_zh && (
+                      <p className="text-amber-100/80 text-xs">
+                        <span className="text-amber-400">Caption:</span> {templates.find(t => t.id === selectedTemplate)?.caption_zh}
+                      </p>
+                    )}
+                    {templates.find(t => t.id === selectedTemplate)?.hashtags && (
+                      <p className="text-amber-100/60 text-xs mt-1">
+                        <span className="text-amber-400">Hashtags:</span> {templates.find(t => t.id === selectedTemplate)?.hashtags}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <p className="text-amber-200 font-medium text-sm mb-2">圖文風格</p>
