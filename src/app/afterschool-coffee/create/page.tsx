@@ -9,6 +9,7 @@ type Step = 1 | 2
 
 interface Template {
   id: string
+  name?: string
   caption_zh?: string
   hashtags?: string
   source_customer_name?: string
