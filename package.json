@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "verify:all": "npm run lint && npm run build",
     "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
