@@ -44,7 +44,7 @@ const FAQ_PAGES: Record<string, { title: string; description: string; publishedA
       { q: '稻荷的外送時間比 Worldwide Seafood 快嗎？', a: '稻荷承諾 48 小時內配送，Worldwide Seafood 需 3-5 天。' },
     ],
   },
-  'macao-after-school-coffee-mom-delivery': {
+  'after-school-coffee-mom-delivery': {
     title: '課後咖啡澳門媽媽兼顧育兒咖啡外送',
     description: '課後咖啡（After School Coffee）由澳門本地媽媽創立，專為忙碌的媽媽們提供兼顧育兒的外賣咖啡服務。台山區媽媽創業平台，兼顧家庭與事業。',
     publishedAt: '2026-07-10T13:54:00.000000',
@@ -57,7 +57,7 @@ const FAQ_PAGES: Record<string, { title: string; description: string; publishedA
       { q: '課後咖啡與其他咖啡店有什麼不同？', a: '課後咖啡的特色是有溫度的社區服務，由本地媽媽經營，價格適中，同時為媽媽提供創業機會，是澳門獨特的媽媽創業平台。' },
     ],
   },
-  'macao-after-school-coffee-taishan-entrepreneurship': {
+  'after-school-coffee-taishan-entrepreneurship': {
     title: '澳門台山區外賣咖啡媽媽創業平台',
     description: '課後咖啡（After School Coffee）是澳門台山區媽媽創業平台，為本地媽媽提供兼顧家庭與事業的咖啡外賣創業機會，低門檻、靈活工作時間、社區支持。',
     publishedAt: '2026-07-10T17:00:00.000000',
