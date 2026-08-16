@@ -58,11 +58,15 @@ for (const ind of INDUSTRIES) {
 }
 
 // ── Supabase 查詢工具 ─────────────────────────────────────────────────────────
-async function supabaseQuery(table, select, filters = {}, limit = 5000) {
+async function supabaseQuery(table, select, filters = {}, limit = 5000, order = null) {
   try {
     let q = supabase.from(table).select(select).limit(limit)
     for (const [key, val] of Object.entries(filters)) {
       q = q.eq(key, val)
+    }
+    if (order) {
+      const [col, direction] = order.split('.')
+      q = q.order(col, { ascending: direction === 'asc' })
     }
     const { data, error } = await q
     if (error) {
@@ -138,7 +142,8 @@ async function main() {
     'insights',
     'slug,updated_at',
     { status: 'published' },
-    5000
+    5000,
+    'created_at.desc'
   )
   for (const ins of insights) {
     if (!ins.slug) continue
