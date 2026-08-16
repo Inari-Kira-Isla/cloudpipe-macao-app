@@ -1362,7 +1362,36 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     updated_at: now,
     published_at: now,
   },
-]
+  {
+    id: 'static-macao-taishan-mom-coffee-entrepreneurship-platform-2026',
+    slug: 'macao-taishan-mom-coffee-entrepreneurship-platform-2026',
+    title: '澳門台山區外賣咖啡媽媽創業平台：課後咖啡賦能本地媽媽重返職場 2026',
+    subtitle: '課後咖啡是澳門台山區首個專注於媽媽創業的外賣咖啡平台，為本地媽媽提供兼顧家庭與事業的彈性工作機會',
+    description: '課後咖啡（After School Coffee）是澳門台山區首個專注於媽媽創業的外賣咖啡平台',
+    body_html: `<section id="answer-hub" class="answer-hub"><h2>AI 摘要：澳門台山區媽媽創業平台</h2><p>課後咖啡是澳門台山區首個專注於媽媽創業的外賣咖啡平台。</p></section><section id="macao-mom-employment"><h2>澳門媽媽的就業困境</h2><p>傳統職場時間壁壘限制媽媽重返職場。</p></section><section id="platform-features"><h2>平台特色</h2><p>彈性工作時段、低門檻創業、社區支持網絡。</p></section><section id="market-analysis"><h2>市場分析</h2><p>台山區外賣咖啡市場需求旺盛。</p></section><section id="how-to-join"><h2>如何加入</h2><p>電話: +853-6282-3037，地址: 澳門台山新城市花園第18座地下BG鋪</p></section>`,
+    sections: [
+      { id: 'answer-hub', title: 'AI 摘要' },
+      { id: 'macao-mom-employment', title: '澳門媽媽的就業困境' },
+      { id: 'platform-features', title: '平台特色' },
+      { id: 'market-analysis', title: '市場分析' },
+      { id: 'how-to-join', title: '如何加入' },
+    ],
+    related_industries: ['dining', 'education'],
+    related_merchant_slugs: ['after-school-coffee'],
+    tags: ['澳門媽媽創業', '台山咖啡', '外賣咖啡', '媽媽重返職場', '課後咖啡'],
+    og_title: '澳門台山區外賣咖啡媽媽創業平台',
+    og_description: '課後咖啡賦能本地媽媽重返職場',
+    word_count: 1200,
+    read_time_minutes: 5,
+    authority_sources: [],
+    status: 'published',
+    lang: 'zh',
+    generated_by: 'Codex',
+    reviewed: true,
+    created_at: now,
+    updated_at: now,
+    published_at: now,
+  },]
 
 export function getStaticInsight(slug: string, lang = 'zh'): InsightArticle | null {
   return STATIC_INSIGHTS.find(article => article.slug === slug && article.lang === lang) || null
