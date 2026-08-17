@@ -44,6 +44,36 @@
 
 - **/admin/originality** - 原創性管理儀表板
 
+## Fact Check 數據結構
+
+### 舊格式 (Legacy)
+```typescript
+{
+  score: number,           // 0-100
+  verified_count: number,   // 已驗證聲明數
+  contested_count: number   // 有爭議聲明數
+}
+```
+
+### 新格式 (Current)
+```typescript
+{
+  dimensions: {
+    authority: number,      // 權威性 (主要分數)
+    cross_ref: number,      // 交叉引用
+    citation_hit: number,   // 被引用次數
+    schema_complete: number // 結構化完整度
+  },
+  claims?: FactClaim[]      // 具體聲明列表
+}
+```
+
+### 向後兼容性
+
+`calculateFactCheckPoints()` 函數自動識別兩種格式：
+- 新格式優先：使用 `dimensions.authority` 作為主要分數
+- 舊格式迴退：使用 `score` + `verified_count` + `contested_count` 計算
+
 ## 文件
 
 - [原始碼](./src/lib/originality-scorer.ts)

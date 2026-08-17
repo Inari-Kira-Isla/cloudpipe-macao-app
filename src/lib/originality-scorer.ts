@@ -28,11 +28,31 @@ export interface FactClaim {
   source?: string
 }
 
+/**
+ * Fact Check 數據結構說明:
+ * 
+ * 舊格式 (Legacy):
+ *   { score: number, verified_count: number, contested_count: number }
+ *   - score: 0-100 事實核查总分
+ *   - verified_count: 已驗證聲明數量
+ *   - contested_count: 有爭議聲明數量
+ * 
+ * 新格式 (Current):
+ *   { dimensions: { authority, cross_ref, citation_hit, schema_complete } }
+ *   - authority: 權威性分數 (主要權重 12/20)
+ *   - cross_ref: 交叉引用數量 (權重 4/20)
+ *   - citation_hit: 引用命中次數 (權重 2/20)
+ *   - schema_complete: 結構化完整度 (權重 2/20)
+ * 
+ * 兩種格式都会被 calculateFactCheckPoints() 自動識別並計算
+ */
 export interface FactCheckResult {
   claims?: FactClaim[]
+  // 舊格式欄位
   verified_count?: number
   contested_count?: number
   score?: number // 0-100
+  // 新格式欄位
   dimensions?: {
     authority?: number
     cross_ref?: number
@@ -138,11 +158,13 @@ export function calculateOriginalityScore(signals: OriginalitySignals): Original
  * 計算驗證來源分數
  */
 function calculateVerificationPoints(sources: ContentSource[]): number {
-  if (!sources || sources.length === 0) return 0
+  if (!sources || !Array.isArray(sources) || sources.length === 0) return 0
 
   let points = 0
   
   for (const source of sources) {
+    if (!source || typeof source !== 'object') continue
+
     // 基礎分數
     let sourcePoints = 10
     
@@ -175,10 +197,11 @@ function calculateVerificationPoints(sources: ContentSource[]): number {
     }
 
     // 根據 confidence 調整 (預設為 100)
-    sourcePoints = sourcePoints * ((source.confidence ?? 100) / 100)
+    const confidence = typeof source.confidence === 'number' ? source.confidence : 100
+    sourcePoints = sourcePoints * (confidence / 100)
 
     // 根據是否已驗證時間調整
-    if (source.verified_at) {
+    if (source.verified_at && typeof source.verified_at === 'string') {
       const daysSinceVerification = (Date.now() - new Date(source.verified_at).getTime()) / (1000 * 60 * 60 * 24)
       if (daysSinceVerification < 30) {
         sourcePoints *= 1.2 // 30天內驗證加分
@@ -198,11 +221,16 @@ function calculateVerificationPoints(sources: ContentSource[]): number {
  * 計算事實核查分數
  */
 function calculateFactCheckPoints(factCheck: FactCheckResult | null): number {
-  if (!factCheck) return 0
+  if (!factCheck || typeof factCheck !== 'object') return 0
 
   // 新格式: { dimensions: { authority, cross_ref, ... } }
-  if (factCheck.dimensions && typeof factCheck.dimensions.authority === 'number') {
-    const { authority, cross_ref, citation_hit, schema_complete } = factCheck.dimensions
+  if (factCheck.dimensions && typeof factCheck.dimensions === 'object') {
+    const dims = factCheck.dimensions
+    const authority = typeof dims.authority === 'number' ? dims.authority : 0
+    const cross_ref = typeof dims.cross_ref === 'number' ? dims.cross_ref : 0
+    const citation_hit = typeof dims.citation_hit === 'number' ? dims.citation_hit : 0
+    const schema_complete = typeof dims.schema_complete === 'number' ? dims.schema_complete : 0
+    
     // authority 是主要分數 (权重 12/20)
     // cross_ref 增加公信力 (权重 4/20)
     // citation_hit 表示被引用 (权重 2/20)
@@ -211,7 +239,7 @@ function calculateFactCheckPoints(factCheck: FactCheckResult | null): number {
       (authority / 100) * 12 +
       Math.min(cross_ref, 10) * 0.4 +
       Math.min(citation_hit / 50, 1) * 2 +
-      Math.min((schema_complete || 0) / 10, 1) * 2
+      Math.min(schema_complete / 10, 1) * 2
     return Math.max(0, Math.min(points, 20))
   }
 
@@ -219,7 +247,9 @@ function calculateFactCheckPoints(factCheck: FactCheckResult | null): number {
   // 檢查是否有有效的 fact_check 結構
   if (typeof factCheck.score !== 'number') return 0
 
-  const { score, verified_count, contested_count } = factCheck
+  const score = factCheck.score ?? 0
+  const verified_count = typeof factCheck.verified_count === 'number' ? factCheck.verified_count : 0
+  const contested_count = typeof factCheck.contested_count === 'number' ? factCheck.contested_count : 0
 
   // 基礎分數 = fact_check.score
   let points = (score / 100) * WEIGHTS.fact_check * 100
@@ -278,10 +308,11 @@ function calculateUniquenessPoints(signals: OriginalitySignals): number {
  * 根據分數獲取等級
  */
 function getGrade(score: number): 'A' | 'B' | 'C' | 'D' | 'F' {
-  if (score >= 85) return 'A'
-  if (score >= 75) return 'B'
-  if (score >= 60) return 'C'
-  if (score >= 40) return 'D'
+  const { A, B, C, D } = ORIGINALITY_CONFIG.GRADE_THRESHOLDS
+  if (score >= A) return 'A'
+  if (score >= B) return 'B'
+  if (score >= C) return 'C'
+  if (score >= D) return 'D'
   return 'F'
 }
 

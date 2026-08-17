@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
+import { FactCheckResult } from '@/lib/originality-scorer'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,7 +45,9 @@ export async function GET(request: NextRequest) {
       const content = insight.content || ''
       const trustScore = insight.trust_score ?? 0
       const verificationSources = insight.verification_sources || []
-      const factCheck = insight.fact_check as { score?: number; verified_count?: number; contested_count?: number } | null
+      const factCheck = insight.fact_check as FactCheckResult | null
+      // 注意: 支援舊格式 { score, verified_count } 和新格式 { dimensions: { authority, cross_ref... } }
+      // calculateFactCheckPoints() 會自動識別格式
 
       // Weights
       const WEIGHTS = {
