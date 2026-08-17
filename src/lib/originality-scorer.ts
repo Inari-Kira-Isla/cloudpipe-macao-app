@@ -29,10 +29,16 @@ export interface FactClaim {
 }
 
 export interface FactCheckResult {
-  claims: FactClaim[]
-  verified_count: number
-  contested_count: number
-  score: number // 0-100
+  claims?: FactClaim[]
+  verified_count?: number
+  contested_count?: number
+  score?: number // 0-100
+  dimensions?: {
+    authority?: number
+    cross_ref?: number
+    citation_hit?: number
+    schema_complete?: number
+  }
 }
 
 export interface OriginalitySignals {
@@ -327,7 +333,7 @@ export async function scoreInsightOriginality(slug: string): Promise<Originality
 
   const { data: insight, error } = await supabase
     .from('insights')
-    .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, body_html, faqs')
+    .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, content')
     .eq('slug', slug)
     .single()
 
@@ -337,7 +343,7 @@ export async function scoreInsightOriginality(slug: string): Promise<Originality
   }
 
   // 檢測是否有 Schema 和 FAQ
-  const content = insight.body_html || ''
+  const content = insight.content || ''
   const hasSchema = content.includes('application/ld+json') || content.includes('"@context"')
   const hasFaq = content.includes('faq') || content.includes('FAQ')
 
@@ -350,9 +356,16 @@ export async function scoreInsightOriginality(slug: string): Promise<Originality
     content_length: content.length,
     has_schema: hasSchema,
     has_faq: hasFaq,
-    is_exclusive: false // 需要根據業務邏輯判斷
+    is_exclusive: false
   }
 
+  return calculateOriginalityScore(signals)
+}
+
+/**
+ * 計算單一內容信號的原創性分數（不查庫）
+ */
+export function calculateFromSignals(signals: OriginalitySignals): OriginalityResult {
   return calculateOriginalityScore(signals)
 }
 
@@ -375,9 +388,9 @@ export async function batchScoreInsights(slugs: string[]): Promise<Map<string, O
   const results = new Map<string, OriginalityResult>()
 
   for (const insight of insights) {
-    const content = insight.body_html || ''
+    const content = insight.content || ''
     const hasSchema = content.includes('application/ld+json') || content.includes('"@context"')
-    const hasFaq = (insight.faqs && Array.isArray(insight.faqs) && insight.faqs.length > 0) || content.toLowerCase().includes('faq')
+    const hasFaq = content.toLowerCase().includes('faq')
 
     const signals: OriginalitySignals = {
       trust_score: insight.trust_score,
@@ -411,9 +424,9 @@ export async function getCitationWorthyInsights(limit: number = 10): Promise<Arr
 
   const { data: insights, error } = await supabase
     .from('insights')
-    .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, body_html, faqs')
+    .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, content')
     .order('trust_score', { ascending: false })
-    .limit(limit * 2) // 獲取更多以進行過濾
+    .limit(limit * 2)
 
   if (error || !insights) {
     console.error('Failed to fetch insights:', error)
@@ -421,7 +434,7 @@ export async function getCitationWorthyInsights(limit: number = 10): Promise<Arr
   }
 
   const scored = insights.map(insight => {
-    const content = insight.body_html || ''
+    const content = insight.content || ''
     const signals: OriginalitySignals = {
       trust_score: insight.trust_score,
       verification_sources: insight.verification_sources || [],
@@ -430,7 +443,7 @@ export async function getCitationWorthyInsights(limit: number = 10): Promise<Arr
       updated_at: insight.updated_at,
       content_length: content.length,
       has_schema: content.includes('application/ld+json') || content.includes('"@context"'),
-      has_faq: (insight.faqs && Array.isArray(insight.faqs) && insight.faqs.length > 0) || content.toLowerCase().includes('faq'),
+      has_faq: content.toLowerCase().includes('faq'),
       is_exclusive: false
     }
     const result = calculateOriginalityScore(signals)

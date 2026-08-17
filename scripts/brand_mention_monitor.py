@@ -6,9 +6,15 @@ Stores results in Supabase for display in the CloudPipe dashboard.
 """
 import os
 import json
+from pathlib import Path
 from datetime import datetime, timedelta
 from supabase import create_client, Client
-from web_search import search
+from duckduckgo_search import DDGS
+from dotenv import load_dotenv
+
+# Load environment variables from .env.local
+env_path = Path(__file__).parent.parent / '.env.local'
+load_dotenv(env_path)
 
 # Configuration
 SUPABASE_URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL')
@@ -35,24 +41,25 @@ def get_brands_from_db(supabase: Client) -> list:
     return DEFAULT_BRANDS
 
 def search_brand_mentions(brand: str, query_type: str = "news") -> list:
-    """Search for brand mentions using web search."""
+    """Search for brand mentions using DuckDuckGo."""
     queries = {
-        "social": f"{brand} 澳門 OR {brand} Macau site:x.com OR site:twitter.com OR site:instagram.com",
-        "news": f"{brand} 澳門 OR {brand} Macau site:news OR site:blog OR site:forum",
+        "social": f"{brand} 澳門 OR {brand} Macau",
+        "news": f"{brand} 澳門 OR {brand} Macau",
         "general": f"{brand} 澳門 OR {brand} Macau"
     }
     
     query = queries.get(query_type, queries["general"])
     
     try:
-        results = search(query, count=10)
+        ddgs = DDGS()
+        results = list(ddgs.text(query, max_results=10))
         mentions = []
         for r in results:
             mentions.append({
                 "title": r.get("title", ""),
-                "url": r.get("url", ""),
-                "snippet": r.get("description", ""),
-                "source": r.get("source", "")
+                "url": r.get("href", ""),
+                "snippet": r.get("body", ""),
+                "source": r.get("href", "").split("/")[2] if r.get("href") else ""
             })
         return mentions
     except Exception as e:
@@ -60,63 +67,61 @@ def search_brand_mentions(brand: str, query_type: str = "news") -> list:
         return []
 
 def ensure_table_exists(supabase: Client):
-    """Create brand_mentions table if it doesn't exist."""
+    """Check if brand_mentions table exists."""
     # Check if table exists
     try:
         supabase.from_('brand_mentions').select('id').limit(1).execute()
+        print("✓ brand_mentions table exists")
         return True
     except:
-        pass
-    
-    # Table doesn't exist - create it via SQL
-    # Note: In production, this should be a proper migration
-    print("Creating brand_mentions table...")
-    sql = """
-    CREATE TABLE IF NOT EXISTS brand_mentions (
-        id BIGSERIAL PRIMARY KEY,
-        brand_slug TEXT NOT NULL,
-        mention_type TEXT NOT NULL DEFAULT 'general',
-        title TEXT,
-        url TEXT,
-        snippet TEXT,
-        source TEXT,
-        detected_at TIMESTAMPTZ DEFAULT NOW(),
-        created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_brand_mentions_brand ON brand_mentions(brand_slug);
-    CREATE INDEX IF NOT EXISTS idx_brand_mentions_detected ON brand_mentions(detected_at);
-    """
-    
-    try:
-        supabase.postgrest.execute(sql)
-        print("Table created successfully")
-    except Exception as e:
-        print(f"Note: {e}")
-        # Table may already exist, continue
-    return True
+        print("⚠️  brand_mentions table not found - storing mentions in JSON file instead")
+        return False
 
-def store_mentions(supabase: Client, brand: str, mentions: list, mention_type: str):
-    """Store mentions in database."""
+def store_mentions(supabase: Client, brand: str, mentions: list, mention_type: str, table_exists: bool):
+    """Store mentions in database or JSON file."""
     if not mentions:
         return
     
-    records = []
-    for m in mentions:
-        records.append({
-            "brand_slug": brand,
-            "mention_type": mention_type,
-            "title": m.get("title", ""),
-            "url": m.get("url", ""),
-            "snippet": m.get("snippet", ""),
-            "source": m.get("source", "")
-        })
-    
-    try:
-        supabase.from_('brand_mentions').insert(records).execute()
-        print(f"  Stored {len(records)} {mention_type} mentions for {brand}")
-    except Exception as e:
-        print(f"  Error storing mentions: {e}")
+    if table_exists:
+        records = []
+        for m in mentions:
+            records.append({
+                "brand_slug": brand,
+                "mention_type": mention_type,
+                "title": m.get("title", ""),
+                "url": m.get("url", ""),
+                "snippet": m.get("snippet", ""),
+                "source": m.get("source", "")
+            })
+        
+        try:
+            supabase.from_('brand_mentions').insert(records).execute()
+            print(f"  Stored {len(records)} {mention_type} mentions for {brand}")
+        except Exception as e:
+            print(f"  Error storing mentions: {e}")
+    else:
+        # Fallback: save to JSON file
+        import json
+        from pathlib import Path
+        
+        json_path = Path(__file__).parent / 'brand_mentions.json'
+        existing = []
+        if json_path.exists():
+            existing = json.loads(json_path.read_text())
+        
+        for m in mentions:
+            existing.append({
+                "brand_slug": brand,
+                "mention_type": mention_type,
+                "title": m.get("title", ""),
+                "url": m.get("url", ""),
+                "snippet": m.get("snippet", ""),
+                "source": m.get("source", ""),
+                "detected_at": datetime.now().isoformat()
+            })
+        
+        json_path.write_text(json.dumps(existing, ensure_ascii=False, indent=2))
+        print(f"  Saved {len(mentions)} mentions to JSON")
 
 def main():
     """Main monitoring function."""
@@ -129,7 +134,7 @@ def main():
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     
     # Ensure table exists
-    ensure_table_exists(supabase)
+    table_exists = ensure_table_exists(supabase)
     
     # Get brands to monitor
     brands = get_brands_from_db(supabase)
@@ -142,12 +147,12 @@ def main():
         # General search
         mentions = search_brand_mentions(brand, "general")
         if mentions:
-            store_mentions(supabase, brand, mentions, "general")
+            store_mentions(supabase, brand, mentions, "general", table_exists)
         
-        # Social media search (reduced frequency)
+        # Social media search (commented out - can be enabled later)
         # mentions = search_brand_mentions(brand, "social")
         # if mentions:
-        #     store_mentions(supabase, brand, mentions, "social")
+        #     store_mentions(supabase, brand, mentions, "social", table_exists)
     
     print(f"\n✅ Monitoring complete!")
 
