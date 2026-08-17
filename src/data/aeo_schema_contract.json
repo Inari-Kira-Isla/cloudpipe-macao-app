@@ -1,0 +1,117 @@
+{
+  "contract_version": "1.0.0",
+  "created": "2026-08-15",
+  "source": "SPEC-encyclopedia-seo-aeo-geo-template-2026-08-14.md §2 (Section 10 Step 0, Task 7)",
+  "purpose": "Language-neutral generation SSOT for the 12-item AEO baseline across the 6-site encyclopedia ecosystem. Python generators and TSX components both consume this file directly (see aeo_schema_contract_wiring.md for how) rather than each re-implementing the field rules independently — the fragmentation this file exists to end.",
+  "fixture_basis": {
+    "confirmed_clean": [
+      {
+        "site": "world-encyclopedia",
+        "url": "https://world-encyclopedia.vercel.app/",
+        "captured": "2026-08-14",
+        "reconfirmed_d1": "2026-08-15",
+        "ledger_id": "b2100a0d5d",
+        "note": "FAQPage 6-item single block, homepage. D+1 stability check passed — exactly 1 block, no duplication."
+      },
+      {
+        "site": "cloudpipe-macao-app",
+        "component": "InsightPageView.tsx faqSchema (structured article.faqs render)",
+        "captured": "2026-08-15",
+        "note": "Correct shape reference is the component's OWN structured-field render, NOT its pre-fix live HTML — pre-fix live output was contaminated by a duplicate/malformed FAQPage baked into body_html (P0-NEW-1/2, fixed same day, commit 6dd9245, Vercel deploy/ISR still catching up as of contract authoring — do not re-capture from live URL until deploy confirmed, see Task 11 follow-up)."
+      }
+    ],
+    "excluded_contaminated": [
+      {
+        "site": "cloudpipe-macao-app",
+        "route": "/macao/insights/[slug] (pre-fix)",
+        "reason": "malformed JSON-LD (missing acceptedAnswer, truncated answer text) — never a valid reference, see P0-NEW-2"
+      }
+    ]
+  },
+  "fixture_arbitration_rule": "Any live-output sample proposed as a fixture MUST be cross-checked against (a) whether the exact @type/field shape is produced by the component's OWN independent structured-field render (trustworthy) vs a legacy content-injection pipeline writing into a raw HTML/body_html field (historically the source of every recurrence found 2026-07-31 through 2026-08-15 — FAQPage x3 rounds + this contract's own P0-NEW-1/2 discovery), and (b) whether any known open P0/tripwire affects that site/route as of capture time. Ambiguous cases MUST be escalated to Kira in writing, not self-arbitrated by a model — see Gate 4 Task 6b for the escalation record of this contract's own authoring.",
+  "page_classes": {
+    "homepage": { "applies": ["canonical", "robots_meta", "llms_txt_link", "og_title", "og_description", "og_type", "og_url", "faq_schema", "organization_schema", "cc_by_4"] },
+    "category": { "applies": ["canonical", "robots_meta", "llms_txt_link", "og_title", "og_description", "og_type", "og_url", "organization_schema", "breadcrumb_schema", "cc_by_4"] },
+    "content": { "applies": ["canonical", "robots_meta", "llms_txt_link", "og_title", "og_description", "og_type", "og_url", "article_schema", "faq_schema", "organization_schema", "breadcrumb_schema", "cc_by_4"] }
+  },
+  "checks": {
+    "canonical": {
+      "html_element": "link[rel=canonical]",
+      "required_attrs": ["href"],
+      "rule": "href must be an absolute URL matching the page's own canonical path (no query string unless intentional)."
+    },
+    "robots_meta": {
+      "html_element": "meta[name=robots]",
+      "required_attrs": ["content"],
+      "rule": "content must not be empty; must not contain 'noindex' unless the page is intentionally excluded (e.g. password-gated dashboards)."
+    },
+    "llms_txt_link": {
+      "html_element": "link[rel=llms-txt] OR a discoverable /llms.txt reference",
+      "rule": "site-level, not per-page-unique — presence check only."
+    },
+    "og_title": { "html_element": "meta[property='og:title']", "required_attrs": ["content"], "rule": "content non-empty, distinct from generic site name." },
+    "og_description": { "html_element": "meta[property='og:description']", "required_attrs": ["content"], "rule": "content non-empty, 50-300 chars recommended." },
+    "og_type": { "html_element": "meta[property='og:type']", "required_attrs": ["content"], "rule": "content in {website, article, profile} matching page_class." },
+    "og_url": { "html_element": "meta[property='og:url']", "required_attrs": ["content"], "rule": "content matches canonical href." },
+    "article_schema": {
+      "jsonld_type_any_of": ["Article", "ScholarlyArticle"],
+      "exemptions": [
+        {
+          "site": "cloudpipe-macao-app",
+          "url_path_scope": "excludes any URL containing '/insights/' — those routes (japan/hongkong/taiwan/global/macao insights) use InsightPageView.tsx and correctly emit ScholarlyArticle/Article; the exemption applies only to macao's own non-insight pages (homepage, /macao/brand/*, category listings) which use WebPage/CollectionPage by design",
+          "reason": "design choice — uses WebPage/CollectionPage instead of Article/ScholarlyArticle for content pages",
+          "recorded": "SPEC §2 row 8, confirmed by Task1 checker audit; path-scoping added 2026-08-15 after Task8 regression baseline caught the unscoped (domain-only) version incorrectly exempting japan insight pages that DO correctly emit ScholarlyArticle"
+        }
+      ],
+      "required_fields": ["headline", "datePublished", "dateModified", "author", "publisher", "mainEntityOfPage"],
+      "required_field_details": {
+        "headline": "non-empty string",
+        "author": "object with @type=Organization or Person, name non-empty",
+        "publisher": "object with @type=Organization, name + url non-empty",
+        "mainEntityOfPage": "object with @type=WebPage, @id matching canonical"
+      },
+      "max_instances_per_page": 1
+    },
+    "faq_schema": {
+      "jsonld_type": "FAQPage",
+      "required_fields": ["mainEntity"],
+      "mainEntity_item_shape": {
+        "@type": "Question",
+        "required_fields": ["name", "acceptedAnswer"],
+        "acceptedAnswer_shape": { "@type": "Answer", "required_fields": ["text"] }
+      },
+      "rules": [
+        "mainEntity must be non-empty (min 1 Question) — a page with FAQPage present but mainEntity:[] is INVALID, not exempt (SPEC §2 row 9 / 2026-06-30 fix precedent).",
+        "Every Question's name and every Answer's text must be non-empty, non-truncated strings (P0-NEW-2 precedent: a truncated answer like '該店評分保持在 4.' is a contract violation, not a formatting quirk).",
+        "Content MUST be localized to the page's own region — a FAQPage block whose content matches a DIFFERENT region's known Q&A set is a contract violation (2026-07-31 recurrence precedent: Macau FAQ content appearing on japan/taiwan pages).",
+        "EXACTLY ONE FAQPage block per page. More than one — even if byte-identical — is a contract violation (2026-08-14 world-encyclopedia duplication + macao P0-NEW-1 precedent, both caused by a legacy content-injection pipeline writing a second copy alongside a component's own structured-field render)."
+      ],
+      "max_instances_per_page": 1
+    },
+    "organization_schema": {
+      "jsonld_type": "Organization",
+      "required_fields": ["name", "url"],
+      "max_instances_per_page": 1
+    },
+    "breadcrumb_schema": {
+      "jsonld_type": "BreadcrumbList",
+      "required_fields": ["itemListElement"],
+      "itemListElement_item_shape": {
+        "@type": "ListItem",
+        "required_fields": ["position", "name", "item"]
+      },
+      "rule": "position values must be contiguous starting at 1, matching actual page depth."
+    },
+    "cc_by_4": {
+      "accepted_forms": [
+        { "form": "literal_text", "pattern": "CC BY 4.0" },
+        { "form": "url", "pattern": "creativecommons.org/licenses/by/4.0" }
+      ],
+      "rule": "Marker MUST appear in the page's own rendered HTML — a claim in llms.txt alone (without the marker on the page) does NOT satisfy this check (SPEC §2 row 12 precedent: 4 knowledge sites claimed CC BY 4.0 in llms.txt with zero HTML presence). Kira confirmed 2026-08-14 this IS the intended license — safe to write the marker once this contract is consumed by Step 1-5 site migrations. Until then, verifiers MUST fail-closed (report missing, not silently pass) rather than auto-assume intent."
+    }
+  },
+  "known_open_items_not_yet_encoded": [
+    "Malaysia's actual current data (region=MY, separate Supabase source) has not yet been fixture-sampled — Task 5 reconciled the UA-count contradiction but did not capture malaysia's JSON-LD shape. Malaysia is noted in SPEC §8 as the 'clean control group' for FAQPage specifically, worth using as a THIRD fixture source when Step 4 (malaysia full rewrite) begins.",
+    "pipeline② (encyclopedia_worker.py, ~/.openclaw/encyclopedia/scripts/) generates japan-new/hongkong/taiwan content — its output has not yet been fixture-sampled against this contract; Task 4 located the pipeline but did not audit its schema-generation logic. Do this before Step 2/3 site migrations, not as part of Step 0."
+  ]
+}

@@ -619,6 +619,10 @@ export async function renderInsightPage(region: RegionCode, { params, langOverri
   const insightsBasePath = `/${cfg.pathSegment}/insights`
   const insightCanonical = `${siteUrl}${insightsBasePath}/${slug}`
 
+  // TODO Step5 Gate1: aeo_schema_contract.json 已拷貝到 src/data/，
+  // 實際接線方式（build-time copy / npm package / API）需要 Step5 行 /hound 四門檻拍板。
+  // 現時 articleSchema / faqSchema 仍用 component 內部硬編碼，尚未從 contract 讀取。
+  // 參考: ~/.openclaw/workspace/scripts/aeo_schema_contract_wiring.md
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'ScholarlyArticle',
