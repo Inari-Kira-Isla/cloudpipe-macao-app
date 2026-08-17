@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Disabled</key>
+	<true/>
+	<key>Label</key>
+	<string>ai.cloudpipe.assetvault-trip-detector</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>/usr/local/bin/python3 /Users/ki/.openclaw/workspace/scripts/asset_vault_memory_builder.py --root /Volumes/Extreme\ SSD/AssetVault 2&gt;&amp;1 | tee /Users/ki/.openclaw/logs/assetvault-trip-detector.log ; /usr/local/bin/python3 /Users/ki/.openclaw/workspace/scripts/trip_regression_test.py --db /Volumes/Extreme\ SSD/AssetVault/.vault/index.db 2&gt;&amp;1 | tee -a /Users/ki/.openclaw/logs/assetvault-trip-detector.log</string>
+	</array>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StandardErrorPath</key>
+	<string>/Users/ki/.openclaw/logs/assetvault-trip-detector.err</string>
+	<key>StandardOutPath</key>
+	<string>/Users/ki/.openclaw/logs/assetvault-trip-detector.log</string>
+	<key>StartCalendarInterval</key>
+	<array>
+		<dict>
+			<key>Hour</key>
+			<integer>3</integer>
+			<key>Minute</key>
+			<integer>7</integer>
+		</dict>
+	</array>
+</dict>
+</plist>
