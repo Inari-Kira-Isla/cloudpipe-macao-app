@@ -20,6 +20,12 @@ const TOKENS = {
 
 const SECTIONS = [
   {
+    title: '站外提及監控',
+    href: '/admin/brand-mentions',
+    description: '社交媒體、新聞、論壇品牌提及監控儀表板',
+    color: '#06b6d4',
+  },
+  {
     title: 'Cross-Engine 引用追蹤',
     href: '/admin/citations',
     description: '跨引擎 AI 引用矩陣實時監控儀表板',
