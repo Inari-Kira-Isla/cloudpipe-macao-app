@@ -146,9 +146,11 @@ if (!REVIEW_SECRET) {
 ### ✅ 环境变量配置 (Vercel Production)
 
 ```
-CRAWLER_STATS_TOKEN = XGLple+Bt5Tljpzj3SCIsNnMVGixByg3wBwvvYxpsv8=
-AUDIT_REVIEW_SECRET = RsRtGtFEm9Snzeg0ctRYshpP2JUWOs2KF+2sl38l8jA=
+CRAWLER_STATS_TOKEN = [REDACTED - 見 Vercel Dashboard Environment Variables]
+AUDIT_REVIEW_SECRET = [REDACTED - 見 Vercel Dashboard Environment Variables]
 ```
+
+> ⚠️ 2026-08-19：原文件曾直接貼出實際 token 值，喺 public repo 曝露達數月，已遮蔽並要求 rotate。
 
 部署命令: `vercel deploy --prod`  
 完成时间: 2026-04-04 14:XX UTC  

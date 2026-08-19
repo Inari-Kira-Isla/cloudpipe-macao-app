@@ -30,11 +30,12 @@ def create_sheet_with_oauth():
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive.file']
     
-    # 內置 OAuth 配置（無需申請）
+    # OAuth 配置（改由環境變數提供，2026-08-19 移除 hardcoded secret）
+    import os
     credentials_config = {
         "installed": {
-            "client_id": "406911293872-vv3h3vhglekst5qbg9g8dnjmfjkd8g7c.apps.googleusercontent.com",
-            "client_secret": "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",
+            "client_id": os.environ.get("GOOGLE_OAUTH_CLIENT_ID", ""),
+            "client_secret": os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", ""),
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
