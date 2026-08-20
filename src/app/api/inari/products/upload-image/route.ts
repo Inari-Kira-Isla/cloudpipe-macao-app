@@ -7,7 +7,10 @@ import { createClient } from '@supabase/supabase-js'
 
 export const maxDuration = 120
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
+// Fail closed: no empty-string fallback. If ADMIN_SECRET isn't set in env,
+// every request is rejected — an unset env var must never be satisfiable by
+// an empty/omitted secret header.
+const ADMIN_SECRET = process.env.ADMIN_SECRET || null
 const TARGET_SIZE = 1200
 const OUTPUT_QUALITY = 92
 const BUCKET = 'commerce-images'
@@ -21,7 +24,7 @@ function serviceClient() {
 
 export async function POST(req: Request) {
   const secret = req.headers.get('x-admin-secret') || new URL(req.url).searchParams.get('secret')
-  if (secret !== ADMIN_SECRET) {
+  if (!ADMIN_SECRET || !secret || secret !== ADMIN_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

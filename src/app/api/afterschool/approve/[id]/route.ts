@@ -4,7 +4,12 @@ import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
-const ADMIN_SECRET = process.env.ASC_ADMIN_SECRET || 'asc2026admin'
+// Fail closed: no hardcoded fallback. If ASC_ADMIN_SECRET isn't set in env,
+// every request is rejected rather than falling back to a known/default password.
+// (See src/app/api/macao/crawler-dashboard-auth/route.ts for the reference pattern.)
+function getAdminSecret(): string | null {
+  return process.env.ASC_ADMIN_SECRET || null
+}
 
 // Save approved job output as a routine template
 async function saveAsTemplate(supabase: ReturnType<typeof createServiceClient>, job: Record<string, unknown>) {
@@ -37,7 +42,9 @@ export async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (req.headers.get('x-admin-secret') !== ADMIN_SECRET) {
+  const expected = getAdminSecret()
+  const provided = req.headers.get('x-admin-secret')
+  if (!expected || typeof provided !== 'string' || provided !== expected) {
     return NextResponse.json({ error: '未授權' }, { status: 401 })
   }
 

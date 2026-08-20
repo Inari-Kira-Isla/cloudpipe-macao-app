@@ -117,3 +117,30 @@ INSERT INTO sub_districts (sub_district, parent_district, region, name_en, prior
   ('黑沙',           '路環',    'macau', 'Hac Sa (Black Sand)',                          3),
   ('荔枝碗',         '路環',    'macau', 'Lai Chi Vun Shipyard',                         3)
 ON CONFLICT (sub_district) DO NOTHING;
+
+-- ── 4. RLS：公開內容表，anon 可讀，寫入淨係 service_role ─────────
+-- 同 merchant_faqs / regional_faqs 一致嘅寫法（見 20260410 merchant_faqs 遷移）
+
+ALTER TABLE district_faqs ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "district_faqs_public_read" ON district_faqs
+    FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "district_faqs_service_role_full_access" ON district_faqs
+    FOR ALL USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+ALTER TABLE sub_districts ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "sub_districts_public_read" ON sub_districts
+    FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "sub_districts_service_role_full_access" ON sub_districts
+    FOR ALL USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

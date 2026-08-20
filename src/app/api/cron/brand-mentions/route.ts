@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -6,9 +6,15 @@ const execAsync = promisify(exec);
 
 export const dynamic = 'force-dynamic';
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  // 驗證 Vercel Cron 秘鑰（同其他 /api/cron/* route 一致）
+  const authHeader = req.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const scriptPath = '/Users/ki/work/cloudpipe-macao-app/scripts/brand_mention_monitor.py';
-  
+
   try {
     // Run the Python monitoring script
     const { stdout, stderr } = await execAsync(`python3 "${scriptPath}"`, {
@@ -32,9 +38,4 @@ export async function POST() {
       { status: 500 }
     );
   }
-}
-
-// Also allow GET for manual trigger (e.g., via browser)
-export async function GET() {
-  return POST();
 }

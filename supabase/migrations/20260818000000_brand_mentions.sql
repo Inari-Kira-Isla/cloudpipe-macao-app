@@ -27,8 +27,9 @@ ON brand_mentions FOR SELECT
 USING (true);
 
 -- Allow service role full access
-CREATE POLICY "Allow service role full access to brand_mentions" 
-ON brand_mentions FOR ALL 
+CREATE POLICY "Allow service role full access to brand_mentions"
+ON brand_mentions FOR ALL
+TO service_role
 USING (true);
 
 -- Optional: Add brand_profiles reference
