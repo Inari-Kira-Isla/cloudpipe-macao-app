@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, createContext, useContext } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 // 六步閉環步驟
@@ -37,6 +38,170 @@ interface CloudNote {
   brain_synced_at: string | null
   created_at: string
   updated_at: string
+}
+
+// ── Tier Types ─────────────────────────────────────────────────────────────────
+export type UserTier = 'free' | 'pro' | 'enterprise'
+
+export interface CloudNoteUser {
+  email: string
+  name?: string
+  tier: UserTier
+  subscription_end_date?: string | null
+}
+
+// Tier feature gates
+const TIER_FEATURES = {
+  cloudSync: ['pro', 'enterprise'],
+  teamMembers: ['pro', 'enterprise'],
+  apiAccess: ['pro', 'enterprise'],
+  prioritySupport: ['pro', 'enterprise'],
+  advancedAnalytics: ['pro', 'enterprise'],
+  customBranding: ['pro', 'enterprise'],
+  ssoLogin: ['enterprise'],
+  customDomain: ['enterprise'],
+  slaGuarantee: ['enterprise'],
+  webhooks: ['enterprise'],
+}
+
+export function hasFeature(tier: UserTier, feature: keyof typeof TIER_FEATURES): boolean {
+  return TIER_FEATURES[feature].includes(tier)
+}
+
+// Context for user tier state
+interface TierContextType {
+  user: CloudNoteUser | null
+  tier: UserTier
+  isLoading: boolean
+  upgradeTo: (targetTier: UserTier) => void
+  refreshTier: () => Promise<void>
+}
+
+const TierContext = createContext<TierContextType>({
+  user: null,
+  tier: 'free',
+  isLoading: true,
+  upgradeTo: () => {},
+  refreshTier: async () => {},
+})
+
+export const useTier = () => useContext(TierContext)
+
+// ── Upgrade Modal ───────────────────────────────────────────────────────────────
+function UpgradePrompt({ 
+  feature, 
+  requiredTier, 
+  onClose 
+}: { 
+  feature: string
+  requiredTier: string
+  onClose: () => void
+}) {
+  const router = useRouter()
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.85)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: 20,
+    }}>
+      <div style={{
+        background: T.card,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 16,
+        width: '100%',
+        maxWidth: 400,
+        padding: 32,
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+        <h3 style={{ margin: '0 0 12px', fontSize: 20, fontWeight: 700, color: T.gold }}>
+          需要升級
+        </h3>
+        <p style={{ margin: '0 0 24px', fontSize: 14, color: T.muted, lineHeight: 1.6 }}>
+          「{feature}」是 <strong style={{ color: T.gold }}>{requiredTier}</strong> 版專屬功能
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <button
+            onClick={() => router.push('/notes/pricing')}
+            style={{
+              padding: '12px 24px',
+              background: T.gold,
+              border: 'none',
+              borderRadius: 8,
+              color: '#000',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            查看升級方案
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '10px 24px',
+              background: 'transparent',
+              border: `1px solid ${T.cardBorder}`,
+              borderRadius: 8,
+              color: T.muted,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            稍後再說
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Tier Gate Component - wraps features that require specific tier
+export function TierGate({ 
+  feature, 
+  requiredTier, 
+  children,
+  fallback = null,
+}: { 
+  feature: keyof typeof TIER_FEATURES
+  requiredTier: UserTier
+  children: React.ReactNode
+  fallback?: React.ReactNode
+}) {
+  const { tier } = useTier()
+  const [showUpgrade, setShowUpgrade] = useState(false)
+  
+  if (hasFeature(tier, feature)) {
+    return <>{children}</>
+  }
+  
+  if (fallback) {
+    return <>{fallback}</>
+  }
+  
+  return (
+    <>
+      <div 
+        onClick={() => setShowUpgrade(true)}
+        style={{ cursor: 'pointer' }}
+      >
+        {children}
+      </div>
+      {showUpgrade && (
+        <UpgradePrompt 
+          feature={feature} 
+          requiredTier={requiredTier === 'pro' ? '專業版' : '企業版'}
+          onClose={() => setShowUpgrade(false)}
+        />
+      )}
+    </>
+  )
 }
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -563,12 +728,64 @@ function NoteCard({ note }: { note: CloudNote }) {
   )
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-export default function NotesPage() {
+// ── Tier Provider ───────────────────────────────────────────────────────────────
+function TierProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<CloudNoteUser | null>(null)
+  const [tier, setTier] = useState<UserTier>('free')
+  const [isLoading, setIsLoading] = useState(true)
+
+  const refreshTier = async () => {
+    try {
+      // Try to get user from localStorage (set during upgrade)
+      const stored = localStorage.getItem('cloudnote_user')
+      let userData: CloudNoteUser | null = null
+      
+      if (stored) {
+        userData = JSON.parse(stored) as CloudNoteUser
+        setUser(userData)
+        setTier(userData.tier || 'free')
+      }
+      
+      // Call API to verify tier from server
+      if (userData?.email) {
+        const res = await fetch(`/api/cloudnote/upgrade?email=${encodeURIComponent(userData.email)}`)
+        const data = await res.json()
+        if (data.current_user) {
+          setUser(data.current_user)
+          setTier(data.current_user.tier || 'free')
+          localStorage.setItem('cloudnote_user', JSON.stringify(data.current_user))
+        }
+      }
+    } catch (e) {
+      console.error('Failed to refresh tier:', e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const upgradeTo = (targetTier: UserTier) => {
+    // This opens the pricing page
+    window.location.href = '/notes/pricing'
+  }
+
+  useEffect(() => {
+    refreshTier()
+  }, [])
+
+  return (
+    <TierContext.Provider value={{ user, tier, isLoading, upgradeTo, refreshTier }}>
+      {children}
+    </TierContext.Provider>
+  )
+}
+
+// ── Main Page Content ─────────────────────────────────────────────────────────
+function NotesPageContent() {
   const [notes, setNotes] = useState<CloudNote[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const { tier } = useTier()
 
   useEffect(() => {
     // Mock data for demo - in production, fetch from Supabase
@@ -693,6 +910,18 @@ export default function NotesPage() {
             }}>
               📝 CloudNote 學習筆記
             </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <Link 
+                href="/notes/pricing"
+                style={{
+                  color: T.muted,
+                  fontSize: 14,
+                  textDecoration: 'none',
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                定價
+              </Link>
             <button
               onClick={() => setShowCreateModal(true)}
               style={{
@@ -715,11 +944,48 @@ export default function NotesPage() {
               </svg>
               新增筆記
             </button>
+            </div>
           </div>
           <p style={{ margin: 0, color: T.muted, fontSize: 15 }}>
             學習記錄 • 檢閱筆記 • 洞見沉澱 • 研究存檔
           </p>
         </div>
+
+        {/* Free tier upgrade banner */}
+        {tier === 'free' && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            background: 'rgba(74,222,128,0.1)',
+            border: '1px solid rgba(74,222,128,0.3)',
+            borderRadius: 10,
+            marginBottom: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>🌟</span>
+              <span style={{ fontSize: 13, color: T.text }}>
+                個人免費版 • <strong style={{ color: T.green }}>專業版</strong> 解鎖時間軸回顧、團隊共享、API 接入
+              </span>
+            </div>
+            <button
+              onClick={() => window.location.href = '/notes/pricing'}
+              style={{
+                padding: '6px 14px',
+                background: T.green,
+                border: 'none',
+                borderRadius: 6,
+                color: '#000',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              立即升級
+            </button>
+          </div>
+        )}
 
         {/* Stats Bar */}
         <div style={{ 
@@ -820,9 +1086,39 @@ export default function NotesPage() {
           </button>
         </div>
 
-        {/* Learning Review Link */}
-        <Link 
-          href="/notes/review"
+        {/* Learning Review Link - Pro feature */}
+        <TierGate 
+          feature="advancedAnalytics" 
+          requiredTier="pro"
+          fallback={
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                background: 'rgba(251,191,36,0.1)',
+                border: '1px solid rgba(251,191,36,0.3)',
+                borderRadius: 12,
+                marginBottom: 24,
+                cursor: 'pointer',
+              }}
+              onClick={() => window.location.href = '/notes/pricing'}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, color: T.gold }}>
+                  🔒 學習記錄檢閱頁
+                </div>
+                <div style={{ fontSize: 13, color: T.muted }}>
+                  專業版專屬：時間軸回顧 + Brain 檢索
+                </div>
+              </div>
+              <span style={{ color: T.gold, fontSize: 13 }}>升級 →</span>
+            </div>
+          }
+        >
+          <Link 
+            href="/notes/review"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -849,6 +1145,7 @@ export default function NotesPage() {
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </Link>
+        </TierGate>
 
         {/* Notes List */}
         {loading ? (
@@ -868,5 +1165,14 @@ export default function NotesPage() {
         )}
       </div>
     </div>
+  )
+}
+
+// Export default with TierProvider wrapper
+export default function NotesPage() {
+  return (
+    <TierProvider>
+      <NotesPageContent />
+    </TierProvider>
   )
 }

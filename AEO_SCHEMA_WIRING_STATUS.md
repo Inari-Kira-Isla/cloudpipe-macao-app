@@ -1,6 +1,6 @@
 # AEO Schema Contract Wiring Status
 
-**Last Updated:** 2026-08-17
+**Last Updated:** 2026-08-19
 
 ## Contract File
 - Location: `src/data/aeo_schema_contract.json`
@@ -10,9 +10,10 @@
 ## TSX Wiring State
 
 ### InsightPageView.tsx
-- **Status:** ❌ NOT wired to contract
-- **Current:** Uses hardcoded `articleSchema` and `faqSchema` objects
-- **TODO:** Line ~485 in component notes this needs Step5 Gate1 decision
+- **Status:** ✅ Anthropic preference optimization implemented (2026-08-19)
+- **Current:** Uses hardcoded `articleSchema` and `faqSchema` objects + Anthropic-specific enhancements
+- **Anthropic Optimization:** Added sdDatePublished, about (semantic type), genre, provenance trail, version, keywords, citation, and isBasedOn fields for improved AI crawler (Claude) citation rates
+- **TODO:** Line ~485 in component notes this needs Step5 Gate1 decision for contract wiring
 
 ### Other TSX Routes
 - macao insights route: Not wired

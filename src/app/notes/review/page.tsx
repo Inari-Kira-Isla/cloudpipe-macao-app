@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface TimelineEvent {
@@ -299,8 +300,30 @@ function BrainSearchPanel() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function LearningReviewPage() {
+  const router = useRouter()
   const [timeline, setTimeline] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [userTier, setUserTier] = useState<'free' | 'pro' | 'enterprise'>('free')
+
+  // Check user tier on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cloudnote_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        setUserTier(user.tier || 'free')
+      }
+    } catch (e) {
+      console.error('Failed to get user tier:', e)
+    }
+  }, [])
+
+  // Redirect free users to pricing
+  useEffect(() => {
+    if (!loading && userTier === 'free') {
+      // Optionally redirect - for now just show upgrade prompt
+    }
+  }, [loading, userTier])
 
   useEffect(() => {
     // Mock timeline data - in production, fetch from Supabase
@@ -379,6 +402,50 @@ export default function LearningReviewPage() {
     acc[monthKey].push(event)
     return acc
   }, {} as Record<string, TimelineEvent[]>)
+
+  // Show upgrade prompt for free tier users
+  if (userTier === 'free') {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: T.bg,
+        padding: '40px 20px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}>
+        <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: 64, marginBottom: 24 }}>🔒</div>
+          <h1 style={{ margin: '0 0 16px', fontSize: 24, fontWeight: 700, color: T.gold }}>
+            專業版專屬
+          </h1>
+          <p style={{ margin: '0 0 24px', fontSize: 15, color: T.muted, lineHeight: 1.6 }}>
+            學習記錄檢閱頁需要 CloudNote 專業版或企業版。
+            <br />
+            解鎖時間軸回顧 + Brain 智能檢索 + 團隊共享
+          </p>
+          <button
+            onClick={() => router.push('/notes/pricing')}
+            style={{
+              padding: '14px 32px',
+              background: T.green,
+              border: 'none',
+              borderRadius: 8,
+              color: '#000',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            查看升級方案
+          </button>
+          <div style={{ marginTop: 24 }}>
+            <Link href="/notes" style={{ color: T.muted, fontSize: 14, textDecoration: 'none' }}>
+              ← 返回筆記列表
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ 

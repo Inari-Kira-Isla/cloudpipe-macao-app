@@ -42,10 +42,50 @@
 - 使用 service role key 時必須在 server-side
 - 嚴禁將 service key 暴露於 client-side
 
+### 錯誤日誌監控規則
+
+> 背景：多個自動化腳本會產生 .err.log，錯誤累積可能預示系統性問題。
+
+**監控名單**：
+- `macao-insight-auto.err.log` — Insight 自動化腳本
+- `node.err.log` — Node.js 服務
+- `mmpm-reporter.err.log` / `mmpm-worker.err.log` — MMPM 任務
+- `degenerate_case_guard.err.log` — 邊緣案例守衛
+
+**行動閾值**：
+- 若單個 .err.log 尋日出現 **≥10 條錯誤**，需要調查根因
+- 若錯誤類型重複出現（如 HTTP 500、Connection reset），需要優先處理
+- 收到類似警告時，優先檢查最近錯誤樣式並搜尋已知問題模式
+
+**node.err.log 錯誤樣式分析**（每日定期執行）：
+- 使用 `grep -c "PATTERN" ~/.openclaw/logs/node.err.log` 統計常見錯誤模式數量
+- 常見模式：`ECONNREFUSED`（連線被拒）、`1006`（WebSocket關閉）、`1012`（服務重啟）、`4000`（tick timeout）、JSON 語法錯誤
+- 若發現新錯誤模式或數量異常，記錄並考慮修復
+- 檢查時使用 `tail -100` 查看最近錯誤趨勢
+
+### macao-insight-auto.err.log 錯誤樣式（2026-08-18 新增）
+
+> 背景：自動化 insight 生成腳本錯誤日誌，識別常見錯誤模式與處理對策。
+
+**常見錯誤樣式與處理**：
+
+| 錯誤模式 | 原因 | 處理對策 |
+|---------|------|---------|
+| `HTTP Error 401: Unauthorized` | Supabase service key 過期或權限問題 | 檢查 `.env.local` 的 `SUPABASE_SERVICE_KEY` 是否有效；更新 key 後重跑 |
+| `HTTP Error 500: Internal Server Error` | Supabase 伺服器端問題，通常發生於分頁載入 | 脚本已實作 `fail loud` 中止機制；稍後重試通常成功 |
+| `ConnectionResetError: [Errno 54] Connection reset by peer` | SSL 連線被遠端重置 | 網路問題；增加 timeout 或使用重試機制 |
+| `[ALERT] fanout-gate cliff: missing_targets=N` | 翻譯池耗盡，pending=0 但仍有缺失目標 | 檢查翻譯 worker 狀態；確保翻譯佇列有足够 pending 項目 |
+| `[loop-judge] FAIL-LOUD` | 質量評分未達閾值（60-70/100） | 強制降為 draft，待人工審核 |
+
+**行動閾值**：
+- 若單日出現 **≥5 條** 相同錯誤模式，需優先處理
+- HTTP 500/401 错误集中出现时，优先检查 Supabase 服务状态
+- fanout-gate cliff 持续出现需检查翻译worker健康状态
+
 ---
 
-*更新日期: 2026-05-17*
-*依據: 2026-05-11 + 2026-05-17 事後分析*
+*更新日期: 2026-08-18*
+*依據: 2026-08-17 macao-insight-auto.err.log 分析*
 
 ---
 

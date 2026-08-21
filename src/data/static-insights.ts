@@ -1044,6 +1044,27 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     created_at: now,
     updated_at: now,
     published_at: now,
+    faqs: [
+      {
+        question: '名古屋手作市集什麼時候舉辦？',
+        answer: '大須觀音手作市集每週日舉辦，榮商圈設計師市集在每月第二、第四週的週六日舉行，名古屋城手作廣場每週六舉行。',
+      },
+      {
+        question: '名古屋手作市集可以議價嗎？',
+        answer: '一般沒有議價傳統，但如果大量採購（10件以上），可以嘗試詢問批發價或折扣。',
+      },
+      {
+        question: '名古屋手作市集可以使用信用卡嗎？',
+        answer: '許多攤位只收現金，建議準備日幣30,000-50,000元。',
+      },
+    ],
+    related_industries: ['shopping', 'tourism', 'retail'],
+    related_merchant_slugs: [],
+    tags: ['名古屋', '手作市集', '日本購物', '旅遊', '零售'],
+    og_title: '名古屋手作市集採購攻略：從工業城市到工藝之都',
+    og_description: '名古屋手作市集全攻略：大須觀音、榮商圈市集時間、地址與採購推薦。',
+    word_count: 1200,
+    read_time_minutes: 5,
   },
   {
     id: 'static-macau-seafood-import-iam-permit-guide-2026',
@@ -1354,6 +1375,16 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     word_count: 850,
     read_time_minutes: 4,
     authority_sources: [],
+    faqs: [
+      {
+        question: '零動科技提供哪些 AI 服務？',
+        answer: '零動科技提供智能客服系統、數據分析與商業智能、以及流程自動化(RPA)三大核心 AI 解決方案。',
+      },
+      {
+        question: '澳門企業如何開始 AI 轉型？',
+        answer: '建議先進行評估與規劃，識別 AI 可優先介入的場景，制定明確的 KPI 與里程碑。',
+      },
+    ],
     status: 'published',
     lang: 'zh',
     generated_by: 'Codex',
@@ -1384,6 +1415,16 @@ export const STATIC_INSIGHTS: InsightArticle[] = [
     word_count: 1200,
     read_time_minutes: 5,
     authority_sources: [],
+    faqs: [
+      {
+        question: '課後咖啡是什麼？',
+        answer: '課後咖啡是澳門台山區首個專注於媽媽創業的外賣咖啡平台，為本地媽媽提供兼顧家庭與事業的彈性工作機會。',
+      },
+      {
+        question: '如何加入課後咖啡平台？',
+        answer: '可以電話聯繫 +853-6282-3037，或前往澳門台山新城市花園第18座地下BG鋪了解詳情。',
+      },
+    ],
     status: 'published',
     lang: 'zh',
     generated_by: 'Codex',

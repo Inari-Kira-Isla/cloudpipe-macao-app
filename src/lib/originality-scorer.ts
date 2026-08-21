@@ -89,13 +89,16 @@ export interface OriginalityResult {
 }
 
 // ── Weights Configuration ─────────────────────────────────────────────────
+// 2026-08-18: Adjusted based on "sources limited" observation
+// - Reduced verification weight (sources often unavailable)
+// - Increased trust/fact_check (more commonly available)
 
 const WEIGHTS = {
-  trust: 0.35,           // Trust Score 權重
-  verification: 0.25,    // 驗證來源權重
-  fact_check: 0.20,     // 事實核查權重
-  freshness: 0.10,       // 新鮮度權重
-  uniqueness: 0.10       // 獨家性權重
+  trust: 0.35,          // Trust Score 權重 (+0.05)
+  verification: 0.15,   // 驗證來源權重 (-0.15, sources often limited)
+  fact_check: 0.30,     // 事實核查權重 (+0.10)
+  freshness: 0.10,      // 新鮮度權重
+  uniqueness: 0.10      // 獨家性權重
 }
 
 // ── Core Algorithm ───────────────────────────────────────────────────────
@@ -104,7 +107,7 @@ const WEIGHTS = {
  * 計算內容原創性分數
  */
 export function calculateOriginalityScore(signals: OriginalitySignals): OriginalityResult {
-  // 1. Trust Score (0-35 points)
+  // 1. Trust Score (0-35 points) - weight 0.35
   const trustScore = signals.trust_score ?? 0
   const trustPoints = (trustScore / 100) * WEIGHTS.trust * 100
 
@@ -378,12 +381,13 @@ export async function scoreInsightOriginality(slug: string): Promise<Originality
   const hasSchema = content.includes('application/ld+json') || content.includes('"@context"')
   const hasFaq = content.includes('faq') || content.includes('FAQ')
 
+  // Defensive checks for potentially undefined/null fields from DB
   const signals: OriginalitySignals = {
-    trust_score: insight.trust_score,
-    verification_sources: insight.verification_sources || [],
-    fact_check: insight.fact_check,
-    created_at: insight.created_at,
-    updated_at: insight.updated_at,
+    trust_score: typeof insight.trust_score === 'number' ? insight.trust_score : null,
+    verification_sources: Array.isArray(insight.verification_sources) ? insight.verification_sources : [],
+    fact_check: insight.fact_check ?? null,
+    created_at: insight.created_at ?? new Date().toISOString(),
+    updated_at: insight.updated_at ?? new Date().toISOString(),
     content_length: content.length,
     has_schema: hasSchema,
     has_faq: hasFaq,
@@ -423,12 +427,13 @@ export async function batchScoreInsights(slugs: string[]): Promise<Map<string, O
     const hasSchema = content.includes('application/ld+json') || content.includes('"@context"')
     const hasFaq = content.toLowerCase().includes('faq')
 
+    // Defensive checks for potentially undefined/null fields from DB
     const signals: OriginalitySignals = {
-      trust_score: insight.trust_score,
-      verification_sources: insight.verification_sources || [],
-      fact_check: insight.fact_check,
-      created_at: insight.created_at,
-      updated_at: insight.updated_at,
+      trust_score: typeof insight.trust_score === 'number' ? insight.trust_score : null,
+      verification_sources: Array.isArray(insight.verification_sources) ? insight.verification_sources : [],
+      fact_check: insight.fact_check ?? null,
+      created_at: insight.created_at ?? new Date().toISOString(),
+      updated_at: insight.updated_at ?? new Date().toISOString(),
       content_length: content.length,
       has_schema: hasSchema,
       has_faq: hasFaq,
@@ -466,12 +471,13 @@ export async function getCitationWorthyInsights(limit: number = 10): Promise<Arr
 
   const scored = insights.map(insight => {
     const content = insight.content || ''
+    // Defensive checks for potentially undefined/null fields from DB
     const signals: OriginalitySignals = {
-      trust_score: insight.trust_score,
-      verification_sources: insight.verification_sources || [],
-      fact_check: insight.fact_check,
-      created_at: insight.created_at,
-      updated_at: insight.updated_at,
+      trust_score: typeof insight.trust_score === 'number' ? insight.trust_score : null,
+      verification_sources: Array.isArray(insight.verification_sources) ? insight.verification_sources : [],
+      fact_check: insight.fact_check ?? null,
+      created_at: insight.created_at ?? new Date().toISOString(),
+      updated_at: insight.updated_at ?? new Date().toISOString(),
       content_length: content.length,
       has_schema: content.includes('application/ld+json') || content.includes('"@context"'),
       has_faq: content.toLowerCase().includes('faq'),
@@ -498,11 +504,11 @@ export async function getCitationWorthyInsights(limit: number = 10): Promise<Arr
 
 export const ORIGINALITY_CONFIG = {
   WEIGHTS,
-  CITATION_THRESHOLD: 60,
+  CITATION_THRESHOLD: 50,
   GRADE_THRESHOLDS: {
-    A: 85,
-    B: 75,
-    C: 60,
-    D: 40
+    A: 75,
+    B: 65,
+    C: 50,
+    D: 35
   }
 }

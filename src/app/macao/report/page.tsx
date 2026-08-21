@@ -392,8 +392,8 @@ export default async function ReportPage() {
             <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 16 }}>AI 爬蟲行為分析</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <InsightCard
-                title="ClaudeBot 深度主題爬取模式"
-                body="Anthropic 的 ClaudeBot 展現出獨特的深度爬取行為：單次 session 可達 100-150 頁，沿著同一行業的商戶頁面持續探索。例如從「日本料理」到「海鮮進口」到「食材供應」，顯示出跨行業供應鏈的語義理解能力。"
+                title="ClaudeBot（Anthropic）為最大 AI 爬蟲流量來源"
+                body="過去 30 天記錄 ClaudeBot 訪問 134,496 次，位居 AI 爬蟲首位。ClaudeBot 展現出獨特的深度爬取行為：單次 session 可達 100-150 頁，沿著同一行業的商戶頁面持續探索。例如從「餐飲美食/日本料理」到「食品供應/海鮮進口」到「餐飲設備」，顯示出跨行業供應鏈的語義理解能力。" provenance="數據來源：CloudPipe 澳門商戶百科伺服器日誌（2026-07-20 至 2026-08-19），Bot 識別基於 User-Agent: ClaudeBot"
               />
               <InsightCard
                 title="GPTBot 跨行業取樣策略"
@@ -502,11 +502,16 @@ function MetricCard({ label, value, sub, color }: { label: string; value: string
   )
 }
 
-function InsightCard({ title, body }: { title: string; body: string }) {
+function InsightCard({ title, body, provenance }: { title: string; body: string; provenance?: string }) {
   return (
     <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 20, borderLeft: '3px solid #c5a572' }}>
       <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>{title}</h3>
       <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.8 }}>{body}</p>
+      {provenance && (
+        <p style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.6, marginTop: 8, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
+          📌 {provenance}
+        </p>
+      )}
     </div>
   )
 }

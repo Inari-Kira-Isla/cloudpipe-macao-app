@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
-import { FactCheckResult } from '@/lib/originality-scorer'
+import { FactCheckResult, ORIGINALITY_CONFIG } from '@/lib/originality-scorer'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +12,7 @@ interface InsightRow {
   fact_check: unknown | null
   created_at: string
   updated_at: string
-  content: string | null
+  body_html: string | null
 }
 
 function hasSchema(content: string | null): boolean {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     const { data: insights, error } = await supabase
       .from('insights')
-      .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, content')
+      .select('slug, title, trust_score, verification_sources, fact_check, created_at, updated_at, body_html')
       .order('updated_at', { ascending: false })
       .limit(100)
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate originality scores for each insight
     const results = (insights || []).map((insight: InsightRow) => {
-      const content = insight.content || ''
+      const content = insight.body_html || ''
       const trustScore = insight.trust_score ?? 0
       const verificationSources = insight.verification_sources || []
       const factCheck = insight.fact_check as FactCheckResult | null
@@ -114,12 +114,13 @@ export async function GET(request: NextRequest) {
       // Total
       const totalScore = Math.round(trustPoints + verificationPoints + factCheckPoints + freshnessPoints + uniquenessPoints)
 
-      // Grade
+      // Grade - use config
+      const { A, B, C, D } = ORIGINALITY_CONFIG.GRADE_THRESHOLDS
       let grade: 'A' | 'B' | 'C' | 'D' | 'F' = 'F'
-      if (totalScore >= 85) grade = 'A'
-      else if (totalScore >= 75) grade = 'B'
-      else if (totalScore >= 60) grade = 'C'
-      else if (totalScore >= 40) grade = 'D'
+      if (totalScore >= A) grade = 'A'
+      else if (totalScore >= B) grade = 'B'
+      else if (totalScore >= C) grade = 'C'
+      else if (totalScore >= D) grade = 'D'
 
       const citationWorthy = totalScore >= 60
 

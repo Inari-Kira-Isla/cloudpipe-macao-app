@@ -25,19 +25,27 @@ export default function CartPage() {
   const [form, setForm] = useState({
     customer_name: '',
     phone: '',
+    email: '',
     address: '',
     delivery_day: '',
     delivery_slot: 'afternoon',
     notes: '',
   })
   const [loading, setLoading] = useState(false)
+  const [processingPayment, setProcessingPayment] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState<{ orderNo: string } | null>(null)
+  const [success, setSuccess] = useState<{ orderId: string; orderNo: string } | null>(null)
+  const [stripeEnabled, setStripeEnabled] = useState(false)
   const orderNoRef = useRef(`DRP-${Math.floor(Math.random() * 9000 + 1000)}`)
 
   useEffect(() => {
     const d = nextSaturdays(4)
     setDates(d)
+
+    // Check if Stripe is configured
+    fetch('/api/v1/checkout')
+      .then(res => res.ok ? setStripeEnabled(true) : null)
+      .catch(() => {})
 
     // Read cart from URL params (set by main page) or localStorage
     const p = new URLSearchParams(window.location.search)
@@ -61,7 +69,8 @@ export default function CartPage() {
 
   const total = item ? item.price * item.qty : 0
 
-  const submit = async (e: React.FormEvent) => {
+  // Submit order to backend and optionally initiate Stripe checkout
+  const handleSubmit = async (e: React.FormEvent, useStripe: boolean = false) => {
     e.preventDefault()
     if (!form.customer_name.trim() || !form.phone.trim()) {
       setError('請填寫姓名及 WhatsApp 號碼')
@@ -72,8 +81,10 @@ export default function CartPage() {
       return
     }
     setLoading(true); setError('')
+    
     try {
-      const res = await fetch('/api/v1/sea-urchin-orders', {
+      // First create the order
+      const orderRes = await fetch('/api/v1/sea-urchin-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,15 +97,60 @@ export default function CartPage() {
           product_name: item?.name || '海膽套裝',
           amount_mop: total,
           source: 'cart_checkout',
-          status: 'inquiry',
+          status: useStripe ? 'pending_payment' : 'inquiry',
         }),
       })
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+      
+      if (!orderRes.ok) {
+        const d = await orderRes.json().catch(() => ({}))
         throw new Error(d.error || '提交失敗')
       }
+      
+      const orderData = await orderRes.json()
+      const orderId = orderData.order_id
+      
       localStorage.removeItem('sue_cart')
-      setSuccess({ orderNo: orderNoRef.current })
+      
+      if (useStripe && stripeEnabled && orderId) {
+        // Initiate Stripe checkout
+        setProcessingPayment(true)
+        try {
+          const checkoutRes = await fetch('/api/v1/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              amount: total,
+              currency: 'mop',
+              customerName: form.customer_name.trim(),
+              customerEmail: form.email.trim() || undefined,
+              customerPhone: form.phone.trim(),
+              productName: `${item?.name || '海膽套裝'} - MOP$${total}`,
+            }),
+          })
+          
+          if (!checkoutRes.ok) {
+            const d = await checkoutRes.json().catch(() => ({}))
+            throw new Error(d.error || '支付跳轉失敗')
+          }
+          
+          const checkoutData = await checkoutRes.json()
+          
+          if (checkoutData.url) {
+            // Redirect to Stripe
+            window.location.href = checkoutData.url
+            return
+          }
+        } catch (payErr) {
+          console.error('Payment error:', payErr)
+          // Fall through to WhatsApp flow on error
+        } finally {
+          setProcessingPayment(false)
+        }
+      }
+      
+      // Fallback: show WhatsApp confirmation
+      setSuccess({ orderId: orderId || '', orderNo: orderNoRef.current })
     } catch (err) {
       setError(err instanceof Error ? err.message : '提交失敗，請直接 WhatsApp 聯絡')
     }
@@ -171,7 +227,7 @@ export default function CartPage() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'start' }}>
 
         {/* ── Left: Form ── */}
-        <form onSubmit={submit}>
+        <form onSubmit={(e) => handleSubmit(e, false)}>
           <div style={{ marginBottom: 32 }}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.15em', color: '#555', marginBottom: 8 }}>STEP 01 · 聯絡資料</div>
             <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: 0 }}>確認訂單</h1>
@@ -201,8 +257,19 @@ export default function CartPage() {
             />
           </Field>
 
+          {/* Email (optional, for Stripe receipt) */}
+          <Field label="EMAIL / 電郵（可選）" num="03">
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              style={inputStyle}
+            />
+          </Field>
+
           {/* Address */}
-          <Field label="ADDRESS / 配送地址" num="03">
+          <Field label="ADDRESS / 配送地址" num="04">
             <input
               type="text"
               placeholder="澳門半島 / 氹仔 / 路環 · 詳細地址"
@@ -215,7 +282,7 @@ export default function CartPage() {
           </Field>
 
           {/* Delivery Day */}
-          <Field label="DELIVERY DAY / 配送日期" num="04">
+          <Field label="DELIVERY DAY / 配送日期" num="05">
             <select
               value={form.delivery_day}
               onChange={e => setForm(f => ({ ...f, delivery_day: e.target.value }))}
@@ -227,7 +294,7 @@ export default function CartPage() {
           </Field>
 
           {/* Slot */}
-          <Field label="TIME SLOT / 配送時段" num="05">
+          <Field label="TIME SLOT / 配送時段" num="06">
             <div style={{ display: 'flex', gap: 12 }}>
               {[
                 { val: 'morning',   label: '上午', sub: '10:00–13:00' },
@@ -253,7 +320,7 @@ export default function CartPage() {
           </Field>
 
           {/* Notes */}
-          <Field label="NOTES / 備注（選填）" num="06">
+          <Field label="NOTES / 備注（選填）" num="07">
             <input
               type="text"
               placeholder="特別要求、門鈴位置等"
@@ -269,23 +336,46 @@ export default function CartPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              marginTop: 24, width: '100%', padding: '16px 24px',
-              background: loading ? '#333' : '#ff5c00',
-              color: '#fff', border: 'none', borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            <span>{loading ? '提交中…' : '確認落單 · CONFIRM ORDER'}</span>
-            {!loading && <span style={{ fontSize: 16 }}>→</span>}
-          </button>
+          {/* Payment Buttons */}
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Stripe/Online Payment Button */}
+            {stripeEnabled && (
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={loading || processingPayment}
+                style={{
+                  width: '100%', padding: '16px 24px',
+                  background: processingPayment ? '#635bff' : '#635bff',
+                  color: '#fff', border: 'none', borderRadius: 10, cursor: processingPayment ? 'not-allowed' : 'pointer',
+                  fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                <span>{processingPayment ? '跳轉到支付...' : '網上即時付款 (Stripe/支付寶) 💳'}</span>
+              </button>
+            )}
+            
+            {/* Traditional WhatsApp Confirm Button */}
+            <button
+              type="submit"
+              disabled={loading || processingPayment}
+              style={{
+                width: '100%', padding: '16px 24px',
+                background: loading ? '#333' : '#25d366',
+                color: '#fff', border: 'none', borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <span>{loading ? '提交中…' : 'WhatsApp 確認訂單 💬'}</span>
+            </button>
+          </div>
 
           <div style={{ marginTop: 16, textAlign: 'center', fontSize: 11, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.08em' }}>
-            提交後 24H 內 WhatsApp 確認 · MBway / 轉數快 / 現金付款
+            {stripeEnabled 
+              ? '網上付款：Stripe / 支付寶 · 即時確認' 
+              : 'WhatsApp 確認後付款：MBway / 轉數快 / 現金'}
           </div>
         </form>
 
@@ -312,7 +402,7 @@ export default function CartPage() {
                 {[
                   ['小計 SUBTOTAL', `MOP$ ${total.toLocaleString()}`],
                   ['配送 DELIVERY', 'MOP$50-100（另計）'],
-                  ['付款 PAYMENT', 'MBway / 轉數快 / 現金'],
+                  ['付款 PAYMENT', stripeEnabled ? 'Stripe / 支付寶 / WhatsApp' : 'MBway / 轉數快 / 現金'],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.06em' }}>
                     <span style={{ color: '#555' }}>{k}</span>
@@ -330,7 +420,7 @@ export default function CartPage() {
 
             {/* Trust strip */}
             <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', '24H確認'], ['◆', '鮮度保證']].map(([icon, txt]) => (
+              {[['◆', '產地直送'], ['◆', '全程冷鏈'], ['◆', '即時確認'], ['◆', '鮮度保證']].map(([icon, txt]) => (
                 <div key={txt} style={{ background: '#111', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px 12px', display: 'flex', gap: 6, fontSize: 11, color: '#555' }}>
                   <span style={{ color: '#ff5c00' }}>{icon}</span>{txt}
                 </div>

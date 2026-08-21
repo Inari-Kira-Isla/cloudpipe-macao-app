@@ -117,11 +117,13 @@ function calculateOriginalityScore(signals: OriginalitySignals): OriginalityResu
 
   const totalScore = Math.round(trustPoints + verificationPoints + factCheckPoints + freshnessPoints + uniquenessPoints)
 
+  // Grade thresholds
+  const GRADE_THRESHOLDS = { A: 75, B: 65, C: 50, D: 35 }
   let grade: 'A' | 'B' | 'C' | 'D' | 'F' = 'F'
-  if (totalScore >= 85) grade = 'A'
-  else if (totalScore >= 75) grade = 'B'
-  else if (totalScore >= 60) grade = 'C'
-  else if (totalScore >= 40) grade = 'D'
+  if (totalScore >= GRADE_THRESHOLDS.A) grade = 'A'
+  else if (totalScore >= GRADE_THRESHOLDS.B) grade = 'B'
+  else if (totalScore >= GRADE_THRESHOLDS.C) grade = 'C'
+  else if (totalScore >= GRADE_THRESHOLDS.D) grade = 'D'
 
   const recommendations: string[] = []
   if (!signals.trust_score || signals.trust_score < 50) {
