@@ -3,12 +3,16 @@ import { createServiceClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const ADMIN_KEY = process.env.SEA_URCHIN_ADMIN_KEY ?? ''
+// Fail closed: no empty-string fallback. If SEA_URCHIN_ADMIN_KEY isn't set in
+// env, every request is rejected — an unset env var must never be
+// satisfiable by an empty/omitted secret header.
+const ADMIN_KEY = process.env.SEA_URCHIN_ADMIN_KEY || null
 const BUCKET = 'commerce-images'
 const FOLDER = 'sea-urchin'
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-admin-key') !== ADMIN_KEY) {
+  const adminKey = req.headers.get('x-admin-key')
+  if (!ADMIN_KEY || !adminKey || adminKey !== ADMIN_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

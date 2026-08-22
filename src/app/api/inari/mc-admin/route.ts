@@ -5,11 +5,16 @@ import { NextResponse } from 'next/server'
 import { getMcReadiness, approveMcProduct, excludeMcProduct, pauseMcProduct } from '@/lib/commerce-supabase'
 
 const BRAND = 'inari-global-foods'
-const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
+
+// Fail closed: no empty-string fallback. If ADMIN_SECRET isn't set in env,
+// every request is rejected — an unset env var must never be satisfiable by
+// an empty/omitted secret header.
+const ADMIN_SECRET = process.env.ADMIN_SECRET || null
 
 function checkAuth(req: Request) {
   const token = req.headers.get('x-admin-secret') || new URL(req.url).searchParams.get('secret')
-  return token === ADMIN_SECRET
+  if (!ADMIN_SECRET || !token || token !== ADMIN_SECRET) return false
+  return true
 }
 
 export async function GET(req: Request) {
