@@ -69,3 +69,8 @@ supabase/.temp/
 /scripts/execute-sql-migrations.py
 /scripts/generate-sitemap.js
 /scripts/generate-sitemap-standalone.js
+.scratch/
+
+# Security ADRs (may disclose unresolved secret/vuln details) — keep in
+# KiraVault/Projects/CloudPipe/security-phase1/, never in this public repo.
+docs/adr/
