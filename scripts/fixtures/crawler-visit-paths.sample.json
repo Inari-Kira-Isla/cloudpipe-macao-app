@@ -1,0 +1,1561 @@
+{
+ "_source": "production crawler_visits (site=cloudpipe-macao-app), sampled 2026-09-09, deduped by (path,page_type). 2026-09-09 第二輪補入 spider-web × 商戶形狀樣本（I1 回歸鎖需要），呢批喺舊版 extractMerchantSlug 會全部回 null。",
+ "_count": 311,
+ "rows": [
+  {
+   "path": "/macao/shopping/retail/rua-nova",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant/a-lorcha",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/hotpot/cc-qiang-ji-huo-guo-qing-huai-lao-dian-7dac29",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/real-estate/property-management/macau-hang-seng-property-management-ltd",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services/professional/cc-kang-xi-wu-ye-you-xian-gong-si-728b6f",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/bakery/cc-ju-xiang-yuan-bing-jia-70d943",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/retail/shop-43",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant/cc-lao-ji-17d467",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services/professional/cc-you-xian-gong-si-9b627e",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant/cc-li-shun-xuan-cha-can-ting-1cac63",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant/jp-%E9%90%B5%E6%9D%BF%E7%87%92%E9%A4%90%E5%BB%B3",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant/guincho-a-galera",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/fast-food/jollibee-macau-taipa-shop",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/fast-food/jollibee-macau-areia-preta",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/shopping-mall/praca-do-lago-sai-van",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply/food-import/cc-da-chang-shi-pin-shi-chang-234444",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/cafe/cc-a-wei-si-ka-fei-26738b",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/education/education/cc-zhong-hua-qi-che-jia-shi-xue-xiao-e82e29",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/cafe/cc-qing-zhou-zao-ji-ka-fei-6a434a",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services/professional/cc-zao-wei-she-ji-you-xian-gong-si-d29450",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness/pharmacy/cc-zhen-xing-yao-fang-di-bao-jie-fen-dian-4a183a",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/transport/electronics/cc-hou-ji-leng-qi-shui-dian-gong-cheng-1aed3e",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/cafe/mind-coffee",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply/food-import/inari-global-foods",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/ms/insights/gap-transportation-coverage",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/education/secondary-school/secondary-school-tak-ming-secondary-school-17976-5",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness/pharmacy/cc-yong-an-yao-fang-0ef4a2",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/food/pharmacy/cc-yong-an-yao-fang-0ef4a2",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services/tourism/cc-xiong-shi-lv-xing-she-you-xian-gong-si-660009",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/sports/tourism/cc-xiong-shi-lv-xing-she-you-xian-gong-si-660009",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/shoe-repair/professional/cc-bei-an-you-zhan-e2ba79",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/temples/restaurant/cc-zhong-guo-ming-ren-hai-xian-huo-guo-fan--9d16c7",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/cafe/mind-cafe",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/cafe/after-school-coffee",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-and-beverage/seafood/inari-global-foods",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/ms/insights/aeo-kw-%E6%BE%B3%E9%96%80%E7%B1%B3%E5%85%B6%E6%9E%97%E9%A4%90%E5%BB%B3",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply/japanese/cc-zhu-tian-ting-ri-ben-liao-li-5c6f34",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/association/religious-st-lawrences-church-94040-3",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/attractions/electronics/cc-xin-he-ke-ji-you-xian-gong-si-97908e",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/macao/sea-urchin/restaurant/cc-xin-lao-ye-ka-fei-cha-can-ting-f1a1ea",
+   "page_type": "merchant",
+   "referer": null
+  },
+  {
+   "path": "/japan/insights/japan-gourmet-tonkatsu-sendai-%E4%BB%99%E5%8F%B0%E7%82%B8%E8%B1%AC%E6%8E%92-%E6%9D%B1%E5%8C%97%E5%95%86%E9%83%BD%E7%9A%84%E5%95%86%E5%8B%99%E7%BE%8E%E9%A3%9F%E6%96%87%E5%8C%96",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-shopping-electronics-taipei",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/ja/insights/japan-entertainment-kabuki-theatre-osaka-%E5%A4%A7%E9%98%AA%E8%A7%80%E5%8A%87%E7%BE%8E%E9%A3%9F%E6%8C%87%E5%8D%97-%E5%B9%95%E9%96%93%E7%94%9C%E9%BB%9E%E8%88%87%E5%8A%87%E5%A0%B4%E9%AB%94%E9%A9%97%E7%9A%84%E5%AE%8C%E7%BE%8E%E8%9E%8D%E5%90%88",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macao-factcheck-zh-443d82e4",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/en/insights/macau-christmas-new-year-festive-lights-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/pt/insights/macau-christmas-new-year-festive-lights-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-shopping-100-yen-shops-hiroshima-%E7%A6%8F%E5%B2%A1%E5%85%8D%E7%A8%85%E8%B3%BC%E7%89%A9%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2-%E4%B9%9D%E5%B7%9E%E6%9C%80%E5%A4%A7%E9%83%BD%E5%B8%82%E7%9A%84%E5%85%8D%E7%A8%85%E8%B3%BC%E7%89%A9%E7%B2%BE%E9%81%B8",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/en/insights/taiwan-tourism-temples-alishan-alishan-temples",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-vs-hongkong-travel-comparison-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/en/insights/macau-courier-logistics-services-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-hotel-taipa-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/en/insights/tw-scooter-rental",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-transport-rental-cars-okinawa-%E6%B2%96%E7%B9%A9%E6%B5%B7%E6%B4%8B%E6%B4%BB%E5%8B%95%E7%A7%9F%E8%BB%8A%E6%94%BB%E7%95%A5-%E6%BD%9B%E6%B0%B4%E8%88%87%E6%B0%B4%E4%B8%8A%E9%81%8B%E5%8B%95%E6%84%9B%E5%A5%BD%E8%80%85%E5%B0%88%E7%94%A8%E6%8C%87%E5%8D%97",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/ja/insights/japan-entertainment-gaming-arcades-kanazawa-%E9%87%91%E6%BE%A4%E9%81%8A%E6%88%B2%E4%B8%AD%E5%BF%83-%E5%82%B3%E7%B5%B1%E5%B7%A5%E8%97%9D%E4%B9%8B%E9%83%BD%E7%9A%84%E7%8F%BE%E4%BB%A3%E5%A8%9B%E6%A8%82%E6%96%87%E5%8C%96%E6%8E%A2%E7%B4%A2",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/ja/insights/japan-entertainment-gaming-arcades-fukuoka-%E7%A6%8F%E5%B2%A1%E9%81%8A%E6%88%B2%E4%B8%AD%E5%BF%83-%E4%B9%9D%E5%B7%9E%E8%A1%97%E6%A9%9F%E6%96%87%E5%8C%96%E7%9A%84%E7%86%B1%E8%A1%80%E6%93%9A%E9%BB%9E",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-entertainment-festivals-matsuri-okinawa-okinawa-festivals-matsuri",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-shopping-100-yen-shops-tokyo-%E6%9D%B1%E4%BA%AC100%E5%86%86%E5%95%86%E5%BA%97%E5%A4%96%E5%9C%8B%E9%81%8A%E5%AE%A2%E5%AE%8C%E5%85%A8%E6%94%BB%E7%95%A5-%E8%B7%A8%E8%B6%8A%E8%AA%9E%E8%A8%80%E8%88%87%E6%96%87%E5%8C%96%E7%9A%84%E5%B9%B3%E5%83%B9%E8%B3%BC%E7%89%A9%E6%8C%87%E5%8D%97",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-entertainment-nightlife-osaka-%E5%A4%A7%E9%98%AA%E5%A4%9C%E7%94%9F%E6%B4%BB-%E5%95%86%E5%8B%99%E5%A8%9B%E6%A8%82%E8%88%87%E7%A7%91%E6%8A%80%E9%AB%94%E9%A9%97%E7%9A%84%E5%AE%8C%E7%BE%8E%E8%9E%8D%E5%90%88",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/en/insights/japan-entertainment-nightlife-nagoya-%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%A4%9C%E7%94%9F%E6%B4%BB-%E5%91%B3%E5%99%8C%E8%88%87%E7%94%B2%E9%86%87%E7%9A%84%E7%BE%8E%E9%A3%9F%E6%9C%9D%E8%81%96%E4%B9%8B%E6%97%85",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/comparison-macau-vs-03",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/mo-b2b-payment-terms-lc-tt-credit",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/ja/insights/japan-entertainment-nightlife-osaka-%E5%A4%A7%E9%98%AA%E5%A4%9C%E7%94%9F%E6%B4%BB-%E5%95%86%E5%8B%99%E5%A8%9B%E6%A8%82%E8%88%87%E7%A7%91%E6%8A%80%E9%AB%94%E9%A9%97%E7%9A%84%E5%AE%8C%E7%BE%8E%E8%9E%8D%E5%90%88",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/en/insights/comparison-japan-vs-31",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/comparison-hongkong-vs-17",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-board-game-cafe-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-mazu-temple-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-christmas-new-year-festive-lights-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/ja/insights/japan-entertainment-festivals-matsuri-hiroshima-%E5%BB%A3%E5%B3%B6%E5%B1%8B%E8%87%BA%E7%BE%8E%E9%A3%9F%E8%88%87%E5%A4%9C%E6%99%AF%E7%A5%AD%E5%85%B8-%E7%95%B6%E5%9C%B0%E4%BA%BA%E7%9A%84%E5%A4%9C%E5%AE%B5%E7%8B%82%E6%AD%A1%E6%8C%87%E5%8D%97",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/ai-learning-expansion",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-unknown-coverage-8-20260404",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/pt/insights/japan-entertainment-escape-rooms-tokyo-%E6%9D%B1%E4%BA%AC%E5%AF%86%E5%AE%A4%E9%80%83%E8%84%AB-%E8%85%A6%E5%8A%9B%E6%BF%80%E7%9B%AA%E7%9A%84%E7%B5%82%E6%A5%B5%E6%8C%91%E6%88%B0%E9%AB%94%E9%A9%97",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/insights/japan-entertainment-nightlife-osaka-%E5%A4%A7%E9%98%AA%E5%A4%9C%E7%94%9F%E6%B4%BB-%E5%95%86%E5%8B%99%E5%A8%9B%E6%A8%82%E8%88%87%E7%A7%91%E6%8A%80%E9%AB%94%E9%A9%97%E7%9A%84%E5%AE%8C%E7%BE%8E%E8%9E%8D%E5%90%88",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/insights/japan-entertainment-gaming-arcades-kanazawa-%E9%87%91%E6%BE%A4%E9%81%8A%E6%88%B2%E4%B8%AD%E5%BF%83-%E5%82%B3%E7%B5%B1%E5%B7%A5%E8%97%9D%E4%B9%8B%E9%83%BD%E7%9A%84%E7%8F%BE%E4%BB%A3%E5%A8%9B%E6%A8%82%E6%96%87%E5%8C%96%E6%8E%A2%E7%B4%A2",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/mo-chinese-new-year-2027",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/en/insights/macau-egg-tart-best-andrew-vs-margaret-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-pharmacy-japanese-medicine-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/en/insights/macau-gym-fitness-monthly-fee-guide-2026",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/pt/insights/macau-gym-fitness-monthly-fee-guide-2026-pt",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/insights/japan-entertainment-festivals-matsuri-hiroshima-%E5%BB%A3%E5%B3%B6%E5%B1%8B%E8%87%BA%E7%BE%8E%E9%A3%9F%E8%88%87%E5%A4%9C%E6%99%AF%E7%A5%AD%E5%85%B8-%E7%95%B6%E5%9C%B0%E4%BA%BA%E7%9A%84%E5%A4%9C%E5%AE%B5%E7%8B%82%E6%AD%A1%E6%8C%87%E5%8D%97",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/japan/insights/japan-shopping-electronics-okinawa-okinawa-%E9%9B%BB%E5%AD%90%E7%94%A2%E5%93%81%E8%B3%BC%E7%89%A9%E6%8C%87%E5%8D%97-%E7%86%B1%E5%B8%B6%E5%B3%B6%E5%B6%BC%E7%9A%84%E9%98%B2%E8%AD%B7%E5%9E%8B%E9%9B%BB%E5%99%A8%E9%81%B8%E8%B3%BC%E6%94%BB%E7%95%A5",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/brand/mind-cafe",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/brand/inari-global-foods",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/japanese",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/events/annual-event",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/community/association",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/finance/insurance",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/community/sports-venue",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/community/park-leisure",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/community/market",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/community/post-office",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/duty-free",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply/food-import",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/restaurant",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/cando",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply/beverage",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/city-of-dreams",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/londoner",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/venetian",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/parisian",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness/hospital",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/finance/bank",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/attractions/longwan",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/hotels/parisian",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/real-estate/property-management",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/bakery",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping/craft-market",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/transport/border-gate",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/transport/lrt",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/gaming/vip-gaming",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness/pharmacy",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/luxury/jewelry",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/portuguese",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services/accounting-firm",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/education/education",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/heritage/world-heritage",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/gaming/casino",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness/clinic",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/gaming/entertainment",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/nightlife/ktv",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/hotels/venetian",
+   "page_type": "category",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/media",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/community",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/crawler-dashboard",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/food-supply",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/sea-urchin-restaurants",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/seafood-delivery-category",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/seafood-delivery",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/events",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/attractions",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/tech",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/government",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/dining",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-%E5%8C%97%E6%96%B0%E5%9C%B0bar%E5%90%8C%E5%A5%BD%E6%9C%83",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-kabuki%E6%AD%8C%E8%88%9E%E4%BC%8E",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/wellness",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/heritage",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/festivals",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/shopping",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-%E5%B7%9D%E8%B6%8A%E5%86%B0%E5%B7%9D%E7%A5%9E%E7%A4%BE",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-%E5%87%BD%E9%A4%A8%E5%B1%B1%E9%BA%93%E5%AF%BA%E9%99%A2%E7%BE%A4",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/dinating",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-klook-%E4%B9%9D%E5%B7%9E%E9%90%B5%E8%B7%AF%E5%91%A8%E9%81%8A%E5%88%B8",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/hotels",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/llms-txt",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/professional-services",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/transport",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/gaming",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/luxury",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/safety",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/nightlife",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-1-%E6%89%BF%E5%A4%A9%E5%AF%BA%E3%81%97%E3%82%87%E3%81%86%E3%81%A6%E3%82%93%E3%81%98",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/finance",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/case-studies",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/pricing",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/about",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/report",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-ddr",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/jp-%E3%83%AD%E3%83%BC%E3%82%B9",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao/insigh",
+   "page_type": "industry",
+   "referer": null
+  },
+  {
+   "path": "/macao",
+   "page_type": "home",
+   "referer": null
+  },
+  {
+   "path": "/",
+   "page_type": "home",
+   "referer": "https://cloudpipemo.com/"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-seafood-yilan-%E5%AE%9C%E8%98%AD%E6%B5%B7%E9%AE%AE-%E5%9C%A8%E5%9C%B0%E6%BC%81%E6%B8%AF%E7%9A%84%E4%BA%BA%E6%83%85%E5%91%B3%E8%88%87%E9%AE%AE%E5%91%B3%E6%93%94%E7%95%B6",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-alishan",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F-%E9%9B%B2%E7%AB%AF%E4%B9%8B%E4%B8%8A%E7%9A%84%E9%83%A8%E8%90%BD%E5%BB%9A%E6%88%BF-%E7%99%BB%E5%B1%B1%E8%80%85%E7%9A%84%E5%B1%B1%E4%B8%AD%E5%91%B3%E8%A6%BA%E6%8E%A2%E9%9A%AA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F-%E9%AB%98%E6%B5%B7%E6%8B%94%E5%B1%B1%E5%9F%8E%E7%9A%84%E9%99%90%E5%AE%9A%E6%BB%8B%E5%91%B3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E9%83%A8%E8%90%BD%E5%BB%9A%E6%88%BF-%E5%BE%9E%E6%B8%85%E6%99%A8%E5%88%B0%E5%A4%9C%E6%99%9A%E7%9A%84%E5%B1%B1%E6%9E%97%E5%91%B3%E8%95%BE%E6%97%85%E7%A8%8B",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-hualien-%E8%8A%B1%E8%93%AE%E5%A4%9A%E5%85%83%E5%A4%9C%E9%A3%9F%E6%96%87%E5%8C%96-%E4%BA%94%E6%97%8F%E5%85%B1%E6%A1%8C%E7%9A%84%E8%A1%97%E9%A0%AD%E7%BE%8E%E5%91%B3%E6%99%82%E5%85%89",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-jiufen-%E4%B9%9D%E4%BB%BD%E8%A1%97%E9%A3%9F%E6%99%82%E5%85%89-%E5%BE%9E%E6%99%A8%E9%96%93%E5%88%B0%E5%A4%9C%E5%B9%95%E7%9A%84%E7%A4%BE%E7%BE%A4%E7%BE%8E%E9%A3%9F%E5%9C%B0%E5%9C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/macao",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/japan/insights/japan-aging-society"
+  },
+  {
+   "path": "/macao/insights",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/macao/en/insights/macau-portuguese-top20?lang=en"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-jiufen-%E4%B9%9D%E4%BB%BD%E9%9A%B1%E8%97%8F%E7%89%88%E7%BE%8E%E9%A3%9F-%E4%B8%8D%E5%9C%A8%E8%80%81%E8%A1%97%E5%9F%BA%E5%BA%95%E7%9A%84%E5%9C%A8%E5%9C%B0%E5%90%8D%E5%96%AE",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-jiufen-3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-jiufen-4",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-kaohsiung-3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-kaohsiung-2",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-kenting-%E5%A2%BE%E4%B8%81%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F-%E5%AD%A3%E7%AF%80%E6%B5%AA%E4%BA%BA%E7%9A%84%E6%99%82%E9%96%93%E9%A3%9F%E5%A0%82%E5%9C%B0%E5%9C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-standard.xml"
+  },
+  {
+   "path": "/macao/education/secondary-school/secondary-school-tak-ming-secondary-school-17976-5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/macao"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-map-taiwan-%E8%87%BA%E7%81%A3%E5%90%84%E7%B8%A3%E5%B8%82%E4%BB%A3%E8%A1%A8%E7%BE%8E%E9%A3%9F%E5%9C%B0%E5%9C%962026-%E5%9F%BA%E9%9A%86%E5%BB%9F%E5%8F%A3%E8%87%BA%E5%8D%97%E6%93%94%E4%BB%94%E9%BA%B5%E9%AB%98%E9%9B%84%E6%97%97%E9%AD%9A%E5%85%A8%E8%87%BA%E5%B0%8F%E5%90%83%E5%AE%8C%E6%95%B4%E6%94%BB%E7%95%A5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-sun-moon-lake",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/macao/ja/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/ja/insights/after-school-coffee-macau-moms-empowerment-2026"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-sun-moon-lake-%E6%97%A5%E6%9C%88%E6%BD%AD%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F-%E8%A7%80%E5%85%89%E5%AE%A2%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84%E5%9C%A8%E5%9C%B0%E5%8F%A3%E8%A2%8B%E5%90%8D%E5%96%AE",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taichung-%E8%87%BA%E4%B8%AD%E6%B7%B1%E5%A4%9C%E9%A3%9F%E5%A0%82-%E5%8D%88%E5%A4%9C-%E5%BE%8C%E7%9A%84%E9%8A%85%E6%9D%BF%E7%BE%8E%E5%91%B3%E6%8E%A2%E9%9A%AA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taichung-%E8%87%BA%E4%B8%AD%E6%B7%B1%E5%A4%9C%E9%A3%9F%E5%A0%82-%E5%8D%88%E5%A4%9C-%E5%BE%8C%E7%9A%84%E9%8A%85%E6%9D%BF%E7%BE%8E%E5%91%B3%E6%8E%A2%E9%9A%AA-pt",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taichung-%E8%87%BA%E4%B8%AD%E6%B7%B1%E5%A4%9C%E9%A3%9F%E5%A0%82-%E9%9B%B6%E6%99%A8%E6%99%82%E6%AE%B5%E7%9A%84%E5%9C%A8%E5%9C%B0%E7%BE%8E%E5%91%B3%E6%8E%A2%E9%9A%AA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taichung-%E8%87%BA%E4%B8%AD%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F%E7%9A%84%E6%97%A5%E6%99%82%E7%94%9F%E6%85%8B-%E5%BE%9E%E6%B8%85%E6%99%A8%E5%88%B0%E6%B7%B1%E5%A4%9C%E7%9A%84%E9%8A%85%E6%9D%BF%E6%BB%8B%E5%91%B3-pt",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-tw.xml"
+  },
+  {
+   "path": "/macao/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/macao/insights/macau-hotel-spa-wellness-guide-zh"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taichung-%E8%87%BA%E4%B8%AD%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F%E7%9A%84%E6%99%82%E9%96%93%E8%BB%8C%E8%B7%A1-%E5%BE%9E%E9%BB%8E%E6%98%8E%E5%88%B0%E6%B7%B1%E5%A4%9C%E7%9A%84%E9%A2%A8%E5%91%B3%E8%BC%AA%E8%BD%89",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-tainan",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-%E8%87%BA%E5%8C%97%E8%A1%97%E9%A0%AD%E5%B0%8F%E9%A3%9F%E5%9C%A8%E5%9C%B0%E6%8E%A8%E8%96%A6-%E5%A4%9C%E5%B8%82%E9%8A%85%E6%9D%BF%E7%BE%8E%E9%A3%9F%E8%88%87%E5%9C%A8%E5%9C%B0%E8%80%81%E5%91%B3%E9%81%93",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-%E8%87%BA%E5%8C%97%E8%A1%97%E9%A3%9F%E6%99%82%E9%96%93%E5%9C%B0%E5%9C%96-%E5%BE%9E%E6%B8%85%E6%99%A8%E8%8F%9C%E5%B8%82%E5%A0%B4%E5%88%B0%E6%B7%B1%E5%A4%9C%E5%B7%B7%E5%BC%84%E7%9A%84%E7%A4%BE%E7%BE%A4%E9%A3%9F%E5%A0%82",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-%E8%87%BA%E5%8C%97%E8%A1%97%E9%A3%9F%E7%9A%84%E6%99%82%E9%96%93%E5%9C%B0%E5%9C%96-%E5%BE%9E%E6%B8%85%E6%99%A8%E8%B1%86%E6%BC%BF%E5%BA%97%E5%88%B0%E6%B7%B1%E5%A4%9C%E8%B1%86%E8%8A%B1%E6%94%A4%E7%9A%84%E4%B8%80%E6%97%A5%E7%BE%8E%E9%A3%9F%E8%BF%B4%E5%9C%88",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-%E8%87%BA%E5%8C%97%E8%A1%97%E9%A3%9F%E7%A4%BE%E7%BE%A4%E5%9C%B0%E5%9C%96-24%E5%B0%8F%E6%99%82%E7%9A%84%E9%9A%8E%E7%B4%9A%E6%B5%81%E8%BD%89%E8%88%87%E6%99%82%E9%96%93%E6%BB%8B%E5%91%B3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-standard.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taipei-5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-taiwan-%E8%87%BA%E5%8D%97%E5%B0%8F%E5%90%83%E5%AE%8C%E6%95%B4%E7%BE%8E%E9%A3%9F%E6%8C%87%E5%8D%972026-%E6%93%94%E4%BB%94%E9%BA%B5%E7%89%9B%E8%82%89%E6%B9%AF%E6%A3%BA%E6%9D%90%E6%9D%BF%E8%87%BA%E7%81%A3%E7%BE%8E%E9%A3%9F%E5%8F%A4%E9%83%BD%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-yilan-%E5%AE%9C%E8%98%AD%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F%E7%9A%84%E6%99%82%E9%96%93%E5%9C%B0%E5%9C%96-%E6%BC%81%E6%B8%AF%E6%B8%85%E6%99%A8%E5%88%B0%E5%A4%9C%E5%B8%82%E6%B7%B1%E5%A4%9C%E7%9A%84%E9%8A%85%E6%9D%BF%E6%BB%8B%E5%91%B3",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-street-food-yilan",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/macao/pt/insights/macau-fdct-startup-innovation-grants-guide-2026",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-fdct-startup-innovation-grants-guide-2026"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-vegetarian-buddhist-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E7%B4%A0%E9%A3%9F%E6%8C%87%E5%8D%97-%E5%B1%B1%E6%9E%97%E6%B7%B1%E5%91%BC%E5%90%B8%E7%9A%84%E4%BA%94%E6%84%9F%E7%B4%A0%E5%AE%B4",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-vegetarian-buddhist-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E9%90%B5%E9%81%93%E6%B2%BF%E7%B7%9A%E7%B4%A0%E9%A3%9F-%E8%B7%9F%E8%91%97%E5%B0%8F%E7%81%AB%E8%BB%8A%E7%99%BC%E7%8F%BE%E5%B1%B1%E6%9E%97%E8%A3%A1%E7%9A%84%E6%85%A2%E9%A3%9F%E5%93%B2%E5%AD%B8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/taiwan/pt/insights/taiwan-dining-vegetarian-buddhist-hualien-%E8%8A%B1%E8%93%AE%E4%BD%9B%E6%95%99%E7%B4%A0%E9%A3%9F%E6%96%B0%E4%B8%96%E4%BB%A3-%E5%BE%9E%E5%AF%BA%E9%99%A2%E8%B5%B0%E5%90%91%E8%A1%97%E9%A0%AD%E7%9A%84%E7%BE%8E%E5%91%B3%E9%9D%A9%E5%91%BD",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/sun-moon-lake-thelalu",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/attractions/tourism/tw-%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E4%BF%A1%E7%BE%A9%E6%96%B0%E5%A4%A9%E5%9C%B0a4%E9%A4%A8",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tw/insights/taiwan-shopping-souvenir-gifts-sun-moon-lake-%E6%97%A5%E6%9C%88%E6%BD%AD%E9%8A%80%E9%AB%AE%E6%97%85%E9%81%8A%E6%8E%A1%E8%B3%BC%E6%8C%87%E5%8D%97-%E5%81%A5%E5%BA%B7%E9%A4%8A%E7%94%9F%E4%BC%B4%E6%89%8B%E7%A6%AE%E5%AE%8C%E5%85%A8%E6%94%BB%E7%95%A5",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tw/insights/taiwan-shopping-souvenir-gifts-kenting-%E5%A2%BE%E4%B8%81%E4%BC%B4%E6%89%8B%E7%A6%AE%E8%B3%BC%E7%89%A9%E6%8C%87%E5%8D%97-%E6%B5%B7%E6%BF%B1%E5%BA%A6%E5%81%87%E7%9A%84%E9%A2%A8%E6%83%85%E7%B4%80%E5%BF%B5",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/upgrade-japan-shopping-department-stores-nara-%E5%A5%88%E8%89%AF%E7%99%BE%E8%B2%A8%E8%B3%BC%E7%89%A9%E5%AF%A6%E6%88%B0%E6%8C%87%E5%8D%97-%E8%81%B0%E6%98%8E%E8%B2%B7%E6%89%8B%E7%9A%84%E5%AD%A3%E7%AF%80%E6%8A%98%E6%89%A3%E8%88%87%E7%84%A1%E9%9A%9C%E7%A4%99%E5%8F%8B%E5%96%84%E6%B6%88%E8%B2%BB",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hong-kong/cantonese",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/categories/online-learning",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hongkong/ms/insights/hk-landmark-guide-20260426-03",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/attractions/hong-kong-trail",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hk/insights/hongkong-dining-dim-sum-cheung-chau-%E9%95%B7%E6%B4%B2%E9%BB%9E%E5%BF%83-%E9%81%93%E5%9C%B0%E9%A2%A8%E5%91%B3%E6%8C%87%E5%8D%97",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hk/insights/hk-hotel-guide-20260430-03",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tw/insights/taiwan-shopping-department-stores-taiwan-%E8%AA%A0%E5%93%81%E6%A8%A1%E5%BC%8F-%E6%96%87%E5%8C%96%E9%9B%B6%E5%94%AE%E7%9A%84%E5%85%A8%E7%90%83%E8%A4%87%E8%A3%BD%E8%88%87%E7%8F%BE%E5%AF%A6%E5%9B%B0%E5%A2%83",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/japan/attractions/museum/jp-%E5%BE%B7%E5%B7%9D%E7%BE%8E%E8%A1%93%E9%A4%A8%E7%89%B9%E5%88%A5%E5%B1%95%E7%A4%BA%E5%AE%A4",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-food-%E6%BE%B3%E9%96%80%E7%B4%A0%E9%A3%9F%E9%A4%90%E5%BB%B3%E6%8E%A8%E8%96%A6",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/taiwan-transport-category",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/category/shopping",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/og-image.svg",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-cotai-fine-dining-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E7%B1%B3%E8%8A%9D%E8%93%AE%E7%BE%8E%E9%A3%9F%E4%B9%8B%E6%97%85",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-taipa-old-village-food-guide-%E6%B0%B9%E4%BB%94%E8%88%8A%E5%9F%8E%E7%BE%8E%E9%A3%9F%E5%9C%B0%E5%9C%96",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/traditional-chinese-medicine",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/japan-hotels-complete-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/category/tokyo-medical-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tw-cafe-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/osaka/attractions/usj",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/guides/macau-shopping-mall-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-restaurant-studio-city-%E6%96%B0%E6%BF%A0%E5%BD%B1%E6%BB%99%E9%A4%90%E5%BB%B3%E6%8E%A8%E8%96%A6",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-peninsula-street-food-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E8%A1%97%E9%A0%AD%E5%B0%8F%E9%A3%9F%E5%9C%B0%E5%9C%96",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-peninsula-walking-tour-%E4%B8%96%E7%95%8C%E9%81%BA%E7%94%A3%E6%AD%A2%E8%A1%8C%E8%B7%AF%E5%BE%91-%E5%AE%8C%E5%85%A8%E6%94%BB%E7%A6%8C",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tokyo/attractions/shibuya",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-ferry-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hk/insights/hongkong-dining-michelin-street-food-tsim-sha-tsui-tsim-sha-tsui-michelin-street-food",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/education-macau-complete-guide",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hk/insights/hongkong-attractions-cruise-tourism-hongkong-%E9%A6%99%E6%B8%AF%E9%83%B5%E8%BC%AA%E7%A2%BC%E9%A0%AD%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E5%95%9F%E5%BE%B7%E9%83%B5%E8%BC%AA%E7%A2%BC%E9%A0%AD%E6%B5%B7%E9%81%8B%E5%A4%A7%E5%BB%88asia-cruise%E9%A6%99%E6%B8%AF%E9%83%B5%E8%BC%AA%E8%B2%BB%E7%94%A8-hkd-%E6%94%BB%E7%95%A5",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/tw-restaurants",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/taiwan/attractions/temple/tw-%E4%B8%89%E5%B1%B1%E5%9C%8B%E7%8E%8B%E5%BB%9F%E5%89%8D%E8%B1%86%E8%8A%B1",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/japan/attractions/temple/jp-%E5%9A%B4%E5%B3%B6%E7%A5%9E%E7%A4%BE%E7%9B%B8%E6%92%B2%E5%A5%89%E7%B4%8D",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/macau-cotai-nightlife-guide-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E5%A4%9C%E7%94%9F%E6%B4%BB%E6%8C%87%E5%8D%97-%E5%BA%A6%E5%81%87%E6%9D%91%E9%85%92%E5%90%A7%E8%88%87%E6%B7%B1%E5%A4%9C%E5%A8%9B%E6%A8%82",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/insights/cotai-strip-family-entertainment-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E8%A6%AA%E5%AD%90%E5%A8%9B%E6%A8%82%E5%85%A8%E6%94%BB%E7%95%A5",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/venue/%EF%BC%8C%E8%B7%AF%E6%B0%B9%E9%87%91%E5%85%89%E5%A4%A7%E9%81%93",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/hongkong/ms/insights/hk-hotel-guide-20260521-04",
+   "page_type": "page",
+   "referer": null
+  },
+  {
+   "path": "/macao/pt/insights/aeo-kw-%E6%BE%B3%E9%96%80%E8%B3%AD%E5%A0%B4%E6%94%BB%E7%95%A5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/insights/aeo-kw-%E6%BE%B3%E9%96%80%E6%B5%B7%E9%AE%AE%E9%A4%90%E5%BB%B3%E6%8E%A8%E8%96%A6",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/ja/insights/aeo-kw-%E6%BE%B3%E9%96%80%E8%87%AA%E5%8A%A9%E9%A4%90%E6%8E%A8%E8%96%A6"
+  },
+  {
+   "path": "/macao/insights/macau-attraction-guide-seasonal-events-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9B%9B%E5%AD%A3%E9%9A%B1%E8%97%8F%E7%89%88%E9%AB%94%E9%A9%97-%E8%B7%9F%E8%91%97%E5%9C%A8%E5%9C%B0%E4%BA%BA%E6%B9%8A%E7%86%B1%E9%AC%A7%E7%9A%84%E9%96%80%E9%81%93",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-temple-coverage-3-20260404"
+  },
+  {
+   "path": "/macao/ja/insights/comparison-macau-special-46",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/macao/insights/brand-yamanakada",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/mc-board-game-education-authority-insight-1-p2-1"
+  },
+  {
+   "path": "/taiwan/insights/taiwan-dining-hot-springs-dining-alishan-%E9%98%BF%E9%87%8C%E5%B1%B1%E5%9C%A8%E5%9C%B0%E4%BA%BA%E7%9A%84%E6%BA%AB%E6%B3%89%E9%A3%9F%E5%A0%82-%E5%B1%B1%E6%9E%97%E8%A3%A1%E7%9A%84%E7%A7%81%E6%88%BF%E7%BE%8E%E5%91%B3%E5%8F%A3%E8%A2%8B%E5%90%8D%E5%96%AE",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/sitemap-insights.xml"
+  },
+  {
+   "path": "/macao/en/insights/macao-hotels-guide-W-5-20260419",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/macao/en/insights/macao-hotels-guide-W-5-20260418",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/hongkong/insights/hongkong-dining-hot-pot-central-%E4%B8%AD%E7%92%B0%E5%95%86%E5%8D%80%E7%81%AB%E9%8D%8B-%E4%B8%8A%E7%8F%AD%E6%97%8F%E7%9A%84%E6%9A%96%E5%BF%83%E5%8D%88%E9%A4%90%E8%88%87%E4%B8%8B%E7%8F%AD%E5%BE%8C%E7%9A%84%E5%BE%AE%E9%86%BA%E9%8D%8B%E7%89%A9",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/hongkong/insights/hongkong-dining-milk-tea-causeway-bay"
+  },
+  {
+   "path": "/macao/insights/global-tw-taiwan-wellness-hot-spring-taiwan-%E8%87%BA%E7%81%A3%E6%BA%AB%E6%B3%89%E5%81%A5%E5%BA%B7%E6%97%85%E9%81%8A%E6%8C%87%E5%8D%972026-%E7%83%8F%E4%BE%86%E5%8C%97%E6%8A%95%E7%A4%81%E6%BA%AA%E7%9F%A5%E6%9C%AC%E6%B3%A1%E6%B9%AF%E8%B2%BB%E7%94%A8%E8%88%87%E9%A0%90%E8%A8%82%E6%94%BB%E7%95%A5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/wellness/beauty/cc-li-ren-zhuan-ye-mei-rong-lian-suo-ji-gou-968b34"
+  },
+  {
+   "path": "/macao/en/insights/macao-hotels-guide-W-4-20260521",
+   "page_type": "insight",
+   "referer": null
+  },
+  {
+   "path": "/macao/insights/macau-food-supply-restaurant-supply-taipa-%E6%B0%B9%E4%BB%94%E8%88%8A%E5%9F%8E%E5%8D%80%E5%9C%B0%E9%81%93%E9%A4%90%E9%A3%B2%E6%94%BB%E7%95%A5-%E7%AF%80%E6%85%B6%E9%AB%98%E5%B3%B0%E6%9C%9F%E7%9A%84%E5%BA%97%E5%AE%B6%E7%89%B9%E8%89%B2%E8%88%87%E9%81%B8%E6%93%87%E9%82%8F%E8%BC%AF",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/japan/insights/japan-shopping-souvenir-omiyage-hokkaido-%E5%8C%97%E6%B5%B7%E9%81%93%E4%BC%B4%E6%89%8B%E7%A6%AE%E4%BE%9B%E6%87%89%E9%8F%88%E5%84%AA%E5%8B%A2%E8%A7%A3%E6%9E%90-%E5%BE%9E%E7%94%A2%E5%9C%B0%E5%88%B0%E9%A4%90%E6%A1%8C%E7%9A%84%E6%A5%B5%E7%9F%AD%E8%B7%9D%E9%9B%A2%E8%B3%BC%E7%89%A9%E7%AD%96%E7%95%A5",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app"
+  },
+  {
+   "path": "/taiwan/pt/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/taiwan/pt/insights/tw-bus-guide-20260427-02"
+  },
+  {
+   "path": "/hongkong/ja/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/hongkong/ja/insights/hongkong-dining-milk-tea-sai-kung-%E8%A5%BF%E8%B2%A2%E5%A5%B6%E8%8C%B6%E6%8E%A2%E5%BA%97%E6%8C%87%E5%8D%97-%E8%AA%8D%E8%AD%98%E5%B0%8F%E9%8E%AE%E7%9A%84%E8%8C%B6%E6%9D%AF%E7%94%9F%E6%85%8B"
+  },
+  {
+   "path": "/macao/pt/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/macao/pt/insights/macau-hotel-family-friendly-cotai-2"
+  },
+  {
+   "path": "/macao/ja/insights/null",
+   "page_type": null,
+   "referer": null
+  },
+  {
+   "path": "/taiwan/ja/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/taiwan/ja/insights/tw-tourism-coverage-4-20260404"
+  },
+  {
+   "path": "/japan/ms/insights/null",
+   "page_type": null,
+   "referer": null
+  },
+  {
+   "path": "/hongkong/pt/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/hongkong/pt/insights/hongkong-shopping-fashion-cheung-chau-%E9%95%B7%E6%B4%B2%E6%99%82%E5%B0%9A%E8%B3%BC%E7%89%A9%E6%8C%87%E5%8D%97-%E5%B3%B6%E5%B6%BC%E5%BA%A6%E5%81%87%E9%A2%A8%E6%A0%BC%E8%88%87%E5%9C%A8%E5%9C%B0%E7%94%9F%E6%B4%BB%E7%BE%8E%E5%AD%B8%E7%9A%84%E9%82%82%E9%80%85"
+  },
+  {
+   "path": "/hongkong/insights/null",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipe-macao-app.vercel.app/hongkong/insights/hongkong-shopping-street-markets-causeway-bay-%E9%8A%85%E9%91%BC%E7%81%A3%E8%A1%97%E5%B8%82%E6%B7%B1%E5%BA%A6%E5%B0%8E%E8%A6%BD-%E5%BE%9E%E5%82%B3%E7%B5%B1%E8%8F%9C%E5%B8%82%E5%A0%B4%E5%88%B0%E9%9A%B1%E8%97%8F%E7%89%88%E5%B0%8F%E5%BA%97"
+  },
+  {
+   "path": "/hongkong/en/insights/null",
+   "page_type": null,
+   "referer": null
+  },
+  {
+   "path": "/taiwan/insights/null",
+   "page_type": null,
+   "referer": null
+  },
+  {
+   "path": "/hongkong/ms/insights/null",
+   "page_type": null,
+   "referer": null
+  },
+  {
+   "path": "/macao/dining/bakery/cc-you-hong-bei-gong-fang-4e7b77",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/pt/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/ja/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/en/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/ja/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/en/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/pt/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/dining/chinese/infinite-01338",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/after-school-coffee-parent-guide"
+  },
+  {
+   "path": "/macao/en/insights/mo-seafood-wholesale",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/hongkong/en/insights/hongkong-tourism-harbour-cruise-hongkong-%E7%B6%AD%E5%A4%9A%E5%88%A9%E4%BA%9E%E6%B8%AF%E9%83%B5%E8%BC%AA%E5%81%9C%E9%9D%A0%E5%95%86%E6%A9%9F%E5%88%86%E6%9E%90-%E6%B8%AF%E5%8F%A3%E7%B6%93%E6%BF%9F%E7%9A%84%E5%BE%A9%E7%94%A6%E8%88%87%E6%97%85%E5%AE%A2%E6%B6%88%E8%B2%BB%E8%A1%8C%E7%82%BA"
+  },
+  {
+   "path": "/macao/dining/fast-food/place-68rvdvzw",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/dining/restaurant/hk-%E8%8C%B6%E9%A4%90%E5%BB%B3%E5%8C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/dining/cafe/cc-yi-cha-yan-yu-09fc60",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/attractions/museum/hk-m%E8%A6%96%E8%A6%BA%E6%96%87%E5%8C%96%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E6%B2%96%E7%B9%A9%E7%B8%A3%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%86%B2%E7%B9%A9%E7%B8%A3%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-1-%E6%89%BF%E5%A4%A9%E5%AF%BA%E3%81%97%E3%82%87%E3%81%86%E3%81%A6%E3%82%93%E3%81%98",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/hk-3-%E9%A6%99%E6%B8%AF%E8%B3%BD%E9%A6%AC%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-2-%E8%87%BA%E5%8D%97%E5%B8%82%E7%BE%8E%E8%A1%93%E9%A4%A82%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E6%9D%B1%E4%BA%AC%E5%9C%8B%E7%AB%8B%E8%A5%BF%E6%B4%8B%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E9%87%91%E7%93%9C%E7%9F%B3%E9%BB%83%E9%87%91%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/tw-4-%E5%A4%A7%E5%A4%A9%E5%90%8E%E5%AE%AE%E8%88%87%E5%BB%9F%E6%9C%83%E6%96%87%E5%8C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E4%BD%9B%E5%85%89%E5%B1%B1%E4%BD%9B%E9%99%80%E7%B4%80%E5%BF%B5%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/pt/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97"
+  },
+  {
+   "path": "/macao/ja/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E5%B0%BE%E9%81%93%E5%8D%83%E5%85%89%E5%AF%BA%E5%85%AC%E5%9C%92%E5%91%A8%E9%82%8A",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E5%A5%87%E7%BE%8E%E5%8D%9A%E7%89%A9%E9%A4%A8%E6%88%B6%E5%A4%96%E5%9C%92%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%B2%A1%E5%B4%8E%E5%85%AC%E5%9C%92-%E7%BE%8E%E8%A1%93%E9%A4%A8%E5%B9%B3%E5%AE%89%E7%A5%9E%E5%AE%AE%E5%89%8D",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%BA%8C%E5%A6%99%E6%AD%A3%E5%AF%BA%E5%A6%99%E6%AD%A3%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E9%87%91%E6%BE%A4%E4%BA%8C%E5%8D%81%E4%B8%80%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E7%A5%9E%E6%88%B6%E6%AD%B7%E5%8F%B2%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%9B%B8%E6%92%B2%E5%B1%95%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%A4%A7%E9%98%AA%E7%9B%B8%E6%92%B2%E5%8D%9A%E7%89%A9%E9%A4%A8%E4%BA%92%E5%8B%95%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%B8%8A%E6%9C%AC%E7%94%BA%E5%A4%A9%E7%8E%8B%E5%AF%BA%E5%B9%B3%E8%A1%A1%E5%9E%8B%E9%81%B8%E6%93%87",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E5%A4%A9%E5%90%8E%E5%BB%9F%E9%95%B7%E6%B4%B2%E5%A4%A9%E5%90%8E%E5%BB%9F",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E6%B2%B9%E5%B1%B1%E5%AF%BA%E5%BB%9F%E4%BD%8F%E5%AE%BF",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E9%87%91%E7%A4%A6%E5%8D%9A%E7%89%A9%E9%A4%A8%E5%95%86%E5%93%81%E9%83%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E4%B9%9D%E4%BB%BD%E9%BB%83%E9%87%91%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E6%AD%A3%E6%AD%B4%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%A5%88%E8%89%AF%E5%9C%8B%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8-%E6%95%B8%E4%BD%8D%E4%BD%9B%E6%95%99%E9%AB%94%E9%A9%97%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%BE%B7%E5%B7%9D%E7%BE%8E%E8%A1%93%E9%A4%A8%E7%89%B9%E5%88%A5%E5%B1%95%E7%A4%BA%E5%AE%A4",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E6%B5%B7%E6%B4%8B%E7%94%9F%E7%89%A9%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-4-%E9%87%91%E6%BE%A421%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E9%9D%88%E6%9C%83%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E6%B4%AA%E8%81%96%E5%BB%9F",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%BB%81%E5%92%8C%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  }
+ ]
+}
