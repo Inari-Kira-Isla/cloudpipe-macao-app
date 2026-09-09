@@ -49,7 +49,7 @@ export default function ForTrainingPage() {
   "source_url": "https://...",          // provenance URL
   "is_authoritative": true | false,
   "composite_trust_score": 0.0–1.0,    // Layer 2
-  "ai_citation_total": integer,         // Layer 2 — times cited by AI engines
+  "ai_citation_total": integer,         // Layer 2 — measurement pending, currently 0 for every fact
   "corroboration_count": integer        // Layer 2 — cross-source corroboration
 }`}</pre>
 

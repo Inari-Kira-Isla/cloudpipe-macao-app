@@ -223,6 +223,13 @@ function getPageType(path: string, referer?: string): string {
   return 'page'
 }
 
+// `/macao/{industry}/{category}/faqs` 呢類保留段唔係商戶節點。宣告放喺
+// extractMerchantSlug() **之前** —— 唔止 runtime 安全（TDZ 喺 module 求值時已解），
+// 而係 scripts/verify-merchant-slug-extraction.mjs 靠 extractConst() 抽佢出嚟一齊
+// eval，位置同單行形式係嗰個 harness 嘅隱含契約。
+const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt', 'ms'])
+const RESERVED_TERMINAL_SEGMENTS = new Set(['faqs', 'faq', 'index'])
+
 // crawler_visits.merchant_slug — 2026-09-09 接線修復。
 //
 // 病歷：呢個欄位喺 schema 一直存在，但 trackVisit() 個 row object 由頭到尾
@@ -233,17 +240,32 @@ function getPageType(path: string, referer?: string): string {
 // 會過度計數，產生假排名。
 //
 // 語義守則（fail-closed，唔准估）：
-//  - 只有 page_type === 'merchant' 先填。呢個 page_type 本身就係由
-//    /^\/macao\/[^/]+\/[^/]+\/[^/]+$/ 判出嚟，同下面個 regex 同一語義。
-//  - 其他 page_type（insight / category / industry / faqs / spider-web /
-//    page）一律 null。特別注意：唔可以照抄 crawler_stats_precompute.py 嗰個
-//    `segments[-1]` 寫法 —— 嗰個對 /macao/insights/<slug> 都會攞到嘢，佢係靠
-//    caller 先 filter page_type='merchant' 先冇出事。
-//  - 抽唔到 / 空 / "null" / "undefined" / 超長 → 回 null，唔填假值。
-function extractMerchantSlug(path: string, pageType: string): string | null {
-  if (pageType !== 'merchant') return null
-  const m = path.split('?')[0].match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
+//  - **靠 path 形狀自己判，唔靠 page_type**。⚠️ 2026-09-09 第二輪修正：原版寫
+//    `if (pageType !== 'merchant') return null`，睇落好保守，實際上開咗個大窿 ——
+//    `getPageType()` 第一句就係「own-domain referer → return 'spider-web'」，排喺
+//    merchant regex **之前**。即係 AI bot 由我哋自己 /macao/insights/ 頁跟連結爬過去
+//    嘅商戶頁，page_type 係 'spider-web' 唔係 'merchant'，一律攞唔到 slug。
+//    實測：全表 spider-web 188,573 行（19.8%），近 3 日 spider-web 11,676 行入面抽樣
+//    49.5% 係商戶形狀，bot 分佈 ClaudeBot 385 / GPTBot 104 —— 即約 36% 嘅真 AI 引擎
+//    商戶頁訪問會被吞走。呢個 regex 本身已經係 fail-closed（`[^/]+` × 4 段、`$` 收口），
+//    唔需要再叠一層 page_type 閘。
+//  - regex 唔中（insight / category / industry / 非 /macao/ 路徑）→ null。特別注意：
+//    唔可以照抄 crawler_stats_precompute.py 嗰個 `segments[-1]` 寫法 —— 嗰個對
+//    /macao/insights/<slug> 都會攞到嘢，佢係靠 caller 先 filter page_type 先冇出事。
+//  - 抽唔到 / 空 / "null" / "undefined" / 超長 / 解碼後含 `/` 或控制字元 → null，唔填假值。
+function extractMerchantSlug(path: string): string | null {
+  const bare = path.split('?')[0]
+  const m = bare.match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
   if (!m) return null
+  // ⚠️ 拆走 page_type 閘之後（見上），4 段 `/macao/` 形狀唔再等於商戶頁 ——
+  // `/macao/{en|ja|pt|ms}/insights/{slug}` 同樣係 4 段。呢個窿係本函數第二輪
+  // 改動引入嘅，靠 harness 嘅 `/macao/en/insights/comparison-japan-vs-31`
+  // case 即刻捉返。用**否定清單**（lang 段 / insights 段）唔用 VALID_INDUSTRIES
+  // 白名單：白名單一旦有新行業未入表，就會靜靜哋掉走真商戶，寧可保守放行都
+  // 唔可以靜默漏數。
+  const seg = bare.split('/')          // ['', 'macao', s1, s2, s3]
+  if (LANG_PATH_SEGMENTS.has(seg[2])) return null
+  if (seg[2] === 'insights' || seg[3] === 'insights') return null
   let slug = m[1]
   try {
     slug = decodeURIComponent(slug)
@@ -252,6 +274,16 @@ function extractMerchantSlug(path: string, pageType: string): string | null {
   }
   slug = slug.trim()
   if (!slug || slug.length > 200) return null
+  // ⚠️ decode 之後必須重驗結構。上面條 regex 特登用 `[^/]+` 排除斜線，但
+  // `decodeURIComponent` 一步就可以將佢哋放返入嚟：
+  //   /macao/dining/restaurant/%2e%2e%2f%2e%2e%2fetc%2fpasswd → "../../etc/passwd"
+  //   /macao/dining/restaurant/a%2Fb                          → "a/b"
+  //   /macao/dining/restaurant/a-lorcha%00                     → 含 U+0000
+  // NUL 大機會令 PostgREST POST 收 400（會被下面第二級退避接住，成行仍然入到表），
+  // 但寫入嘅係垃圾值 —— 違反本函數自己講嘅「fail closed，唔填假值」。一律回 null。
+  // eslint-disable-next-line no-control-regex
+  if (/[/\\\u0000-\u001f\u007f]/.test(slug)) return null
+  if (slug === '.' || slug === '..') return null
   // 歷史 telemetry 有 terminal segment 被序列化成字面 "null"/"undefined" 嘅
   // 合成連結（見 getPageType 同一處理），呢啲唔係真商戶節點。
   if (/^(null|undefined)$/i.test(slug)) return null
@@ -266,7 +298,6 @@ function extractMerchantSlug(path: string, pageType: string): string | null {
   return slug
 }
 
-const RESERVED_TERMINAL_SEGMENTS = new Set(['faqs', 'faq', 'index'])
 
 // Whitelist of real industry slugs — anything else under /macao/ is a merchant slug
 // (top-level merchant pages caught by [industry] dynamic route)
@@ -282,7 +313,6 @@ const VALID_INDUSTRIES = new Set([
   'merchants', 'lifestyle',
 ])
 
-const LANG_PATH_SEGMENTS = new Set(['en', 'ja', 'pt', 'ms'])
 
 // Region+lang-aware insight path regex — captures region and slug for industry lookup.
 // Catches BOTH:
@@ -393,8 +423,11 @@ async function resolveInsightIndustry(
 
 async function trackFaqConversion(path: string, utmMedium: string, supabaseUrl: string, supabaseKey: string) {
   // Extract merchant slug from path: /macao/{industry}/{category}/{slug}
-  const merchantMatch = path.match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
-  const merchantSlug = merchantMatch ? merchantMatch[1] : null
+  // 2026-09-09：呢度本來係同一個檔入面**第三份** slug 抽取實作（冇 decode、冇
+  // 長度閘、冇 RESERVED 閘），寫入 analytics_events.merchant_slug 再餵
+  // crawler-dashboard 個「top 20 merchants」面板 —— 即 `/faqs` 頁一樣會被當成商戶。
+  // 今次修復嘅明示目標就係消滅重複實作，所以呢度一律改 call 同一個 SSOT。
+  const merchantSlug = extractMerchantSlug(path)
   const row = {
     event_type: 'faq_arrival',
     conversion_type: 'faq',
@@ -591,7 +624,7 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
       industry,
       category,
       // 2026-09-09 接線：呢個欄位建咗但從未有寫入端（見 extractMerchantSlug 註解）。
-      merchant_slug: extractMerchantSlug(path, pageType),
+      merchant_slug: extractMerchantSlug(path),
       session_id: sessionId,
       ua_raw: ua.slice(0, 200),
       referer: referer ? referer.slice(0, 500) : null,

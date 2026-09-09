@@ -1,6 +1,6 @@
 {
- "_source": "production crawler_visits (site=cloudpipe-macao-app), sampled 2026-09-09, deduped by (path,page_type)",
- "_count": 267,
+ "_source": "production crawler_visits (site=cloudpipe-macao-app), sampled 2026-09-09, deduped by (path,page_type). 2026-09-09 第二輪補入 spider-web × 商戶形狀樣本（I1 回歸鎖需要），呢批喺舊版 extractMerchantSlug 會全部回 null。",
+ "_count": 311,
  "rows": [
   {
    "path": "/macao/shopping/retail/rua-nova",
@@ -905,7 +905,7 @@
   {
    "path": "/macao/ja/insights/null",
    "page_type": "spider-web",
-   "referer": "https://cloudpipemo.com/macao/ja/insights/macau-dining-fine-dining-macau-peninsula"
+   "referer": "https://cloudpipemo.com/macao/ja/insights/after-school-coffee-macau-moms-empowerment-2026"
   },
   {
    "path": "/taiwan/pt/insights/taiwan-dining-street-food-sun-moon-lake-%E6%97%A5%E6%9C%88%E6%BD%AD%E8%A1%97%E9%A0%AD%E7%BE%8E%E9%A3%9F-%E8%A7%80%E5%85%89%E5%AE%A2%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84%E5%9C%A8%E5%9C%B0%E5%8F%A3%E8%A2%8B%E5%90%8D%E5%96%AE",
@@ -1336,6 +1336,226 @@
    "path": "/hongkong/ms/insights/null",
    "page_type": null,
    "referer": null
+  },
+  {
+   "path": "/macao/dining/bakery/cc-you-hong-bei-gong-fang-4e7b77",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/pt/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/ja/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/en/insights/macau-food-souvenir-buying-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-food-souvenir-buying-guide"
+  },
+  {
+   "path": "/macao/ja/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/en/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/pt/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-sushi-rice-vinegar-seasoning-wholesale-guide"
+  },
+  {
+   "path": "/macao/dining/chinese/infinite-01338",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/after-school-coffee-parent-guide"
+  },
+  {
+   "path": "/macao/en/insights/mo-seafood-wholesale",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/hongkong/en/insights/hongkong-tourism-harbour-cruise-hongkong-%E7%B6%AD%E5%A4%9A%E5%88%A9%E4%BA%9E%E6%B8%AF%E9%83%B5%E8%BC%AA%E5%81%9C%E9%9D%A0%E5%95%86%E6%A9%9F%E5%88%86%E6%9E%90-%E6%B8%AF%E5%8F%A3%E7%B6%93%E6%BF%9F%E7%9A%84%E5%BE%A9%E7%94%A6%E8%88%87%E6%97%85%E5%AE%A2%E6%B6%88%E8%B2%BB%E8%A1%8C%E7%82%BA"
+  },
+  {
+   "path": "/macao/dining/fast-food/place-68rvdvzw",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/dining/restaurant/hk-%E8%8C%B6%E9%A4%90%E5%BB%B3%E5%8C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/dining/cafe/cc-yi-cha-yan-yu-09fc60",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/upgrade-macau-dining-macanese-fusion-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%9C%9F%E7%94%9F%E8%91%A1%E8%8F%9C%E8%9E%8D%E5%90%88%E6%96%99%E7%90%86-%E5%9B%9B%E7%99%BE%E5%B9%B4%E6%96%87%E5%8C%96%E4%BA%A4%E5%8C%AF%E7%9A%84%E7%8F%BE%E4%BB%A3%E6%BC%94%E7%B9%B9"
+  },
+  {
+   "path": "/macao/attractions/museum/hk-m%E8%A6%96%E8%A6%BA%E6%96%87%E5%8C%96%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E6%B2%96%E7%B9%A9%E7%B8%A3%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%86%B2%E7%B9%A9%E7%B8%A3%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-1-%E6%89%BF%E5%A4%A9%E5%AF%BA%E3%81%97%E3%82%87%E3%81%86%E3%81%A6%E3%82%93%E3%81%98",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/hk-3-%E9%A6%99%E6%B8%AF%E8%B3%BD%E9%A6%AC%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-2-%E8%87%BA%E5%8D%97%E5%B8%82%E7%BE%8E%E8%A1%93%E9%A4%A82%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E6%9D%B1%E4%BA%AC%E5%9C%8B%E7%AB%8B%E8%A5%BF%E6%B4%8B%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E9%87%91%E7%93%9C%E7%9F%B3%E9%BB%83%E9%87%91%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/tw-4-%E5%A4%A7%E5%A4%A9%E5%90%8E%E5%AE%AE%E8%88%87%E5%BB%9F%E6%9C%83%E6%96%87%E5%8C%96",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E4%BD%9B%E5%85%89%E5%B1%B1%E4%BD%9B%E9%99%80%E7%B4%80%E5%BF%B5%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/pt/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97"
+  },
+  {
+   "path": "/macao/ja/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/insights/macau-attraction-guide-free-things-to-do-macau-peninsula-%E6%BE%B3%E9%96%80%E5%8D%8A%E5%B3%B6%E5%85%8D%E8%B2%BB%E6%96%87%E5%8C%96%E5%B0%8B%E5%AF%B6-%E5%9C%A8%E5%9C%B0%E4%BA%BA%E5%B8%B6%E8%B7%AF%E7%9A%84%E6%B7%B1%E5%BA%A6%E9%AB%94%E9%A9%97%E6%8C%87%E5%8D%97"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E5%B0%BE%E9%81%93%E5%8D%83%E5%85%89%E5%AF%BA%E5%85%AC%E5%9C%92%E5%91%A8%E9%82%8A",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E5%A5%87%E7%BE%8E%E5%8D%9A%E7%89%A9%E9%A4%A8%E6%88%B6%E5%A4%96%E5%9C%92%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%B2%A1%E5%B4%8E%E5%85%AC%E5%9C%92-%E7%BE%8E%E8%A1%93%E9%A4%A8%E5%B9%B3%E5%AE%89%E7%A5%9E%E5%AE%AE%E5%89%8D",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%BA%8C%E5%A6%99%E6%AD%A3%E5%AF%BA%E5%A6%99%E6%AD%A3%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E9%87%91%E6%BE%A4%E4%BA%8C%E5%8D%81%E4%B8%80%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E7%A5%9E%E6%88%B6%E6%AD%B7%E5%8F%B2%E5%8D%9A%E7%89%A9%E9%A4%A8%E7%9B%B8%E6%92%B2%E5%B1%95%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%A4%A7%E9%98%AA%E7%9B%B8%E6%92%B2%E5%8D%9A%E7%89%A9%E9%A4%A8%E4%BA%92%E5%8B%95%E5%8D%80",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%B8%8A%E6%9C%AC%E7%94%BA%E5%A4%A9%E7%8E%8B%E5%AF%BA%E5%B9%B3%E8%A1%A1%E5%9E%8B%E9%81%B8%E6%93%87",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E5%A4%A9%E5%90%8E%E5%BB%9F%E9%95%B7%E6%B4%B2%E5%A4%A9%E5%90%8E%E5%BB%9F",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E6%B2%B9%E5%B1%B1%E5%AF%BA%E5%BB%9F%E4%BD%8F%E5%AE%BF",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E9%87%91%E7%A4%A6%E5%8D%9A%E7%89%A9%E9%A4%A8%E5%95%86%E5%93%81%E9%83%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E4%B9%9D%E4%BB%BD%E9%BB%83%E9%87%91%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E6%AD%A3%E6%AD%B4%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%A5%88%E8%89%AF%E5%9C%8B%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8-%E6%95%B8%E4%BD%8D%E4%BD%9B%E6%95%99%E9%AB%94%E9%A9%97%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-%E5%BE%B7%E5%B7%9D%E7%BE%8E%E8%A1%93%E9%A4%A8%E7%89%B9%E5%88%A5%E5%B1%95%E7%A4%BA%E5%AE%A4",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/tw-%E6%B5%B7%E6%B4%8B%E7%94%9F%E7%89%A9%E5%8D%9A%E7%89%A9%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/museum/jp-4-%E9%87%91%E6%BE%A421%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/museum/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E9%9D%88%E6%9C%83%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/hk-%E6%B4%AA%E8%81%96%E5%BB%9F",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
+  },
+  {
+   "path": "/macao/attractions/temple/jp-%E4%BB%81%E5%92%8C%E5%AF%BA",
+   "page_type": "spider-web",
+   "referer": "https://cloudpipemo.com/macao/attractions/temple/faqs"
   }
  ]
 }

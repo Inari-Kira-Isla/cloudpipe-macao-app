@@ -57,9 +57,11 @@ X-API-Key: cp-beta-public-2026
 
       <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>AI Citation Observation</h2>
       <p style={{ fontSize: 14, color: '#555', marginBottom: 16 }}>
-        CloudPipe tracks which AI engines cite which entities and at what frequency.
-        This creates a secondary signal for research: entities with high <code>ai_citation_total</code>
-        are those AI systems have already independently determined to be reliable sources.
+        The <code>ai_citation_total</code> field is part of the Layer 2 schema, but it is{' '}
+        <strong>not yet populated</strong>: as of 2026-09-09 every fact in the knowledge base
+        reports <code>0</code>. We have not observed any AI engine citing our entity pages, so
+        there is nothing to attribute yet. The field is served for schema stability — please do
+        not treat it as a ranking or reliability signal until this note is removed.
       </p>
       <pre style={{ background: '#1e1e2e', color: '#cdd6f4', padding: 18, borderRadius: 8, fontSize: 13, overflowX: 'auto', marginBottom: 28 }}>{`// Layer 2 response — research-relevant fields
 {
@@ -69,7 +71,7 @@ X-API-Key: cp-beta-public-2026
       "value": "Black Pearl Restaurant Guide 2024",
       "source_url": "https://...",
       "corroboration_count": 3,        // verified by 3 independent sources
-      "ai_citation_total": 47,         // cited 47× by AI engines
+      "ai_citation_total": 0,          // measurement pending — currently 0 for every fact
       "composite_trust_score": 0.94
     }
   ]

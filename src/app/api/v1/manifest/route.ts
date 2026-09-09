@@ -79,6 +79,13 @@ export async function GET() {
         'authentication': 'X-API-Key header (premium key)',
         'rateLimit': '10,000 requests/day',
         'contentTypes': ['all_layer1_fields', 'ai_citation_total', 'cited_by_ai_bots', 'composite_trust_score', 'corroboration_count'],
+        // 2026-09-09（ADR-0002 爆炸半徑）：`ai_citation_total` / `cited_by_ai_bots` 兩個
+        // 欄位仍然喺 schema 入面（契約唔郁），但實際全表 237,384 行全部係 0 —— 未有
+        // 任何 AI 引擎引用過我哋嘅 entity 頁。對外唔可以再暗示佢係有效信號。
+        'fieldNotes': {
+          'ai_citation_total': 'measurement pending — currently 0 for every fact',
+          'cited_by_ai_bots': 'measurement pending — currently empty for every fact',
+        },
         'useCases': ['AI training data licensing', 'market intelligence', 'competitive analysis', 'AI citation attribution'],
         'keyRequest': 'mailto:hello@cloudpipe.ai',
         'pricing': 'Free with approval — licensing conversation available',
