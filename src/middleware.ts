@@ -223,6 +223,51 @@ function getPageType(path: string, referer?: string): string {
   return 'page'
 }
 
+// crawler_visits.merchant_slug — 2026-09-09 接線修復。
+//
+// 病歷：呢個欄位喺 schema 一直存在，但 trackVisit() 個 row object 由頭到尾
+// 冇呢個 key，所以 952,766 行（site=cloudpipe-macao-app）100% 係 null ——
+// 唔係 regex 唔中，係寫入端從未接線。下游（3D 地標候選排名 / crawler
+// dashboard / crawler_stats_precompute.extract_merchant_slug）唯有 fallback
+// 用 `path ILIKE '%<slug>%'` substring 比對兜住，對短 slug（例：galaxy-macau）
+// 會過度計數，產生假排名。
+//
+// 語義守則（fail-closed，唔准估）：
+//  - 只有 page_type === 'merchant' 先填。呢個 page_type 本身就係由
+//    /^\/macao\/[^/]+\/[^/]+\/[^/]+$/ 判出嚟，同下面個 regex 同一語義。
+//  - 其他 page_type（insight / category / industry / faqs / spider-web /
+//    page）一律 null。特別注意：唔可以照抄 crawler_stats_precompute.py 嗰個
+//    `segments[-1]` 寫法 —— 嗰個對 /macao/insights/<slug> 都會攞到嘢，佢係靠
+//    caller 先 filter page_type='merchant' 先冇出事。
+//  - 抽唔到 / 空 / "null" / "undefined" / 超長 → 回 null，唔填假值。
+function extractMerchantSlug(path: string, pageType: string): string | null {
+  if (pageType !== 'merchant') return null
+  const m = path.split('?')[0].match(/^\/macao\/[^/]+\/[^/]+\/([^/]+)$/)
+  if (!m) return null
+  let slug = m[1]
+  try {
+    slug = decodeURIComponent(slug)
+  } catch {
+    /* malformed percent-encoding — keep raw segment rather than dropping the row */
+  }
+  slug = slug.trim()
+  if (!slug || slug.length > 200) return null
+  // 歷史 telemetry 有 terminal segment 被序列化成字面 "null"/"undefined" 嘅
+  // 合成連結（見 getPageType 同一處理），呢啲唔係真商戶節點。
+  if (/^(null|undefined)$/i.test(slug)) return null
+  // 保留段：`/macao/{industry}/{category}/faqs` 係分類 FAQ 頁，唔係商戶頁。
+  // ⚠ 佢喺 getPageType() 入面**已經**被判做 page_type='merchant'（merchant 條
+  // regex 排喺 faqs 前，而且要求 `$` 收口，所以 `/faqs` 先命中 merchant）——
+  // production 實測 908 行 page_type='merchant' 但 path 以 `/faqs` 結尾。
+  // 呢個 page_type 誤判係既有行為，改佢會改動 89,489 行嘅語義同全部下游
+  // 消費者，唔喺今次爆炸半徑之內；但我哋唔可以因為咁就將 "faqs" 當成一個
+  // 商戶 slug 寫落去 —— fail closed，呢類段一律 null。
+  if (RESERVED_TERMINAL_SEGMENTS.has(slug.toLowerCase())) return null
+  return slug
+}
+
+const RESERVED_TERMINAL_SEGMENTS = new Set(['faqs', 'faq', 'index'])
+
 // Whitelist of real industry slugs — anything else under /macao/ is a merchant slug
 // (top-level merchant pages caught by [industry] dynamic route)
 // Source: merchants.page_url first segment + legacy paths still being crawled
@@ -536,14 +581,17 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
     }
     // 隱私保護：只存 SHA-256 hash，不存 raw IP
     const ip_hash = await hashIp(ipRaw ?? null)
+    const pageType = getPageType(path, referer)
     const row = {
       bot_name: bot.name,
       bot_owner: bot.owner,
       path,
       site: 'cloudpipe-macao-app',
-      page_type: getPageType(path, referer),
+      page_type: pageType,
       industry,
       category,
+      // 2026-09-09 接線：呢個欄位建咗但從未有寫入端（見 extractMerchantSlug 註解）。
+      merchant_slug: extractMerchantSlug(path, pageType),
       session_id: sessionId,
       ua_raw: ua.slice(0, 200),
       referer: referer ? referer.slice(0, 500) : null,
@@ -583,6 +631,16 @@ async function trackVisit(path: string, bot: { name: string; owner: string }, ua
         void _ms; void _scope
         const retry = await postRow(legacyRow)
         mainOk = retry.ok
+        // 第二級退避（2026-09-09）：merchant_slug 喺 production schema 已核實
+        // 存在（真 PostgREST 查詢 `merchant_slug=not.is.null` 回 200 count=0），
+        // 所以正常唔會行到呢度。但同一個「加欄位反而整死成張表」嘅 failure
+        // class 值得再包一層 —— 爬蟲追蹤 SSOT 嘅可用性大過任何一個新儀錶。
+        if (!mainOk && retry.status === 400) {
+          const { merchant_slug: _slug, ...minimalRow } = legacyRow
+          void _slug
+          const retry2 = await postRow(minimalRow)
+          mainOk = retry2.ok
+        }
       }
     } catch {
       /* main DB unreachable */
