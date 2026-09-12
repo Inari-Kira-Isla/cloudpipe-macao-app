@@ -10,8 +10,12 @@ export const AI_REFERRER_HOSTS: [RegExp, string][] = [
   [/^(www\.)?(chatgpt\.com|chat\.openai\.com)$/i,     'chatgpt'],
   [/^(www\.)?claude\.ai$/i,                           'claude'],
   [/^(gemini|bard)\.google\.com$/i,                   'gemini'],
-  [/^(copilot\.microsoft\.com|(www\.)?bing\.com)$/i,  'copilot'],
-  [/^(grok\.x\.ai|(www\.)?grok\.com|(www\.)?x\.com)$/i,'grok'],
+  // bing.com deliberately excluded — it's an organic-search domain (mixes AI-answer
+  // clicks with ordinary Bing search clicks); only the dedicated Copilot host counts.
+  [/^copilot\.microsoft\.com$/i,                      'copilot'],
+  // x.com / twitter.com deliberately excluded — general social-network domains
+  // (browsing/timeline clicks), not the standalone Grok product host.
+  [/^(grok\.x\.ai|(www\.)?grok\.com)$/i,               'grok'],
   [/^(www\.)?you\.com$/i,                             'you'],
   [/^(www\.)?kagi\.com$/i,                            'kagi'],
   [/^(www\.)?phind\.com$/i,                           'phind'],
