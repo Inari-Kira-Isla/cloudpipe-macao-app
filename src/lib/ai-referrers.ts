@@ -16,8 +16,16 @@ export const AI_REFERRER_HOSTS: [RegExp, string][] = [
   // x.com / twitter.com deliberately excluded — general social-network domains
   // (browsing/timeline clicks), not the standalone Grok product host.
   [/^(grok\.x\.ai|(www\.)?grok\.com)$/i,               'grok'],
+  // you.com borderline case: You.com has both general-search and AI-answer modes
+  // (unlike Bing's overwhelming organic-search skew) — kept as an AI referral
+  // signal despite the ambiguity because its traffic volume doesn't dominate
+  // like bing.com's does.
   [/^(www\.)?you\.com$/i,                             'you'],
-  [/^(www\.)?kagi\.com$/i,                            'kagi'],
+  // kagi.com deliberately excluded — same origin-collapsing problem as bing.com:
+  // it's a general paid-search engine, and its AI product (Kagi Assistant) lives
+  // at kagi.com/assistant (a path, not a distinct host we can match on), so there
+  // is no dedicated AI-only host to narrow this to. Matching the whole domain would
+  // mix ordinary Kagi search clicks into the AI-referral signal.
   [/^(www\.)?phind\.com$/i,                           'phind'],
   [/^(www\.)?meta\.ai$/i,                             'meta'],
   // 中國 AI（只認 AI 專用 host，唔認 baidu.com/sogou.com 自然搜尋域）

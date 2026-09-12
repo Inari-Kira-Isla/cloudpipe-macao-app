@@ -1845,7 +1845,7 @@ export default function CrawlerDashboard() {
                         <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>嚴格口徑 — UA 明確具名的 LLM bot（唔含啟發式桶）</div>
                       </FadeCard>
                       {[
-                        { label: '已識別 AI 引擎', value: meta.totals.identified_ai_engines, note: '含 HeadlessFetcher 等啟發式桶', color: '#4285f4', delay: 80 },
+                        { label: '已識別 AI 引擎', value: meta.totals.identified_ai_engines, note: 'UA 具名 AI/搜尋引擎 bot 總和（= 下方「AI 引擎」清單），唔含 HeadlessFetcher 啟發式桶（該桶計落「扣除啟發式桶」／搜尋引擎清單）', color: '#4285f4', delay: 80 },
                         { label: '扣除啟發式桶', value: meta.totals.excluding_headless, note: '全部訪問減去 HeadlessFetcher', color: '#ff9900', delay: 160 },
                         { label: '全部訪問', value: meta.totals.all, note: '含啟發式桶，最寬口徑', color: '#111', delay: 240 },
                       ].map(card => (
@@ -1875,7 +1875,7 @@ export default function CrawlerDashboard() {
                       <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                         <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI 引擎（UA 具名）</h3>
                         {alltime.bots_alltime.ai_engines.map(b => (
-                          <div key={b.bot_name} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>
+                          <div key={`${b.bot_name}|${b.bot_owner}`} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                               <span><strong>{b.bot_name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{b.bot_owner}</span></span>
                               <span style={{ fontWeight: 600 }}>{b.count.toLocaleString()} <span style={{ color: '#aaa', fontSize: 11 }}>({b.pct_of_all.toFixed(1)}%)</span></span>
@@ -1889,7 +1889,7 @@ export default function CrawlerDashboard() {
                         {alltime.bots_alltime.search_and_other.map(b => {
                           const isHeuristic = meta.excluded_buckets.includes(b.bot_name)
                           return (
-                            <div key={b.bot_name} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>
+                            <div key={`${b.bot_name}|${b.bot_owner}`} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                                 <span>
                                   <strong>{b.bot_name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{b.bot_owner}</span>

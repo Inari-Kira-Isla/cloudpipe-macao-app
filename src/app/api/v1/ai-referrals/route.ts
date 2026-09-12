@@ -6,13 +6,21 @@ export const maxDuration = 30
 
 const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
 
-const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
+// Kept in sync with SOURCE_META in ~/.openclaw/workspace/scripts/crawler_stats_precompute.py
+// (precompute_ai_referrals) — that script backs the 30-day dashboard view via the Blob
+// cache, this object backs the 1-day/7-day views (live Supabase query, no cache), so both
+// paths must show the same unverified/note treatment for the same bucket.
+const SOURCE_LABELS: Record<string, { label: string; color: string; icon: string; unverified?: boolean; note?: string }> = {
   perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },
   chatgpt:    { label: 'ChatGPT',     color: '#10a37f', icon: '🤖' },
   claude:     { label: 'Claude',      color: '#c5a572', icon: '🧠' },
   gemini:     { label: 'Gemini',      color: '#4285f4', icon: '✨' },
-  copilot:    { label: 'Copilot',     color: '#0078d4', icon: '🪟' },
-  grok:       { label: 'Grok',        color: '#1da1f2', icon: '𝕏' },
+  copilot:    { label: 'Bing / Copilot（未分辨）', color: '#0078d4', icon: '🪟',
+                unverified: true,
+                note: 'ai-referrers.ts 已於 2026-09-12 修正分類器（只認 copilot.microsoft.com，唔再將 bing.com 自然搜尋計落 Copilot）；此 unverified 標記保留係因為修復前寫入嘅歷史 ai_referrals rows 可能仍然沿用舊分類器誤標，新寫入嘅 rows 已用修正後嘅分類器。' },
+  grok:       { label: 'X / Grok（未分辨）', color: '#1da1f2', icon: '𝕏',
+                unverified: true,
+                note: 'ai-referrers.ts 已於 2026-09-12 修正分類器（只認 grok.com/grok.x.ai，唔再將 x.com/twitter.com 一般瀏覽點擊計落 Grok）；此 unverified 標記保留係因為修復前寫入嘅歷史 ai_referrals rows 可能仍然沿用舊分類器誤標，新寫入嘅 rows 已用修正後嘅分類器。' },
   you:        { label: 'You.com',     color: '#6366f1', icon: '🔎' },
   kagi:       { label: 'Kagi',        color: '#f59e0b', icon: '🔱' },
   phind:      { label: 'Phind',       color: '#7c3aed', icon: '💡' },
