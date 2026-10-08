@@ -1,0 +1,138 @@
+[
+ {
+  "ts": "2026-10-06T09:00:00Z",
+  "referrer_source": null,
+  "referrer_url": "https://weird.example/",
+  "path": "/h",
+  "page_type": null,
+  "industry": null
+ },
+ {
+  "ts": "2026-10-05T08:00:00Z",
+  "referrer_source": "perplexity",
+  "referrer_url": "https://www.perplexity.ai/",
+  "path": "/g",
+  "page_type": "insight",
+  "industry": "tourism"
+ },
+ {
+  "ts": "2026-10-05T08:00:00Z",
+  "referrer_source": "perplexity",
+  "referrer_url": "https://www.perplexity.ai/",
+  "path": "/g",
+  "page_type": "insight",
+  "industry": "tourism"
+ },
+ {
+  "ts": "2026-10-04T07:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": null,
+  "path": "/f",
+  "page_type": null,
+  "industry": null
+ },
+ {
+  "ts": "2026-10-04T06:00:00Z",
+  "referrer_source": "kagi",
+  "referrer_url": "https://kagi.com/search?q=x",
+  "path": "/e",
+  "page_type": null,
+  "industry": null
+ },
+ {
+  "ts": "2026-10-03T05:00:00Z",
+  "referrer_source": "grok",
+  "referrer_url": "https://grok.com/",
+  "path": "/d",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-10-03T04:00:00Z",
+  "referrer_source": "grok",
+  "referrer_url": "https://x.com/home",
+  "path": "/d",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-10-02T03:00:00Z",
+  "referrer_source": "chatgpt",
+  "referrer_url": "https://chatgpt.com/",
+  "path": "/c",
+  "page_type": "merchant",
+  "industry": "food"
+ },
+ {
+  "ts": "2026-10-02T03:00:00Z",
+  "referrer_source": "chatgpt",
+  "referrer_url": "https://chatgpt.com/",
+  "path": "/c",
+  "page_type": "merchant",
+  "industry": "food"
+ },
+ {
+  "ts": "2026-10-02T03:00:00Z",
+  "referrer_source": "chatgpt",
+  "referrer_url": "https://chatgpt.com/",
+  "path": "/c",
+  "page_type": "merchant",
+  "industry": "food"
+ },
+ {
+  "ts": "2026-10-01T02:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://copilot.microsoft.com/",
+  "path": "/b",
+  "page_type": "insight",
+  "industry": "food"
+ },
+ {
+  "ts": "2026-10-01T02:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://copilot.microsoft.com/",
+  "path": "/b",
+  "page_type": "insight",
+  "industry": "food"
+ },
+ {
+  "ts": "2026-09-20T01:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://www.bing.com/",
+  "path": "/a",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-09-20T01:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://www.bing.com/",
+  "path": "/a",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-09-20T01:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://www.bing.com/",
+  "path": "/a",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-09-20T01:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://www.bing.com/",
+  "path": "/a",
+  "page_type": "insight",
+  "industry": null
+ },
+ {
+  "ts": "2026-09-20T01:00:00Z",
+  "referrer_source": "copilot",
+  "referrer_url": "https://www.bing.com/",
+  "path": "/a",
+  "page_type": "insight",
+  "industry": null
+ }
+]

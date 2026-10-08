@@ -627,7 +627,7 @@ export default function CrawlerDashboard() {
     daily: Record<string, Record<string, number>>
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
     // Present when the live API re-verified copilot/grok rows by referrer_url and dropped non-AI hosts (e.g. bing.com).
-    excluded_non_ai?: { total: number; by_source: Record<string, number>; reason: string }
+    excluded_non_ai?: { total: number; by_source: Record<string, number>; by_referrer_host?: Record<string, number>; reason: string }
     // Live route reads at most this many rows; true when the window hit that cap (numbers are a lower bound).
     truncated?: boolean
   }
@@ -698,8 +698,8 @@ export default function CrawlerDashboard() {
         const [at, health, refs] = await Promise.all([
           safeFetch<AlltimeStats | null>(ALLTIME_URL, null, 15000, forceFresh, req.signal),
           safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000, false, req.signal),
-          // Only ~300 ai_referrals rows exist in total; the live route re-verifies bing.com/x.com rows.
-          safeFetch<AiReferralData | null>('/api/v1/ai-referrals?days=3650', null, 20000, forceFresh, req.signal),
+          // Precomputed + re-verified all-time cache (full coverage, so no row cap / truncation).
+          cacheFirst<AiReferralData | null>(`${CACHE_BASE}/ai-referrals-v2-all.json`, '/api/v1/ai-referrals?days=3650', null, forceFresh, req.signal),
         ])
         if (!req.isCurrent()) return // a newer request superseded this one — never overwrite its data
         setAlltime(at)
@@ -727,10 +727,10 @@ export default function CrawlerDashboard() {
           `${API}&view=spider-web&days=${days}`, null, forceFresh, req.signal),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000, false, req.signal),
         cacheFirst<AiReferralData | null>(
-          // No static cache for ANY window (incl. 30 days): the precomputed ai-referrals-30.json is not
-          // re-verified by referrer_url (bing.com counted as Copilot), so 30/90/全部 must all go through the
-          // live route that applies the same read-time re-verification.
-          null,
+          // Every window (1/7/30/90) reads the precomputed, referrer_url-re-verified cache. The old
+          // ai-referrals-30.json (not re-verified: bing.com counted as Copilot) is no longer read. The route
+          // fallback only re-serves the same cache (no Supabase on this path).
+          `${CACHE_BASE}/ai-referrals-v2-${days}.json`,
           `/api/v1/ai-referrals?days=${days}`, null, forceFresh, req.signal),
         // Per-day owner/site breakdown — previously fetched nowhere in this dashboard,
         // now powers the merchant leaderboard + AI-engine trend panels below.
@@ -1235,13 +1235,13 @@ export default function CrawlerDashboard() {
               <div style={{ padding: '14px 18px', minWidth: 0 }}>
                 {aiReferrals.excluded_non_ai && aiReferrals.excluded_non_ai.total > 0 && (
                   <div data-testid="referral-excluded-note" style={{ fontSize: 12, color: '#7a5d1f', background: '#FBF3DB', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
-                    已排除 <strong>{aiReferrals.excluded_non_ai.total}</strong> 筆非 AI 來源（{Object.entries(aiReferrals.excluded_non_ai.by_source).map(([k, v]) => `${k} 桶 ${v} 筆`).join('、')}）：
+                    已排除 <strong>{aiReferrals.excluded_non_ai.total}</strong> 筆非 AI 來源（{Object.entries(aiReferrals.excluded_non_ai.by_source).map(([k, v]) => `${k} 桶 ${v} 筆`).join('、')}{aiReferrals.excluded_non_ai.by_referrer_host ? `；來源網域 ${Object.entries(aiReferrals.excluded_non_ai.by_referrer_host).map(([h, n]) => `${h} ${n}`).join('、')}` : ''}）：
                     {aiReferrals.excluded_non_ai.reason}
                   </div>
                 )}
                 {aiReferrals.truncated && (
                   <div data-testid="referral-truncated-note" style={{ fontSize: 12, color: '#9a3412', background: '#ffedd5', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
-                    此時段紀錄過多，只讀取最近一批（上限 5,000 筆），實際推介數只會更多，唔會更少。
+                    此時段 AI 推介快取不完整，實際推介數只會更多，唔會更少。
                   </div>
                 )}
                 {aiReferrals.total === 0 ? (

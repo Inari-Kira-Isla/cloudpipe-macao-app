@@ -1,5 +1,8 @@
 import { aggregateAiReferrals, reverifyReferralSource, type ReferralRow, type SourceMeta } from './ai-referrals-aggregate'
 import { assertEqual, finish } from './test-helpers'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { SOURCE_LABELS } from './ai-referral-labels'
 
 const meta: Record<string, SourceMeta> = { copilot: { label: 'Copilot', color: '#000', icon: 'c' } }
 
@@ -40,4 +43,13 @@ assertEqual(agg30.excluded_non_ai.total > 0, true, '30-day view also reports the
 const aggAll = aggregateAiReferrals(rows, 3650, '2016-01-01T00:00:00Z', meta)
 assertEqual(aggAll.total, agg.total, '全部 view total == 90-day total when all rows fall in 90 days')
 assertEqual(aggAll.excluded_non_ai.total, agg.excluded_non_ai.total, '全部 view excluded count == 90-day')
+// ── parity with the offline Python precompute (scripts/precompute_ai_referrals_v2.py) on SHARED fixtures ──
+const fx = JSON.parse(readFileSync(resolve('scripts/fixtures/ai-referrals-rows.json'), 'utf8')) as ReferralRow[]
+const exp = JSON.parse(readFileSync(resolve('scripts/fixtures/ai-referrals-expected.json'), 'utf8'))
+const fxAgg = aggregateAiReferrals(fx, 3650, '2016-01-01T00:00:00Z', SOURCE_LABELS)
+assertEqual(fxAgg.total, exp.total, 'TS aggregate total == Python precompute total (shared fixture)')
+assertEqual(Object.fromEntries(Object.entries(fxAgg.by_source).map(([k, v]) => [k, v.count])), exp.by_source_counts, 'TS by_source == Python by_source')
+assertEqual(fxAgg.excluded_non_ai.total, exp.excluded_total, 'TS excluded total == Python excluded total')
+assertEqual(fxAgg.excluded_non_ai.by_source, exp.excluded_by_source, 'TS excluded by_source == Python')
+assertEqual(SOURCE_LABELS, exp.source_meta, 'Python-embedded source_meta == TS SOURCE_LABELS')
 finish()

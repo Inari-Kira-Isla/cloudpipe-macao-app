@@ -1,0 +1,73 @@
+{
+ "total": 10,
+ "by_source_counts": {
+  "other_ai": 1,
+  "perplexity": 2,
+  "copilot": 3,
+  "grok": 1,
+  "chatgpt": 3
+ },
+ "excluded_total": 7,
+ "excluded_by_source": {
+  "kagi": 1,
+  "grok": 1,
+  "copilot": 5
+ },
+ "excluded_by_host": {
+  "kagi.com": 1,
+  "x.com": 1,
+  "www.bing.com": 5
+ },
+ "source_meta": {
+  "perplexity": {
+   "label": "Perplexity",
+   "color": "#20b2aa",
+   "icon": "🔍"
+  },
+  "chatgpt": {
+   "label": "ChatGPT",
+   "color": "#10a37f",
+   "icon": "🤖"
+  },
+  "claude": {
+   "label": "Claude",
+   "color": "#c5a572",
+   "icon": "🧠"
+  },
+  "gemini": {
+   "label": "Gemini",
+   "color": "#4285f4",
+   "icon": "✨"
+  },
+  "copilot": {
+   "label": "Copilot",
+   "color": "#0078d4",
+   "icon": "🪟"
+  },
+  "grok": {
+   "label": "Grok",
+   "color": "#1da1f2",
+   "icon": "𝕏"
+  },
+  "you": {
+   "label": "You.com",
+   "color": "#6366f1",
+   "icon": "🔎"
+  },
+  "kagi": {
+   "label": "Kagi",
+   "color": "#f59e0b",
+   "icon": "🔱"
+  },
+  "phind": {
+   "label": "Phind",
+   "color": "#7c3aed",
+   "icon": "💡"
+  },
+  "other_ai": {
+   "label": "Other AI",
+   "color": "#6b7280",
+   "icon": "🤖"
+  }
+ }
+}

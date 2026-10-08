@@ -1,0 +1,263 @@
+{
+ "total": 8,
+ "days": 30,
+ "since": "2026-09-08T15:52:25.309612Z",
+ "by_source": {
+  "perplexity": {
+   "count": 3,
+   "pages": {
+    "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024": 1,
+    "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026": 1,
+    "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026": 1
+   },
+   "industries": {
+    "insights": 1,
+    "dining": 1,
+    "tech": 1
+   },
+   "latest": "2026-10-07T18:16:42.97+00:00"
+  },
+  "copilot": {
+   "count": 2,
+   "pages": {
+    "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026": 1,
+    "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026": 1
+   },
+   "industries": {
+    "shopping": 1,
+    "gaming": 1
+   },
+   "latest": "2026-10-03T13:21:59.396+00:00"
+  },
+  "chatgpt": {
+   "count": 3,
+   "pages": {
+    "/macao/en/insights/macao-shopping-guide-W-3-20260418": 1,
+    "/macao/en/insights/mo-taipa-food-walk": 1,
+    "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh": 1
+   },
+   "industries": {
+    "shopping": 1,
+    "insights": 1,
+    "gaming": 1
+   },
+   "latest": "2026-10-02T05:39:55.082+00:00"
+  }
+ },
+ "source_meta": {
+  "perplexity": {
+   "label": "Perplexity",
+   "color": "#20b2aa",
+   "icon": "🔍"
+  },
+  "chatgpt": {
+   "label": "ChatGPT",
+   "color": "#10a37f",
+   "icon": "🤖"
+  },
+  "claude": {
+   "label": "Claude",
+   "color": "#c5a572",
+   "icon": "🧠"
+  },
+  "gemini": {
+   "label": "Gemini",
+   "color": "#4285f4",
+   "icon": "✨"
+  },
+  "copilot": {
+   "label": "Copilot",
+   "color": "#0078d4",
+   "icon": "🪟"
+  },
+  "grok": {
+   "label": "Grok",
+   "color": "#1da1f2",
+   "icon": "𝕏"
+  },
+  "you": {
+   "label": "You.com",
+   "color": "#6366f1",
+   "icon": "🔎"
+  },
+  "kagi": {
+   "label": "Kagi",
+   "color": "#f59e0b",
+   "icon": "🔱"
+  },
+  "phind": {
+   "label": "Phind",
+   "color": "#7c3aed",
+   "icon": "💡"
+  },
+  "other_ai": {
+   "label": "Other AI",
+   "color": "#6b7280",
+   "icon": "🤖"
+  }
+ },
+ "top_pages": [
+  {
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026",
+   "visits": 1,
+   "sources": [
+    "copilot"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macao-shopping-guide-W-3-20260418",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/mo-taipa-food-walk",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026",
+   "visits": 1,
+   "sources": [
+    "copilot"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  }
+ ],
+ "daily": {
+  "2026-10-07": {
+   "perplexity": 1
+  },
+  "2026-10-03": {
+   "copilot": 1
+  },
+  "2026-10-02": {
+   "chatgpt": 1
+  },
+  "2026-09-29": {
+   "chatgpt": 1
+  },
+  "2026-09-24": {
+   "chatgpt": 1
+  },
+  "2026-09-18": {
+   "copilot": 1
+  },
+  "2026-09-16": {
+   "perplexity": 1
+  },
+  "2026-09-15": {
+   "perplexity": 1
+  }
+ },
+ "recent": [
+  {
+   "ts": "2026-10-07T18:16:42.97+00:00",
+   "source": "perplexity",
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "page_type": "insight",
+   "industry": "insights"
+  },
+  {
+   "ts": "2026-10-03T13:21:59.396+00:00",
+   "source": "copilot",
+   "path": "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026",
+   "page_type": "insight",
+   "industry": "shopping"
+  },
+  {
+   "ts": "2026-10-02T05:39:55.082+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/macao-shopping-guide-W-3-20260418",
+   "page_type": "insight",
+   "industry": "shopping"
+  },
+  {
+   "ts": "2026-09-29T04:08:16.629+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/mo-taipa-food-walk",
+   "page_type": "insight",
+   "industry": "insights"
+  },
+  {
+   "ts": "2026-09-24T11:11:20.195+00:00",
+   "source": "chatgpt",
+   "path": "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh",
+   "page_type": "insight",
+   "industry": "gaming"
+  },
+  {
+   "ts": "2026-09-18T02:20:46.635+00:00",
+   "source": "copilot",
+   "path": "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026",
+   "page_type": "insight",
+   "industry": "gaming"
+  },
+  {
+   "ts": "2026-09-16T13:54:42.627+00:00",
+   "source": "perplexity",
+   "path": "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026",
+   "page_type": "insight",
+   "industry": "dining"
+  },
+  {
+   "ts": "2026-09-15T02:29:25.179+00:00",
+   "source": "perplexity",
+   "path": "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026",
+   "page_type": "insight",
+   "industry": "tech"
+  }
+ ],
+ "excluded_non_ai": {
+  "total": 130,
+  "by_source": {
+   "copilot": 130
+  },
+  "by_referrer_host": {
+   "www.bing.com": 126,
+   "bing.com": 4
+  },
+  "reason": "按 referrer_url 主機重新驗證：copilot／grok／kagi 桶內主機唔係專屬 AI 主機（例如 bing.com 自然搜尋、x.com 一般瀏覽）嘅記錄已排除，唔計入 AI 推介"
+ },
+ "classified": {
+  "kept_by_source_host": {
+   "perplexity|www.perplexity.ai": 3,
+   "copilot|copilot.microsoft.com": 2,
+   "chatgpt|chatgpt.com": 3
+  }
+ },
+ "window": "30",
+ "generated_at": "2026-10-08T15:52:25.309612Z",
+ "data_source": "local-mirror crawler_local.db (ai_referrals)",
+ "truncated": false
+}

@@ -1,68 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase'
-import { aggregateAiReferrals, type ReferralRow, type SourceMeta } from '@/lib/ai-referrals-aggregate'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
-export const revalidate = 120
-export const maxDuration = 30
-
-// PostgREST caps a single response at 1000 rows; page through up to MAX_ROWS so wide windows
-// (days=3650 / 全部) are not silently cut at 1000. If MAX_ROWS is hit, `truncated: true` is returned.
-const PAGE_SIZE = 1000
-const MAX_ROWS = 5000
-
-// Labels. EVERY window (30 / 90 / 全部) is served live with read-time referrer_url re-verification —
-// the old 30-day shortcut (precomputed Blob ai-referrals-30.json from crawler_stats_precompute.py) was removed
-// because that script does not select referrer_url, so it still counted bing.com as Copilot and made the
-// 30-day figure (138) contradict the 90-day one (18). Nothing reads that Blob any more.
-const SOURCE_LABELS: Record<string, SourceMeta> = {
-  perplexity: { label: 'Perplexity',  color: '#20b2aa', icon: '🔍' },
-  chatgpt:    { label: 'ChatGPT',     color: '#10a37f', icon: '🤖' },
-  claude:     { label: 'Claude',      color: '#c5a572', icon: '🧠' },
-  gemini:     { label: 'Gemini',      color: '#4285f4', icon: '✨' },
-  // copilot/grok rows are re-verified against referrer_url at read time (aggregateAiReferrals),
-  // so what remains in these buckets is genuinely copilot.microsoft.com / grok.com traffic.
-  copilot:    { label: 'Copilot',     color: '#0078d4', icon: '🪟' },
-  grok:       { label: 'Grok',        color: '#1da1f2', icon: '𝕏' },
-  you:        { label: 'You.com',     color: '#6366f1', icon: '🔎' },
-  kagi:       { label: 'Kagi',        color: '#f59e0b', icon: '🔱' },
-  phind:      { label: 'Phind',       color: '#7c3aed', icon: '💡' },
-  other_ai:   { label: 'Other AI',    color: '#6b7280', icon: '🤖' },
-}
+// READ-ONLY CACHE ROUTE — this route (and the dashboard page) must NEVER query Supabase.
+// (guarded by src/lib/dashboard-no-supabase.test.ts)
+//
+// Data flow: Supabase ai_referrals -> local mirror (crawler_local_sync.py) -> scripts/precompute_ai_referrals_v2.py
+// (re-verifies copilot/grok/kagi rows by referrer_url host, using the same classifier code as the app)
+// -> ai-referrals-v2-{1,7,30,90,all}.json on Vercel Blob -> this route / the dashboard page.
+//
+// History: origin/main served 30 days from a precomputed Blob (ai-referrals-30.json, NOT re-verified: bing.com counted
+// as Copilot) and every other window via a live `ai_referrals` select (limit 1000) on each request (s-maxage 120).
+// That live path is removed; unsupported windows now get 400 instead of hitting the database.
+const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
+const WINDOW_FOR_DAYS: Record<number, string> = { 1: '1', 7: '7', 30: '30', 90: '90', 3650: 'all' }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const parsedDays = parseInt(searchParams.get('days') ?? '30')
-  // Non-numeric / absurd values used to reach new Date(NaN).toISOString() and 500.
-  const days = Number.isFinite(parsedDays) ? Math.min(Math.max(parsedDays, 1), 3650) : 30
+  const days = parseInt(searchParams.get('days') ?? '30')
   const site = searchParams.get('site') ?? 'cloudpipe-macao-app'
-
-  const supabase = createServiceClient()
-  const since = new Date(Date.now() - days * 86400000).toISOString()
-
-  const data: Record<string, unknown>[] = []
-  let truncated = false
-  for (let from = 0; from < MAX_ROWS; from += PAGE_SIZE) {
-    const { data: page, error } = await supabase
-      .from('ai_referrals')
-      .select('ts, referrer_source, referrer_url, path, page_type, industry, ua_raw')
-      .eq('site', site)
-      .gte('ts', since)
-      .order('ts', { ascending: false })
-      .range(from, from + PAGE_SIZE - 1)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    data.push(...(page ?? []))
-    if ((page?.length ?? 0) < PAGE_SIZE) break
-    if (from + PAGE_SIZE >= MAX_ROWS) truncated = true
+  const win = WINDOW_FOR_DAYS[days]
+  if (!win || site !== 'cloudpipe-macao-app') {
+    return NextResponse.json({ error: 'unsupported window; use days=1|7|30|90|3650 (cached windows only)' }, { status: 400 })
   }
-
-  // Bug fix: exclude any rows where ua_raw indicates a bot (e.g. PerplexityBot accidentally
-  // inserted if bot-detection missed a UA variant). Only real human referrals should appear.
-  const BOT_UA_RE = /bot|crawler|spider|scraper|perplexitybot|googlebot|gptbot|claudebot|bingbot|yandexbot|applebot|amazonbot|meta-externalagent|facebookbot|bytespider/i
-  const rows = (data as unknown as (ReferralRow & { ua_raw?: string | null })[]).filter(r => !BOT_UA_RE.test(r.ua_raw ?? ''))
-
-  // Aggregation + read-time re-verification of the copilot/grok buckets lives in a pure lib
-  // module (unit-tested); see ai-referrals-aggregate.ts for why historical rows need it.
-  return NextResponse.json({ ...aggregateAiReferrals(rows, days, since, SOURCE_LABELS), truncated }, {
-    headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
-  })
+  const fname = `ai-referrals-v2-${win}.json`
+  try {
+    // Local preview / tests: AI_REFERRALS_CACHE_DIR points at a folder of sample caches (never set on Vercel).
+    const dir = process.env.AI_REFERRALS_CACHE_DIR
+    const data = dir
+      ? JSON.parse(await readFile(join(dir, fname), 'utf8'))
+      : await (async () => {
+          const res = await fetch(`${CACHE_BASE}/${fname}`, { next: { revalidate: 300 } })
+          if (!res.ok) throw new Error(`cache ${res.status}`)
+          return res.json()
+        })()
+    if (!data || typeof data.total !== 'number') throw new Error('bad cache shape')
+    return NextResponse.json(data, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900', 'X-Cache': 'PRECOMPUTED-V2' } })
+  } catch {
+    return NextResponse.json({ error: 'ai-referrals cache not available yet' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
+  }
 }

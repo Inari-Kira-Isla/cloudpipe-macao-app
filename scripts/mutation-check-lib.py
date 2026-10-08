@@ -43,6 +43,10 @@ MUTATIONS = [
      "'duckduckbot', 'slurp',", "'duckduckbot', 'scriptbot', 'slurp',"),
     ("crawler-dashboard.ts", "daily-vs-total gap threshold 2% -> 50%",
      "thresholdPct = 2", "thresholdPct = 50"),
+    ("dashboard-no-supabase.ts", "supabase guard disabled (regex never matches)",
+     "[/@\\/lib\\/supabase/, \"imports '@/lib/supabase'\"],", "[/(?!)/, \"imports '@/lib/supabase'\"],"),
+    ("dashboard-no-supabase.ts", "supabase guard no longer strips comments' effect on negative control (createServiceClient pattern removed)",
+     "/createServiceClient|createClient\\s*\\(/", "/(?!)/"),
     ("ai-referrals-aggregate.ts", "copilot dropped from re-verified buckets (30/90/全部 would show bing as AI)",
      "new Set(['copilot', 'grok', 'kagi'])", "new Set(['grok', 'kagi'])"),
 ]
@@ -63,5 +67,26 @@ for fname, label, old, new in MUTATIONS:
     if not killed:
         survived += 1
     shutil.rmtree(tmp, ignore_errors=True)
-print(f"\n{len(MUTATIONS) - survived}/{len(MUTATIONS)} mutations killed")
+
+PY_MUTATIONS = [
+    ("precompute: skip re-verification (bing counted as AI)", "if src in reverify and r.get('referrer_url'):", "if False and r.get('referrer_url'):"),
+    ("precompute: host table accepts bing.com", "if pat.search(host):", "if pat.search(host) or host.endswith('bing.com'):"),
+    ("precompute: excluded rows not counted", "excluded_by_source[src] = excluded_by_source.get(src, 0) + 1", "pass"),
+    ("precompute: all-window since filter wrongly applied", "sub = rows\n", "sub = rows[:3]\n"),
+]
+for label, old, new in PY_MUTATIONS:
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix='pymut-'))
+    shutil.copytree('scripts', tmp / 'scripts'); shutil.copytree('src/lib', tmp / 'src' / 'lib')
+    f = tmp / 'scripts' / 'precompute_ai_referrals_v2.py'
+    txt = f.read_text()
+    if old not in txt:
+        print(f"[BAD MUTATION] {label}"); survived += 1; continue
+    f.write_text(txt.replace(old, new, 1))
+    r = subprocess.run(['python3', str(tmp / 'scripts' / 'test_precompute_ai_referrals_v2.py')], capture_output=True, text=True)
+    killed = r.returncode != 0
+    print(f"[{'KILLED ' if killed else 'SURVIVED'}] {label}")
+    survived += 0 if killed else 1
+    shutil.rmtree(tmp, ignore_errors=True)
+TOTAL = len(MUTATIONS) + len(PY_MUTATIONS)
+print(f"\n{TOTAL - survived}/{TOTAL} mutations killed")
 sys.exit(1 if survived else 0)

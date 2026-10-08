@@ -1,0 +1,417 @@
+{
+ "total": 18,
+ "days": 90,
+ "since": "2026-07-10T15:52:25.309612Z",
+ "by_source": {
+  "perplexity": {
+   "count": 5,
+   "pages": {
+    "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024": 1,
+    "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026": 1,
+    "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026": 1,
+    "/macao/insights/macau-transport-complete-guide": 1,
+    "/macao/en/insights/upgrade-macau-dining-answer-egg-tart-best-places": 1
+   },
+   "industries": {
+    "insights": 1,
+    "dining": 2,
+    "tech": 1,
+    "culture": 1
+   },
+   "latest": "2026-10-07T18:16:42.97+00:00"
+  },
+  "copilot": {
+   "count": 2,
+   "pages": {
+    "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026": 1,
+    "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026": 1
+   },
+   "industries": {
+    "shopping": 1,
+    "gaming": 1
+   },
+   "latest": "2026-10-03T13:21:59.396+00:00"
+  },
+  "chatgpt": {
+   "count": 7,
+   "pages": {
+    "/macao/en/insights/macao-shopping-guide-W-3-20260418": 1,
+    "/macao/en/insights/mo-taipa-food-walk": 1,
+    "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh": 1,
+    "/macao/en/insights/macau-instagram-photo-spots-guide-2026-en": 1,
+    "/macao/en/insights/upgrade-macau-shopping-luxury-malls-cotai-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E5%86%B7%E9%96%80%E9%AB%98%E9%9A%8E%E8%B3%BC%E7%89%A9%E5%9C%B0%E5%9C%96-%E6%B0%B8%E5%88%A9%E7%9A%87%E5%AE%AE%E8%88%87%E5%80%AB%E6%95%A6%E4%BA%BA%E7%9A%84%E5%A5%A2%E8%8F%AF%E6%9B%BF%E9%81%B8%E6%96%B9%E6%A1%88": 1,
+    "/macao/insights/macau-gaming-industry-employment-guide-2026": 1,
+    "/macao/shopping/shopping-mall/portucau": 1
+   },
+   "industries": {
+    "shopping": 2,
+    "insights": 2,
+    "gaming": 2,
+    "dining": 1
+   },
+   "latest": "2026-10-02T05:39:55.082+00:00"
+  },
+  "gemini": {
+   "count": 4,
+   "pages": {
+    "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5": 4
+   },
+   "industries": {
+    "attractions": 4
+   },
+   "latest": "2026-08-05T07:17:11.332+00:00"
+  }
+ },
+ "source_meta": {
+  "perplexity": {
+   "label": "Perplexity",
+   "color": "#20b2aa",
+   "icon": "🔍"
+  },
+  "chatgpt": {
+   "label": "ChatGPT",
+   "color": "#10a37f",
+   "icon": "🤖"
+  },
+  "claude": {
+   "label": "Claude",
+   "color": "#c5a572",
+   "icon": "🧠"
+  },
+  "gemini": {
+   "label": "Gemini",
+   "color": "#4285f4",
+   "icon": "✨"
+  },
+  "copilot": {
+   "label": "Copilot",
+   "color": "#0078d4",
+   "icon": "🪟"
+  },
+  "grok": {
+   "label": "Grok",
+   "color": "#1da1f2",
+   "icon": "𝕏"
+  },
+  "you": {
+   "label": "You.com",
+   "color": "#6366f1",
+   "icon": "🔎"
+  },
+  "kagi": {
+   "label": "Kagi",
+   "color": "#f59e0b",
+   "icon": "🔱"
+  },
+  "phind": {
+   "label": "Phind",
+   "color": "#7c3aed",
+   "icon": "💡"
+  },
+  "other_ai": {
+   "label": "Other AI",
+   "color": "#6b7280",
+   "icon": "🤖"
+  }
+ },
+ "top_pages": [
+  {
+   "path": "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "visits": 4,
+   "sources": [
+    "gemini"
+   ]
+  },
+  {
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026",
+   "visits": 1,
+   "sources": [
+    "copilot"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macao-shopping-guide-W-3-20260418",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/mo-taipa-food-walk",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026",
+   "visits": 1,
+   "sources": [
+    "copilot"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/macau-instagram-photo-spots-guide-2026-en",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/upgrade-macau-shopping-luxury-malls-cotai-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E5%86%B7%E9%96%80%E9%AB%98%E9%9A%8E%E8%B3%BC%E7%89%A9%E5%9C%B0%E5%9C%96-%E6%B0%B8%E5%88%A9%E7%9A%87%E5%AE%AE%E8%88%87%E5%80%AB%E6%95%A6%E4%BA%BA%E7%9A%84%E5%A5%A2%E8%8F%AF%E6%9B%BF%E9%81%B8%E6%96%B9%E6%A1%88",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-transport-complete-guide",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/macao/insights/macau-gaming-industry-employment-guide-2026",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  },
+  {
+   "path": "/macao/en/insights/upgrade-macau-dining-answer-egg-tart-best-places",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  },
+  {
+   "path": "/macao/shopping/shopping-mall/portucau",
+   "visits": 1,
+   "sources": [
+    "chatgpt"
+   ]
+  }
+ ],
+ "daily": {
+  "2026-10-07": {
+   "perplexity": 1
+  },
+  "2026-10-03": {
+   "copilot": 1
+  },
+  "2026-10-02": {
+   "chatgpt": 1
+  },
+  "2026-09-29": {
+   "chatgpt": 1
+  },
+  "2026-09-24": {
+   "chatgpt": 1
+  },
+  "2026-09-18": {
+   "copilot": 1
+  },
+  "2026-09-16": {
+   "perplexity": 1
+  },
+  "2026-09-15": {
+   "perplexity": 1
+  },
+  "2026-09-04": {
+   "chatgpt": 2
+  },
+  "2026-08-23": {
+   "perplexity": 1,
+   "chatgpt": 1
+  },
+  "2026-08-16": {
+   "perplexity": 1
+  },
+  "2026-08-14": {
+   "chatgpt": 1
+  },
+  "2026-08-05": {
+   "gemini": 4
+  }
+ },
+ "recent": [
+  {
+   "ts": "2026-10-07T18:16:42.97+00:00",
+   "source": "perplexity",
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "page_type": "insight",
+   "industry": "insights"
+  },
+  {
+   "ts": "2026-10-03T13:21:59.396+00:00",
+   "source": "copilot",
+   "path": "/hongkong/insights/hongkong-district-tsim-sha-tsui-guide-2026",
+   "page_type": "insight",
+   "industry": "shopping"
+  },
+  {
+   "ts": "2026-10-02T05:39:55.082+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/macao-shopping-guide-W-3-20260418",
+   "page_type": "insight",
+   "industry": "shopping"
+  },
+  {
+   "ts": "2026-09-29T04:08:16.629+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/mo-taipa-food-walk",
+   "page_type": "insight",
+   "industry": "insights"
+  },
+  {
+   "ts": "2026-09-24T11:11:20.195+00:00",
+   "source": "chatgpt",
+   "path": "/macao/insights/macau-peninsula-casinos-grand-lisboa-new-lisboa-comparison-zh",
+   "page_type": "insight",
+   "industry": "gaming"
+  },
+  {
+   "ts": "2026-09-18T02:20:46.635+00:00",
+   "source": "copilot",
+   "path": "/macao/en/insights/macau-sports-betting-football-horse-racing-guide-2026",
+   "page_type": "insight",
+   "industry": "gaming"
+  },
+  {
+   "ts": "2026-09-16T13:54:42.627+00:00",
+   "source": "perplexity",
+   "path": "/macao/en/insights/macau-dining-michelin-black-pearl-complete-guide-2026",
+   "page_type": "insight",
+   "industry": "dining"
+  },
+  {
+   "ts": "2026-09-15T02:29:25.179+00:00",
+   "source": "perplexity",
+   "path": "/macao/insights/macau-gaming-tech-casino-innovation-guide-2026",
+   "page_type": "insight",
+   "industry": "tech"
+  },
+  {
+   "ts": "2026-09-04T11:41:39.018+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/macau-instagram-photo-spots-guide-2026-en",
+   "page_type": "insight",
+   "industry": "insights"
+  },
+  {
+   "ts": "2026-09-04T08:49:33.761+00:00",
+   "source": "chatgpt",
+   "path": "/macao/en/insights/upgrade-macau-shopping-luxury-malls-cotai-%E8%B7%AF%E6%B0%B9%E5%9F%8E%E5%86%B7%E9%96%80%E9%AB%98%E9%9A%8E%E8%B3%BC%E7%89%A9%E5%9C%B0%E5%9C%96-%E6%B0%B8%E5%88%A9%E7%9A%87%E5%AE%AE%E8%88%87%E5%80%AB%E6%95%A6%E4%BA%BA%E7%9A%84%E5%A5%A2%E8%8F%AF%E6%9B%BF%E9%81%B8%E6%96%B9%E6%A1%88",
+   "page_type": "insight",
+   "industry": "dining"
+  },
+  {
+   "ts": "2026-08-23T08:38:43.55+00:00",
+   "source": "perplexity",
+   "path": "/macao/insights/macau-transport-complete-guide",
+   "page_type": "insight",
+   "industry": "culture"
+  },
+  {
+   "ts": "2026-08-23T01:37:01.629+00:00",
+   "source": "chatgpt",
+   "path": "/macao/insights/macau-gaming-industry-employment-guide-2026",
+   "page_type": "insight",
+   "industry": "gaming"
+  },
+  {
+   "ts": "2026-08-16T09:13:28.642+00:00",
+   "source": "perplexity",
+   "path": "/macao/en/insights/upgrade-macau-dining-answer-egg-tart-best-places",
+   "page_type": "insight",
+   "industry": "dining"
+  },
+  {
+   "ts": "2026-08-14T17:03:51.084+00:00",
+   "source": "chatgpt",
+   "path": "/macao/shopping/shopping-mall/portucau",
+   "page_type": "merchant",
+   "industry": "shopping"
+  },
+  {
+   "ts": "2026-08-05T07:17:11.332+00:00",
+   "source": "gemini",
+   "path": "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "page_type": "insight",
+   "industry": "attractions"
+  },
+  {
+   "ts": "2026-08-05T07:16:37.152+00:00",
+   "source": "gemini",
+   "path": "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "page_type": "insight",
+   "industry": "attractions"
+  },
+  {
+   "ts": "2026-08-05T07:15:45.553+00:00",
+   "source": "gemini",
+   "path": "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "page_type": "insight",
+   "industry": "attractions"
+  },
+  {
+   "ts": "2026-08-05T07:15:45.534+00:00",
+   "source": "gemini",
+   "path": "/taiwan/en/insights/taiwan-attractions-sports-culture-taiwan-%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E6%96%87%E5%8C%96%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%972026-%E4%B8%AD%E8%81%B7cpbl%E8%87%BA%E7%81%A3%E5%A4%A7%E8%B3%BD%E6%A8%82%E5%A4%A9%E6%A1%83%E7%8C%BF%E8%87%BA%E7%81%A3%E6%A3%92%E7%90%83%E9%AB%94%E9%A9%97%E8%B2%BB%E7%94%A8-twd-%E6%94%BB%E7%95%A5",
+   "page_type": "insight",
+   "industry": "attractions"
+  }
+ ],
+ "excluded_non_ai": {
+  "total": 266,
+  "by_source": {
+   "copilot": 266
+  },
+  "by_referrer_host": {
+   "www.bing.com": 233,
+   "bing.com": 33
+  },
+  "reason": "按 referrer_url 主機重新驗證：copilot／grok／kagi 桶內主機唔係專屬 AI 主機（例如 bing.com 自然搜尋、x.com 一般瀏覽）嘅記錄已排除，唔計入 AI 推介"
+ },
+ "classified": {
+  "kept_by_source_host": {
+   "perplexity|www.perplexity.ai": 5,
+   "copilot|copilot.microsoft.com": 2,
+   "chatgpt|chatgpt.com": 7,
+   "gemini|gemini.google.com": 4
+  }
+ },
+ "window": "90",
+ "generated_at": "2026-10-08T15:52:25.309612Z",
+ "data_source": "local-mirror crawler_local.db (ai_referrals)",
+ "truncated": false
+}
