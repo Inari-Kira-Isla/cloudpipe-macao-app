@@ -1,0 +1,32 @@
+import { aggregateAiReferrals, reverifyReferralSource, type ReferralRow, type SourceMeta } from './ai-referrals-aggregate'
+import { assertEqual, finish } from './test-helpers'
+
+const meta: Record<string, SourceMeta> = { copilot: { label: 'Copilot', color: '#000', icon: 'c' } }
+
+// bing.com rows stored as 'copilot' by the pre-09-12 classifier must NOT count as AI referrals
+assertEqual(reverifyReferralSource({ referrer_source: 'copilot', referrer_url: 'https://www.bing.com/' }), null, 'copilot row from www.bing.com -> excluded')
+assertEqual(reverifyReferralSource({ referrer_source: 'copilot', referrer_url: 'https://bing.com/search?q=x' }), null, 'copilot row from bing.com -> excluded')
+assertEqual(reverifyReferralSource({ referrer_source: 'copilot', referrer_url: 'https://copilot.microsoft.com/' }), 'copilot', 'copilot row from copilot.microsoft.com -> kept')
+assertEqual(reverifyReferralSource({ referrer_source: 'grok', referrer_url: 'https://x.com/home' }), null, 'grok row from x.com -> excluded')
+assertEqual(reverifyReferralSource({ referrer_source: 'grok', referrer_url: 'https://grok.com/' }), 'grok', 'grok row from grok.com -> kept')
+assertEqual(reverifyReferralSource({ referrer_source: 'copilot', referrer_url: null }), 'copilot', 'no referrer_url -> cannot disprove, kept')
+assertEqual(reverifyReferralSource({ referrer_source: 'perplexity', referrer_url: 'https://www.perplexity.ai/' }), 'perplexity', 'non-polluted bucket untouched')
+assertEqual(reverifyReferralSource({ referrer_source: 'chatgpt', referrer_url: 'https://weird.example/' }), 'chatgpt', 'only polluted buckets are re-verified')
+
+// Mirrors the 2026-10-08 production shape: 266 copilot rows of which 264 bing.com, plus 15 other AI
+const rows: ReferralRow[] = []
+for (let i = 0; i < 264; i++) rows.push({ ts: `2026-09-${String(1 + (i % 28)).padStart(2, '0')}T00:00:00Z`, referrer_source: 'copilot', referrer_url: 'https://www.bing.com/', path: '/a' })
+for (let i = 0; i < 2; i++) rows.push({ ts: '2026-10-01T00:00:00Z', referrer_source: 'copilot', referrer_url: 'https://copilot.microsoft.com/', path: '/b' })
+for (let i = 0; i < 7; i++) rows.push({ ts: '2026-10-02T00:00:00Z', referrer_source: 'chatgpt', referrer_url: 'https://chatgpt.com/', path: '/c' })
+for (let i = 0; i < 5; i++) rows.push({ ts: '2026-10-03T00:00:00Z', referrer_source: 'perplexity', referrer_url: 'https://www.perplexity.ai/', path: '/c' })
+for (let i = 0; i < 3; i++) rows.push({ ts: '2026-10-04T00:00:00Z', referrer_source: 'gemini', referrer_url: 'https://gemini.google.com/', path: '/d' })
+const agg = aggregateAiReferrals(rows, 90, '2026-07-10T00:00:00Z', meta)
+assertEqual(rows.length, 281, 'fixture mirrors the 281 rows of the old 90-day view')
+assertEqual(agg.total, 17, 'AI referral total after re-verification = 17 (was 281)')
+assertEqual(agg.by_source.copilot?.count, 2, 'copilot bucket = 2 real Copilot rows')
+assertEqual(agg.excluded_non_ai.total, 264, 'excluded_non_ai.total = 264')
+assertEqual(agg.excluded_non_ai.by_source, { copilot: 264 }, 'excluded_non_ai.by_source')
+assertEqual(agg.total + agg.excluded_non_ai.total, rows.length, 'nothing silently lost: kept + excluded = input')
+assertEqual(Object.values(agg.by_source).reduce((s, b) => s + b.count, 0), agg.total, 'by_source sums to total')
+assertEqual(agg.recent.every(r => r.source !== 'copilot' || r.path === '/b'), true, 'recent list has no bing-derived copilot rows')
+finish()

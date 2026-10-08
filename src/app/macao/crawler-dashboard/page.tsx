@@ -2,6 +2,11 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { INDUSTRIES } from '@/lib/industries'
+import {
+  BOT_CATEGORY_META, aggregateSeries, alltimeToSummaryShape, barLimit, chooseGranularity,
+  createRequestGuard, summarizeBotCategories,
+  type AggPoint, type BotCategory, type Granularity,
+} from '@/lib/crawler-dashboard'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 
@@ -19,7 +24,10 @@ interface Summary {
   industries: Record<string, number>
   page_types: Record<string, number>
   sites: Record<string, number>
-  daily?: { date: string; total: number }[]
+  daily?: { date: string; total: number; by_owner?: Record<string, number> }[]
+  // 'alltime' = derived from crawler-stats-alltime.json ("全部" view): no sessions / sites / industries.
+  scope?: 'alltime'
+  daily_basis?: 'hkt' | 'utc'
   generated_at?: string
   is_stale?: boolean
   x_check_7d?: number | null
@@ -120,6 +128,7 @@ interface AlltimeMeta {
   excluded_buckets_reason: string
   totals: AlltimeTotals
   null_slug_hits: number
+  hkt_tripwire?: AlltimeHktTripwire
 }
 interface AlltimeMonthlyByBot { bot_name: string; count: number }
 interface AlltimeMonthly { month: string; total: number; by_bot: AlltimeMonthlyByBot[] }
@@ -138,6 +147,8 @@ interface AlltimeTopPath { path: string; count: number }
 interface AlltimeTopMerchant { slug: string; count: number }
 interface AlltimeTopInsight { slug: string; count: number }
 interface AlltimeDailyTotal { date: string; count: number }
+interface AlltimeDailyHkt { date: string; count: number; by_owner?: Record<string, number> }
+interface AlltimeHktTripwire { status: string; total_dev_pct: number; days_over_tolerance_n: number; tolerance_pct: number }
 interface AlltimeStats {
   meta: AlltimeMeta
   monthly: AlltimeMonthly[]
@@ -147,7 +158,39 @@ interface AlltimeStats {
   top_merchants: AlltimeTopMerchant[]
   top_insights: AlltimeTopInsight[]
   daily_totals: AlltimeDailyTotal[]
+  // Added 2026-10-08 (HKT day boundary + per-owner split); absent in older cached JSON.
+  daily_totals_hkt?: AlltimeDailyHkt[]
 }
+
+// Sentinel for the "全部" range button (0 can never be a real window length).
+const ALL_DAYS = 0
+// Tabs that have real data in the "全部" view (the others depend on windowed APIs capped at 90 days).
+const ALL_TABS: readonly string[] = ['overview', 'pages', 'alltime']
+
+function buildAlltimeSummary(at: AlltimeStats): Summary {
+  const sh = alltimeToSummaryShape(at)
+  return {
+    period: { since: at.meta.range.min_ts, days: ALL_DAYS },
+    total_visits: sh.total_visits,
+    unique_bots: sh.unique_bots,
+    // No real session / site / industry data exists for the full history — leave empty rather than extrapolate.
+    unique_sessions: 0,
+    bots: sh.bots,
+    top_pages: {},
+    industries: {},
+    page_types: sh.page_types,
+    sites: {},
+    daily: sh.daily,
+    generated_at: at.meta.generated_at_hkt,
+    scope: 'alltime',
+    daily_basis: sh.daily_basis,
+  }
+}
+
+function buildAlltimeDailyDetail(at: AlltimeStats): { daily?: DailyDetailPoint[] } {
+  return { daily: alltimeToSummaryShape(at).daily.map(d => ({ date: d.date, total: d.total, by_owner: d.by_owner })) }
+}
+
 
 const API = '/api/v1/crawler-stats'
 const ROUTING_API = '/api/v1/routing-baseline'
@@ -340,15 +383,19 @@ function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; heigh
 }
 
 // ── Daily trend chart (HKT date labels — precompute script uses HKT day boundaries) ──
-function DailyTrendChart({ daily, days }: { daily: { date: string; total: number }[]; days: number }) {
+// `days` is the selected window; `granularity` folds the series into weeks/months when the
+// window is long ("全部" view). The old cap (30 bars) made a 90-day selection look like 30 days.
+function DailyTrendChart({ daily, days, granularity = 'day', basisNote }: {
+  daily: { date: string; total: number }[]; days: number; granularity?: Granularity; basisNote?: string
+}) {
   const barsRef = useRef<(HTMLDivElement | null)[]>([])
   // Precompute script labels days with HKT date (UTC+8); must match here or today bar turns wrong
   const hktToday = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
-  // Show last N days depending on context; cap at 30 bars for readability
-  const maxBars = days <= 7 ? 7 : days <= 14 ? 14 : 30
-  const sliced = daily.slice(-maxBars)
+  const series: AggPoint[] = aggregateSeries(daily, granularity)
+  const sliced = granularity === 'day' && days !== ALL_DAYS ? series.slice(-barLimit(days)) : series
   const maxVal = Math.max(...sliced.map(d => d.total), 1)
   const datesKey = sliced.map(d => d.date).join(',')
+  const unit = granularity === 'week' ? '每週' : granularity === 'month' ? '每月' : '每日'
 
   useEffect(() => {
     barsRef.current.forEach((el, i) => {
@@ -356,7 +403,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
       const pct = (sliced[i]?.total / maxVal) * 100
       gsap.fromTo(el,
         { height: '0%', opacity: 0 },
-        { height: `${pct}%`, opacity: 1, duration: 0.7, delay: i * 0.03, ease: 'power2.out' }
+        { height: `${pct}%`, opacity: 1, duration: 0.7, delay: Math.min(i * 0.03, 1), ease: 'power2.out' }
       )
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -364,20 +411,20 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
 
   if (!sliced.length) return null
 
+  const last = sliced[sliced.length - 1]
   return (
     <div style={{ background: '#fafafa', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #eee', gridColumn: '1 / -1' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>每日 AI 爬取趨勢</h3>
-        <span style={{ fontSize: 11, color: '#aaa' }}>日期按 HKT</span>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>{unit}爬蟲訪問趨勢</h3>
+        <span style={{ fontSize: 11, color: '#aaa' }}>{basisNote || '日期按 HKT'}{granularity !== 'day' ? '｜首尾週期可能不完整' : ''}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }} data-testid="trend-bars" data-bars={sliced.length}>
         {sliced.map((d, i) => {
-          const [, mm, dd] = d.date.split('-')
-          const isToday = d.date === hktToday
-          const barColor = isToday ? '#10a37f' : '#4285f4'
+          const isToday = granularity === 'day' && d.date === hktToday
+          const barColor = isToday ? '#10a37f' : d.partial ? '#9db8e8' : '#4285f4'
           return (
-            <div key={d.date} title={`${d.date} (HKT): ${d.total.toLocaleString()} visits`}
-              style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', cursor: 'default' }}>
+            <div key={d.date} title={`${d.title}${granularity === 'day' ? ' (HKT)' : ''}: ${d.total.toLocaleString()} visits`}
+              style={{ flex: '1 0 auto', minWidth: granularity === 'day' ? 18 : 26, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', cursor: 'default' }}>
               <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative' }}>
                 <div
                   ref={el => { barsRef.current[i] = el }}
@@ -385,7 +432,7 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
                 />
               </div>
               <span style={{ fontSize: 9, color: isToday ? '#10a37f' : '#aaa', fontWeight: isToday ? 700 : 400, whiteSpace: 'nowrap' }}>
-                {mm}/{dd}
+                {d.label}
               </span>
             </div>
           )
@@ -393,7 +440,9 @@ function DailyTrendChart({ daily, days }: { daily: { date: string; total: number
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: '#bbb' }}>
         <span>峰值: {Math.max(...sliced.map(d => d.total)).toLocaleString()}</span>
-        <span>今日: {(sliced.find(d => d.date === hktToday)?.total ?? sliced.at(-1)?.total ?? 0).toLocaleString()}</span>
+        {granularity === 'day'
+          ? <span>今日: {(sliced.find(d => d.date === hktToday)?.total ?? last.total).toLocaleString()}</span>
+          : <span>最近一期: {last.total.toLocaleString()}</span>}
         <span>合計: {sliced.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
       </div>
     </div>
@@ -488,9 +537,9 @@ function MerchantLeaderboard({ daily }: { daily: DailyDetailPoint[] }) {
 }
 
 // ── AI engine market-share trend (daily by_owner, stacked) ──────────────────
-function OwnerTrendChart({ daily }: { daily: DailyDetailPoint[] }) {
-  const maxBars = daily.length <= 7 ? 7 : daily.length <= 14 ? 14 : 30
-  const sliced = daily.slice(-maxBars)
+function OwnerTrendChart({ daily, granularity = 'day' }: { daily: DailyDetailPoint[]; granularity?: Granularity }) {
+  const series = aggregateSeries(daily.map(d => ({ date: d.date, total: d.total, by_owner: d.by_owner })), granularity)
+  const sliced = granularity === 'day' ? series.slice(-barLimit(series.length)) : series
   if (!sliced.length) return null
 
   const ownerTotals: Record<string, number> = {}
@@ -508,7 +557,7 @@ function OwnerTrendChart({ daily }: { daily: DailyDetailPoint[] }) {
   return (
     <div style={{ background: '#FAFAFA', borderRadius: 10, padding: '16px 16px 10px', border: '1px solid #E9E9E7', gridColumn: '1 / -1' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#37352F' }}>AI 引擎市佔趨勢</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#37352F' }}>爬蟲擁有者趨勢（Top 5）</h3>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {topOwners.map(o => (
             <span key={o} style={{ fontSize: 10, color: '#787774' }}>
@@ -519,10 +568,9 @@ function OwnerTrendChart({ daily }: { daily: DailyDetailPoint[] }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90, overflowX: 'auto' }}>
         {sliced.map((d, i) => {
-          const [, mm, dd] = d.date.split('-')
           const dayTotal = dayTotals[i]
           return (
-            <div key={d.date} title={`${d.date}: ${dayTotal.toLocaleString()}`}
+            <div key={d.date} title={`${d.title}: ${dayTotal.toLocaleString()}`}
               style={{ flex: '1 0 auto', minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%' }}>
               <div style={{
                 flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', position: 'relative',
@@ -539,7 +587,7 @@ function OwnerTrendChart({ daily }: { daily: DailyDetailPoint[] }) {
                   })}
                 </div>
               </div>
-              <span style={{ fontSize: 9, color: '#9B9A97' }}>{mm}/{dd}</span>
+              <span style={{ fontSize: 9, color: '#9B9A97' }}>{d.label}</span>
             </div>
           )
         })}
@@ -578,6 +626,8 @@ export default function CrawlerDashboard() {
     top_pages: { path: string; visits: number; sources: string[] }[]
     daily: Record<string, Record<string, number>>
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
+    // Present when the live API re-verified copilot/grok rows by referrer_url and dropped non-AI hosts (e.g. bing.com).
+    excluded_non_ai?: { total: number; by_source: Record<string, number>; reason: string }
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -586,6 +636,11 @@ export default function CrawlerDashboard() {
   const [cacheHealth, setCacheHealth] = useState<CacheHealth | null>(null)
   const [alltime, setAlltime] = useState<AlltimeStats | null>(null)
   const [alltimeLoading, setAlltimeLoading] = useState(false)
+  const isAll = days === ALL_DAYS
+  // Request guards: every new fetch aborts the previous one and only the latest may commit state.
+  const fetchGuard = useRef(createRequestGuard())
+  const pagesGuard = useRef(createRequestGuard())
+  const sessionsGuard = useRef(createRequestGuard())
 
   const [error, setError] = useState<string | null>(null)
 
@@ -597,9 +652,14 @@ export default function CrawlerDashboard() {
   // `forceFresh=true` bypasses the browser/CDN cache (used by "立即重新整理" button).
   // Default mode uses `default` so the CDN cache (s-maxage on the route) can serve
   // a fast hit, avoiding Vercel cold-start latency on auto-refresh and tab navigations.
-  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000, forceFresh = false): Promise<T> => {
+  const safeFetch = async <T,>(url: string, fallback: T, timeoutMs = 9000, forceFresh = false, outer?: AbortSignal): Promise<T> => {
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
+    // Chain the caller's signal (superseded request) into this request's controller.
+    if (outer) {
+      if (outer.aborted) controller.abort()
+      else outer.addEventListener('abort', () => controller.abort(), { once: true })
+    }
     try {
       const res = await fetch(url, {
         cache: forceFresh ? 'no-store' : 'default',
@@ -617,18 +677,40 @@ export default function CrawlerDashboard() {
   // only fall back to the Vercel API route if the static file is missing/unreachable.
   // This is the real "read local cache" path — the precompute job publishes these files,
   // so the dashboard no longer pays a 12–15s serverless cold start on first load.
-  const cacheFirst = async <T,>(staticUrl: string | null, apiUrl: string, fallback: T, forceFresh = false): Promise<T> => {
+  const cacheFirst = async <T,>(staticUrl: string | null, apiUrl: string, fallback: T, forceFresh = false, signal?: AbortSignal): Promise<T> => {
     if (staticUrl) {
-      const fromCache = await safeFetch<T | null>(staticUrl, null, 6000, forceFresh)
+      const fromCache = await safeFetch<T | null>(staticUrl, null, 6000, forceFresh, signal)
       if (fromCache != null) return fromCache as T
     }
-    return safeFetch<T>(apiUrl, fallback, 20000, forceFresh)
+    return safeFetch<T>(apiUrl, fallback, 20000, forceFresh, signal)
   }
 
   const fetchData = useCallback(async (forceFresh = false) => {
+    const req = fetchGuard.current.begin()
     setLoading(true)
     setError(null)
     try {
+      if (days === ALL_DAYS) {
+        // "全部": everything comes from the pre-baked crawler-stats-alltime.json (CDN, zero Supabase).
+        // No windowed API exists for it, so there is no /api fallback and no extrapolated KPIs.
+        const [at, health, refs] = await Promise.all([
+          safeFetch<AlltimeStats | null>(ALLTIME_URL, null, 15000, forceFresh, req.signal),
+          safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000, false, req.signal),
+          // Only ~300 ai_referrals rows exist in total; the live route re-verifies bing.com/x.com rows.
+          safeFetch<AiReferralData | null>('/api/v1/ai-referrals?days=3650', null, 20000, forceFresh, req.signal),
+        ])
+        if (!req.isCurrent()) return // a newer request superseded this one — never overwrite its data
+        setAlltime(at)
+        setSummary(at ? buildAlltimeSummary(at) : null)
+        setSpiderWeb(null)
+        setCacheHealth(health)
+        setAiReferrals(refs)
+        setDailyDetail(at ? buildAlltimeDailyDetail(at) : null)
+        setLastUpdated(new Date())
+        if (!at) setError('全歷史快取載入失敗（crawler-stats-alltime.json 暫時不可用），請稍後按「立即重新整理」。')
+        setLoading(false)
+        return
+      }
       // Run all 4 fetches in parallel; health (GitHub Pages) gets a shorter timeout
       // so a blocked/slow external host never delays the main data display.
       // 20s timeout accommodates Vercel cold starts (can take 12-15s on first request).
@@ -637,21 +719,22 @@ export default function CrawlerDashboard() {
       const [sum, sw, health, refs, dd] = await Promise.all([
         cacheFirst<Summary | null>(
           [1, 7, 30, 90].includes(days) ? `${CACHE_BASE}/crawler-stats-summary-${days}.json` : null,
-          `${API}&view=summary&days=${days}`, null, forceFresh),
+          `${API}&view=summary&days=${days}`, null, forceFresh, req.signal),
         cacheFirst<SpiderWebData | null>(
           `${CACHE_BASE}/crawler-stats-spider-web-30.json`,
-          `${API}&view=spider-web&days=${days}`, null, forceFresh),
-        safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000),
+          `${API}&view=spider-web&days=${days}`, null, forceFresh, req.signal),
+        safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000, false, req.signal),
         cacheFirst<AiReferralData | null>(
           // Static cache is precomputed for the 30-day window only; other windows fall to the API.
           days === 30 ? `${CACHE_BASE}/ai-referrals-30.json` : null,
-          `/api/v1/ai-referrals?days=${days}`, null, forceFresh),
+          `/api/v1/ai-referrals?days=${days}`, null, forceFresh, req.signal),
         // Per-day owner/site breakdown — previously fetched nowhere in this dashboard,
         // now powers the merchant leaderboard + AI-engine trend panels below.
         cacheFirst<{ daily?: DailyDetailPoint[] } | null>(
           [7, 30, 90].includes(days) ? `${CACHE_BASE}/crawler-stats-daily-${days}.json` : null,
-          `${API}&view=daily&days=${days}`, null, forceFresh),
+          `${API}&view=daily&days=${days}`, null, forceFresh, req.signal),
       ])
+      if (!req.isCurrent()) return
       setSummary(sum)
       setSpiderWeb(sw)
       setCacheHealth(health)
@@ -661,9 +744,10 @@ export default function CrawlerDashboard() {
       if (!sum) setError('數據載入中，Vercel 冷啟動需時約 15 秒，請稍候再按「立即重新整理」。')
     } catch (e) {
       console.error(e)
+      if (!req.isCurrent()) return
       setError('載入失敗，請重試。')
     }
-    setLoading(false)
+    if (req.isCurrent()) setLoading(false)
   }, [days])
 
   // Explicit refresh: bust server-side cache then force-reload client data
@@ -680,6 +764,10 @@ export default function CrawlerDashboard() {
   }, [fetchData])
 
   useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    const guards = [fetchGuard.current, pagesGuard.current, sessionsGuard.current]
+    return () => guards.forEach(g => g.abort())
+  }, [])
 
   useEffect(() => {
     // Auto-refresh every 60s (was 30s — too aggressive given route s-maxage=120).
@@ -723,18 +811,24 @@ export default function CrawlerDashboard() {
   }
 
   const loadPages = async () => {
+    if (isAll) return // "全部" uses alltime.top_paths (no windowed pages API for it)
     if (pagesLoadedDays === days || pagesLoading) return
+    const req = pagesGuard.current.begin()
     setPagesLoading(true)
-    const data = await safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, [])
+    const data = await safeFetch<PageStat[]>(`${API}&view=pages&days=${days}&limit=50`, [], 9000, false, req.signal)
+    if (!req.isCurrent()) return // range changed while loading — drop the stale result
     setPages(data)
     setPagesLoadedDays(days)
     setPagesLoading(false)
   }
 
   const loadSessions = async () => {
+    if (isAll) return
     if (sessionsLoadedDays === days || sessionsLoading) return
+    const req = sessionsGuard.current.begin()
     setSessionsLoading(true)
-    const data = await safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, [])
+    const data = await safeFetch<Session[]>(`${API}&view=sessions&days=${days}&limit=50`, [], 9000, false, req.signal)
+    if (!req.isCurrent()) return
     setSessions(data)
     setSessionsLoadedDays(days)
     setSessionsLoading(false)
@@ -784,7 +878,11 @@ export default function CrawlerDashboard() {
   }
 
   const totalVisitsDisplay = useCountUp(summary?.total_visits ?? 0)
-  const uniqueBotsDisplay  = useCountUp(summary?.unique_bots ?? 0)
+  // Bots regrouped into AI engine / search engine / SEO tool & headless (was: everything labelled "AI Bot").
+  const botCats = summarizeBotCategories(summary?.bots || {})
+  const uniqueBotsDisplay  = useCountUp(botCats.byCategory.ai_engine.kinds)
+  const strictLlmDisplay   = useCountUp(alltime?.meta.totals.strict_llm_engines_ua_named ?? 0)
+  const coverDaysDisplay   = useCountUp(summary?.daily?.length ?? 0)
   const sessionsDisplay    = useCountUp(summary?.unique_sessions ?? 0)
   const sitesDisplay       = useCountUp(summary ? Object.keys(summary.sites || {}).length : 0)
   const aiRefTotalDisplay  = useCountUp(aiReferrals?.total ?? 0)
@@ -828,8 +926,15 @@ export default function CrawlerDashboard() {
     return ((secondSum - firstSum) / firstSum) * 100
   })()
 
+  // > 90 days of data → weekly buckets, > 1 year → monthly (only reachable in the "全部" view).
+  const trendGranularity: Granularity = isAll ? chooseGranularity(summary?.daily?.length ?? 0) : 'day'
+
   const maxBot = summary?.bots ? Math.max(...Object.values(summary.bots).map(b => b?.count || 0), 1) : 1
-  const maxPage = pages.length ? Math.max(...pages.map(p => p.visits), 1) : 1
+  // "全部" has no windowed pages API — use the pre-baked all-time top paths instead.
+  const pagesView: { path: string; visits: number; bots: string[] }[] = isAll
+    ? (alltime?.top_paths ?? []).map(p => ({ path: p.path, visits: p.count, bots: [] }))
+    : pages
+  const maxPage = pagesView.length ? Math.max(...pagesView.map(p => p.visits), 1) : 1
 
   const VALID_IND = new Set([
     ...INDUSTRIES.map(i => i.slug),
@@ -903,6 +1008,11 @@ export default function CrawlerDashboard() {
     : 1
 
   const changeDays = (nextDays: number) => {
+    // Invalidate in-flight page/session loads for the old range so they cannot land after the switch.
+    pagesGuard.current.abort(); sessionsGuard.current.abort()
+    setPagesLoading(false); setSessionsLoading(false)
+    // "全部" only supports overview / pages / 全歷史; fall back to overview if another tab was open.
+    if (nextDays === ALL_DAYS && !ALL_TABS.includes(tab)) setTab('overview')
     setDays(nextDays)
     setPages([])
     setSessions([])
@@ -942,14 +1052,14 @@ export default function CrawlerDashboard() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-        {[1, 7, 30, 90].map(d => (
-          <button key={d} onClick={() => changeDays(d)}
+        {[1, 7, 30, 90, ALL_DAYS].map(d => (
+          <button key={d} onClick={() => changeDays(d)} data-testid={`range-${d === ALL_DAYS ? 'all' : d}`}
             style={{
               padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
               background: days === d ? '#111' : '#fff', color: days === d ? '#fff' : '#333',
               fontSize: 13, fontWeight: 500,
             }}>
-            {d === 1 ? '今天' : `${d} 天`}
+            {d === 1 ? '今天' : d === ALL_DAYS ? '全部' : `${d} 天`}
           </button>
         ))}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -1007,13 +1117,29 @@ export default function CrawlerDashboard() {
 
       {summary && !loading && (
         <>
+          {isAll && (
+            <div className="cp-callout warn" data-testid="all-scope-note">
+              <span className="cp-callout-icon">ℹ️</span>
+              <div>
+                <strong>「全部」視圖</strong>：{summary.daily && summary.daily.length > 0 ? `${summary.daily[0].date} ~ ${summary.daily[summary.daily.length - 1].date}` : ''}（來自 crawler-stats-alltime.json，
+                {summary.daily_basis === 'hkt' ? '日界 HKT' : '日界 UTC（舊快取；HKT 版會喺下次重建後生效）'}）。
+                Sessions、追蹤站點、行業／站點分佈喺「全部」窗口冇實測數據（1／7／90 日嘅分佈係按 30 日比例推算），所以唔顯示；趨勢超過 90 日自動改為週／月聚合。
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
-            {[
-              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有 AI 爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入）', delay: 0, delta: totalVisitsDelta },
-              { label: 'AI Bot 種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: '不同 bot owner 的數量', delay: 80, delta: null as number | null },
-              { label: 'Bot Crawl Sessions', value: sessionsDisplay, color: '#4285f4', tooltip: 'AI 爬蟲訪問 session 數（distinct session_id，並非真人 session）', delay: 160, delta: null as number | null },
-              { label: '追蹤站點', value: sitesDisplay, color: '#ff9900', tooltip: '被 AI 爬蟲訪問過的站點數', delay: 240, delta: null as number | null },
-            ].map(card => (
+            {(isAll ? [
+              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '全歷史爬蟲訪問總和（crawler_alltime.db 全部來源合併，含 HeadlessFetcher 啟發式桶）', delay: 0, delta: totalVisitsDelta },
+              { label: 'AI 引擎爬蟲種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: `UA 具名嘅 AI 引擎爬蟲種類數；全部共 ${summary.unique_bots} 種爬蟲（另有 ${botCats.byCategory.search_engine.kinds} 種搜尋引擎、${botCats.byCategory.seo_tool.kinds} 種 SEO 工具／無頭瀏覽器／其他）`, delay: 80, delta: null as number | null },
+              { label: '涵蓋日數', value: coverDaysDisplay, color: '#4285f4', tooltip: '全歷史有數據嘅日數（已知缺口見「📜 全歷史」分頁）', delay: 160, delta: null as number | null },
+              { label: 'UA 實名 LLM 引擎', value: strictLlmDisplay, color: '#ff9900', tooltip: '嚴格口徑：UA 明確具名嘅 LLM bot 訪問總和（唔含 HeadlessFetcher、Amazonbot、Applebot 等通用爬蟲）', delay: 240, delta: null as number | null },
+            ] : [
+              { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入；包含 AI 引擎、搜尋引擎同 SEO 工具／無頭瀏覽器）', delay: 0, delta: totalVisitsDelta },
+              { label: 'AI 引擎爬蟲種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: `UA 具名嘅 AI 引擎爬蟲種類數；此窗口共 ${summary.unique_bots} 種爬蟲（另有 ${botCats.byCategory.search_engine.kinds} 種搜尋引擎、${botCats.byCategory.seo_tool.kinds} 種 SEO 工具／無頭瀏覽器／其他）`, delay: 80, delta: null as number | null },
+              { label: 'Bot Crawl Sessions（推算）', value: sessionsDisplay, color: '#4285f4', tooltip: '推算值：以（日期 × 爬蟲擁有者）組合數估算，並非真實 session（bot_crawl_sessions 表不存在），僅供趨勢參考', delay: 160, delta: null as number | null },
+              { label: '追蹤站點', value: sitesDisplay, color: '#ff9900', tooltip: '被爬蟲訪問過的站點數', delay: 240, delta: null as number | null },
+            ]).map(card => (
               <FadeCard key={card.label} delay={card.delay} className="cp-kpi-card"
                 style={{ padding: '16px 14px', cursor: 'help' }}>
                 <div title={card.tooltip} style={{ height: '100%' }}>
@@ -1032,41 +1158,36 @@ export default function CrawlerDashboard() {
           </div>
 
           {(() => {
-            // 收窄 llmBots 至真正的 LLM owners：OpenAI/Anthropic/Perplexity/Google(Google-Extended)/Meta/Microsoft(Copilot)/HeadlessFetcher
-            // 移除非 LLM 的搜尋引擎/雲服務爬蟲：Yandex(俄羅斯搜尋)、Amazon(雲服務)、Apple(Applebot 通用)、ByteDance、Baidu、You.com、Cohere
-            // 注意：owner 只到 owner 層級，Google 同時包含 Googlebot(search) + Google-Extended(LLM)；Microsoft 同時包含 BingBot(search) + Copilot
-            // HeadlessFetcher 為 Perplexity 等 LLM 客戶端的 headless browser fetcher（commit 6e81f19 確認）
-            // 此處保留 Google + Microsoft，與診斷報告 ~66.5% 預期一致
-            const llmBots = new Set(['OpenAI', 'Anthropic', 'Perplexity', 'Google', 'Meta', 'Microsoft', 'HeadlessFetcher'])
-            // SSOT v3 (2026-06-11): 分母 = 完整 raw 爬取量 (含 SEO + Unknown，唔排除)，
-            // 對齊 precompute 嘅 total_visits = 全 raw crawler_visits universe。
-            // 「LLM Bot 流量」= llmBots 子集；「其他 Bot 流量」= total − LLM = SEO + Unknown + 其餘。
-            // botSampleTotal == summary.total_visits == Σbots（每個 range 都自洽）。
-            const excludeOwners = new Set<string>([])
-            const botSampleTotal = Object.entries(summary.bots || {}).reduce((s, [, info]) => s + (excludeOwners.has(info?.owner) ? 0 : (info?.count || 0)), 0) || 1
-            const llmSampleCount = Object.entries(summary.bots || {}).reduce((sum, [, info]) => {
-              return sum + (info?.owner && llmBots.has(info.owner) && !excludeOwners.has(info.owner) ? (info?.count || 0) : 0)
-            }, 0)
-            const llmRatio = llmSampleCount / botSampleTotal
-            // FIX 2026-06-05: 用 botSampleTotal（各 bot 實際加總）作為 llmVisits/otherBotVisits 分子母，
-            // 不再用 total_visits（24h 滾動視窗，與 bot counts 日曆日計算基準不同，差距可達 5,000+）。
-            // 原本 total_visits × ratio 導致 LLM/Other 顯示數字虛高，與個別 bot 加總不符。
-            const llmVisits = Math.round(llmRatio * botSampleTotal)
-            const otherBotVisits = botSampleTotal - llmVisits
-            const llmPct = (llmRatio * 100).toFixed(1)
-            const otherPct = ((1 - llmRatio) * 100).toFixed(1)
+            // Bot traffic split by what the crawler actually is (classifyBot, by bot_name) instead of the old
+            // owner-level "LLM" set, which counted Googlebot/Bingbot (owner Google/Microsoft) and the
+            // HeadlessFetcher heuristic bucket as LLM traffic. HeadlessFetcher is a middleware heuristic
+            // bucket (rounded Chrome UA, no Accept-Language / sec-ch-ua) — NOT an AI engine (09-12 ruling) —
+            // so it sits under "SEO 工具・無頭瀏覽器". Denominator = full raw crawl volume of the window,
+            // so the three shares add up to 100% and are self-consistent with 總訪問.
+            const total = botCats.total || 1
+            const strictPct = ((botCats.strictLlmCount / total) * 100).toFixed(1)
+            const order: BotCategory[] = ['ai_engine', 'search_engine', 'seo_tool']
+            const bg: Record<BotCategory, { bg: string; border: string; fg: string }> = {
+              ai_engine: { bg: '#e8f5e9', border: '#81c784', fg: '#2e7d32' },
+              search_engine: { bg: '#e3f2fd', border: '#90caf9', fg: '#1565c0' },
+              seo_tool: { bg: '#fdecea', border: '#f5b7b1', fg: '#c0392e' },
+            }
             return (
-              <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div title="LLM 爬蟲流量占比（OpenAI / Anthropic / Perplexity / Google-Extended / Meta / Microsoft Copilot）" style={{ background: '#e3f2fd', borderRadius: 10, padding: '16px', border: '1px solid #90caf9', cursor: 'help' }}>
-                  <div style={{ fontSize: 12, color: '#1565c0', fontWeight: 600, marginBottom: 4 }}>🤖 LLM Bot 流量</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#1976d2' }}>{llmPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{llmVisits.toLocaleString()} / {botSampleTotal.toLocaleString()} visits</div>
-                </div>
-                <div title="其他爬蟲（搜尋引擎/雲服務）：Yandex / Amazon / Apple / ByteDance 等。注意：本卡 100% 為 bot 流量，因 middleware 只記錄 bot 訪問；真人流量請見下方「AI 推介真人流量」" style={{ background: '#e8f5e9', borderRadius: 10, padding: '16px', border: '1px solid #81c784', cursor: 'help' }}>
-                  <div style={{ fontSize: 12, color: '#2e7d32', fontWeight: 600, marginBottom: 4 }}>🔍 其他 Bot 流量</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#388e3c' }}>{otherPct}%</div>
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{otherBotVisits.toLocaleString()} / {botSampleTotal.toLocaleString()} visits</div>
-                </div>
+              <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }} data-testid="bot-category-cards">
+                {order.map(cat => {
+                  const c = botCats.byCategory[cat]
+                  const meta = BOT_CATEGORY_META[cat]
+                  return (
+                    <div key={cat} title={meta.hint} style={{ background: bg[cat].bg, borderRadius: 10, padding: '16px', border: `1px solid ${bg[cat].border}`, cursor: 'help' }}>
+                      <div style={{ fontSize: 12, color: bg[cat].fg, fontWeight: 600, marginBottom: 4 }}>{cat === 'ai_engine' ? '🤖' : cat === 'search_engine' ? '🔍' : '🛠️'} {meta.label}</div>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: bg[cat].fg }} data-testid={`cat-pct-${cat}`}>{c.pct.toFixed(1)}%</div>
+                      <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{c.count.toLocaleString()} / {botCats.total.toLocaleString()} visits</div>
+                      {cat === 'ai_engine' && (
+                        <div style={{ fontSize: 11, color: '#666', marginTop: 4 }} data-testid="strict-llm-pct">其中 UA 實名 LLM（嚴格口徑）{strictPct}%</div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )
           })()}
@@ -1097,6 +1218,12 @@ export default function CrawlerDashboard() {
 
             {!loading && aiReferrals && (
               <div style={{ padding: '14px 18px' }}>
+                {aiReferrals.excluded_non_ai && aiReferrals.excluded_non_ai.total > 0 && (
+                  <div data-testid="referral-excluded-note" style={{ fontSize: 12, color: '#7a5d1f', background: '#FBF3DB', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
+                    已排除 <strong>{aiReferrals.excluded_non_ai.total}</strong> 筆非 AI 來源（{Object.entries(aiReferrals.excluded_non_ai.by_source).map(([k, v]) => `${k} 桶 ${v} 筆`).join('、')}）：
+                    {aiReferrals.excluded_non_ai.reason}
+                  </div>
+                )}
                 {aiReferrals.total === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: '#999', fontSize: 13 }}>
                     <div style={{ fontSize: 32, marginBottom: 8 }}>🕳️</div>
@@ -1160,7 +1287,7 @@ export default function CrawlerDashboard() {
           </div>
 
           <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #eee', flexWrap: 'wrap' }}>
-            {(['overview', 'sites', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion', 'alltime'] as const).map(t => (
+            {(['overview', 'sites', 'pages', 'sessions', 'spider-web', 'routing', 'merchant-discovery', 'faq-conversion', 'alltime'] as const).filter(t => !isAll || ALL_TABS.includes(t)).map(t => (
               <button key={t} onClick={() => {
                 setTab(t); setJourney(null)
                 if (t === 'pages') loadPages()
@@ -1188,27 +1315,44 @@ export default function CrawlerDashboard() {
                 <MerchantLeaderboard daily={dailyDetail.daily} />
               )}
               {dailyDetail?.daily && dailyDetail.daily.length > 1 && (
-                <OwnerTrendChart daily={dailyDetail.daily} />
+                <OwnerTrendChart daily={dailyDetail.daily} granularity={trendGranularity} />
               )}
               {summary.daily && summary.daily.length > 1 && (
-                <DailyTrendChart daily={summary.daily} days={days} />
+                <DailyTrendChart daily={summary.daily} days={days} granularity={trendGranularity}
+                  basisNote={isAll && summary.daily_basis === 'utc' ? '日期按 UTC（舊快取）' : undefined} />
               )}
-              <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI Bot 訪問量</h3>
-                {Object.entries(summary.bots)
-                  .sort((a, b) => b[1].count - a[1].count)
-                  .map(([name, info]) => (
-                    <div key={name} className="gsap-row" style={{ marginBottom: 8 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                        <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
-                        <span style={{ fontWeight: 600 }}>{info.count}</span>
+              <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }} data-testid="bot-list">
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>爬蟲訪問量（按類型）</h3>
+                {(['ai_engine', 'search_engine', 'seo_tool'] as BotCategory[]).map(cat => {
+                  const c = botCats.byCategory[cat]
+                  if (!c.bots.length) return null
+                  return (
+                    <div key={cat} style={{ marginBottom: 14 }}>
+                      <div title={BOT_CATEGORY_META[cat].hint} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: BOT_CATEGORY_META[cat].color, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 6px', paddingBottom: 3, borderBottom: `1px solid ${BOT_CATEGORY_META[cat].color}33` }}>
+                        <span>{BOT_CATEGORY_META[cat].label}（{c.kinds}）</span>
+                        <span>{c.count.toLocaleString()} · {c.pct.toFixed(1)}%</span>
                       </div>
-                      <AnimBar pct={(info.count / maxBot) * 100} color={BOT_COLORS[info.owner] || '#999'} />
+                      {c.bots.map(([name, info]) => (
+                        <div key={name} className="gsap-row" style={{ marginBottom: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                            <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
+                            <span style={{ fontWeight: 600 }}>{info.count.toLocaleString()}</span>
+                          </div>
+                          <AnimBar pct={(info.count / maxBot) * 100} color={cat === 'ai_engine' ? (BOT_COLORS[info.owner] || BOT_CATEGORY_META[cat].color) : cat === 'seo_tool' ? '#d98880' : '#9bb7e8'} />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )
+                })}
               </div>
+              {isAll ? (
+              <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', color: '#999', fontSize: 13, lineHeight: 1.6 }} data-testid="industry-unavailable">
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px', color: '#333' }}>行業訪問分佈</h3>
+                「全部」視圖不提供行業分佈：全歷史冇行業實測彙總，而 1／7／90 日嘅行業分佈係按 30 日比例放大嘅推算值。請切換到「30 天」睇實測數。
+              </div>
+              ) : (
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>行業訪問分佈{days !== 30 && <span style={{ fontSize: 11, fontWeight: 400, color: '#c0392e', marginLeft: 8 }}>推算值（按 30 日比例放大，非實測）</span>}</h3>
                 {Object.entries(filteredIndustries)
                   .sort((a, b) => b[1] - a[1])
                   .map(([ind, count]) => {
@@ -1226,6 +1370,7 @@ export default function CrawlerDashboard() {
                   })}
                 {Object.keys(filteredIndustries).length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無行業數據</p>}
               </div>
+              )}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee', gridColumn: '1 / -1' }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>頁面類型分佈</h3>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1373,14 +1518,14 @@ export default function CrawlerDashboard() {
 
           {tab === 'pages' && (
             <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>熱門頁面排名</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>熱門頁面排名{isAll && <span style={{ fontSize: 11, fontWeight: 400, color: '#999', marginLeft: 8 }}>全歷史 Top {pagesView.length}</span>}</h3>
               {pagesLoading && <p style={{ color: '#999', fontSize: 13 }}>載入頁面數據中...</p>}
-              {!pagesLoading && pages.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
-              {pages.map((p, i) => (
-                <div key={p.path} className="gsap-row" style={{ padding: '10px 0', borderBottom: i < pages.length - 1 ? '1px solid #eee' : 'none' }}>
+              {!pagesLoading && pagesView.length === 0 && <p style={{ color: '#999', fontSize: 13 }}>尚無數據或查詢逾時，總覽數據仍可正常使用。</p>}
+              {pagesView.map((p, i) => (
+                <div key={p.path} className="gsap-row" style={{ padding: '10px 0', borderBottom: i < pagesView.length - 1 ? '1px solid #eee' : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <code style={{ fontSize: 13, color: '#111', wordBreak: 'break-all' }}>{p.path}</code>
-                    <span style={{ fontWeight: 700, fontSize: 15, marginLeft: 12, whiteSpace: 'nowrap' }}>{p.visits}</span>
+                    <span style={{ fontWeight: 700, fontSize: 15, marginLeft: 12, whiteSpace: 'nowrap' }}>{p.visits.toLocaleString()}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <div style={{ flex: 1 }}>
