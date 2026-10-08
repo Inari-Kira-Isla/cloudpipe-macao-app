@@ -22,8 +22,8 @@ function closure(entries: string[]): string[] {
   while (queue.length) {
     const f = queue.pop()!; if (seen.has(f)) continue; seen.add(f)
     const text = readFileSync(f, 'utf8')
-    for (const m of text.matchAll(/(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)/g)) {
-      const r = resolveLocal(f, m[1] || m[2] || m[3]); if (r) queue.push(r)
+    for (const m of text.matchAll(/(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+      const r = resolveLocal(f, m[1] || m[2] || m[3] || m[4]); if (r) queue.push(r)
     }
   }
   return [...seen]
@@ -37,6 +37,10 @@ for (const f of files) assertEqual(supabaseViolations(readFileSync(f, 'utf8')), 
 assertEqual(supabaseViolations("import { createServiceClient } from '@/lib/supabase'").length >= 2, true, 'detects service-client import')
 assertEqual(supabaseViolations("const r = await supabase.from('ai_referrals').select('*')").length >= 1, true, 'detects .from().select()')
 assertEqual(supabaseViolations("fetch('https://abc.supabase.co/rest/v1/x')").length >= 1, true, 'detects supabase.co host')
+assertEqual(supabaseViolations("import { createBrowserClient } from '@supabase/ssr'").length >= 1, true, 'detects @supabase/ssr createBrowserClient')
+assertEqual(supabaseViolations("const c = createServerClient(url, key)").length >= 1, true, 'detects create*Client() factories')
+assertEqual(supabaseViolations("fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/ai_referrals')").length >= 2, true, 'detects direct REST via SUPABASE_URL + /rest/v1')
+assertEqual(supabaseViolations("const k = process.env.SUPABASE_SERVICE_ROLE_KEY").length >= 1, true, 'detects SUPABASE_* key read')
 assertEqual(supabaseViolations("// never query Supabase here\n/* createServiceClient */ const x = 1"), [], 'comments do not trip the guard')
 
 // Which cache file does each window read? Pin page + route + mapping (round-2: page reverting to ai-referrals-30.json must go red).

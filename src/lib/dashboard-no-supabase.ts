@@ -2,8 +2,11 @@
 // the dashboard must never query the cloud DB — t4g protection). Returns the violations found in a source text.
 const FORBIDDEN: [RegExp, string][] = [
   [/@\/lib\/supabase/, "imports '@/lib/supabase'"],
-  [/createServiceClient|createClient\s*\(/, 'creates a Supabase client'],
-  [/@supabase\/supabase-js/, "imports '@supabase/supabase-js'"],
+  [/createServiceClient/, 'uses createServiceClient'],
+  [/@supabase\//, "imports an '@supabase/*' package (supabase-js, ssr, ...)"],
+  [/create\w*Client\s*\(/, 'calls a create*Client() factory'],
+  [/SUPABASE_[A-Z_]*(URL|KEY)/, 'reads a SUPABASE_* env var (direct REST access)'],
+  [/\/rest\/v1/, 'targets a PostgREST /rest/v1 endpoint'],
   [/\.from\(\s*['"`][a-z_]+['"`]\s*\)\s*\.\s*(select|insert|update|delete|upsert|rpc)/, 'queries a table via .from().select()'],
   [/\.supabase\.co/, 'references a supabase.co host'],
 ]

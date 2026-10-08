@@ -74,3 +74,7 @@ supabase/.temp/
 # Security ADRs (may disclose unresolved secret/vuln details) — keep in
 # KiraVault/Projects/CloudPipe/security-phase1/, never in this public repo.
 docs/adr/
+
+# Python bytecode
+__pycache__/
+*.pyc

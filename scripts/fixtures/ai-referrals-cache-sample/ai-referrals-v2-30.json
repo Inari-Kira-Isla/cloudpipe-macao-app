@@ -1,7 +1,7 @@
 {
  "total": 8,
  "days": 30,
- "since": "2026-09-08T16:33:33.219174Z",
+ "since": "2026-09-08T16:54:53.302537Z",
  "by_source": {
   "perplexity": {
    "count": 3,
@@ -257,12 +257,25 @@
   }
  },
  "window": "30",
- "generated_at": "2026-10-08T16:33:33.219174Z",
+ "generated_at": "2026-10-08T16:54:53.302537Z",
  "data_source": "local-mirror crawler_local.db (ai_referrals)",
  "truncated": false,
  "input_rows": 138,
  "newest_row_ts": "2026-10-08T14:21:46.848+00:00",
- "mirror_age_hours": 0.22,
+ "freshness": {
+  "sync_log_last_ok": "2026-10-08T16:45:19.835049+00:00",
+  "sync_log_age_hours": 0.16,
+  "heartbeat_age_hours": {
+   "crawler_visits": 0.16,
+   "user_visits": 0.16
+  }
+ },
  "stale": false,
- "stale_threshold_hours": 6
+ "stale_reasons": [],
+ "stale_thresholds_hours": {
+  "sync_log": 3,
+  "heartbeat": 3,
+  "ai_row_soft": 72
+ },
+ "ai_row_age_hours": 2.55
 }

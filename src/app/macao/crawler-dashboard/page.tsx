@@ -165,6 +165,12 @@ interface AlltimeStats {
 // Sentinel for the "全部" range button (0 can never be a real window length).
 const ALL_DAYS = 0
 // Tabs that have real data in the "全部" view (the others depend on windowed APIs capped at 90 days).
+// "2026年10月9日 00:33" — explicit year/月/日 so it can never be misread as day/month (zh-HK prints "9/10").
+function fmtHktLong(d: Date) {
+  const h = new Date(d.getTime() + 8 * 3600000).toISOString() // HKT wall clock via UTC arithmetic
+  return `${h.slice(0, 4)}年${Number(h.slice(5, 7))}月${Number(h.slice(8, 10))}日 ${h.slice(11, 16)}`
+}
+
 // AI referral cache older than this (hours) shows a warning in the AI 推介 box.
 const AI_CACHE_STALE_HOURS = 36
 const ALL_TABS: readonly string[] = ['overview', 'pages', 'alltime']
@@ -454,7 +460,7 @@ function DailyTrendChart({ daily, days, granularity = 'day', basisNote }: {
         {granularity === 'day'
           ? <span>今日: {(sliced.find(d => d.date === hktToday)?.total ?? last.total).toLocaleString()}</span>
           : <span>最近一期: {last.total.toLocaleString()}</span>}
-        <span>合計: {sliced.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
+        <span title="只計下圖畫出嘅期數；上方提示框嘅數字係「每日明細全部日數」合計，兩者範圍可能差一兩日">圖內 {sliced.length} {granularity === 'week' ? '週' : granularity === 'month' ? '月' : '日'}合計: {sliced.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
       </div>
     </div>
   )
@@ -644,7 +650,7 @@ export default function CrawlerDashboard() {
     truncated?: boolean
     stale?: boolean
     generated_at?: string
-    mirror_age_hours?: number
+    stale_reasons?: string[]
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1261,8 +1267,8 @@ export default function CrawlerDashboard() {
                   const old = ageH > AI_CACHE_STALE_HOURS || aiReferrals.stale === true
                   return (
                     <div data-testid="referral-cache-time" style={{ fontSize: 11, color: old ? '#9a3412' : '#9ca3af', marginBottom: 8 }}>
-                      快取更新於 {gen.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}（HKT）
-                      {old && `｜快取已超過 ${AI_CACHE_STALE_HOURS} 小時或本機鏡像未同步，數字可能落後`}
+                      快取更新於 {fmtHktLong(gen)}（HKT）
+                      {old && `｜快取已超過 ${AI_CACHE_STALE_HOURS} 小時或本機鏡像未同步${aiReferrals.stale_reasons?.length ? `（${aiReferrals.stale_reasons[0]}）` : ''}，數字可能落後`}
                     </div>
                   )
                 })()}
@@ -1368,7 +1374,7 @@ export default function CrawlerDashboard() {
                 <div className="cp-callout warn" data-testid="daily-gap-note">
                   <span className="cp-callout-icon">ℹ️</span>
                   <div>
-                    下圖每日合計 <strong>{dailyGap.dailySum.toLocaleString()}</strong>，同上方「總訪問」<strong>{dailyGap.total.toLocaleString()}</strong> 相差 {Math.abs(dailyGap.gap).toLocaleString()}（{dailyGap.pct.toFixed(1)}%）：
+                    每日明細（共 {summary?.daily?.length ?? 0} 日，可能比下圖多一兩日）合計 <strong>{dailyGap.dailySum.toLocaleString()}</strong>，同上方「總訪問」<strong>{dailyGap.total.toLocaleString()}</strong> 相差 {Math.abs(dailyGap.gap).toLocaleString()}（{dailyGap.pct.toFixed(1)}%）：
                     {dailyGap.gap > 0
                       ? '每日明細來自 crawler_daily_stats，部分日子記錄不全而少計；「總訪問」以原始訪問表計算，較準。'
                       : '下圖按日曆日分組，會連埋窗口邊界嘅部分日子（例如「今天」圖會包含昨日），所以合計大過「總訪問」。'}
