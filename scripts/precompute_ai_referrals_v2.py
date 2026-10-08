@@ -12,14 +12,20 @@ Parity with the TS aggregator is asserted by scripts/test_precompute_ai_referral
 src/lib/ai-referrals-aggregate.test.ts against the same fixtures.
 
 Usage: precompute_ai_referrals_v2.py --db ~/.openclaw/api-cache/crawler_local.db --out DIR [--site S] [--now ISO]
+Safety: exit 3 on empty mirror, exit 4 on collapse vs previous cache (cache left untouched); files are written
+via temp+os.replace; stale=true when the mirror was not written for >6h.
 Does NOT upload anything and never touches the production LaunchAgent scripts. Opens the mirror read-only.
 """
-import argparse, json, re, sqlite3, sys
+import argparse, json, os, re, sqlite3, sys, time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
+# Safety rails (round-2 review I1): a broken/empty mirror must never overwrite a good cache.
+SHRINK_RATIO = 0.5      # refuse if the all-time input row count drops below 50% of the previous cache
+STALE_HOURS = 6         # mirror DB (db / -wal) not written for > 6h => stale=true + warning (sync is scheduled far more often)
+EXIT_EMPTY, EXIT_SHRINK = 3, 4
 WINDOWS = {'1': 1, '7': 7, '30': 30, '90': 90, 'all': 3650}
 
 SOURCE_META = {
@@ -125,7 +131,35 @@ def fetch_rows(db, site):
     return [r for r in rows if not BOT_UA_RE.search(r.get('ua_raw') or '')]
 
 
-def build_all(rows, now, hosts, reverify):
+def mirror_age_hours(db, now_ts=None):
+    """Hours since the mirror was last written (newest mtime of the db file or its -wal)."""
+    db = str(db)
+    m = max((os.path.getmtime(f) for f in (db, db + '-wal') if os.path.exists(f)), default=0)
+    return ((now_ts if now_ts is not None else time.time()) - m) / 3600
+
+
+def check_safety(rows, new_all, prev_all):
+    """Return a list of reasons NOT to overwrite the cache (empty list = safe)."""
+    errs = []
+    if not rows:
+        errs.append('mirror ai_referrals is EMPTY (0 rows for this site) — refusing to write; previous cache kept')
+    prev_n = (prev_all or {}).get('input_rows')
+    if prev_n and new_all['input_rows'] < prev_n * SHRINK_RATIO:
+        errs.append(f"all-time input rows collapsed {prev_n} -> {new_all['input_rows']} (< {int(SHRINK_RATIO*100)}%) — refusing to write; previous cache kept")
+    if prev_all and prev_all.get('total', 0) > 0 and new_all['total'] == 0:
+        errs.append(f"all-time total fell {prev_all['total']} -> 0 — refusing to write; previous cache kept")
+    return errs
+
+
+def write_atomic(path, text):
+    """Write to a temp file in the same directory, then os.replace (atomic rename)."""
+    path = Path(path)
+    tmp = path.with_name(path.name + f'.tmp{os.getpid()}')
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
+def build_all(rows, now, hosts, reverify, age_hours=None):
     out = {}
     for key, days in WINDOWS.items():
         if key == 'all':
@@ -135,7 +169,10 @@ def build_all(rows, now, hosts, reverify):
             since = (now - timedelta(days=days)).isoformat().replace('+00:00', 'Z')
             sub = [r for r in rows if r['ts'] >= since]
         j = aggregate(sub, days, since, hosts, reverify)
-        j.update({'window': key, 'generated_at': now.isoformat().replace('+00:00', 'Z'), 'data_source': 'local-mirror crawler_local.db (ai_referrals)', 'truncated': False})
+        j.update({'window': key, 'generated_at': now.isoformat().replace('+00:00', 'Z'), 'data_source': 'local-mirror crawler_local.db (ai_referrals)', 'truncated': False,
+                  'input_rows': len(sub), 'newest_row_ts': rows[0]['ts'] if rows else None,
+                  'mirror_age_hours': None if age_hours is None else round(age_hours, 2),
+                  'stale': bool(age_hours is not None and age_hours > STALE_HOURS), 'stale_threshold_hours': STALE_HOURS})
         out[key] = j
     return out
 
@@ -144,12 +181,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--db', required=True); ap.add_argument('--out', required=True)
     ap.add_argument('--site', default='cloudpipe-macao-app'); ap.add_argument('--now')
+    ap.add_argument('--force-shrink', action='store_true', help='allow a big row-count drop (never overrides an EMPTY mirror)')
     a = ap.parse_args()
     now = datetime.fromisoformat(a.now.replace('Z', '+00:00')) if a.now else datetime.now(timezone.utc)
-    res = build_all(fetch_rows(Path(a.db).expanduser(), a.site), now, load_host_table(), load_reverify_sources())
+    db = Path(a.db).expanduser()
+    rows = fetch_rows(db, a.site)
+    age = mirror_age_hours(db)
+    res = build_all(rows, now, load_host_table(), load_reverify_sources(), age)
     out = Path(a.out).expanduser(); out.mkdir(parents=True, exist_ok=True)
+    prev_p = out / 'ai-referrals-v2-all.json'
+    prev = json.loads(prev_p.read_text()) if prev_p.exists() else None
+    errs = [] if a.force_shrink else check_safety(rows, res['all'], prev)
+    if not rows:
+        errs = check_safety(rows, res['all'], prev)  # empty mirror is never overridable
+    if errs:
+        for e in errs:
+            print('ERROR: ' + e, file=sys.stderr)
+        sys.exit(EXIT_EMPTY if not rows else EXIT_SHRINK)
+    if res['all']['stale']:
+        print(f'WARNING: mirror not written for {age:.1f}h (> {STALE_HOURS}h) — caches marked stale=true', file=sys.stderr)
     for k, j in res.items():
-        (out / f'ai-referrals-v2-{k}.json').write_text(json.dumps(j, ensure_ascii=False, indent=1))
+        write_atomic(out / f'ai-referrals-v2-{k}.json', json.dumps(j, ensure_ascii=False, indent=1))
         print(f'ai-referrals-v2-{k}.json total={j["total"]} excluded={j["excluded_non_ai"]["total"]}')
 
 

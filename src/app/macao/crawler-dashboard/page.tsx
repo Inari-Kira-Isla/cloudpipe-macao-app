@@ -165,6 +165,8 @@ interface AlltimeStats {
 // Sentinel for the "全部" range button (0 can never be a real window length).
 const ALL_DAYS = 0
 // Tabs that have real data in the "全部" view (the others depend on windowed APIs capped at 90 days).
+// AI referral cache older than this (hours) shows a warning in the AI 推介 box.
+const AI_CACHE_STALE_HOURS = 36
 const ALL_TABS: readonly string[] = ['overview', 'pages', 'alltime']
 
 function buildAlltimeSummary(at: AlltimeStats): Summary {
@@ -382,6 +384,14 @@ function AnimBar({ pct, color, height = 6 }: { pct: number; color: string; heigh
   )
 }
 
+// Long series (90 bars x 18px) overflow horizontally and used to open scrolled to the OLDEST end, hiding today.
+// Scroll to the newest (right-hand) end whenever the series changes.
+function useScrollEnd(key: string) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEffect(() => { if (ref.current) ref.current.scrollLeft = ref.current.scrollWidth }, [key])
+  return ref
+}
+
 // ── Daily trend chart (HKT date labels — precompute script uses HKT day boundaries) ──
 // `days` is the selected window; `granularity` folds the series into weeks/months when the
 // window is long ("全部" view). The old cap (30 bars) made a 90-day selection look like 30 days.
@@ -396,6 +406,7 @@ function DailyTrendChart({ daily, days, granularity = 'day', basisNote }: {
   const maxVal = Math.max(...sliced.map(d => d.total), 1)
   const datesKey = sliced.map(d => d.date).join(',')
   const unit = granularity === 'week' ? '每週' : granularity === 'month' ? '每月' : '每日'
+  const scrollRef = useScrollEnd(datesKey)
 
   useEffect(() => {
     barsRef.current.forEach((el, i) => {
@@ -418,7 +429,7 @@ function DailyTrendChart({ daily, days, granularity = 'day', basisNote }: {
         <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: '#333' }}>{unit}爬蟲訪問趨勢</h3>
         <span style={{ fontSize: 11, color: '#aaa' }}>{basisNote || '日期按 HKT'}{granularity !== 'day' ? '｜首尾週期可能不完整' : ''}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }} data-testid="trend-bars" data-bars={sliced.length}>
+      <div ref={scrollRef} style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, overflowX: 'auto' }} data-testid="trend-bars" data-bars={sliced.length}>
         {sliced.map((d, i) => {
           const isToday = granularity === 'day' && d.date === hktToday
           const barColor = isToday ? '#10a37f' : d.partial ? '#9db8e8' : '#4285f4'
@@ -540,6 +551,7 @@ function MerchantLeaderboard({ daily }: { daily: DailyDetailPoint[] }) {
 function OwnerTrendChart({ daily, granularity = 'day' }: { daily: DailyDetailPoint[]; granularity?: Granularity }) {
   const series = aggregateSeries(daily.map(d => ({ date: d.date, total: d.total, by_owner: d.by_owner })), granularity)
   const sliced = granularity === 'day' ? series.slice(-barLimit(series.length)) : series
+  const scrollRef = useScrollEnd(sliced.map(d => d.date).join(','))
   if (!sliced.length) return null
 
   const ownerTotals: Record<string, number> = {}
@@ -566,7 +578,7 @@ function OwnerTrendChart({ daily, granularity = 'day' }: { daily: DailyDetailPoi
           ))}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90, overflowX: 'auto' }}>
+      <div ref={scrollRef} style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90, overflowX: 'auto' }} data-testid="owner-trend-bars">
         {sliced.map((d, i) => {
           const dayTotal = dayTotals[i]
           return (
@@ -626,10 +638,13 @@ export default function CrawlerDashboard() {
     top_pages: { path: string; visits: number; sources: string[] }[]
     daily: Record<string, Record<string, number>>
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
-    // Present when the live API re-verified copilot/grok rows by referrer_url and dropped non-AI hosts (e.g. bing.com).
+    // Precompute (scripts/precompute_ai_referrals_v2.py) re-verified copilot/grok/kagi rows by referrer_url and dropped non-AI hosts (e.g. bing.com).
     excluded_non_ai?: { total: number; by_source: Record<string, number>; by_referrer_host?: Record<string, number>; reason: string }
-    // Live route reads at most this many rows; true when the window hit that cap (numbers are a lower bound).
+    // Cache-level flags written by the precompute: truncated (incomplete window), stale (mirror not synced recently).
     truncated?: boolean
+    stale?: boolean
+    generated_at?: string
+    mirror_age_hours?: number
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1161,7 +1176,7 @@ export default function CrawlerDashboard() {
                   </div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
                   {card.delta != null && (
-                    <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }} data-testid="delta-explain">▲▼＝所選時段嘅後半段對比前半段</div>
+                    <div style={{ fontSize: 11, color: '#666', marginTop: 3, lineHeight: 1.4 }} data-testid="delta-explain">{card.delta >= 0 ? '▲' : '▼'} ＝所選時段嘅「後半段」對比「前半段」（唔係同上一個時段比）</div>
                   )}
                 </div>
               </FadeCard>
@@ -1239,6 +1254,18 @@ export default function CrawlerDashboard() {
                     {aiReferrals.excluded_non_ai.reason}
                   </div>
                 )}
+                {(() => {
+                  const gen = aiReferrals.generated_at ? new Date(aiReferrals.generated_at) : null
+                  if (!gen || isNaN(gen.getTime())) return null
+                  const ageH = ((lastUpdated?.getTime() ?? gen.getTime()) - gen.getTime()) / 3600000
+                  const old = ageH > AI_CACHE_STALE_HOURS || aiReferrals.stale === true
+                  return (
+                    <div data-testid="referral-cache-time" style={{ fontSize: 11, color: old ? '#9a3412' : '#9ca3af', marginBottom: 8 }}>
+                      快取更新於 {gen.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}（HKT）
+                      {old && `｜快取已超過 ${AI_CACHE_STALE_HOURS} 小時或本機鏡像未同步，數字可能落後`}
+                    </div>
+                  )
+                })()}
                 {aiReferrals.truncated && (
                   <div data-testid="referral-truncated-note" style={{ fontSize: 12, color: '#9a3412', background: '#ffedd5', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
                     此時段 AI 推介快取不完整，實際推介數只會更多，唔會更少。

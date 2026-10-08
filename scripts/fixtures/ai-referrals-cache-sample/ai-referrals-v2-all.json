@@ -569,7 +569,12 @@
   }
  },
  "window": "all",
- "generated_at": "2026-10-08T15:52:25.309612Z",
+ "generated_at": "2026-10-08T16:33:33.219174Z",
  "data_source": "local-mirror crawler_local.db (ai_referrals)",
- "truncated": false
+ "truncated": false,
+ "input_rows": 302,
+ "newest_row_ts": "2026-10-08T14:21:46.848+00:00",
+ "mirror_age_hours": 0.22,
+ "stale": false,
+ "stale_threshold_hours": 6
 }

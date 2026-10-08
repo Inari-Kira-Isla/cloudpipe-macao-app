@@ -69,6 +69,12 @@ for fname, label, old, new in MUTATIONS:
     shutil.rmtree(tmp, ignore_errors=True)
 
 PY_MUTATIONS = [
+    ("precompute: empty mirror allowed to overwrite cache", "    if not rows:\n        errs.append('mirror ai_referrals is EMPTY", "    if False:\n        errs.append('mirror ai_referrals is EMPTY"),
+    ("precompute: collapse guard disabled", "if prev_n and new_all['input_rows'] < prev_n * SHRINK_RATIO:", "if False:"),
+    ("precompute: non-atomic write (os.replace removed)", "os.replace(tmp, path)", "pass"),
+    ("precompute: stale threshold ignored", "age_hours > STALE_HOURS", "age_hours > 99999"),
+    ("precompute: 30-day window becomes 31", "'30': 30,", "'30': 31,"),
+    ("precompute: recent takes oldest rows", "for r, s in kept[:50]]", "for r, s in kept[::-1][:50]]"),
     ("precompute: skip re-verification (bing counted as AI)", "if src in reverify and r.get('referrer_url'):", "if False and r.get('referrer_url'):"),
     ("precompute: host table accepts bing.com", "if pat.search(host):", "if pat.search(host) or host.endswith('bing.com'):"),
     ("precompute: excluded rows not counted", "excluded_by_source[src] = excluded_by_source.get(src, 0) + 1", "pass"),
@@ -87,6 +93,29 @@ for label, old, new in PY_MUTATIONS:
     print(f"[{'KILLED ' if killed else 'SURVIVED'}] {label}")
     survived += 0 if killed else 1
     shutil.rmtree(tmp, ignore_errors=True)
-TOTAL = len(MUTATIONS) + len(PY_MUTATIONS)
+APP_MUTATIONS = [  # (label, file under src/, old, new) — run against a full src/ copy via DASH_SRC_ROOT
+    ("page reads the old un-reverified ai-referrals-30.json again", "app/macao/crawler-dashboard/page.tsx", "`${CACHE_BASE}/ai-referrals-v2-${days}.json`", "`${CACHE_BASE}/ai-referrals-30.json`"),
+    ("page reads a non-v2 all-time file", "app/macao/crawler-dashboard/page.tsx", "ai-referrals-v2-all.json", "ai-referrals-all.json"),
+    ("route imports the Supabase client", "app/api/v1/ai-referrals/route.ts", "import { join } from 'node:path'", "import { join } from 'node:path'\nimport { createServiceClient } from '@/lib/supabase'"),
+    ("page imports Supabase directly", "app/macao/crawler-dashboard/page.tsx", "import gsap from 'gsap'", "import gsap from 'gsap'\nimport { createServiceClient } from '@/lib/supabase'"),
+    ("transitive: page's lib module (crawler-dashboard.ts) imports Supabase", "lib/crawler-dashboard.ts", "export type BotCategory", "import { createServiceClient } from './supabase'\nexport type BotCategory"),
+    ("route drops the window->file helper", "app/api/v1/ai-referrals/route.ts", "aiReferralsCacheFile(days)", "'ai-referrals-30.json'"),
+    ("days=3650 maps to the 90-day file", "lib/ai-referrals-windows.ts", "3650: 'all'", "3650: '90'"),
+]
+for label, rel, old, new in APP_MUTATIONS:
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix='appmut-'))
+    shutil.copytree('src', tmp / 'src')
+    f = tmp / 'src' / rel
+    txt = f.read_text()
+    if old not in txt:
+        print(f"[BAD MUTATION] {label}"); survived += 1; continue
+    f.write_text(txt.replace(old, new, 1))
+    env = dict(__import__('os').environ, DASH_SRC_ROOT=str(tmp / 'src'))
+    r = subprocess.run(['node', 'scripts/run-lib-tests.mjs', str(tmp / 'src' / 'lib')], capture_output=True, text=True, env=env)
+    killed = r.returncode != 0
+    print(f"[{'KILLED ' if killed else 'SURVIVED'}] {label}")
+    survived += 0 if killed else 1
+    shutil.rmtree(tmp, ignore_errors=True)
+TOTAL = len(MUTATIONS) + len(PY_MUTATIONS) + len(APP_MUTATIONS)
 print(f"\n{TOTAL - survived}/{TOTAL} mutations killed")
 sys.exit(1 if survived else 0)

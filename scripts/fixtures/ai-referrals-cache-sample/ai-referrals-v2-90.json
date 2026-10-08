@@ -1,7 +1,7 @@
 {
  "total": 18,
  "days": 90,
- "since": "2026-07-10T15:52:25.309612Z",
+ "since": "2026-07-10T16:33:33.219174Z",
  "by_source": {
   "perplexity": {
    "count": 5,
@@ -411,7 +411,12 @@
   }
  },
  "window": "90",
- "generated_at": "2026-10-08T15:52:25.309612Z",
+ "generated_at": "2026-10-08T16:33:33.219174Z",
  "data_source": "local-mirror crawler_local.db (ai_referrals)",
- "truncated": false
+ "truncated": false,
+ "input_rows": 284,
+ "newest_row_ts": "2026-10-08T14:21:46.848+00:00",
+ "mirror_age_hours": 0.22,
+ "stale": false,
+ "stale_threshold_hours": 6
 }

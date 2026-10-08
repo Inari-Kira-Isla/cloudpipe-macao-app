@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { aiReferralsCacheFile } from '@/lib/ai-referrals-windows'
 
 // READ-ONLY CACHE ROUTE — this route (and the dashboard page) must NEVER query Supabase.
 // (guarded by src/lib/dashboard-no-supabase.test.ts)
@@ -13,17 +14,15 @@ import { join } from 'node:path'
 // as Copilot) and every other window via a live `ai_referrals` select (limit 1000) on each request (s-maxage 120).
 // That live path is removed; unsupported windows now get 400 instead of hitting the database.
 const CACHE_BASE = 'https://rgpxdhczlxkak6zh.public.blob.vercel-storage.com/api-cache'
-const WINDOW_FOR_DAYS: Record<number, string> = { 1: '1', 7: '7', 30: '30', 90: '90', 3650: 'all' }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const days = parseInt(searchParams.get('days') ?? '30')
   const site = searchParams.get('site') ?? 'cloudpipe-macao-app'
-  const win = WINDOW_FOR_DAYS[days]
-  if (!win || site !== 'cloudpipe-macao-app') {
+  const fname = aiReferralsCacheFile(days)
+  if (!fname || site !== 'cloudpipe-macao-app') {
     return NextResponse.json({ error: 'unsupported window; use days=1|7|30|90|3650 (cached windows only)' }, { status: 400 })
   }
-  const fname = `ai-referrals-v2-${win}.json`
   try {
     // Local preview / tests: AI_REFERRALS_CACHE_DIR points at a folder of sample caches (never set on Vercel).
     const dir = process.env.AI_REFERRALS_CACHE_DIR
