@@ -29,4 +29,15 @@ assertEqual(agg.excluded_non_ai.by_source, { copilot: 264 }, 'excluded_non_ai.by
 assertEqual(agg.total + agg.excluded_non_ai.total, rows.length, 'nothing silently lost: kept + excluded = input')
 assertEqual(Object.values(agg.by_source).reduce((s, b) => s + b.count, 0), agg.total, 'by_source sums to total')
 assertEqual(agg.recent.every(r => r.source !== 'copilot' || r.path === '/b'), true, 'recent list has no bing-derived copilot rows')
+
+// 30 / 90 / 全部 must use the SAME re-verification: apply it to the 30-day subset of the same fixture
+// (the old 30-day view read a precomputed Blob that skipped it and showed 138 vs 18 for 90 days).
+const rows30 = rows.filter(r => r.ts >= '2026-09-10T00:00:00Z')
+const agg30 = aggregateAiReferrals(rows30, 30, '2026-09-10T00:00:00Z', meta)
+assertEqual(agg30.by_source.copilot?.count, 2, '30-day view: only genuine copilot.microsoft.com rows remain')
+assertEqual(agg30.total <= agg.total, true, '30-day total never exceeds 90-day total')
+assertEqual(agg30.excluded_non_ai.total > 0, true, '30-day view also reports the excluded bing.com rows')
+const aggAll = aggregateAiReferrals(rows, 3650, '2016-01-01T00:00:00Z', meta)
+assertEqual(aggAll.total, agg.total, '全部 view total == 90-day total when all rows fall in 90 days')
+assertEqual(aggAll.excluded_non_ai.total, agg.excluded_non_ai.total, '全部 view excluded count == 90-day')
 finish()

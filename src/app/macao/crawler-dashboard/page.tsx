@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { INDUSTRIES } from '@/lib/industries'
 import {
-  BOT_CATEGORY_META, aggregateSeries, alltimeToSummaryShape, barLimit, chooseGranularity,
+  BOT_CATEGORY_META, STRICT_LLM_DEFINITION, aggregateSeries, classifyBot, dailyTotalGap, alltimeToSummaryShape, barLimit, chooseGranularity,
   createRequestGuard, summarizeBotCategories,
   type AggPoint, type BotCategory, type Granularity,
 } from '@/lib/crawler-dashboard'
@@ -628,6 +628,8 @@ export default function CrawlerDashboard() {
     recent: { ts: string; source: string; path: string; page_type: string; industry: string | null }[]
     // Present when the live API re-verified copilot/grok rows by referrer_url and dropped non-AI hosts (e.g. bing.com).
     excluded_non_ai?: { total: number; by_source: Record<string, number>; reason: string }
+    // Live route reads at most this many rows; true when the window hit that cap (numbers are a lower bound).
+    truncated?: boolean
   }
   const [aiReferrals, setAiReferrals] = useState<AiReferralData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -725,8 +727,10 @@ export default function CrawlerDashboard() {
           `${API}&view=spider-web&days=${days}`, null, forceFresh, req.signal),
         safeFetch<CacheHealth | null>(CACHE_HEALTH_URL, null, 5000, false, req.signal),
         cacheFirst<AiReferralData | null>(
-          // Static cache is precomputed for the 30-day window only; other windows fall to the API.
-          days === 30 ? `${CACHE_BASE}/ai-referrals-30.json` : null,
+          // No static cache for ANY window (incl. 30 days): the precomputed ai-referrals-30.json is not
+          // re-verified by referrer_url (bing.com counted as Copilot), so 30/90/全部 must all go through the
+          // live route that applies the same read-time re-verification.
+          null,
           `/api/v1/ai-referrals?days=${days}`, null, forceFresh, req.signal),
         // Per-day owner/site breakdown — previously fetched nowhere in this dashboard,
         // now powers the merchant leaderboard + AI-engine trend panels below.
@@ -881,7 +885,8 @@ export default function CrawlerDashboard() {
   // Bots regrouped into AI engine / search engine / SEO tool & headless (was: everything labelled "AI Bot").
   const botCats = summarizeBotCategories(summary?.bots || {})
   const uniqueBotsDisplay  = useCountUp(botCats.byCategory.ai_engine.kinds)
-  const strictLlmDisplay   = useCountUp(alltime?.meta.totals.strict_llm_engines_ua_named ?? 0)
+  // Single strict-LLM definition for every view (bot_name based) — see STRICT_LLM_DEFINITION in crawler-dashboard.ts.
+  const strictLlmDisplay   = useCountUp(botCats.strictLlmCount)
   const coverDaysDisplay   = useCountUp(summary?.daily?.length ?? 0)
   const sessionsDisplay    = useCountUp(summary?.unique_sessions ?? 0)
   const sitesDisplay       = useCountUp(summary ? Object.keys(summary.sites || {}).length : 0)
@@ -925,6 +930,9 @@ export default function CrawlerDashboard() {
     if (firstSum === 0) return null
     return ((secondSum - firstSum) / firstSum) * 100
   })()
+
+  // Chart-vs-KPI reconciliation: the daily series (crawler_daily_stats) can under-count vs total_visits (raw table).
+  const dailyGap = dailyTotalGap(summary?.daily, summary?.total_visits ?? 0)
 
   // > 90 days of data → weekly buckets, > 1 year → monthly (only reachable in the "全部" view).
   const trendGranularity: Granularity = isAll ? chooseGranularity(summary?.daily?.length ?? 0) : 'day'
@@ -1133,7 +1141,7 @@ export default function CrawlerDashboard() {
               { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '全歷史爬蟲訪問總和（crawler_alltime.db 全部來源合併，含 HeadlessFetcher 啟發式桶）', delay: 0, delta: totalVisitsDelta },
               { label: 'AI 引擎爬蟲種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: `UA 具名嘅 AI 引擎爬蟲種類數；全部共 ${summary.unique_bots} 種爬蟲（另有 ${botCats.byCategory.search_engine.kinds} 種搜尋引擎、${botCats.byCategory.seo_tool.kinds} 種 SEO 工具／無頭瀏覽器／其他）`, delay: 80, delta: null as number | null },
               { label: '涵蓋日數', value: coverDaysDisplay, color: '#4285f4', tooltip: '全歷史有數據嘅日數（已知缺口見「📜 全歷史」分頁）', delay: 160, delta: null as number | null },
-              { label: 'UA 實名 LLM 引擎', value: strictLlmDisplay, color: '#ff9900', tooltip: '嚴格口徑：UA 明確具名嘅 LLM bot 訪問總和（唔含 HeadlessFetcher、Amazonbot、Applebot 等通用爬蟲）', delay: 240, delta: null as number | null },
+              { label: 'UA 實名 LLM 引擎', value: strictLlmDisplay, color: '#ff9900', tooltip: STRICT_LLM_DEFINITION, delay: 240, delta: null as number | null },
             ] : [
               { label: '總訪問', value: totalVisitsDisplay, color: '#111', tooltip: '所有爬蟲訪問次數總和（來自 crawler_visits 表，middleware 偵測到 bot 時才寫入；包含 AI 引擎、搜尋引擎同 SEO 工具／無頭瀏覽器）', delay: 0, delta: totalVisitsDelta },
               { label: 'AI 引擎爬蟲種類', value: uniqueBotsDisplay, color: '#10a37f', tooltip: `UA 具名嘅 AI 引擎爬蟲種類數；此窗口共 ${summary.unique_bots} 種爬蟲（另有 ${botCats.byCategory.search_engine.kinds} 種搜尋引擎、${botCats.byCategory.seo_tool.kinds} 種 SEO 工具／無頭瀏覽器／其他）`, delay: 80, delta: null as number | null },
@@ -1152,6 +1160,9 @@ export default function CrawlerDashboard() {
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{card.label}</div>
+                  {card.delta != null && (
+                    <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }} data-testid="delta-explain">▲▼＝所選時段嘅後半段對比前半段</div>
+                  )}
                 </div>
               </FadeCard>
             ))}
@@ -1166,10 +1177,11 @@ export default function CrawlerDashboard() {
             // so the three shares add up to 100% and are self-consistent with 總訪問.
             const total = botCats.total || 1
             const strictPct = ((botCats.strictLlmCount / total) * 100).toFixed(1)
-            const order: BotCategory[] = ['ai_engine', 'search_engine', 'seo_tool']
+            const order: BotCategory[] = ['ai_engine', 'search_engine', 'link_preview', 'seo_tool']
             const bg: Record<BotCategory, { bg: string; border: string; fg: string }> = {
               ai_engine: { bg: '#e8f5e9', border: '#81c784', fg: '#2e7d32' },
               search_engine: { bg: '#e3f2fd', border: '#90caf9', fg: '#1565c0' },
+              link_preview: { bg: '#f3edf9', border: '#c9b6e4', fg: '#6b4a9e' },
               seo_tool: { bg: '#fdecea', border: '#f5b7b1', fg: '#c0392e' },
             }
             return (
@@ -1179,7 +1191,7 @@ export default function CrawlerDashboard() {
                   const meta = BOT_CATEGORY_META[cat]
                   return (
                     <div key={cat} title={meta.hint} style={{ background: bg[cat].bg, borderRadius: 10, padding: '16px', border: `1px solid ${bg[cat].border}`, cursor: 'help' }}>
-                      <div style={{ fontSize: 12, color: bg[cat].fg, fontWeight: 600, marginBottom: 4 }}>{cat === 'ai_engine' ? '🤖' : cat === 'search_engine' ? '🔍' : '🛠️'} {meta.label}</div>
+                      <div style={{ fontSize: 12, color: bg[cat].fg, fontWeight: 600, marginBottom: 4 }}>{cat === 'ai_engine' ? '🤖' : cat === 'search_engine' ? '🔍' : cat === 'link_preview' ? '🔗' : '🛠️'} {meta.label}</div>
                       <div style={{ fontSize: 28, fontWeight: 700, color: bg[cat].fg }} data-testid={`cat-pct-${cat}`}>{c.pct.toFixed(1)}%</div>
                       <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{c.count.toLocaleString()} / {botCats.total.toLocaleString()} visits</div>
                       {cat === 'ai_engine' && (
@@ -1188,6 +1200,9 @@ export default function CrawlerDashboard() {
                     </div>
                   )
                 })}
+                <div style={{ gridColumn: '1 / -1', fontSize: 11, color: '#777', lineHeight: 1.5 }} data-testid="strict-llm-definition">
+                  {STRICT_LLM_DEFINITION}（本視圖：{botCats.strictLlmCount.toLocaleString()} 次，{strictPct}%）
+                </div>
               </div>
             )
           })()}
@@ -1217,11 +1232,16 @@ export default function CrawlerDashboard() {
             )}
 
             {!loading && aiReferrals && (
-              <div style={{ padding: '14px 18px' }}>
+              <div style={{ padding: '14px 18px', minWidth: 0 }}>
                 {aiReferrals.excluded_non_ai && aiReferrals.excluded_non_ai.total > 0 && (
                   <div data-testid="referral-excluded-note" style={{ fontSize: 12, color: '#7a5d1f', background: '#FBF3DB', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
                     已排除 <strong>{aiReferrals.excluded_non_ai.total}</strong> 筆非 AI 來源（{Object.entries(aiReferrals.excluded_non_ai.by_source).map(([k, v]) => `${k} 桶 ${v} 筆`).join('、')}）：
                     {aiReferrals.excluded_non_ai.reason}
+                  </div>
+                )}
+                {aiReferrals.truncated && (
+                  <div data-testid="referral-truncated-note" style={{ fontSize: 12, color: '#9a3412', background: '#ffedd5', borderRadius: 6, padding: '8px 10px', marginBottom: 12, lineHeight: 1.5 }}>
+                    此時段紀錄過多，只讀取最近一批（上限 5,000 筆），實際推介數只會更多，唔會更少。
                   </div>
                 )}
                 {aiReferrals.total === 0 ? (
@@ -1231,8 +1251,8 @@ export default function CrawlerDashboard() {
                     <div style={{ fontSize: 12, marginTop: 4, color: '#bbb' }}>追蹤從 2026-04 起，當有人從 Perplexity / ChatGPT 等 AI 平台點擊連結進入後，數據會在此顯示</div>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>來源平台</div>
                       {Object.entries(aiReferrals.by_source)
                         .sort((a, b) => b[1].count - a[1].count)
@@ -1253,12 +1273,12 @@ export default function CrawlerDashboard() {
                           )
                         })}
                     </div>
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>最多流量頁面</div>
                       {aiReferrals.top_pages.slice(0, 8).map((p, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, fontSize: 12 }}>
                           <span style={{ color: '#9ca3af', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
-                          <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.path}</span>
+                          <span title={p.path} style={{ flex: '1 1 0', minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.path}</span>
                           <span style={{ fontWeight: 700, color: '#20b2aa', flexShrink: 0 }}>{p.visits}</span>
                         </div>
                       ))}
@@ -1272,9 +1292,9 @@ export default function CrawlerDashboard() {
                       {aiReferrals.recent.slice(0, 8).map((r, i) => {
                         const meta = aiReferrals.source_meta[r.source] ?? { label: r.source, color: '#6b7280', icon: '🤖' }
                         return (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, padding: '5px 8px', background: '#fafafa', borderRadius: 6 }}>
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, padding: '5px 8px', background: '#fafafa', borderRadius: 6, minWidth: 0 }}>
                             <span style={{ flexShrink: 0, fontWeight: 600, color: meta.color }}>{meta.icon} {meta.label}</span>
-                            <span style={{ flex: 1, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.path}</span>
+                            <span title={r.path} style={{ flex: '1 1 0', minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.path}</span>
                             <span style={{ flexShrink: 0, color: '#9ca3af' }}>{new Date(r.ts).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         )
@@ -1317,13 +1337,24 @@ export default function CrawlerDashboard() {
               {dailyDetail?.daily && dailyDetail.daily.length > 1 && (
                 <OwnerTrendChart daily={dailyDetail.daily} granularity={trendGranularity} />
               )}
+              {dailyGap && (
+                <div className="cp-callout warn" data-testid="daily-gap-note">
+                  <span className="cp-callout-icon">ℹ️</span>
+                  <div>
+                    下圖每日合計 <strong>{dailyGap.dailySum.toLocaleString()}</strong>，同上方「總訪問」<strong>{dailyGap.total.toLocaleString()}</strong> 相差 {Math.abs(dailyGap.gap).toLocaleString()}（{dailyGap.pct.toFixed(1)}%）：
+                    {dailyGap.gap > 0
+                      ? '每日明細來自 crawler_daily_stats，部分日子記錄不全而少計；「總訪問」以原始訪問表計算，較準。'
+                      : '下圖按日曆日分組，會連埋窗口邊界嘅部分日子（例如「今天」圖會包含昨日），所以合計大過「總訪問」。'}
+                  </div>
+                </div>
+              )}
               {summary.daily && summary.daily.length > 1 && (
                 <DailyTrendChart daily={summary.daily} days={days} granularity={trendGranularity}
                   basisNote={isAll && summary.daily_basis === 'utc' ? '日期按 UTC（舊快取）' : undefined} />
               )}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }} data-testid="bot-list">
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>爬蟲訪問量（按類型）</h3>
-                {(['ai_engine', 'search_engine', 'seo_tool'] as BotCategory[]).map(cat => {
+                {(['ai_engine', 'search_engine', 'link_preview', 'seo_tool'] as BotCategory[]).map(cat => {
                   const c = botCats.byCategory[cat]
                   if (!c.bots.length) return null
                   return (
@@ -1338,7 +1369,7 @@ export default function CrawlerDashboard() {
                             <span><strong>{name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{info.owner}</span></span>
                             <span style={{ fontWeight: 600 }}>{info.count.toLocaleString()}</span>
                           </div>
-                          <AnimBar pct={(info.count / maxBot) * 100} color={cat === 'ai_engine' ? (BOT_COLORS[info.owner] || BOT_CATEGORY_META[cat].color) : cat === 'seo_tool' ? '#d98880' : '#9bb7e8'} />
+                          <AnimBar pct={(info.count / maxBot) * 100} color={cat === 'ai_engine' ? (BOT_COLORS[info.owner] || BOT_CATEGORY_META[cat].color) : cat === 'seo_tool' ? '#d98880' : cat === 'link_preview' ? '#b9a2d8' : '#9bb7e8'} />
                         </div>
                       ))}
                     </div>
@@ -1960,8 +1991,15 @@ export default function CrawlerDashboard() {
               {!alltimeLoading && !alltime && <p style={{ color: '#e74c3c' }}>載入失敗，請重試（靜態快取檔案可能未就緒）</p>}
               {alltime && (() => {
                 const meta = alltime.meta
-                const maxAiBot = Math.max(...alltime.bots_alltime.ai_engines.map(b => b.count), 1)
-                const maxOtherBot = Math.max(...alltime.bots_alltime.search_and_other.map(b => b.count), 1)
+                // Regroup with the same classifier as the overview (classifyBot) so this tab and the 總覽 agree —
+                // the python cache's ai_engines/search_and_other split put OAI-SearchBot / ChatGPT-User / CCBot under "other".
+                const allBots = [...alltime.bots_alltime.ai_engines, ...alltime.bots_alltime.search_and_other].sort((a, b) => b.count - a.count)
+                const aiBotList = allBots.filter(b => classifyBot(b.bot_name) === 'ai_engine')
+                const otherBotList = allBots.filter(b => classifyBot(b.bot_name) !== 'ai_engine')
+                const botCatsAll = summarizeBotCategories(alltimeToSummaryShape(alltime).bots) // all-time, independent of the selected window
+                const aiBotTotal = aiBotList.reduce((s, b) => s + b.count, 0)
+                const maxAiBot = Math.max(...aiBotList.map(b => b.count), 1)
+                const maxOtherBot = Math.max(...otherBotList.map(b => b.count), 1)
                 const maxMonthly = Math.max(...alltime.monthly.map(m => m.total), 1)
                 return (
                   <>
@@ -1986,11 +2024,11 @@ export default function CrawlerDashboard() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
                       <FadeCard className="cp-kpi-card" style={{ padding: '18px 16px', border: '2px solid #10a37f' }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: '#10a37f', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>UA 實名 LLM 引擎</div>
-                        <div style={{ fontSize: 34, fontWeight: 800, color: '#10a37f' }}>{meta.totals.strict_llm_engines_ua_named.toLocaleString()}</div>
-                        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>嚴格口徑 — UA 明確具名的 LLM bot（唔含啟發式桶）</div>
+                        <div style={{ fontSize: 34, fontWeight: 800, color: '#10a37f' }}>{botCatsAll.strictLlmCount.toLocaleString()}</div>
+                        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }} title={STRICT_LLM_DEFINITION}>嚴格口徑（按爬蟲名稱）— 同總覽頁一致；唔含 Amazonbot、Applebot 同啟發式桶</div>
                       </FadeCard>
                       {[
-                        { label: '已識別 AI 引擎', value: meta.totals.identified_ai_engines, note: 'UA 具名 AI/搜尋引擎 bot 總和（= 下方「AI 引擎」清單），唔含 HeadlessFetcher 啟發式桶（該桶計落「扣除啟發式桶」／搜尋引擎清單）', color: '#4285f4', delay: 80 },
+                        { label: '已識別 AI 引擎', value: aiBotTotal, note: 'AI 引擎爬蟲總和（= 下方「AI 引擎」清單，分類同總覽頁一致，包 Amazonbot、Bytespider；唔含 Applebot、HeadlessFetcher）', color: '#4285f4', delay: 80 },
                         { label: '扣除啟發式桶', value: meta.totals.excluding_headless, note: '全部訪問減去 HeadlessFetcher', color: '#ff9900', delay: 160 },
                         { label: '全部訪問', value: meta.totals.all, note: '含啟發式桶，最寬口徑', color: '#111', delay: 240 },
                       ].map(card => (
@@ -2019,7 +2057,7 @@ export default function CrawlerDashboard() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
                       <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                         <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>AI 引擎（UA 具名）</h3>
-                        {alltime.bots_alltime.ai_engines.map(b => (
+                        {aiBotList.map(b => (
                           <div key={`${b.bot_name}|${b.bot_owner}`} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                               <span><strong>{b.bot_name}</strong> <span style={{ color: '#999', fontSize: 11 }}>{b.bot_owner}</span></span>
@@ -2031,7 +2069,7 @@ export default function CrawlerDashboard() {
                       </div>
                       <div style={{ background: '#fafafa', borderRadius: 10, padding: 16, border: '1px solid #eee' }}>
                         <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#333' }}>搜尋引擎 / 其他</h3>
-                        {alltime.bots_alltime.search_and_other.map(b => {
+                        {otherBotList.map(b => {
                           const isHeuristic = meta.excluded_buckets.includes(b.bot_name)
                           return (
                             <div key={`${b.bot_name}|${b.bot_owner}`} className="gsap-row" style={{ marginBottom: 10 }} title={`首次: ${formatTime(b.first_seen)} ｜ 最後: ${formatTime(b.last_seen)}`}>

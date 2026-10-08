@@ -1,7 +1,7 @@
 // Run: npm run test:lib   (tsc -> node, zero framework deps; see scripts/run-lib-tests.mjs)
 import {
   aggregateSeries, alltimeToSummaryShape, barLimit, chooseGranularity, classifyBot,
-  createRequestGuard, isStrictLlmBot, summarizeBotCategories, weekStart,
+  createRequestGuard, dailyTotalGap, isStrictLlmBot, summarizeBotCategories, weekStart,
   type AlltimeLike, type SeriesPoint,
 } from './crawler-dashboard'
 import { assertEqual, assertTrue, finish } from './test-helpers'
@@ -20,6 +20,42 @@ async function main() {
   assertEqual(classifyBot('clAudeBot'), 'ai_engine', 'classification is case-insensitive')
   assertEqual(isStrictLlmBot('Amazonbot'), false, 'Amazonbot is not strict-LLM')
   assertEqual(isStrictLlmBot('GPTBot'), true, 'GPTBot is strict-LLM')
+
+  // ── full classification table (every bot seen in production; a reclassification must turn this red) ──
+  const TABLE: [string, string][] = [
+    ['ClaudeBot', 'ai_engine'], ['Claude-Web', 'ai_engine'], ['anthropic-ai', 'ai_engine'], ['GPTBot', 'ai_engine'],
+    ['OAI-SearchBot', 'ai_engine'], ['ChatGPT-User', 'ai_engine'], ['PerplexityBot', 'ai_engine'],
+    ['meta-externalagent', 'ai_engine'], ['Bytespider', 'ai_engine'], ['Amazonbot', 'ai_engine'],
+    ['Applebot-Extended', 'ai_engine'], ['YouBot', 'ai_engine'], ['DuckAssistBot', 'ai_engine'], ['CCBot', 'ai_engine'],
+    ['Google-Extended', 'ai_engine'], ['cohere-ai', 'ai_engine'],
+    ['Googlebot', 'search_engine'], ['Bingbot', 'search_engine'], ['YandexBot', 'search_engine'],
+    ['PetalBot', 'search_engine'], ['Sogou', 'search_engine'], ['DuckDuckBot', 'search_engine'],
+    ['Applebot', 'search_engine'], // 2026-10-08: Apple's search/Siri crawler, NOT an AI engine
+    ['facebookexternalhit', 'link_preview'], // 2026-10-08: link-preview unfurl, not an SEO tool
+    ['Twitterbot', 'link_preview'], ['LinkedInBot', 'link_preview'],
+    ['HeadlessFetcher', 'seo_tool'], ['DataForSeoBot', 'seo_tool'], ['ScriptBot', 'seo_tool'], ['GoBot', 'seo_tool'],
+    ['PythonBot', 'seo_tool'], ['UnknownBot', 'seo_tool'], ['cloudpipe-bot', 'seo_tool'],
+  ]
+  for (const [name, cat] of TABLE) assertEqual(classifyBot(name), cat, `classifyBot(${name}) -> ${cat}`)
+  // strict-LLM membership table: exactly these 10 (bot_name), nothing else
+  const STRICT: string[] = ['ClaudeBot', 'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'meta-externalagent', 'Bytespider', 'PerplexityBot', 'YouBot', 'DuckAssistBot', 'CCBot']
+  for (const n of STRICT) assertEqual(isStrictLlmBot(n), true, `${n} is strict-LLM`)
+  for (const n of ['Amazonbot', 'Applebot', 'Applebot-Extended', 'Claude-Web', 'Googlebot', 'PetalBot', 'HeadlessFetcher', 'facebookexternalhit', 'ScriptBot'])
+    assertEqual(isStrictLlmBot(n), false, `${n} is NOT strict-LLM`)
+  // one definition for every view: strict count is derived from bot_name and is a subset of ai_engine for this fixture
+  const defFixture = { ClaudeBot: { count: 100, owner: 'Anthropic' }, Amazonbot: { count: 50, owner: 'Amazon' }, Applebot: { count: 30, owner: 'Apple' }, facebookexternalhit: { count: 5, owner: 'Meta' } }
+  const defSum = summarizeBotCategories(defFixture)
+  assertEqual(defSum.strictLlmCount, 100, 'strict count = ClaudeBot only (Amazonbot/Applebot excluded)')
+  assertEqual(defSum.byCategory.ai_engine.count, 150, 'ai_engine = ClaudeBot + Amazonbot (Applebot moved to search)')
+  assertEqual(defSum.byCategory.search_engine.count, 30, 'Applebot counted under search_engine')
+  assertEqual(defSum.byCategory.link_preview.count, 5, 'facebookexternalhit counted under link_preview')
+
+  // ── daily-vs-total reconciliation (90-day chart 1,801,442 vs KPI 1,892,951 case) ──
+  const g = dailyTotalGap([{ total: 1_801_442 }], 1_892_951)
+  assertEqual(g?.gap, 91_509, 'dailyTotalGap reports the 91,509 shortfall')
+  assertEqual(dailyTotalGap([{ total: 990 }, { total: 10 }], 1000), null, 'exact match -> no note')
+  assertEqual(dailyTotalGap([{ total: 985 }], 1000), null, '1.5% gap is below the 2% threshold -> no note')
+  assertEqual(dailyTotalGap([], 1000), null, 'no daily data -> no note')
 
   // 90-day snapshot (2026-10-08 Blob) subset: shares must match hand-computed numbers
   const bots = {

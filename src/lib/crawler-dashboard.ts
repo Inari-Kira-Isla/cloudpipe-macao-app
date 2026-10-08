@@ -6,12 +6,13 @@
 // (DataForSeoBot) and heuristic headless-browser buckets (HeadlessFetcher). Split into
 // three honest groups. Matching is by bot_name (the owner granularity is too coarse:
 // Google/Microsoft own both a search bot and an AI-training bot).
-export type BotCategory = 'ai_engine' | 'search_engine' | 'seo_tool'
+export type BotCategory = 'ai_engine' | 'search_engine' | 'link_preview' | 'seo_tool'
 
 export const BOT_CATEGORY_META: Record<BotCategory, { label: string; hint: string; color: string }> = {
   ai_engine:     { label: 'AI 引擎爬蟲',          hint: 'UA 具名嘅 AI / LLM 引擎爬蟲（ClaudeBot、GPTBot、PerplexityBot 等）', color: '#10a37f' },
   search_engine: { label: '搜尋引擎',            hint: '傳統搜尋引擎爬蟲（Googlebot、Bingbot、YandexBot、PetalBot 等）',     color: '#4285f4' },
-  seo_tool:      { label: 'SEO 工具・無頭瀏覽器', hint: 'SEO 分析工具、啟發式無頭瀏覽器桶（HeadlessFetcher）、腳本及未識別爬蟲', color: '#c0392e' },
+  link_preview:  { label: '連結預覽・社交',      hint: '社交平台讀取分享連結預覽嘅爬蟲（facebookexternalhit、Twitterbot、LinkedInBot 等）：用戶貼連結時先會訪問，唔係搜尋引擎亦唔係 AI 訓練爬蟲', color: '#8e6bbf' },
+  seo_tool:      { label: 'SEO 工具・無頭瀏覽器・其他', hint: 'SEO 分析工具、啟發式無頭瀏覽器桶（HeadlessFetcher）、腳本及未識別爬蟲', color: '#c0392e' },
 }
 
 // Same AI-engine list as crawler_alltime_cache.py AI_ENGINE_BOTS (Kira 2026-09-12) plus
@@ -20,17 +21,38 @@ const AI_ENGINE_BOT_NAMES = new Set([
   'claudebot', 'claude-user', 'claude-searchbot', 'anthropic-ai',
   'gptbot', 'oai-searchbot', 'chatgpt-user',
   'perplexitybot', 'perplexity-user',
-  'meta-externalagent', 'bytespider', 'amazonbot', 'applebot', 'applebot-extended',
+  'meta-externalagent', 'bytespider', 'amazonbot', 'applebot-extended', 'claude-web',
   'youbot', 'duckassistbot', 'ccbot', 'google-extended', 'cohere-ai',
 ])
 
 const SEARCH_ENGINE_BOT_NAMES = new Set([
   'googlebot', 'googlebot-image', 'bingbot', 'yandexbot', 'petalbot', 'sogou', 'baiduspider',
   'duckduckbot', 'slurp', 'seznambot', 'naverbot', 'yeti',
+  // Applebot (2026-10-08 review): Apple's crawler feeding Siri/Spotlight search; the AI-training
+  // opt-out signal is the separate token Applebot-Extended (kept under ai_engine above).
+  'applebot',
+])
+
+// facebookexternalhit & friends fetch a URL only when someone shares it (link-preview unfurl) — they are
+// neither a search engine nor an SEO tool nor an AI crawler (2026-10-08 review), so they get their own bucket.
+const LINK_PREVIEW_BOT_NAMES = new Set([
+  'facebookexternalhit', 'twitterbot', 'linkedinbot', 'slackbot', 'discordbot', 'whatsapp', 'telegrambot',
 ])
 
 // Strict "UA-named LLM" subset — mirrors STRICT_UA_TOKENS in crawler_alltime_cache.py
 // (excludes Amazonbot / Applebot, which are general-purpose crawlers).
+//
+// ONE definition for ALL views (1/7/30/90 days and 全部). It is computed from bot_name only, in
+// summarizeBotCategories().strictLlmCount. Do NOT use alltime.meta.totals.strict_llm_engines_ua_named
+// for display: that figure is matched on ua_raw tokens (46.9% of the all-time total) and disagrees with
+// this bot_name definition (48.1%) on the same screen.
+// Reconciliation of the three figures a reader may meet:
+//   - 48.1% (all-time) / 49.1% (90 days): this definition (bot_name in the list below).
+//   - 46.9% (all-time): the python ua_raw-token count, retired from the UI.
+//   - 45.8% (90 days, analysis report 2026-10-08): an owner-level set (OpenAI / Anthropic / Perplexity /
+//     Meta + OAI-SearchBot) that omits Bytespider, YouBot, DuckAssistBot, CCBot — an older, narrower set.
+export const STRICT_LLM_DEFINITION =
+  '「UA 實名 LLM」＝爬蟲自報名稱屬 ClaudeBot、GPTBot、OAI-SearchBot、ChatGPT-User、PerplexityBot、Meta-ExternalAgent、Bytespider、YouBot、DuckAssistBot、CCBot 之一；唔計 Amazonbot、Applebot 同啟發式無頭瀏覽器。全站 1／7／30／90 日同「全部」用同一個定義。'
 const STRICT_LLM_BOT_NAMES = new Set([
   'claudebot', 'gptbot', 'oai-searchbot', 'chatgpt-user', 'meta-externalagent',
   'bytespider', 'perplexitybot', 'youbot', 'duckassistbot', 'ccbot',
@@ -40,7 +62,8 @@ export function classifyBot(botName: string): BotCategory {
   const n = (botName || '').trim().toLowerCase()
   if (AI_ENGINE_BOT_NAMES.has(n)) return 'ai_engine'
   if (SEARCH_ENGINE_BOT_NAMES.has(n)) return 'search_engine'
-  return 'seo_tool' // HeadlessFetcher, DataForSeoBot, ScriptBot, GoBot, PythonBot, UnknownBot, ...
+  if (LINK_PREVIEW_BOT_NAMES.has(n)) return 'link_preview'
+  return 'seo_tool' // HeadlessFetcher, DataForSeoBot, ScriptBot, GoBot, PythonBot, UnknownBot, ... (shown as 「其他」)
 }
 
 export function isStrictLlmBot(botName: string): boolean {
@@ -61,6 +84,7 @@ export function summarizeBotCategories(bots: Record<string, BotCountInfo>): BotC
     byCategory: {
       ai_engine: { count: 0, kinds: 0, pct: 0, bots: [] },
       search_engine: { count: 0, kinds: 0, pct: 0, bots: [] },
+      link_preview: { count: 0, kinds: 0, pct: 0, bots: [] },
       seo_tool: { count: 0, kinds: 0, pct: 0, bots: [] },
     },
   }
@@ -234,4 +258,17 @@ export function alltimeToSummaryShape(a: AlltimeLike): AlltimeSummaryShape {
     daily,
     daily_basis: hkt ? 'hkt' : 'utc',
   }
+}
+
+// ── Daily-series vs headline-total reconciliation ────────────────────────────
+// The 90-day summary's `daily` comes from crawler_daily_stats, which under-counts ~20 days
+// (2026-08-21..09-08 + the current day) versus the raw-visits total used for `total_visits`
+// (analysis report §3.1). Surface the gap instead of letting the chart silently disagree with the KPI.
+export interface DailyGap { dailySum: number; total: number; gap: number; pct: number }
+export function dailyTotalGap(daily: { total: number }[] | undefined, totalVisits: number, thresholdPct = 2): DailyGap | null {
+  if (!daily || daily.length === 0 || !(totalVisits > 0)) return null
+  const dailySum = daily.reduce((s, d) => s + (Number(d.total) || 0), 0)
+  const gap = totalVisits - dailySum
+  const pct = (Math.abs(gap) / totalVisits) * 100
+  return pct > thresholdPct ? { dailySum, total: totalVisits, gap, pct } : null
 }
