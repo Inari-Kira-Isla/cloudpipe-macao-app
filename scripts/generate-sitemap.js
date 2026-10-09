@@ -22,6 +22,11 @@ if (!SUPABASE_KEY) {
   console.error('Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY env var')
   process.exit(1)
 }
+const STRICT = process.env.SITEMAP_STRICT === 'true'
+if (STRICT && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('Strict sitemap generation requires SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 const OUT_PATH = path.join(__dirname, '..', 'public', 'sitemap.xml')
 const TODAY = new Date().toISOString().split('T')[0]
@@ -60,31 +65,54 @@ for (const ind of INDUSTRIES) {
 // ── Supabase 查詢工具 ─────────────────────────────────────────────────────────
 async function supabaseQuery(table, select, filters = {}, limit = 5000, order = null) {
   try {
-    let q = supabase.from(table).select(select).limit(limit)
-    for (const [key, val] of Object.entries(filters)) {
-      q = q.eq(key, val)
+    // Keep legacy callers' bounded snapshot semantics; the workflow opts into strict mode.
+    if (!STRICT) {
+      let q = supabase.from(table).select(select).limit(limit)
+      for (const [key, val] of Object.entries(filters)) q = q.eq(key, val)
+      if (order) {
+        const [col, direction] = order.split('.')
+        q = q.order(col, { ascending: direction === 'asc' })
+      }
+      const { data, error } = await q.abortSignal(AbortSignal.timeout(10000))
+      if (error || !Array.isArray(data)) throw new Error(`Failed to fetch ${table}`)
+      return data
     }
-    if (order) {
-      const [col, direction] = order.split('.')
-      q = q.order(col, { ascending: direction === 'asc' })
+    const rows = []
+    // PostgREST caps responses at 1000 even when limit is larger. Stable order + ranges
+    // prevent a successful-looking 1000-row partial sitemap. Hard limit stays bounded.
+    for (let offset = 0; offset <= limit; offset += 1000) {
+      let q = supabase.from(table).select(select)
+      for (const [key, val] of Object.entries(filters)) q = q.eq(key, val)
+      if (STRICT && table === 'merchants') {
+        for (const prefix of ['hk-', 'tw-', 'jp-']) q = q.not('slug', 'like', `${prefix}%`)
+      }
+      if (order) {
+        const [col, direction] = order.split('.')
+        q = q.order(col, { ascending: direction === 'asc' })
+      }
+      q = q.order('id', { ascending: true }).range(offset, Math.min(offset + 999, limit))
+      const { data, error } = await q.abortSignal(AbortSignal.timeout(10000))
+      if (error || !Array.isArray(data)) throw new Error(`Failed to fetch ${table}`)
+      if (offset + data.length > limit) throw new Error(`${table} exceeds configured limit ${limit}`)
+      rows.push(...data)
+      if (data.length < 1000) return rows
     }
-    const { data, error } = await q
-    if (error) {
-      console.warn(`⚠️  Failed to fetch ${table}: ${error.message}`)
-      return []
-    }
-    return Array.isArray(data) ? data : []
+    return rows
   } catch (e) {
-    console.warn(`⚠️  Failed to fetch ${table}: ${e.message}`)
+    if (STRICT) throw e // Never overwrite a valid sitemap with a partial/static-only result.
+    console.warn(`⚠️  Failed to fetch ${table}; leaving dynamic rows empty`)
     return []
   }
 }
 
 // ── XML 工具 ─────────────────────────────────────────────────────────────────
+function escapeXml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]))
+}
 function urlEntry(loc, lastmod, changefreq, priority) {
   return `  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${escapeXml(loc)}</loc>
+    <lastmod>${escapeXml(lastmod)}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`
@@ -141,8 +169,8 @@ async function main() {
   const insights = await supabaseQuery(
     'insights',
     'slug,updated_at',
-    { status: 'published' },
-    5000,
+    STRICT ? { status: 'published', region: 'MO', lang: 'zh' } : { status: 'published' },
+    STRICT ? 40000 : 5000,
     'created_at.desc'
   )
   for (const ins of insights) {
@@ -157,7 +185,7 @@ async function main() {
     'merchants',
     'slug,updated_at,categories(slug)',
     { status: 'live' },
-    10000
+    STRICT ? 40000 : 10000
   )
   let merchantCount = 0
   for (const m of merchants) {
@@ -179,10 +207,23 @@ async function main() {
 ${entries.join('\n')}
 </urlset>`
 
-  fs.writeFileSync(OUT_PATH, xml, 'utf8')
+  if (entries.length > 50000 || Buffer.byteLength(xml) > 50000000) {
+    throw new Error('Sitemap exceeds 50,000 URLs / 50 MB; use canonical sub-sitemaps')
+  }
+  fs.writeFileSync(OUT_PATH + '.tmp', xml, 'utf8')
+  fs.renameSync(OUT_PATH + '.tmp', OUT_PATH)
+  if (process.env.SITEMAP_STATS_PATH) {
+    fs.writeFileSync(process.env.SITEMAP_STATS_PATH, JSON.stringify({ total_urls: entries.length,
+      insights: insights.length, merchants: merchantCount, artifact: 'public/sitemap.xml',
+      scope: STRICT ? 'MO zh insights and MO merchants; other regions/langs use canonical sub-sitemaps' : 'legacy',
+      online_deployment: 'unconfirmed' }) + '\n')
+  }
   console.log(`\n✅ Sitemap written: ${OUT_PATH}`)
   console.log(`   Total URLs: ${entries.length}`)
   console.log(`   Submit at: ${SITE_URL}/sitemap.xml`)
 }
 
-main().catch(e => { console.error('❌', e.message); process.exit(1) })
+if (require.main === module) {
+  main().catch(e => { console.error('❌', e.message); process.exit(1) })
+}
+module.exports = { main, supabaseQuery, urlEntry }

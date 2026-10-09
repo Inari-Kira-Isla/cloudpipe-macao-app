@@ -2,201 +2,162 @@ name: DB Recovery - Auto Sitemap Deploy
 
 on:
   schedule:
-    # Run every hour at :05 to avoid busy period
     - cron: '5 * * * *'
   workflow_dispatch:
     inputs:
       force_regenerate:
-        description: 'Force regenerate even if DB was already up'
+        description: 'Regenerate after a successful authenticated DB check (never bypass auth)'
         required: false
         default: 'false'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: sitemap-production
+  cancel-in-progress: false
+
 jobs:
   check-db-and-deploy-sitemap:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
+    permissions:
+      contents: write # Only this job pushes public/sitemap.xml; no PAT/admin scope.
+    defaults:
+      run:
+        shell: bash
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://yitmabzsxfgbchhhjjef.supabase.co
+      NEXT_PUBLIC_SITE_URL: https://cloudpipemo.com
 
     steps:
-      - name: Check DB Status
-        id: db_check
-        run: |
-          echo "Checking Supabase DB at $(date -u)"
-          RESPONSE=$(curl -s --max-time 5 \
-            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-            "https://yitmabzsxfgbchhhjjef.supabase.co/rest/v1/merchants?limit=1&select=id" \
-            -w "\nHTTP_STATUS:%{http_code}" 2>&1)
-
-          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
-          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS:")
-
-          echo "HTTP Status: $HTTP_STATUS"
-          echo "Response: $BODY"
-
-          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "206" ]; then
-            echo "db_up=true" >> $GITHUB_OUTPUT
-            echo "✅ DB is UP (HTTP $HTTP_STATUS)"
-          else
-            echo "db_up=false" >> $GITHUB_OUTPUT
-            echo "❌ DB is DOWN or unreachable (HTTP $HTTP_STATUS)"
-          fi
-
-      - name: Skip if DB still down
-        if: steps.db_check.outputs.db_up == 'false' && github.event.inputs.force_regenerate != 'true'
-        run: |
-          echo "DB is still down. Skipping sitemap generation."
-          echo "Next check in 1 hour."
-          exit 0
-
       - name: Checkout repository
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Validate deployment configuration
+        id: preflight
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_REVALIDATE_TOKEN: ${{ secrets.VERCEL_REVALIDATE_TOKEN }}
+        run: python3 scripts/sitemap-deploy.py preflight
+
+      - name: Check authenticated DB data access
+        id: db_check
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python3 scripts/sitemap-deploy.py db
 
       - name: Setup Node.js
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependencies
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
         run: npm ci --include=dev
 
       - name: Generate Sitemap
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
         id: generate
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://yitmabzsxfgbchhhjjef.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_SITE_URL: https://cloudpipe-macao-app.vercel.app
+          SITEMAP_STRICT: 'true'
+          SITEMAP_STATS_PATH: /tmp/sitemap-stats.json
         run: |
+          set -euo pipefail
           node scripts/generate-sitemap.js 2>&1 | tee /tmp/sitemap-output.txt
-          echo "total_urls=$(grep 'Total URLs:' /tmp/sitemap-output.txt | grep -o '[0-9]*' | tail -1)" >> $GITHUB_OUTPUT
-          echo "insights=$(grep 'Insights:' /tmp/sitemap-output.txt | grep -o '[0-9]*')" >> $GITHUB_OUTPUT
-          echo "merchants=$(grep 'Merchants:' /tmp/sitemap-output.txt | grep -o '[0-9]*')" >> $GITHUB_OUTPUT
+          python3 scripts/sitemap-deploy.py generated
 
       - name: Commit and push sitemap
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
         id: commit
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/sitemap.xml
-          if git diff --cached --quiet; then
-            echo "No changes to sitemap"
-            echo "committed=false" >> $GITHUB_OUTPUT
-          else
-            git commit -m "chore: auto-regenerate sitemap after DB recovery [$(date -u '+%Y-%m-%d %H:%M UTC')]"
-            git push origin HEAD
-            echo "committed=true" >> $GITHUB_OUTPUT
-            echo "✅ Sitemap committed and pushed"
+          changed=false
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-regenerate sitemap after authenticated DB check"
+            git push origin HEAD:main
+            changed=true
           fi
+          # This receipt is written only after push succeeds (or confirmed no change).
+          export SITEMAP_CHANGED="$changed"
+          export SITEMAP_COMMIT_SHA="$(git rev-parse HEAD)"
+          python3 scripts/sitemap-deploy.py pushed
 
-      - name: Submit sitemap to Google
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
-        run: |
-          SITEMAP_URL="https://cloudpipe-macao-app.vercel.app/sitemap.xml"
-          echo "Submitting to Google..."
-          GOOGLE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
-            "https://www.google.com/ping?sitemap=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$SITEMAP_URL'))")")
-          echo "Google ping status: $GOOGLE_STATUS"
-
-      - name: Submit sitemap to Bing + IndexNow
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
+      - name: Confirm Vercel production deployment and alias
+        id: deployment
         env:
-          BING_INDEXNOW_KEY: ${{ secrets.BING_INDEXNOW_KEY }}
-        run: |
-          SITEMAP_URL="https://cloudpipe-macao-app.vercel.app/sitemap.xml"
-          SITE_URL="https://cloudpipe-macao-app.vercel.app"
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: python3 scripts/sitemap-deploy.py deployment
 
-          # Bing sitemap ping
-          echo "Submitting to Bing..."
-          BING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
-            "https://www.bing.com/ping?sitemap=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$SITEMAP_URL'))")")
-          echo "Bing ping status: $BING_STATUS"
-
-          # IndexNow (skip if key not set)
-          if [ -n "$BING_INDEXNOW_KEY" ]; then
-            echo "Submitting via IndexNow..."
-            INDEXNOW_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
-              -X POST "https://api.indexnow.org/indexnow" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"host\": \"cloudpipe-macao-app.vercel.app\",
-                \"key\": \"$BING_INDEXNOW_KEY\",
-                \"keyLocation\": \"$SITE_URL/indexnow.txt\",
-                \"urlList\": [
-                  \"$SITE_URL/macao\",
-                  \"$SITE_URL/macao/insights\",
-                  \"$SITE_URL/sitemap.xml\",
-                  \"$SITE_URL/llms.txt\"
-                ]
-              }")
-            echo "IndexNow status: $INDEXNOW_STATUS"
-          else
-            echo "BING_INDEXNOW_KEY not set, skipping IndexNow"
-          fi
-
-      - name: Trigger Vercel sitemap cache revalidation
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
+      - name: Revalidate Vercel sitemap routes
+        id: revalidate
         env:
           VERCEL_REVALIDATE_TOKEN: ${{ secrets.VERCEL_REVALIDATE_TOKEN }}
-        run: |
-          if [ -n "$VERCEL_REVALIDATE_TOKEN" ]; then
-            echo "Triggering Vercel sitemap revalidation..."
-            curl -s -o /dev/null -w "Vercel revalidate: %{http_code}\n" --max-time 15 \
-              -X POST "https://cloudpipe-macao-app.vercel.app/api/submit-sitemap" \
-              -H "Authorization: Bearer $VERCEL_REVALIDATE_TOKEN" \
-              -H "Content-Type: application/json"
-          else
-            echo "VERCEL_REVALIDATE_TOKEN not set, skipping Vercel revalidation"
-          fi
+        run: python3 scripts/sitemap-deploy.py revalidate
 
-      - name: Send email notification
-        if: steps.db_check.outputs.db_up == 'true' || github.event.inputs.force_regenerate == 'true'
+      - name: Verify online sitemap index and every child
+        id: verify
+        run: python3 scripts/sitemap-deploy.py verify
+
+      - name: Submit sitemap to Google Search Console
+        id: google
+        if: success() && steps.verify.outcome == 'success'
+        env:
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+          GOOGLE_SEARCH_CONSOLE_SITE_URL: ${{ secrets.GOOGLE_SEARCH_CONSOLE_SITE_URL }}
+        run: python3 scripts/sitemap-deploy.py google
+
+      - name: Submit sitemap to Bing Webmaster Tools
+        id: bing
+        if: always() && !cancelled() && steps.verify.outcome == 'success'
+        env:
+          BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
+        run: python3 scripts/sitemap-deploy.py bing
+
+      - name: Submit content URLs to IndexNow
+        id: indexnow
+        if: always() && !cancelled() && steps.verify.outcome == 'success'
+        env:
+          BING_INDEXNOW_KEY: ${{ secrets.BING_INDEXNOW_KEY }}
+        run: python3 scripts/sitemap-deploy.py indexnow
+
+      - name: Send actual stage results by email
+        id: notify
+        if: always() && !cancelled() && steps.preflight.outcome != 'skipped'
         env:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        run: |
-          TOTAL_URLS="${{ steps.generate.outputs.total_urls }}"
-          INSIGHTS="${{ steps.generate.outputs.insights }}"
-          MERCHANTS="${{ steps.generate.outputs.merchants }}"
-          DB_RECOVERY_TIME="$(date -u '+%Y-%m-%d %H:%M UTC')"
-          COMMITTED="${{ steps.commit.outputs.committed }}"
-
-          EMAIL_BODY="DB Recovery detected at $DB_RECOVERY_TIME\n\nSitemap Stats:\n- Total URLs: $TOTAL_URLS\n- Insights: $INSIGHTS\n- Merchants: $MERCHANTS\n\nSitemap URL: https://cloudpipe-macao-app.vercel.app/sitemap.xml\n\nCommitted to repo: $COMMITTED\n\nSearch engines notified: Google, Bing, IndexNow"
-
-          if [ -n "$SENDGRID_API_KEY" ]; then
-            echo "Sending email via SendGrid..."
-            curl -s -X POST "https://api.sendgrid.com/v3/mail/send" \
-              -H "Authorization: Bearer $SENDGRID_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"personalizations\": [{\"to\": [{\"email\": \"inariglobal@gmail.com\"}]}],
-                \"from\": {\"email\": \"noreply@cloudpipe-macao-app.vercel.app\"},
-                \"subject\": \"[Sitemap] Auto-deployment complete - $DB_RECOVERY_TIME\",
-                \"content\": [{\"type\": \"text/plain\", \"value\": \"$EMAIL_BODY\"}]
-              }"
-            echo "Email sent."
-          else
-            echo "SENDGRID_API_KEY not set. Email notification skipped."
-            echo "Summary:"
-            echo "$EMAIL_BODY"
-          fi
+        run: python3 scripts/sitemap-deploy.py notify
 
       - name: Workflow Summary
         if: always()
+        env:
+          GENERATE_OUTCOME: ${{ steps.generate.outcome }}
+          COMMIT_OUTCOME: ${{ steps.commit.outcome }}
         run: |
-          echo "## Sitemap Auto-Deploy Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
-          echo "- **DB Status**: ${{ steps.db_check.outputs.db_up == 'true' && '✅ UP' || '❌ DOWN' }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.db_check.outputs.db_up }}" = "true" ]; then
-            echo "- **Total URLs**: ${{ steps.generate.outputs.total_urls }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Insights**: ${{ steps.generate.outputs.insights }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Merchants**: ${{ steps.generate.outputs.merchants }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Committed**: ${{ steps.commit.outputs.committed }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Sitemap**: https://cloudpipe-macao-app.vercel.app/sitemap.xml" >> $GITHUB_STEP_SUMMARY
-          fi
+          python3 scripts/sitemap-deploy.py summary
+          echo "- Generation step: $GENERATE_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Git commit/push step: $COMMIT_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve deployment receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/sitemap-deploy-state.json
+            /tmp/sitemap-stats.json
+            /tmp/sitemap-output.txt
+          if-no-files-found: warn
+          retention-days: 30
