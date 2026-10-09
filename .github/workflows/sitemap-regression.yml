@@ -1,0 +1,26 @@
+name: Sitemap regression
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/sitemap*.yml'
+      - 'scripts/sitemap-deploy.py'
+      - 'scripts/generate-sitemap.js'
+      - 'scripts/tests/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install PyYAML==6.0.3
+      - run: python3 -m unittest discover -s scripts/tests -p 'test_sitemap*.py' -v
+      - run: node --test scripts/tests/generate-sitemap.test.cjs
