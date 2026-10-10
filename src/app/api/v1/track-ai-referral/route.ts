@@ -60,10 +60,14 @@ export async function POST(req: NextRequest) {
     const finalSessionId = (session_id || cookieSid).slice(0, 100) || null
 
     // Server-side re-detect from referrer_url — catches engines a stale GH-page
-    // client snippet misses (e.g. 中國 AI / meta). Server detection wins when it
-    // resolves a concrete engine; otherwise fall back to the client-sent source.
+    // client snippet misses (e.g. 中國 AI / meta). When a referrer_url was supplied,
+    // the server classifier is authoritative — including when it returns null,
+    // which means the server determined this is NOT an AI referral. A stale/outdated
+    // client snippet's referrer_source must not override that "not AI" verdict.
+    // The client-sent referrer_source is only used as a fallback when there was no
+    // referrer_url at all to classify server-side.
     const serverDetected = referrer_url ? detectAiReferrer(referrer_url) : null
-    const finalSource = serverDetected || referrer_source
+    const finalSource = referrer_url ? serverDetected : referrer_source
 
     // Validate
     if (!finalSource || !VALID_SOURCES.has(finalSource)) {

@@ -1,0 +1,129 @@
+{
+ "total": 1,
+ "days": 1,
+ "since": "2026-10-07T16:54:53.302537Z",
+ "by_source": {
+  "perplexity": {
+   "count": 1,
+   "pages": {
+    "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024": 1
+   },
+   "industries": {
+    "insights": 1
+   },
+   "latest": "2026-10-07T18:16:42.97+00:00"
+  }
+ },
+ "source_meta": {
+  "perplexity": {
+   "label": "Perplexity",
+   "color": "#20b2aa",
+   "icon": "🔍"
+  },
+  "chatgpt": {
+   "label": "ChatGPT",
+   "color": "#10a37f",
+   "icon": "🤖"
+  },
+  "claude": {
+   "label": "Claude",
+   "color": "#c5a572",
+   "icon": "🧠"
+  },
+  "gemini": {
+   "label": "Gemini",
+   "color": "#4285f4",
+   "icon": "✨"
+  },
+  "copilot": {
+   "label": "Copilot",
+   "color": "#0078d4",
+   "icon": "🪟"
+  },
+  "grok": {
+   "label": "Grok",
+   "color": "#1da1f2",
+   "icon": "𝕏"
+  },
+  "you": {
+   "label": "You.com",
+   "color": "#6366f1",
+   "icon": "🔎"
+  },
+  "kagi": {
+   "label": "Kagi",
+   "color": "#f59e0b",
+   "icon": "🔱"
+  },
+  "phind": {
+   "label": "Phind",
+   "color": "#7c3aed",
+   "icon": "💡"
+  },
+  "other_ai": {
+   "label": "Other AI",
+   "color": "#6b7280",
+   "icon": "🤖"
+  }
+ },
+ "top_pages": [
+  {
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "visits": 1,
+   "sources": [
+    "perplexity"
+   ]
+  }
+ ],
+ "daily": {
+  "2026-10-07": {
+   "perplexity": 1
+  }
+ },
+ "recent": [
+  {
+   "ts": "2026-10-07T18:16:42.97+00:00",
+   "source": "perplexity",
+   "path": "/taiwan/en/insights/taiwan-bubble-tea-global-expansion-2024",
+   "page_type": "insight",
+   "industry": "insights"
+  }
+ ],
+ "excluded_non_ai": {
+  "total": 11,
+  "by_source": {
+   "copilot": 11
+  },
+  "by_referrer_host": {
+   "www.bing.com": 11
+  },
+  "reason": "按 referrer_url 主機重新驗證：copilot／grok／kagi 桶內主機唔係專屬 AI 主機（例如 bing.com 自然搜尋、x.com 一般瀏覽）嘅記錄已排除，唔計入 AI 推介"
+ },
+ "classified": {
+  "kept_by_source_host": {
+   "perplexity|www.perplexity.ai": 1
+  }
+ },
+ "window": "1",
+ "generated_at": "2026-10-08T16:54:53.302537Z",
+ "data_source": "local-mirror crawler_local.db (ai_referrals)",
+ "truncated": false,
+ "input_rows": 12,
+ "newest_row_ts": "2026-10-08T14:21:46.848+00:00",
+ "freshness": {
+  "sync_log_last_ok": "2026-10-08T16:45:19.835049+00:00",
+  "sync_log_age_hours": 0.16,
+  "heartbeat_age_hours": {
+   "crawler_visits": 0.16,
+   "user_visits": 0.16
+  }
+ },
+ "stale": false,
+ "stale_reasons": [],
+ "stale_thresholds_hours": {
+  "sync_log": 3,
+  "heartbeat": 3,
+  "ai_row_soft": 72
+ },
+ "ai_row_age_hours": 2.55
+}

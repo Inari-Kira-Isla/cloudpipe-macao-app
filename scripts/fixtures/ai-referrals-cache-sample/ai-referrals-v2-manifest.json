@@ -1,0 +1,30 @@
+{
+ "generated_at": "2026-10-08T16:54:53.302537Z",
+ "files": {
+  "ai-referrals-v2-1.json": {
+   "sha256": "366f3c0c98ea63e709b0747983db44c1fcec364e75f2b7709d9efa9d565dd6e0",
+   "generated_at": "2026-10-08T16:54:53.302537Z",
+   "bytes": 2564
+  },
+  "ai-referrals-v2-7.json": {
+   "sha256": "f647323b4ec5d3e3b77983fb094114046e3dc2a601208431787118d72efee838",
+   "generated_at": "2026-10-08T16:54:53.302537Z",
+   "bytes": 3809
+  },
+  "ai-referrals-v2-30.json": {
+   "sha256": "80b17bbba1252130bb8a31f4f1eb2968cd1863c970cc5ab4ceca3334d37a1f8a",
+   "generated_at": "2026-10-08T16:54:53.302537Z",
+   "bytes": 6208
+  },
+  "ai-referrals-v2-90.json": {
+   "sha256": "5f4a9445af372b45e826238888f74fab4057036ea02a9569c97c2a18db1294ab",
+   "generated_at": "2026-10-08T16:54:53.302537Z",
+   "bytes": 12452
+  },
+  "ai-referrals-v2-all.json": {
+   "sha256": "5faa17211f4da9fff302f8555fdfffb76210d6d3c167a991bb7b7b19fe0dff9c",
+   "generated_at": "2026-10-08T16:54:53.302537Z",
+   "bytes": 18647
+  }
+ }
+}
